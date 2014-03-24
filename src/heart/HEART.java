@@ -80,6 +80,27 @@ public class HEART {
         return files.toArray(new String[]{});
     }
 
+    public void doOrder() {
+        //  add outstations
+        addOutstation("heathrow");
+        addOutstation("heathro2");
+        addOutstation("heathro3");
+        addOutstation("heathro4");
+        addOutstation("heathro5");
+        //  add db points used by outstations
+        osMappingCSV("heathrow");
+        osMappingCSV("heathro2");
+        osMappingCSV("heathro3");
+        osMappingCSV("heathro4");
+        osMappingCSV("heathro5");
+        //
+        dbUpdateCSV("heathrow");
+        dbUpdateCSV("heathro2");
+        dbUpdateCSV("heathro3");
+        dbUpdateCSV("heathro4");
+        dbUpdateCSV("heathro5");
+    }
+
     public void start() {
         conn = JavaConnect.ConnectDB();  //  get the connection url
         mimicReadToDo = new String[10000];  //  maximum number of mimics
@@ -103,11 +124,13 @@ public class HEART {
 
 
         //addOutstation("heathro3");
-        osMappingCSV("heathro3");
-
+        //osMappingCSV("heathro3");
+       dbUpdateCSV("heathro3");
+              System.out.println("***************************************************************");
+       // dbUpdateCSV("heathro3");
         //    currentMimic = "BEN_MIMIC_TEST";
         //while (mimicToDoLength != mimicDoneLength) {
-        while (mimicDoneLength < 2788) {
+       /* while (mimicDoneLength < 2788) {
             // reset counting variables
             numberObject = 0;
             numberObjectShape = 0;
@@ -131,7 +154,7 @@ public class HEART {
 
             mimicDoneLength++;
             // System.out.println("DONE: "+mimicDoneLength);
-        }
+        }*/
         //updateConnectionsMimic();
     }
     private static final Set<String> shapeArray = new HashSet<String>(Arrays.asList(
@@ -163,28 +186,6 @@ public class HEART {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);
         }
-        try {
-            br = new BufferedReader(new FileReader(csvFile));
-            while ((line = br.readLine()) != null) {
-                // use comma as separator
-                String[] os = line.split(cvsSplitBy);
-                System.out.println("OS [OS Name= " + os[0]
-                        + " , Os Number=" + os[1] + "]");
-                //insertConnection(server, primary, secondary, type);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
         //System.out.println("Done");
     }
 
@@ -192,14 +193,14 @@ public class HEART {
      * method to add the OS-DB connections where the OS is used and add the DB point to SQLDB
      */
     public void osMappingCSV(String server) {
-        //String server = "Heathro3";
         String csvFile = "C:\\HEART\\" + server + "\\osmapping.csv";  //  .csv file location
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
         String type = "OSDB";  //  type of connection to be inputted to SQLDB
         try {
-            Statement statement = conn.createStatement();
+            Statement statement1 = conn.createStatement();
+            Statement statement2 = conn.createStatement();
             br = new BufferedReader(new FileReader(csvFile));
             //  while there are rows/lines of the .csv
             while ((line = br.readLine()) != null) {
@@ -217,55 +218,92 @@ public class HEART {
                 if (count > 0) {
                     String idTag = server + "::" + os[1] + ":" + os[0];
                     String idTag2 = server + "::" + os[0];
-                    String batchSQL = "INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag + "', '" + server + "', '" + os[1] + "', '" + os[0] + "', '" + type + "')";
-                    String batchSQL2 = "INSERT INTO allDBPoints (idTag, server, pointNumber) VALUES ('" + idTag2 + "', '" + server + "', '" + os[0] + "')";
-                    statement.addBatch(batchSQL);  //  add query to batch sql statement
-                    statement.addBatch(batchSQL2);  //  add query to batch sql statement
+                    statement1.addBatch("IF NOT EXISTS (SELECT idTag FROM connections WHERE idTag = '" + idTag + "') BEGIN  INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag + "', '" + server + "', '" + os[1] + "', '" + os[0] + "', '" + type + "') END;");
                     System.out.println("OS [DB Point= " + os[0] + " , OS Number=" + os[1] + "]");
-                    //insertConnection(server, os[1], os[0], "OS DB");
+                    String pointNumber = os[0];
+                    String outstation = os[1];
+                    switch (pointNumber.charAt(0)) {
+                        case 'b':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Boolean', '" + outstation + "') END;");
+                            break;
+                        case 'B':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Boolean', '" + outstation + "') END;");
+                            break;
+                        case 'c':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Character String', '" + outstation + "') END;");
+                            break;
+                        case 'C':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Character String', '" + outstation + "') END;");
+                            break;
+                        case 'e':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Engineering Unit', '" + outstation + "') END;");
+                            break;
+                        case 'E':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Engineering Unit', '" + outstation + "') END;");
+                            break;
+                        case 's':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Schedule', '" + outstation + "') END;");
+                            break;
+                        case 'S':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Schedule', '" + outstation + "') END;");
+                            break;
+                        case 'p':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Profile', '" + outstation + "') END;");
+                            break;
+                        case 'P':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Profile', '" + outstation + "') END;");
+                            break;
+                        case 'm':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Multibit', '" + outstation + "') END;");
+                            break;
+                        case 'M':
+                            statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Multibit', '" + outstation + "') END;");
+                            break;
+                        default:
+                            break;
+                    }
                 } else {
                     System.out.println("Not Used [DB Point= " + os[0] + " , OS Number=" + os[1] + "]");
                 }
             }
-            statement.executeBatch();  //  execute batch sql statement
+            System.out.println("Database is now updating OS-DB connections...");
+            statement1.executeBatch();  //  execute batch sql statement
+            System.out.println("   ...complete");
+            System.out.println("Database is now updating DBPoints...");
+            statement2.executeBatch();  //  execute batch sql statement
+            System.out.println("   ...complete");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);
         }
     }
 
     /*
-     * method not used - was developed in to osMappingCSV
+     * method to add the OS-DB connections where the OS is used and add the DB point to SQLDB
      */
-    public void osMappingCSV2() {
-        String server = "Heathro3";
-        String csvFile = "C:\\HEART\\" + server + "\\ben_3_osmapping.csv";
+    public void dbUpdateCSV(String server) {
+        String csvFile = "C:\\HEART\\" + server + "\\db.csv";  //  .csv file location
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
+        String type = "OSDB";  //  type of connection to be inputted to SQLDB
         try {
             br = new BufferedReader(new FileReader(csvFile));
+            //  while there are rows/lines of the .csv
             while ((line = br.readLine()) != null) {
-
-                // use comma as separator
-                String[] os = line.split(cvsSplitBy);
-
-                System.out.println("OS [DB Point= " + os[0]
-                        + " , OS Number=" + os[1] + "]");
-                insertConnection(server, os[1], os[0], "OS DB");
-                addBDPoint(os[0], os[1], server);
+                String[] os = line.split(cvsSplitBy); //  split the .csv row by column in to list of strings
+                int count = 0;
+                // check to see whether the OS referenced in the mapping .csv exists in the SQLDB
+                String sql = "UPDATE allDBPoints SET pointName = '" + os[1] + "',"
+                        + " primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + os[0] + "' AND server = '" + server + "'),"
+                        + " secondaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + os[0] + "' AND server = '" + server + "'),"
+                        + " totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + os[0] + "' OR secondaryItem = '" + os[0] + "') AND server = '" + server + "')"
+                        + " WHERE pointNumber = '" + os[0] + "' AND server = '" + server + "'";
+                pst = conn.prepareStatement(sql);
+                pst.execute();
+                System.out.println("UPDATE allDBPoints SET pointName = '" + os[1] + "' WHERE pointNumber = '" + os[0] + "' AND server = '" + server + "'");
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
         }
     }
 
@@ -315,111 +353,12 @@ public class HEART {
             //JOptionPane.showMessageDialog(null, e);
         }
     }
-
-    /*
-     * method to update the mimic in SQLDB with number of connections
-     */
-    public void updateConnectionsMimic() {
-        try {
-            // Connection connection = new getConnection();
-            Statement statement = conn.createStatement();
-            String sql = "SELECT mimicName, server FROM allMimics";  // select mimics that are in SQLDB - these are to be updated
-            pst = conn.prepareStatement(sql);
-            rs = pst.executeQuery();
-            while (rs.next()) {
-                String itemName = rs.getString("mimicName");  //  get the name of mimic
-                String server = rs.getString("server");  //  get the server of mimc
-                System.out.println("Counting connections for " + itemName);
-                /*
-                 * batchSQL works by counting: 
-                 *  1) the number of times the mimic is a primary item for a connection
-                 *  2) the number of times the mimic is a secondary item for a connection
-                 *  3) the number of times the mimic appears for a connection
-                 * it then updates the mimic data with the number of connections
-                 */
-                String batchSQL = "UPDATE allMimics SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + server + "'), "
-                        + "secondaryCon = (SELECT COUNT (*) FROM connections WHERE secondaryItem = '" + itemName + "' AND server = '" + server + "'), "
-                        + "totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + itemName + "' OR secondaryItem = '" + itemName + "') AND server = '" + server + "') WHERE mimicName = '" + itemName + "' AND server = '" + server + "'";
-                statement.addBatch(batchSQL);  //  add query to batch sql statement  
-            }
-            System.out.println("Please wait whilst database is updated. This may take some time...");
-            statement.executeBatch();  //  execute the batch sql statement
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
-        }
-    }
-
-    /*
-     * method to update the mimic in SQLDB with number of connections
-     */
-    public void updateConnectionsDBPoint() {
-        try {
-            // Connection connection = new getConnection();
-            Statement statement = conn.createStatement();
-            String sql = "SELECT pointNumber, server FROM allDBPoints";  // select mimics that are in SQLDB - these are to be updated
-            pst = conn.prepareStatement(sql);
-            rs = pst.executeQuery();
-            while (rs.next()) {
-                String itemName = rs.getString("pointNumber");  //  get the name of mimic
-                String server = rs.getString("server");  //  get the server of mimc
-                System.out.println("Counting connections for " + itemName);
-                /*
-                 * batchSQL works by counting: 
-                 *  1) the number of times the DBPoint is a primary item for a connection
-                 *  2) the number of times the DBPoint is a secondary item for a connection
-                 *  3) the number of times the DBPoint appears for a connection
-                 * it then updates the mimic data with the number of connections
-                 */
-                String batchSQL = "UPDATE allDBPoints SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + server + "'), "
-                        + "secondaryCon = (SELECT COUNT (*) FROM connections WHERE secondaryItem = '" + itemName + "' AND server = '" + server + "'), "
-                        + "totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + itemName + "' OR secondaryItem = '" + itemName + "') AND server = '" + server + "') WHERE pointNumber = '" + itemName + "' AND server = '" + server + "'";
-                statement.addBatch(batchSQL);  //  add query to batch sql statement  
-            }
-            System.out.println("Please wait whilst database is updated. This may take some time...");
-            statement.executeBatch();  //  execute the batch sql statement
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
-        }
-    }
-
-    /*
-     * method to update the mimic in SQLDB with number of connections
-     */
-    public void updateConnectionsOutstation() {
-        try {
-            // Connection connection = new getConnection();
-            Statement statement = conn.createStatement();
-            String sql = "SELECT osNumber, server FROM allOutstations";  // select mimics that are in SQLDB - these are to be updated
-            pst = conn.prepareStatement(sql);
-            rs = pst.executeQuery();
-            while (rs.next()) {
-                String itemName = rs.getString("osNumber");  //  get the name of mimic
-                String server = rs.getString("server");  //  get the server of mimc
-                System.out.println("Counting connections for " + itemName);
-                /*
-                 * batchSQL works by counting: 
-                 *  1) the number of times the Outstation is a primary item for a connection
-                 *  2) the number of times the Outstation is a secondary item for a connection
-                 *  3) the number of times the Outstation appears for a connection
-                 * it then updates the mimic data with the number of connections
-                 */
-                String batchSQL = "UPDATE allOutstations SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + server + "'), "
-                        + "secondaryCon = (SELECT COUNT (*) FROM connections WHERE secondaryItem = '" + itemName + "' AND server = '" + server + "'), "
-                        + "totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + itemName + "' OR secondaryItem = '" + itemName + "') AND server = '" + server + "') WHERE osNumber = '" + itemName + "' AND server = '" + server + "'";
-                statement.addBatch(batchSQL);  //  add query to batch sql statement  
-            }
-            System.out.println("Please wait whilst database is updated. This may take some time...");
-            statement.executeBatch();  //  execute the batch sql statement
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
-        }
-    }
-
     /*
      * method to work out the type of a DBPoint based on the first letter
      * then call the method to add the DBPoint data to DBSQL
      */
-    public void addBDPoint(String s, String os, String server) {
+
+    public void addDBPoint(String s, String os, String server) {
         switch (s.charAt(0)) {
             case 'b':
                 insertDBPoint(server, s, "Boolean", os);
@@ -478,15 +417,114 @@ public class HEART {
     /*
      * method to add DBPoint data to DBSQL
      */
-    public void insertDBPoint(String server, String pointName, String type, String os) {
-        String idTag = server + "::" + pointName;
+    public void insertDBPoint(String server, String pointNumber, String type, String os) {
+        String idTag = server + "::" + pointNumber;
         try {
-            String sql = "INSERT INTO allDBPoints (idTag, server, pointName, type, outstation) VALUES ('" + idTag + "', '" + server + "', '" + pointName + "', '" + type + "', '" + os + "')";
+            String sql = "INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag + "', '" + server + "', '" + pointNumber + "', '" + type + "', '" + os + "')";
             pst = conn.prepareStatement(sql);
             pst.execute();
             //System.out.println("Database entry: " + server + " server, " + pointName + " Mimic, " + type + " LoC,  containDB points");
         } catch (Exception e) {
             // JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    /*
+     * method to update the mimic in SQLDB with number of connections
+     */
+    public void updateConnectionsMimic() {
+        try {
+            // Connection connection = new getConnection();
+            Statement statement = conn.createStatement();
+            String sql = "SELECT mimicName, server FROM allMimics";  // select mimics that are in SQLDB - these are to be updated
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+                String itemName = rs.getString("mimicName");  //  get the name of mimic
+                String server = rs.getString("server");  //  get the server of mimc
+                System.out.println("Counting connections for " + itemName);
+                /*
+                 * batchSQL works by counting: 
+                 *  1) the number of times the mimic is a primary item for a connection
+                 *  2) the number of times the mimic is a secondary item for a connection
+                 *  3) the number of times the mimic appears for a connection
+                 * it then updates the mimic data with the number of connections
+                 */
+                String batchSQL = "UPDATE allMimics SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + server + "'), "
+                        + "secondaryCon = (SELECT COUNT (*) FROM connections WHERE secondaryItem = '" + itemName + "' AND server = '" + server + "'), "
+                        + "totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + itemName + "' OR secondaryItem = '" + itemName + "') AND server = '" + server + "') WHERE mimicName = '" + itemName + "' AND server = '" + server + "'";
+                statement.addBatch(batchSQL);  //  add query to batch sql statement  
+            }
+            System.out.println("Please wait whilst database is updated. This may take some time...");
+            statement.executeBatch();  //  execute the batch sql statement
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    /*
+     * method to update the DBPoint in SQLDB with number of connections
+     */
+    public void updateConnectionsDBPoint() {
+        try {
+            // Connection connection = new getConnection();
+            Statement statement = conn.createStatement();
+            String sql = "SELECT pointNumber, server FROM allDBPoints";  // select mimics that are in SQLDB - these are to be updated
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+                String itemName = rs.getString("pointNumber");  //  get the name of mimic
+                String server = rs.getString("server");  //  get the server of mimc
+                System.out.println("Counting connections for " + itemName);
+                /*
+                 * batchSQL works by counting: 
+                 *  1) the number of times the DBPoint is a primary item for a connection
+                 *  2) the number of times the DBPoint is a secondary item for a connection
+                 *  3) the number of times the DBPoint appears for a connection
+                 * it then updates the mimic data with the number of connections
+                 */
+                String batchSQL = "UPDATE allDBPoints SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + server + "'), "
+                        + "secondaryCon = (SELECT COUNT (*) FROM connections WHERE secondaryItem = '" + itemName + "' AND server = '" + server + "'), "
+                        + "totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + itemName + "' OR secondaryItem = '" + itemName + "') AND server = '" + server + "') WHERE pointNumber = '" + itemName + "' AND server = '" + server + "'";
+                statement.addBatch(batchSQL);  //  add query to batch sql statement  
+            }
+            System.out.println("Please wait whilst database is updated. This may take some time...");
+            statement.executeBatch();  //  execute the batch sql statement
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    /*
+     * method to update the Outstation in SQLDB with number of connections
+     */
+    public void updateConnectionsOutstation() {
+        try {
+            // Connection connection = new getConnection();
+            Statement statement = conn.createStatement();
+            String sql = "SELECT osNumber, server FROM allOutstations";  // select mimics that are in SQLDB - these are to be updated
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+                String itemName = rs.getString("osNumber");  //  get the name of mimic
+                String server = rs.getString("server");  //  get the server of mimc
+                System.out.println("Counting connections for " + itemName);
+                /*
+                 * batchSQL works by counting: 
+                 *  1) the number of times the Outstation is a primary item for a connection
+                 *  2) the number of times the Outstation is a secondary item for a connection
+                 *  3) the number of times the Outstation appears for a connection
+                 * it then updates the mimic data with the number of connections
+                 */
+                String batchSQL = "UPDATE allOutstations SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + server + "'), "
+                        + "secondaryCon = (SELECT COUNT (*) FROM connections WHERE secondaryItem = '" + itemName + "' AND server = '" + server + "'), "
+                        + "totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + itemName + "' OR secondaryItem = '" + itemName + "') AND server = '" + server + "') WHERE osNumber = '" + itemName + "' AND server = '" + server + "'";
+                statement.addBatch(batchSQL);  //  add query to batch sql statement  
+            }
+            System.out.println("Please wait whilst database is updated. This may take some time...");
+            statement.executeBatch();  //  execute the batch sql statement
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
         }
     }
 
@@ -519,7 +557,7 @@ public class HEART {
         }
     }
 
-    public void scanMimic(String fileline) {
+    public void scanMimic(String filename, String fileline) {
         //  replace all symbols with a space, other than comment symbol !
         fileline.replaceAll("[^a-zA-z0-9!]", " ");
 
@@ -583,7 +621,7 @@ public class HEART {
                  System.out.println("OS: " + s);
                  }*/ else if (Character.isDigit(s.charAt(1))) {
                     if (isDPBPoint(s)) {
-                        addBDPoint(s, "", server);
+                        addDBPoint(s + " Mimic", "Mimic: " + filename, server);
                     }
                 } else {
 
@@ -610,7 +648,7 @@ public class HEART {
                 while ((sCurrentLine = br.readLine()) != null) {
                     // Check that the string is not empty
                     if (sCurrentLine.trim().length() != 0) {
-                        scanMimic(sCurrentLine);
+                        scanMimic(filename, sCurrentLine);
                         linesOfCode++; // increment the lines of code by 1
                     }
                 }
