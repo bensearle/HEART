@@ -66,11 +66,8 @@ public class HEART {
     }
 
     public static String[] fileNames(String directoryPath) {
-
         File dir = new File(directoryPath);
-
         Collection<String> files = new ArrayList<String>();
-
         if (dir.isDirectory()) {
             File[] listFiles = dir.listFiles();
 
@@ -80,7 +77,6 @@ public class HEART {
                 }
             }
         }
-
         return files.toArray(new String[]{});
     }
 
@@ -149,7 +145,6 @@ public class HEART {
     }));
 
     public void addOutstation(String server) {
-
         String csvFile = "C:\\HEART\\" + server + "\\osconfig.csv";
         BufferedReader br = null;
         String line = "";
@@ -168,7 +163,6 @@ public class HEART {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);
         }
-
         try {
             br = new BufferedReader(new FileReader(csvFile));
             while ((line = br.readLine()) != null) {
@@ -178,7 +172,6 @@ public class HEART {
                         + " , Os Number=" + os[1] + "]");
                 //insertConnection(server, primary, secondary, type);
             }
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -372,9 +365,9 @@ public class HEART {
                 System.out.println("Counting connections for " + itemName);
                 /*
                  * batchSQL works by counting: 
-                 *  1) the number of times the mimic is a primary item for a connection
-                 *  2) the number of times the mimic is a secondary item for a connection
-                 *  3) the number of times the mimic appears for a connection
+                 *  1) the number of times the DBPoint is a primary item for a connection
+                 *  2) the number of times the DBPoint is a secondary item for a connection
+                 *  3) the number of times the DBPoint appears for a connection
                  * it then updates the mimic data with the number of connections
                  */
                 String batchSQL = "UPDATE allDBPoints SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + server + "'), "
@@ -405,9 +398,9 @@ public class HEART {
                 System.out.println("Counting connections for " + itemName);
                 /*
                  * batchSQL works by counting: 
-                 *  1) the number of times the mimic is a primary item for a connection
-                 *  2) the number of times the mimic is a secondary item for a connection
-                 *  3) the number of times the mimic appears for a connection
+                 *  1) the number of times the Outstation is a primary item for a connection
+                 *  2) the number of times the Outstation is a secondary item for a connection
+                 *  3) the number of times the Outstation appears for a connection
                  * it then updates the mimic data with the number of connections
                  */
                 String batchSQL = "UPDATE allOutstations SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + server + "'), "
