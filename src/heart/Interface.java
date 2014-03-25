@@ -24,7 +24,7 @@ Connection conn = null;
     public Interface() {
         initComponents();
          conn = JavaConnect.ConnectDB();  //  get the connection url
-         labelSelected.setText("HV_2_SUB_Stations");
+         labelSelected.setText("BROWSER");
          updateTablePrimary();
          updateTableSecondary();
          updateTableSelected();

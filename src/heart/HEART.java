@@ -81,32 +81,49 @@ public class HEART {
     }
 
     public void doOrder() {
+        //  add mimics
+        addMimics("heathrow", "BROWSER");
+        addMimics("heathro2", "BROWSER");
+        addMimics("heathro3", "BROWSER");
+        addMimics("heathro4", "BROWSER");
+        addMimics("heathro5", "BROWSER");
+        System.out.println("********** addMimics **********");
         //  add outstations
         addOutstation("heathrow");
         addOutstation("heathro2");
         addOutstation("heathro3");
         addOutstation("heathro4");
         addOutstation("heathro5");
+        System.out.println("********** addOutstation **********");
         //  add db points used by outstations
         osMappingCSV("heathrow");
         osMappingCSV("heathro2");
         osMappingCSV("heathro3");
         osMappingCSV("heathro4");
         osMappingCSV("heathro5");
+        System.out.println("********** osMappingCSV **********");
         //
         dbUpdateCSV("heathrow");
         dbUpdateCSV("heathro2");
         dbUpdateCSV("heathro3");
         dbUpdateCSV("heathro4");
         dbUpdateCSV("heathro5");
+        System.out.println("********** dbUpdateCSV **********");
+
+        updateConnectionsMimic();
+        System.out.println("********** updateConnectionsMimic **********");
+        updateConnectionsOutstation();
+        System.out.println("********** updateConnectionsOutstations **********");
+        updateConnectionsDBPoint();
+        System.out.println("********** updateConnectionsDBPoint **********");
     }
 
     public void start() {
         conn = JavaConnect.ConnectDB();  //  get the connection url
         mimicReadToDo = new String[10000];  //  maximum number of mimics
-        server = "ALL";
-        mimicReadToDo[0] = "MAIN_CB";  //  starting mimics  
-        filepath = "C:\\HEART\\" + server + "\\Mimics\\";
+        //server = "ALL";
+        // mimicReadToDo[0] = "MAIN_CB";  //  starting mimics  
+        //filepath = "C:\\HEART\\" + server + "\\Mimics\\";
 
         // File[] fileList = new File(System.getProperty("C:\\HEART\\ALL\\Mimics\\")).listFiles();
         String[] fileName = fileNames("C:\\HEART\\ALL\\Mimics\\");
@@ -115,22 +132,56 @@ public class HEART {
         //   mimicReadToDo[0] = startMimic;
         mimicToDoLength = 1;
         mimicDoneLength = 0;
-
+doOrder();
         /* print stream to pop up window
          final JDialog dialog = new JDialog();  
          dialog.setVisible(true);  
          dialog.setModal(true);  
          dialog.add(new JTextArea().append(currentMimic));*/
 
-
         //addOutstation("heathro3");
         //osMappingCSV("heathro3");
-       dbUpdateCSV("heathro3");
-              System.out.println("***************************************************************");
-       // dbUpdateCSV("heathro3");
+        //dbUpdateCSV("heathro3");
+        //System.out.println("***************************************************************");
+        // dbUpdateCSV("heathro3");
         //    currentMimic = "BEN_MIMIC_TEST";
         //while (mimicToDoLength != mimicDoneLength) {
        /* while (mimicDoneLength < 2788) {
+         // reset counting variables
+         numberObject = 0;
+         numberObjectShape = 0;
+         numberTotalShapes = 0;
+         numberVar = 0;
+         numberDBPoint = 0;
+         linesOfCode = 0;
+         numberBegin = 0;
+         numberEnd = 0;
+         insideObject = false;
+         insideObjectShape = false;
+         comment = false;
+
+         //  currentMimic = mimicReadToDo[mimicDoneLength];
+         currentMimic = fileName[mimicDoneLength];
+         readMimic(currentMimic);
+
+         // at this point insert to database the mimic name along with number of objects, lines of codes, etc
+         //System.out.println(currentMimic + " has " + linesOfCode + " lines of code, " + numberObject + " object, " + numberObjectShape + " shapeobject, " + numberTotalShapes + " total shapes, " + numberBegin + " begin, " + numberEnd + " end, ");
+         insertMimic(server, currentMimic, linesOfCode, numberObject, numberObjectShape, numberTotalShapes, numberBegin, numberVar, numberDBPoint);
+
+         mimicDoneLength++;
+         // System.out.println("DONE: "+mimicDoneLength);
+         }*/
+        //updateConnectionsMimic();
+    }
+
+    public void addMimics(String server, String startMimic) {
+        mimicReadToDo = new String[10000];  //  maximum number of mimics
+        filepath = "C:\\HEART\\" + server + "\\Mimics\\";
+        mimicReadToDo[0] = startMimic;
+        mimicToDoLength = 1;
+        mimicDoneLength = 0;
+
+        while (mimicToDoLength != mimicDoneLength) {
             // reset counting variables
             numberObject = 0;
             numberObjectShape = 0;
@@ -144,9 +195,8 @@ public class HEART {
             insideObjectShape = false;
             comment = false;
 
-            //  currentMimic = mimicReadToDo[mimicDoneLength];
-            currentMimic = fileName[mimicDoneLength];
-            readMimic(currentMimic);
+            currentMimic = mimicReadToDo[mimicDoneLength];
+            readMimic(currentMimic, server);
 
             // at this point insert to database the mimic name along with number of objects, lines of codes, etc
             //System.out.println(currentMimic + " has " + linesOfCode + " lines of code, " + numberObject + " object, " + numberObjectShape + " shapeobject, " + numberTotalShapes + " total shapes, " + numberBegin + " begin, " + numberEnd + " end, ");
@@ -154,8 +204,8 @@ public class HEART {
 
             mimicDoneLength++;
             // System.out.println("DONE: "+mimicDoneLength);
-        }*/
-        //updateConnectionsMimic();
+        }
+        updateConnectionsMimic();
     }
     private static final Set<String> shapeArray = new HashSet<String>(Arrays.asList(
             new String[]{
@@ -184,7 +234,7 @@ public class HEART {
             }
             statement.executeBatch();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
+            //JOptionPane.showMessageDialog(null, e);
         }
         //System.out.println("Done");
     }
@@ -269,23 +319,19 @@ public class HEART {
             System.out.println("Database is now updating OS-DB connections...");
             statement1.executeBatch();  //  execute batch sql statement
             System.out.println("   ...complete");
-            System.out.println("Database is now updating DBPoints...");
-            statement2.executeBatch();  //  execute batch sql statement
-            System.out.println("   ...complete");
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
+            //JOptionPane.showMessageDialog(null, e);
         }
     }
 
     /*
-     * method to add the OS-DB connections where the OS is used and add the DB point to SQLDB
+     * method to update DBPoints, name and number of connections
      */
     public void dbUpdateCSV(String server) {
         String csvFile = "C:\\HEART\\" + server + "\\db.csv";  //  .csv file location
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
-        String type = "OSDB";  //  type of connection to be inputted to SQLDB
         try {
             br = new BufferedReader(new FileReader(csvFile));
             //  while there are rows/lines of the .csv
@@ -303,7 +349,7 @@ public class HEART {
                 System.out.println("UPDATE allDBPoints SET pointName = '" + os[1] + "' WHERE pointNumber = '" + os[0] + "' AND server = '" + server + "'");
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
+            //JOptionPane.showMessageDialog(null, e);
         }
     }
 
@@ -317,7 +363,7 @@ public class HEART {
             pst.execute();
             //System.out.println("Duplicates have been removed from the database");
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
+            //JOptionPane.showMessageDialog(null, e);
         }
     }
 
@@ -441,7 +487,7 @@ public class HEART {
             rs = pst.executeQuery();
             while (rs.next()) {
                 String itemName = rs.getString("mimicName");  //  get the name of mimic
-                String server = rs.getString("server");  //  get the server of mimc
+                String itemServer = rs.getString("server");  //  get the server of mimc
                 System.out.println("Counting connections for " + itemName);
                 /*
                  * batchSQL works by counting: 
@@ -450,15 +496,16 @@ public class HEART {
                  *  3) the number of times the mimic appears for a connection
                  * it then updates the mimic data with the number of connections
                  */
-                String batchSQL = "UPDATE allMimics SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + server + "'), "
-                        + "secondaryCon = (SELECT COUNT (*) FROM connections WHERE secondaryItem = '" + itemName + "' AND server = '" + server + "'), "
-                        + "totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + itemName + "' OR secondaryItem = '" + itemName + "') AND server = '" + server + "') WHERE mimicName = '" + itemName + "' AND server = '" + server + "'";
+                String batchSQL = "UPDATE allMimics SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + itemServer + "'), "
+                        + "secondaryCon = (SELECT COUNT (*) FROM connections WHERE secondaryItem = '" + itemName + "' AND server = '" + itemServer + "'), "
+                        + "totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + itemName + "' OR secondaryItem = '" + itemName + "') AND server = '" + itemServer + "') "
+                        + "WHERE mimicName = '" + itemName + "' AND server = '" + itemServer + "';";
                 statement.addBatch(batchSQL);  //  add query to batch sql statement  
             }
             System.out.println("Please wait whilst database is updated. This may take some time...");
             statement.executeBatch();  //  execute the batch sql statement
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
+            //JOptionPane.showMessageDialog(null, e);
         }
     }
 
@@ -491,7 +538,7 @@ public class HEART {
             System.out.println("Please wait whilst database is updated. This may take some time...");
             statement.executeBatch();  //  execute the batch sql statement
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
+            //JOptionPane.showMessageDialog(null, e);
         }
     }
 
@@ -524,7 +571,7 @@ public class HEART {
             System.out.println("Please wait whilst database is updated. This may take some time...");
             statement.executeBatch();  //  execute the batch sql statement
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
+            //JOptionPane.showMessageDialog(null, e);
         }
     }
 
@@ -557,7 +604,7 @@ public class HEART {
         }
     }
 
-    public void scanMimic(String filename, String fileline) {
+    public void scanMimic(String filename, String fileline, String server) {
         //  replace all symbols with a space, other than comment symbol !
         fileline.replaceAll("[^a-zA-z0-9!]", " ");
 
@@ -586,21 +633,25 @@ public class HEART {
             if (!comment) {
                 if (s.length() == 1) {
                 } else if (s.equalsIgnoreCase("load")) {
-                    int count = mimicToDoLength;
+                    int count = mimicToDoLength - 1;
                     String foundMimic = sc.next();
                     while (count >= 0) {
-                        //  compare the found mimic with what is already in the ToDo list
-                        if (foundMimic.equals(mimicReadToDo[count])) {
+                        //  if the mimic is not in the ToDo list, add it
+                        if (count == 0) {
+                            if (foundMimic.equals(mimicReadToDo[count])) {
+                                count--;  //  stop the while loop
+                            } else {
+                                mimicReadToDo[mimicToDoLength] = foundMimic;
+                                mimicToDoLength++;  //  the ToDo list increases by 1
+                                count--;
+                            }
+                        } //  compare the found mimic with what is already in the ToDo list
+                        else if (foundMimic.equals(mimicReadToDo[count])) {
                             count = -1;
                         } else {
                             count--;
                         }
-                        //  if the mimic is not in the ToDo list, add it
-                        if (count == 0) {
-                            mimicReadToDo[mimicToDoLength] = foundMimic;
-                            mimicToDoLength++;  //  the ToDo list increases by 1
-                            count--;  //  stop the while loop
-                        }
+
                     }
                     //System.out.println(currentMimic + " contains " + foundMimic);
                     // commented out for testing other parts
@@ -637,7 +688,7 @@ public class HEART {
         }
     }
 
-    public void readMimic(String filename) {
+    public void readMimic(String filename, String server) {
         BufferedReader br = null;
         File file = new File(filepath, filename);
         if (file.exists()) {
@@ -648,7 +699,7 @@ public class HEART {
                 while ((sCurrentLine = br.readLine()) != null) {
                     // Check that the string is not empty
                     if (sCurrentLine.trim().length() != 0) {
-                        scanMimic(filename, sCurrentLine);
+                        scanMimic(filename, sCurrentLine, server);
                         linesOfCode++; // increment the lines of code by 1
                     }
                 }
@@ -666,6 +717,25 @@ public class HEART {
             }
         } else {
             //System.out.println("Cannot Find: " + filename);
+        }
+    }
+
+    /*
+     * method to delete all data in the SQLDB
+     */
+    public void emptyDatabase() {
+        try {
+            Statement statement = conn.createStatement();
+            statement.addBatch("DELETE FROM allMimics;");  //  add query to batch sql statement  
+            statement.addBatch("DELETE FROM allAlarms;");  //  add query to batch sql statement  
+            statement.addBatch("DELETE FROM allDBPoints;");  //  add query to batch sql statement  
+            statement.addBatch("DELETE FROM allMimics;");  //  add query to batch sql statement
+            statement.addBatch("DELETE FROM allOutstations;");  //  add query to batch sql statement  
+            statement.addBatch("DELETE FROM connections;");  //  add query to batch sql statement  
+            System.out.println("Everything deleted");
+            statement.executeBatch();  //  execute the batch sql statement
+        } catch (Exception e) {
+            //JOptionPane.showMessageDialog(null, e);
         }
     }
 }
