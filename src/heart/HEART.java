@@ -62,7 +62,7 @@ public class HEART {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        new HEART().start();
+        new HEART().doOrder();
     }
 
     public static String[] fileNames(String directoryPath) {
@@ -81,6 +81,7 @@ public class HEART {
     }
 
     public void doOrder() {
+        conn = JavaConnect.ConnectDB();
         //  add mimics
         addMimics("heathrow", "BROWSER");
         addMimics("heathro2", "BROWSER");
@@ -102,78 +103,35 @@ public class HEART {
         osMappingCSV("heathro4");
         osMappingCSV("heathro5");
         System.out.println("********** osMappingCSV **********");
-        //
+        //  update db points with name
         dbUpdateCSV("heathrow");
         dbUpdateCSV("heathro2");
         dbUpdateCSV("heathro3");
         dbUpdateCSV("heathro4");
         dbUpdateCSV("heathro5");
         System.out.println("********** dbUpdateCSV **********");
-
+        // add alarms that are mapped to db points
+        alarmCSV("heathrow");
+        alarmCSV("heathro1");
+        alarmCSV("heathro2");
+        alarmCSV("heathro3");
+        alarmCSV("heathro4");
+        alarmCSV("heathro5");
+        System.out.println("********** alarmCSV **********");
+        //  update all items with the number of connections they have
         updateConnectionsMimic();
         System.out.println("********** updateConnectionsMimic **********");
         updateConnectionsOutstation();
         System.out.println("********** updateConnectionsOutstations **********");
         updateConnectionsDBPoint();
         System.out.println("********** updateConnectionsDBPoint **********");
+        updateConnectionsAlarm();
+        System.out.println("********** updateConnectionsAlarm **********");
     }
-
-    public void start() {
-        conn = JavaConnect.ConnectDB();  //  get the connection url
-        mimicReadToDo = new String[10000];  //  maximum number of mimics
-        //server = "ALL";
-        // mimicReadToDo[0] = "MAIN_CB";  //  starting mimics  
-        //filepath = "C:\\HEART\\" + server + "\\Mimics\\";
-
-        // File[] fileList = new File(System.getProperty("C:\\HEART\\ALL\\Mimics\\")).listFiles();
-        String[] fileName = fileNames("C:\\HEART\\ALL\\Mimics\\");
-        //2788
-
-        //   mimicReadToDo[0] = startMimic;
-        mimicToDoLength = 1;
-        mimicDoneLength = 0;
-doOrder();
-        /* print stream to pop up window
-         final JDialog dialog = new JDialog();  
-         dialog.setVisible(true);  
-         dialog.setModal(true);  
-         dialog.add(new JTextArea().append(currentMimic));*/
-
-        //addOutstation("heathro3");
-        //osMappingCSV("heathro3");
-        //dbUpdateCSV("heathro3");
-        //System.out.println("***************************************************************");
-        // dbUpdateCSV("heathro3");
-        //    currentMimic = "BEN_MIMIC_TEST";
-        //while (mimicToDoLength != mimicDoneLength) {
-       /* while (mimicDoneLength < 2788) {
-         // reset counting variables
-         numberObject = 0;
-         numberObjectShape = 0;
-         numberTotalShapes = 0;
-         numberVar = 0;
-         numberDBPoint = 0;
-         linesOfCode = 0;
-         numberBegin = 0;
-         numberEnd = 0;
-         insideObject = false;
-         insideObjectShape = false;
-         comment = false;
-
-         //  currentMimic = mimicReadToDo[mimicDoneLength];
-         currentMimic = fileName[mimicDoneLength];
-         readMimic(currentMimic);
-
-         // at this point insert to database the mimic name along with number of objects, lines of codes, etc
-         //System.out.println(currentMimic + " has " + linesOfCode + " lines of code, " + numberObject + " object, " + numberObjectShape + " shapeobject, " + numberTotalShapes + " total shapes, " + numberBegin + " begin, " + numberEnd + " end, ");
-         insertMimic(server, currentMimic, linesOfCode, numberObject, numberObjectShape, numberTotalShapes, numberBegin, numberVar, numberDBPoint);
-
-         mimicDoneLength++;
-         // System.out.println("DONE: "+mimicDoneLength);
-         }*/
-        //updateConnectionsMimic();
-    }
-
+    
+    /*
+     * method to add used mimcs to the SQLDB
+     */
     public void addMimics(String server, String startMimic) {
         mimicReadToDo = new String[10000];  //  maximum number of mimics
         filepath = "C:\\HEART\\" + server + "\\Mimics\\";
@@ -207,6 +165,7 @@ doOrder();
         }
         updateConnectionsMimic();
     }
+    
     private static final Set<String> shapeArray = new HashSet<String>(Arrays.asList(
             new String[]{
         "rect",
@@ -321,6 +280,53 @@ doOrder();
             System.out.println("   ...complete");
         } catch (Exception e) {
             //JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    /*
+     * method to add the OS-DB connections where the OS is used and add the DB point to SQLDB
+     */
+    public void alarmCSV(String server) {
+        String csvFile = "C:\\HEART\\" + server + "\\alarm.csv";  //  .csv file location
+        BufferedReader br = null;
+        String line = "";
+        String cvsSplitBy = ",";
+        String type = "Alarm";  //  type of connection to be inputted to SQLDB
+        try {
+            Statement statement1 = conn.createStatement();
+            Statement statement2 = conn.createStatement();
+            br = new BufferedReader(new FileReader(csvFile));
+            //  while there are rows/lines of the .csv
+            while ((line = br.readLine()) != null) {
+                String[] os = line.split(cvsSplitBy); //  split the .csv row by column in to list of strings
+                int count = 0;
+                // check to see whether the OS referenced in the mapping .csv exists in the SQLDB
+                String sql = "SELECT COUNT (*) AS count FROM allDBPoints WHERE pointNumber = '" + os[0] + "' AND server = '" + server + "'";
+                pst = conn.prepareStatement(sql);
+                rs = pst.executeQuery();
+                // while statement to check the count until it goes above 1 (until an OS is found)
+                while (rs.next() && count == 0) {
+                    count = rs.getInt("count");  //  create a string for each of the names in the database
+                }
+                //  if the OS is found then add the OS-DB connection to SQLDB and add basic DB information to SQLDB 
+                if (count > 0) {
+                    String idTag = server + "::" + os[0] + ":" + os[3];
+                    String idTag2 = server + "::" + os[3];
+                    statement1.addBatch("IF NOT EXISTS (SELECT idTag FROM connections WHERE idTag = '" + idTag + "') BEGIN  INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag + "', '" + server + "', '" + os[0] + "', '" + os[3] + "', '" + type + "') END;");
+                    statement2.addBatch("IF NOT EXISTS (SELECT idTag FROM allAlarms WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allAlarms (idTag, server, alarmName, dbPoint) VALUES ('" + idTag2 + "', '" + server + "', '" + os[3] + "', '" + os[0] + "') END;");
+                    System.out.println("Alarm [DBPoint = " + os[0] + ", Name =" + os[3] + "]");
+                } else {
+                    System.out.println("Not Used [Alarm = " + os[3] + "]");
+                }
+            }
+            System.out.println("Database is now updating alarm connections...");
+            statement1.executeBatch();  //  execute batch sql statement
+            System.out.println("   ...complete");
+            System.out.println("Database is now updating allAlarms ...");
+            statement2.executeBatch();  //  execute batch sql statement
+            System.out.println("   ...complete");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
         }
     }
 
@@ -570,8 +576,43 @@ doOrder();
             }
             System.out.println("Please wait whilst database is updated. This may take some time...");
             statement.executeBatch();  //  execute the batch sql statement
+            System.out.println("   ... complete");
         } catch (Exception e) {
             //JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    /*
+     * method to update the Outstation in SQLDB with number of connections
+     */
+    public void updateConnectionsAlarm() {
+        try {
+            // Connection connection = new getConnection();
+            Statement statement = conn.createStatement();
+            String sql = "SELECT alarmName, server FROM allAlarms";  // select mimics that are in SQLDB - these are to be updated
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+                String itemName = rs.getString("alarmName");  //  get the name of mimic
+                String itemServer = rs.getString("server");  //  get the server of mimc
+                System.out.println("Counting connections for " + itemName);
+                /*
+                 * batchSQL works by counting: 
+                 *  1) the number of times the Outstation is a primary item for a connection
+                 *  2) the number of times the Outstation is a secondary item for a connection
+                 *  3) the number of times the Outstation appears for a connection
+                 * it then updates the mimic data with the number of connections
+                 */
+                String batchSQL = "UPDATE allAlarms SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + itemServer + "'), "
+                        + "secondaryCon = (SELECT COUNT (*) FROM connections WHERE secondaryItem = '" + itemName + "' AND server = '" + itemServer + "'), "
+                        + "totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + itemName + "' OR secondaryItem = '" + itemName + "') AND server = '" + itemServer + "') WHERE alarmName = '" + itemName + "' AND server = '" + itemServer + "';";
+                statement.addBatch(batchSQL);  //  add query to batch sql statement  
+            }
+            System.out.println("Please wait whilst database is updated. This may take some time...");
+            statement.executeBatch();  //  execute the batch sql statement
+            System.out.println("   ... complete");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
         }
     }
 
