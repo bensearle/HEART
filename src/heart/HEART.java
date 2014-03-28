@@ -62,7 +62,8 @@ public class HEART {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        new HEART().doOrder();
+        //new HEART().doOrder();
+        new HEART().addAllMimcs();
     }
 
     public static String[] fileNames(String directoryPath) {
@@ -128,7 +129,60 @@ public class HEART {
         updateConnectionsAlarm();
         System.out.println("********** updateConnectionsAlarm **********");
     }
-    
+
+    public void addAllMimcs() {
+        conn = JavaConnect.ConnectDB();  //  get the connection url
+         mimicReadToDo = new String[10000];  //  maximum number of mimics
+         server = "ALL";
+         mimicReadToDo[0] = "MAIN_CB";  //  starting mimics  
+         filepath = "C:\\HEART\\" + server + "\\Mimics\\";
+ 
+         // File[] fileList = new File(System.getProperty("C:\\HEART\\ALL\\Mimics\\")).listFiles();
+         String[] fileName = fileNames("C:\\HEART\\ALL\\Mimics\\");
+         //2788
+ 
+         //   mimicReadToDo[0] = startMimic;
+         mimicToDoLength = 1;
+         mimicDoneLength = 0;
+ 
+         /* print stream to pop up window
+          final JDialog dialog = new JDialog();  
+          dialog.setVisible(true);  
+          dialog.setModal(true);  
+          dialog.add(new JTextArea().append(currentMimic));*/
+ 
+ 
+ 
+         //    currentMimic = "BEN_MIMIC_TEST";
+        // while (mimicToDoLength != mimicDoneLength) {
+         while (mimicDoneLength < 2788) {
+             // reset counting variables
+             numberObject = 0;
+             numberObjectShape = 0;
+             numberTotalShapes = 0;
+             numberVar = 0;
+             numberDBPoint = 0;
+             linesOfCode = 0;
+             numberBegin = 0;
+             numberEnd = 0;
+             insideObject = false;
+             insideObjectShape = false;
+             comment = false;
+ 
+             //  currentMimic = mimicReadToDo[mimicDoneLength];
+             currentMimic = fileName[mimicDoneLength];
+             readMimic(currentMimic, server);
+ 
+             // at this point insert to database the mimic name along with number of objects, lines of codes, etc
+             //System.out.println(currentMimic + " has " + linesOfCode + " lines of code, " + numberObject + " object, " + numberObjectShape + " shapeobject, " + numberTotalShapes + " total shapes, " + numberBegin + " begin, " + numberEnd + " end, ");
+             insertMimic(server, currentMimic, linesOfCode, numberObject, numberObjectShape, numberTotalShapes, numberBegin, numberVar, numberDBPoint);
+              System.out.println("DONE: "+currentMimic);
+
+             mimicDoneLength++;
+         }
+         //updateConnectionsMimic();
+    }
+
     /*
      * method to add used mimcs to the SQLDB
      */
@@ -165,16 +219,16 @@ public class HEART {
         }
         updateConnectionsMimic();
     }
-    
+
     private static final Set<String> shapeArray = new HashSet<String>(Arrays.asList(
             new String[]{
-        "rect",
-        "rotrect",
-        "polygon",
-        "fill",
-        "pie",
-        "arc"
-    }));
+                "rect",
+                "rotrect",
+                "polygon",
+                "fill",
+                "pie",
+                "arc"
+            }));
 
     public void addOutstation(String server) {
         String csvFile = "C:\\HEART\\" + server + "\\osconfig.csv";

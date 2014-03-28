@@ -1,0 +1,80 @@
+<tree>
+ <declarations>
+ <attributeDecl name="name" type="String"/>
+ </declarations>
+<branch>
+<attribute name="name" value="BROWSER"/>
+<leaf>
+<attribute name="name" value="MGL_BUTTONS"/>
+</leaf>
+<leaf>
+<attribute name="name" value="MGL_DRAWLIB"/>
+</leaf>
+<leaf>
+<attribute name="name" value="MGL_util"/>
+</leaf>
+<branch>
+<attribute name="name" value="MX_SYS_IPOBJS"/>
+<leaf>
+<attribute name="name" value="cmdparser_libutil"/>
+</leaf>
+<branch>
+<attribute name="name" value="cust_objs"/>
+<leaf>
+<attribute name="name" value="cust_name"/>
+</leaf>
+<leaf>
+<attribute name="name" value="libutil"/>
+</leaf>
+<branch>
+<attribute name="name" value="mimic_libutil"/>
+<leaf>
+<attribute name="name" value="graph_axes_libutil"/>
+</leaf>
+<leaf>
+<attribute name="name" value="libutil"/>
+</leaf>
+<leaf>
+<attribute name="name" value="mimic_analogue_libutil"/>
+</leaf>
+<leaf>
+<attribute name="name" value="mimic_graphs_libutil"/>
+</leaf>
+<leaf>
+<attribute name="name" value="mimic_plant_libutil"/>
+</leaf>
+<leaf>
+<attribute name="name" value="mimic_single_libutil"/>
+</leaf>
+<leaf>
+<attribute name="name" value="mimic_valve_libutil"/>
+</leaf>
+</branch>
+</branch>
+<leaf>
+<attribute name="name" value="libutil"/>
+</leaf>
+<leaf>
+<attribute name="name" value="mx_sys_iptyps"/>
+</leaf>
+<leaf>
+<attribute name="name" value="scope_com_libutil"/>
+</leaf>
+</branch>
+<branch>
+<attribute name="name" value="MX_TABLE_L"/>
+<leaf>
+<attribute name="name" value="mx_common_l"/>
+</leaf>
+<leaf>
+<attribute name="name" value="mx_dsn_info"/>
+</leaf>
+<leaf>
+<attribute name="name" value="mx_gui_l"/>
+</leaf>
+<leaf>
+<attribute name="name" value="sources"/>
+</leaf>
+</branch>
+</branch>
+</tree>
