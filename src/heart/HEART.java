@@ -63,9 +63,15 @@ public class HEART {
     public static void main(String[] args) {
         // TODO code application logic here
         //new HEART().doOrder();
-        new HEART().addAllMimcs();
+        new HEART().oneOff();
     }
 
+    public void oneOff(){
+        conn = JavaConnect.ConnectDB();
+        addOutstation("heathro3");
+        addOutstation("heathro4");
+    }
+    
     public static String[] fileNames(String directoryPath) {
         File dir = new File(directoryPath);
         Collection<String> files = new ArrayList<String>();
@@ -242,12 +248,18 @@ public class HEART {
                 String[] os = line.split(cvsSplitBy); //  split the .csv row in to columns
                 int count = 0;
                 String idTag = server + "::" + os[1];
-                String batchSQL = "INSERT INTO allOutstations (idTag, server, OSName, OSNumber) VALUES ('" + idTag + "', '" + server + "', '" + os[0] + "', '" + os[1] + "')";
+                String idTag2 = server + "::os:" + os[1];
+                String batchSQL = "IF NOT EXISTS (SELECT idTag FROM allOutstations WHERE idTag = '" + idTag + "') BEGIN INSERT INTO allOutstations (idTag, server, OSName, OSNumber) VALUES ('" + idTag + "', '" + server + "', '" + os[0] + "', '" + os[1] + "') END;";
+                String batchSQL2 = "IF NOT EXISTS (SELECT idTag FROM connections WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag2 + "', '" + server + "', 'os', '" + os[1] + "', 'OS') END;";                
                 statement.addBatch(batchSQL);
+                statement.addBatch(batchSQL2);
+                System.out.println(os[1]);
             }
+            System.out.println("start");
             statement.executeBatch();
+            System.out.println("finish");
         } catch (Exception e) {
-            //JOptionPane.showMessageDialog(null, e);
+            JOptionPane.showMessageDialog(null, e);
         }
         //System.out.println("Done");
     }

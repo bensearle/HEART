@@ -27,57 +27,53 @@ public class CreateTree {
 
     public static void main(String[] args) {
         // TODO code application logic here
-        new CreateTree().start("BROWSER", "heathro5");
+        new CreateTree().start();
     }
 
-    public void start(String item, String server) {
+    public void start() {
         conn = JavaConnect.ConnectDB();
         System.out.println("<tree>\n"
                 + " <declarations>\n"
                 + " <attributeDecl name=\"name\" type=\"String\"/>\n"
-                + " </declarations>\n");
-        getBranch(item, server);
+                + " </declarations>");
+        System.out.println("<branch>\n"
+                + "<attribute name=\"name\" value=\"HEART\"/>");
+        //  tree for heathrow server
+        System.out.println("<branch>\n"
+                + "<attribute name=\"name\" value=\"heathrow\"/>");
+        getBranch("BROWSER", "heathrow");
+        getBranch("os", "heathrow");
+        System.out.println("</branch>");
+        //  tree for heathro2 server
+        System.out.println("<branch>\n"
+                + "<attribute name=\"name\" value=\"heathro2\"/>");
+        getBranch("BROWSER", "heathro2");
+        getBranch("os", "heathro2");
+        System.out.println("</branch>");
+        //  tree for heathro3 server
+        System.out.println("<branch>\n"
+                + "<attribute name=\"name\" value=\"heathro3\"/>");
+        getBranch("BROWSER", "heathro3");
+        getBranch("os", "heathro3");
+        System.out.println("</branch>");
+        //  tree for heathro4 server
+        System.out.println("<branch>\n"
+                + "<attribute name=\"name\" value=\"heathro4\"/>");
+        getBranch("BROWSER", "heathro4");
+        getBranch("os", "heathro4");
+        System.out.println("</branch>");
+        //  tree for heathro5 server
+        System.out.println("<branch>\n"
+                + "<attribute name=\"name\" value=\"heathro5\"/>");
+        getBranch("BROWSER", "heathro5");
+        getBranch("os", "heathro5");
+        System.out.println("</branch>");
+        System.out.println("</branch>");
         System.out.println("</tree>");
     }
 
-    public void removeData() {
-        try {
-            //String sql = "SELECT * INTO tree FROM connections";
-            String sql = "DELETE FROM tree";
-            pst = conn.prepareStatement(sql);
-            pst.execute();
-            System.out.println("Data Removed");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
-        }
-    }
-
-    public void addData() {
-        try {
-            //String sql = "SELECT * INTO tree FROM connections";
-            String sql = "INSERT INTO tree SELECT * FROM connections";
-            pst = conn.prepareStatement(sql);
-            pst.execute();
-            System.out.println("Data Added");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
-        }
-    }
-
-    public void removeItem(String item, String server) {
-        try {
-            //String sql = "SELECT * INTO tree FROM connections";
-            String sql = "DELETE FROM tree WHERE primaryItem = '" + item + "' server = '" + server + "' FROM connections";
-            pst = conn.prepareStatement(sql);
-            pst.execute();
-            System.out.println(item + " Removed from DB");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);
-        }
-    }
-
     public void getBranch(String item, String server) {
-        if (countLeaves(item, server)) {
+        if (isBranch(item, server)) {
             try {
                 List<String> branches = new ArrayList<String>();
                 String sql = "SELECT * FROM connections WHERE primaryItem = '" + item + "' AND server = '" + server + "' ";
@@ -107,7 +103,7 @@ public class CreateTree {
         }
     }
 
-    public boolean countLeaves(String item, String server) {
+    public boolean isBranch(String item, String server) {
         boolean ans = false;
         int count = 0;
         try {
