@@ -36,24 +36,24 @@ public class HEART {
     ResultSet rs = null;
     PreparedStatement pst = null;
     PreparedStatement pst2 = null;
-    String[] mimicReadToDo;
-    // String[] mimicReadDone;
-    String currentMimic;
-    String filepath;
-    String server;
-    int mimicToDoLength;
-    int mimicDoneLength;
-    int numberObject;
-    int numberObjectShape;  //  this number counts how many of the objects contain shapes
-    int numberTotalShapes;  //  this number counts the amount of times a shape keyword occurs
-    int numberBegin;
-    int numberEnd;
-    int numberVar;
-    int numberDBPoint;
-    int linesOfCode;
-    boolean insideObject;
-    boolean insideObjectShape;
-    boolean comment;
+    
+    String[] mimicReadToDo;  //  this is the list of mimics that have been found in the system that are used
+    String currentMimic;  //  the name of the mimic that is currently being analysed
+    String filepath;  //  the file path where the mimics are stored
+    String server;  //  the server that is being used
+    int mimicToDoLength;  //  the total number of mimics that need to be anaylsed
+    int mimicDoneLength;  //  the total number of mimics that have been anaylsed
+    int numberObject;  //  counter for how many objects the mimic contains
+    int numberObjectShape;  //  counter for how many of the objects contain shapes
+    int numberTotalShapes;  //  counter for the amount of times a shape keyword occurs
+    int numberBegin;  //  counter for the number of times 'begin' appears in a mimic
+    int numberEnd;  //  counter for the number of times 'end' appears in a mimic
+    int numberVar;  //  counter for the number of times 'var' appears in a mimic
+    int numberDBPoint;  //  counter for how many database points are found in a mimic
+    int linesOfCode;  //  counter for the lines of code in a mimic
+    boolean insideObject;  //  boolean to show whether the current analysing point is inside an object
+    boolean insideObjectShape;  //  boolean to show whether the current analysing point in an object has found a shape
+    boolean comment;  //  boolean to show whether the current analysing point is part or a comment
 
     //  public String startMimic;
     // String[] shapeArray;
@@ -61,17 +61,23 @@ public class HEART {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
-        //new HEART().doOrder();
-        new HEART().oneOff();
+        //  call the method to start analysing the HEART data
+        new HEART().doOrder();
+        //new HEART().oneOff();
     }
-
+    
+    /*
+    * method used in test phases to call methods that need testing
+    */
     public void oneOff(){
         conn = JavaConnect.ConnectDB();
         addOutstation("heathro3");
         addOutstation("heathro4");
     }
     
+    /*
+    * 
+    */
     public static String[] fileNames(String directoryPath) {
         File dir = new File(directoryPath);
         Collection<String> files = new ArrayList<String>();
@@ -87,23 +93,26 @@ public class HEART {
         return files.toArray(new String[]{});
     }
 
+    /*
+     * method to call all methods in the order that they need to be executed
+     */
     public void doOrder() {
         conn = JavaConnect.ConnectDB();
-        //  add mimics
+        //  analyse mimics
         addMimics("heathrow", "BROWSER");
         addMimics("heathro2", "BROWSER");
         addMimics("heathro3", "BROWSER");
         addMimics("heathro4", "BROWSER");
         addMimics("heathro5", "BROWSER");
         System.out.println("********** addMimics **********");
-        //  add outstations
+        //  analyse outstations
         addOutstation("heathrow");
         addOutstation("heathro2");
         addOutstation("heathro3");
         addOutstation("heathro4");
         addOutstation("heathro5");
         System.out.println("********** addOutstation **********");
-        //  add db points used by outstations
+        //  analyse db points used by outstations
         osMappingCSV("heathrow");
         osMappingCSV("heathro2");
         osMappingCSV("heathro3");
@@ -135,7 +144,11 @@ public class HEART {
         updateConnectionsAlarm();
         System.out.println("********** updateConnectionsAlarm **********");
     }
-
+    
+    /*
+    * method to analyse all mimics, regardless of server
+    * only used for testing
+    */
     public void addAllMimcs() {
         conn = JavaConnect.ConnectDB();  //  get the connection url
          mimicReadToDo = new String[10000];  //  maximum number of mimics
@@ -190,7 +203,7 @@ public class HEART {
     }
 
     /*
-     * method to add used mimcs to the SQLDB
+     * method to analyse used mimcs and add data to the SQL DB
      */
     public void addMimics(String server, String startMimic) {
         mimicReadToDo = new String[10000];  //  maximum number of mimics
@@ -200,7 +213,7 @@ public class HEART {
         mimicDoneLength = 0;
 
         while (mimicToDoLength != mimicDoneLength) {
-            // reset counting variables
+            //  reset counting variables
             numberObject = 0;
             numberObjectShape = 0;
             numberTotalShapes = 0;
@@ -209,6 +222,7 @@ public class HEART {
             linesOfCode = 0;
             numberBegin = 0;
             numberEnd = 0;
+            //  set booleans to false
             insideObject = false;
             insideObjectShape = false;
             comment = false;
