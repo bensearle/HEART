@@ -76,7 +76,7 @@ public class HEART {
     }
     
     /*
-    * 
+    * method to return a list of all the files in a specific directory
     */
     public static String[] fileNames(String directoryPath) {
         File dir = new File(directoryPath);
@@ -155,25 +155,12 @@ public class HEART {
          server = "ALL";
          mimicReadToDo[0] = "MAIN_CB";  //  starting mimics  
          filepath = "C:\\HEART\\" + server + "\\Mimics\\";
- 
-         // File[] fileList = new File(System.getProperty("C:\\HEART\\ALL\\Mimics\\")).listFiles();
          String[] fileName = fileNames("C:\\HEART\\ALL\\Mimics\\");
          //2788
  
-         //   mimicReadToDo[0] = startMimic;
          mimicToDoLength = 1;
          mimicDoneLength = 0;
- 
-         /* print stream to pop up window
-          final JDialog dialog = new JDialog();  
-          dialog.setVisible(true);  
-          dialog.setModal(true);  
-          dialog.add(new JTextArea().append(currentMimic));*/
- 
- 
- 
-         //    currentMimic = "BEN_MIMIC_TEST";
-        // while (mimicToDoLength != mimicDoneLength) {
+
          while (mimicDoneLength < 2788) {
              // reset counting variables
              numberObject = 0;
@@ -187,19 +174,14 @@ public class HEART {
              insideObject = false;
              insideObjectShape = false;
              comment = false;
- 
-             //  currentMimic = mimicReadToDo[mimicDoneLength];
+
              currentMimic = fileName[mimicDoneLength];
              readMimic(currentMimic, server);
  
-             // at this point insert to database the mimic name along with number of objects, lines of codes, etc
-             //System.out.println(currentMimic + " has " + linesOfCode + " lines of code, " + numberObject + " object, " + numberObjectShape + " shapeobject, " + numberTotalShapes + " total shapes, " + numberBegin + " begin, " + numberEnd + " end, ");
              insertMimic(server, currentMimic, linesOfCode, numberObject, numberObjectShape, numberTotalShapes, numberBegin, numberVar, numberDBPoint);
-              System.out.println("DONE: "+currentMimic);
-
+             System.out.println("DONE: "+currentMimic);
              mimicDoneLength++;
          }
-         //updateConnectionsMimic();
     }
 
     /*
@@ -240,6 +222,9 @@ public class HEART {
         updateConnectionsMimic();
     }
 
+    /*
+    * a list of all shape keywords used in MDL
+    */
     private static final Set<String> shapeArray = new HashSet<String>(Arrays.asList(
             new String[]{
                 "rect",
@@ -249,9 +234,12 @@ public class HEART {
                 "pie",
                 "arc"
             }));
-
+    
+    /*
+    * method to add outstations from .csv file to SQL server
+    */
     public void addOutstation(String server) {
-        String csvFile = "C:\\HEART\\" + server + "\\osconfig.csv";
+        String csvFile = "C:\\HEART\\" + server + "\\osconfig.csv";  //  location .csv file containing outstations
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
@@ -263,14 +251,17 @@ public class HEART {
                 int count = 0;
                 String idTag = server + "::" + os[1];
                 String idTag2 = server + "::os:" + os[1];
+                //  create SQL statement to add outstation to the allOutstations table
                 String batchSQL = "IF NOT EXISTS (SELECT idTag FROM allOutstations WHERE idTag = '" + idTag + "') BEGIN INSERT INTO allOutstations (idTag, server, OSName, OSNumber) VALUES ('" + idTag + "', '" + server + "', '" + os[0] + "', '" + os[1] + "') END;";
+                //  create SQL statement to add outstation to the connections table as secondary item for 'os' - needed for tree
                 String batchSQL2 = "IF NOT EXISTS (SELECT idTag FROM connections WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag2 + "', '" + server + "', 'os', '" + os[1] + "', 'OS') END;";                
+                //  add SQL statements to batch
                 statement.addBatch(batchSQL);
                 statement.addBatch(batchSQL2);
-                System.out.println(os[1]);
+                System.out.println(os[1]);  //  print outstation number
             }
             System.out.println("start");
-            statement.executeBatch();
+            statement.executeBatch();  //  execute batch of SQL statements
             System.out.println("finish");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);
@@ -282,7 +273,7 @@ public class HEART {
      * method to add the OS-DB connections where the OS is used and add the DB point to SQLDB
      */
     public void osMappingCSV(String server) {
-        String csvFile = "C:\\HEART\\" + server + "\\osmapping.csv";  //  .csv file location
+        String csvFile = "C:\\HEART\\" + server + "\\osmapping.csv";  //  location .csv file containing outstation mapping
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
@@ -307,10 +298,13 @@ public class HEART {
                 if (count > 0) {
                     String idTag = server + "::" + os[1] + ":" + os[0];
                     String idTag2 = server + "::" + os[0];
+                    //  create SQL statement to add outstation and database point to connections table
                     statement1.addBatch("IF NOT EXISTS (SELECT idTag FROM connections WHERE idTag = '" + idTag + "') BEGIN  INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag + "', '" + server + "', '" + os[1] + "', '" + os[0] + "', '" + type + "') END;");
                     System.out.println("OS [DB Point= " + os[0] + " , OS Number=" + os[1] + "]");
                     String pointNumber = os[0];
                     String outstation = os[1];
+                    //  check the first character of the DB point number to give the type (b - Boolean, c - Character String, e - Engineering Unit, etc)
+                    //  create SQL statement to add database point to the allDBPoints table
                     switch (pointNumber.charAt(0)) {
                         case 'b':
                             statement2.execute("IF NOT EXISTS (SELECT idTag FROM allDBPoints WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag2 + "', '" + server + "', '" + pointNumber + "', 'Boolean', '" + outstation + "') END;");
@@ -358,6 +352,9 @@ public class HEART {
             System.out.println("Database is now updating OS-DB connections...");
             statement1.executeBatch();  //  execute batch sql statement
             System.out.println("   ...complete");
+            System.out.println("Database is now updating allDBPoins...");
+            statement2.executeBatch();  //  execute batch sql statement
+            System.out.println("   ...complete");
         } catch (Exception e) {
             //JOptionPane.showMessageDialog(null, e);
         }
@@ -380,7 +377,7 @@ public class HEART {
             while ((line = br.readLine()) != null) {
                 String[] os = line.split(cvsSplitBy); //  split the .csv row by column in to list of strings
                 int count = 0;
-                // check to see whether the OS referenced in the mapping .csv exists in the SQLDB
+                // check to see whether the OS referenced in the mapping .csv exists in the SQL DB
                 String sql = "SELECT COUNT (*) AS count FROM allDBPoints WHERE pointNumber = '" + os[0] + "' AND server = '" + server + "'";
                 pst = conn.prepareStatement(sql);
                 rs = pst.executeQuery();
@@ -392,7 +389,9 @@ public class HEART {
                 if (count > 0) {
                     String idTag = server + "::" + os[0] + ":" + os[3];
                     String idTag2 = server + "::" + os[3];
+                    //  create SQL statement to add the connection between the alarm and the outstation to the connections table
                     statement1.addBatch("IF NOT EXISTS (SELECT idTag FROM connections WHERE idTag = '" + idTag + "') BEGIN  INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag + "', '" + server + "', '" + os[0] + "', '" + os[3] + "', '" + type + "') END;");
+                    //  create SQL statement to add the alarm to the allAlarms table
                     statement2.addBatch("IF NOT EXISTS (SELECT idTag FROM allAlarms WHERE idTag = '" + idTag2 + "') BEGIN INSERT INTO allAlarms (idTag, server, alarmName, dbPoint) VALUES ('" + idTag2 + "', '" + server + "', '" + os[3] + "', '" + os[0] + "') END;");
                     System.out.println("Alarm [DBPoint = " + os[0] + ", Name =" + os[3] + "]");
                 } else {
@@ -424,14 +423,14 @@ public class HEART {
             while ((line = br.readLine()) != null) {
                 String[] os = line.split(cvsSplitBy); //  split the .csv row by column in to list of strings
                 int count = 0;
-                // check to see whether the OS referenced in the mapping .csv exists in the SQLDB
+                // create an SQL statement that counts all of the occurances of the db point in the connections table and update the allDBPoints table
                 String sql = "UPDATE allDBPoints SET pointName = '" + os[1] + "',"
                         + " primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + os[0] + "' AND server = '" + server + "'),"
                         + " secondaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + os[0] + "' AND server = '" + server + "'),"
                         + " totalCon = (SELECT COUNT (*) FROM connections WHERE (primaryItem = '" + os[0] + "' OR secondaryItem = '" + os[0] + "') AND server = '" + server + "')"
                         + " WHERE pointNumber = '" + os[0] + "' AND server = '" + server + "'";
                 pst = conn.prepareStatement(sql);
-                pst.execute();
+                pst.execute();  //  execute SQL statement
                 System.out.println("UPDATE allDBPoints SET pointName = '" + os[1] + "' WHERE pointNumber = '" + os[0] + "' AND server = '" + server + "'");
             }
         } catch (Exception e) {
@@ -440,7 +439,7 @@ public class HEART {
     }
 
     /*
-     * method to delete duplicates - - - works, but does not get called - - - not needed anymore, SQLDB handles duplication
+     * method to delete duplicates - - - works, but does not get called - - - not needed anymore, SQL DB handles duplication
      */
     public void removeConnectionDuplicates() {
         try {
@@ -454,7 +453,7 @@ public class HEART {
     }
 
     /*
-     * method to add connections to SQLDB, only used for mimics, everything else uses batch SQL statements
+     * method to add connections to SQL DB, only used for mimics, everything else uses batch SQL statements
      */
     public void insertConnection(String server, String primary, String secondary, String type) {
         String idTag = server + "::" + primary + ":" + secondary;
@@ -485,11 +484,11 @@ public class HEART {
             //JOptionPane.showMessageDialog(null, e);
         }
     }
+    
     /*
      * method to work out the type of a DBPoint based on the first letter
      * then call the method to add the DBPoint data to DBSQL
      */
-
     public void addDBPoint(String s, String os, String server) {
         switch (s.charAt(0)) {
             case 'b':
