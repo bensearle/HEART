@@ -174,9 +174,9 @@ public class HEART {
              insideObject = false;
              insideObjectShape = false;
              comment = false;
-
-             currentMimic = fileName[mimicDoneLength];
-             readMimic(currentMimic, server);
+             
+             currentMimic = fileName[mimicDoneLength];  //  set the current mimic to the next one in the list
+             readMimic(currentMimic, server);  //  analyse the current mimic
  
              insertMimic(server, currentMimic, linesOfCode, numberObject, numberObjectShape, numberTotalShapes, numberBegin, numberVar, numberDBPoint);
              System.out.println("DONE: "+currentMimic);
@@ -209,17 +209,15 @@ public class HEART {
             insideObjectShape = false;
             comment = false;
 
-            currentMimic = mimicReadToDo[mimicDoneLength];
-            readMimic(currentMimic, server);
+            currentMimic = mimicReadToDo[mimicDoneLength];  //  set the current mimic to the next one in the list
+            readMimic(currentMimic, server);  //  analyse the current mimic
 
             // at this point insert to database the mimic name along with number of objects, lines of codes, etc
             //System.out.println(currentMimic + " has " + linesOfCode + " lines of code, " + numberObject + " object, " + numberObjectShape + " shapeobject, " + numberTotalShapes + " total shapes, " + numberBegin + " begin, " + numberEnd + " end, ");
+            //  insert the mimic to the SQL DB, including all data that has been collected
             insertMimic(server, currentMimic, linesOfCode, numberObject, numberObjectShape, numberTotalShapes, numberBegin, numberVar, numberDBPoint);
-
-            mimicDoneLength++;
-            // System.out.println("DONE: "+mimicDoneLength);
+            mimicDoneLength++;  //  increment the number of mimics that have been analysed, so that the next one can be selected
         }
-        updateConnectionsMimic();
     }
 
     /*
@@ -277,7 +275,7 @@ public class HEART {
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
-        String type = "OSDB";  //  type of connection to be inputted to SQLDB
+        String type = "OSDB";  //  type of connection to be inputted to SQL DB
         try {
             Statement statement1 = conn.createStatement();
             Statement statement2 = conn.createStatement();
@@ -361,7 +359,7 @@ public class HEART {
     }
 
     /*
-     * method to add the OS-DB connections where the OS is used and add the DB point to SQLDB
+     * method to add the alarm to the SQL DB
      */
     public void alarmCSV(String server) {
         String csvFile = "C:\\HEART\\" + server + "\\alarm.csv";  //  .csv file location
@@ -381,11 +379,11 @@ public class HEART {
                 String sql = "SELECT COUNT (*) AS count FROM allDBPoints WHERE pointNumber = '" + os[0] + "' AND server = '" + server + "'";
                 pst = conn.prepareStatement(sql);
                 rs = pst.executeQuery();
-                // while statement to check the count until it goes above 1 (until an OS is found)
+                // while statement to check the count until it goes above 1 (until an alarm is found)
                 while (rs.next() && count == 0) {
                     count = rs.getInt("count");  //  create a string for each of the names in the database
                 }
-                //  if the OS is found then add the OS-DB connection to SQLDB and add basic DB information to SQLDB 
+                //  if the alarm is found then add the alarm connection to SQL DB and add alarm information to SQL DB 
                 if (count > 0) {
                     String idTag = server + "::" + os[0] + ":" + os[3];
                     String idTag2 = server + "::" + os[3];
@@ -458,9 +456,10 @@ public class HEART {
     public void insertConnection(String server, String primary, String secondary, String type) {
         String idTag = server + "::" + primary + ":" + secondary;
         try {
+            //  create the SQL query using the variables that are parsed in
             String sql = "INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag + "', '" + server + "', '" + primary + "', '" + secondary + "', '" + type + "')";
             pst = conn.prepareStatement(sql);
-            pst.execute();
+            pst.execute();  //  execute SQL query
             //("Database entry: " + type + " reference between " + primary + " and " + secondary);
         } catch (Exception e) {
             //JOptionPane.showMessageDialog(null, e);
@@ -476,9 +475,10 @@ public class HEART {
     public void insertMimic(String server, String mimicName, int loc, int object, int objectShape, int totalShape, int containers, int variables, int dbPoints) {
         String idTag = server + "::" + mimicName;
         try {
+            //  create the SQL query using the variables that are parsed in
             String sql = "INSERT INTO allMimics (idTag, server, mimicName, loc, object, objectShape, totalShape, containers, variables, dbPoints) VALUES ('" + idTag + "', '" + server + "', '" + mimicName + "', '" + loc + "', '" + object + "', '" + objectShape + "', '" + totalShape + "', '" + containers + "', '" + variables + "', '" + dbPoints + "')";
             pst = conn.prepareStatement(sql);
-            pst.execute();
+            pst.execute();  //  execute SQL query
             //("Database entry: " + server + " server, " + mimicName + " Mimic, " + loc + " LoC, " + object + " objects (" + objectShape + " shapes), " + totalShape + " total shapes, " + containers + " containers, " + variables + " variables, " + dbPoints + " DB points");
         } catch (Exception e) {
             //JOptionPane.showMessageDialog(null, e);
@@ -546,14 +546,15 @@ public class HEART {
     }
 
     /*
-     * method to add DBPoint data to DBSQL
+     * method to add DBPoint data to DB SQL
      */
     public void insertDBPoint(String server, String pointNumber, String type, String os) {
         String idTag = server + "::" + pointNumber;
         try {
+            //  create the SQL query using the variables that are parsed in
             String sql = "INSERT INTO allDBPoints (idTag, server, pointNumber, type, outstation) VALUES ('" + idTag + "', '" + server + "', '" + pointNumber + "', '" + type + "', '" + os + "')";
             pst = conn.prepareStatement(sql);
-            pst.execute();
+            pst.execute();  //  execute SQL query
             //System.out.println("Database entry: " + server + " server, " + pointName + " Mimic, " + type + " LoC,  containDB points");
         } catch (Exception e) {
             // JOptionPane.showMessageDialog(null, e);
@@ -589,6 +590,7 @@ public class HEART {
             }
             System.out.println("Please wait whilst database is updated. This may take some time...");
             statement.executeBatch();  //  execute the batch sql statement
+            System.out.println("   ...completed");
         } catch (Exception e) {
             //JOptionPane.showMessageDialog(null, e);
         }
@@ -601,12 +603,12 @@ public class HEART {
         try {
             // Connection connection = new getConnection();
             Statement statement = conn.createStatement();
-            String sql = "SELECT pointNumber, server FROM allDBPoints";  // select mimics that are in SQLDB - these are to be updated
+            String sql = "SELECT pointNumber, server FROM allDBPoints";  // select DB points that are in SQLDB - these are to be updated
             pst = conn.prepareStatement(sql);
             rs = pst.executeQuery();
             while (rs.next()) {
-                String itemName = rs.getString("pointNumber");  //  get the name of mimic
-                String server = rs.getString("server");  //  get the server of mimc
+                String itemName = rs.getString("pointNumber");  //  get the number of the DB point
+                String server = rs.getString("server");  //  get the server of DB point
                 System.out.println("Counting connections for " + itemName);
                 /*
                  * batchSQL works by counting: 
@@ -622,23 +624,24 @@ public class HEART {
             }
             System.out.println("Please wait whilst database is updated. This may take some time...");
             statement.executeBatch();  //  execute the batch sql statement
+            System.out.println("   ...completed");
         } catch (Exception e) {
             //JOptionPane.showMessageDialog(null, e);
         }
     }
 
     /*
-     * method to update the Outstation in SQLDB with number of connections
+     * method to update the Outstation in SQL DB with number of connections
      */
     public void updateConnectionsOutstation() {
         try {
             // Connection connection = new getConnection();
             Statement statement = conn.createStatement();
-            String sql = "SELECT osNumber, server FROM allOutstations";  // select mimics that are in SQLDB - these are to be updated
+            String sql = "SELECT osNumber, server FROM allOutstations";  // select outstation that are in SQL DB - these are to be updated
             pst = conn.prepareStatement(sql);
             rs = pst.executeQuery();
             while (rs.next()) {
-                String itemName = rs.getString("osNumber");  //  get the name of mimic
+                String itemName = rs.getString("osNumber");  //  get the number of outstation
                 String server = rs.getString("server");  //  get the server of mimc
                 System.out.println("Counting connections for " + itemName);
                 /*
@@ -655,31 +658,31 @@ public class HEART {
             }
             System.out.println("Please wait whilst database is updated. This may take some time...");
             statement.executeBatch();  //  execute the batch sql statement
-            System.out.println("   ... complete");
+            System.out.println("   ...complete");
         } catch (Exception e) {
             //JOptionPane.showMessageDialog(null, e);
         }
     }
 
     /*
-     * method to update the Outstation in SQLDB with number of connections
+     * method to update the Alarm in SQLDB with number of connections
      */
     public void updateConnectionsAlarm() {
         try {
             // Connection connection = new getConnection();
             Statement statement = conn.createStatement();
-            String sql = "SELECT alarmName, server FROM allAlarms";  // select mimics that are in SQLDB - these are to be updated
+            String sql = "SELECT alarmName, server FROM allAlarms";  // select alarms that are in SQLDB - these are to be updated
             pst = conn.prepareStatement(sql);
             rs = pst.executeQuery();
             while (rs.next()) {
-                String itemName = rs.getString("alarmName");  //  get the name of mimic
-                String itemServer = rs.getString("server");  //  get the server of mimc
+                String itemName = rs.getString("alarmName");  //  get the number of the alarm
+                String itemServer = rs.getString("server");  //  get the server of alarm
                 System.out.println("Counting connections for " + itemName);
                 /*
                  * batchSQL works by counting: 
-                 *  1) the number of times the Outstation is a primary item for a connection
-                 *  2) the number of times the Outstation is a secondary item for a connection
-                 *  3) the number of times the Outstation appears for a connection
+                 *  1) the number of times the alarm is a primary item for a connection
+                 *  2) the number of times the alarm is a secondary item for a connection
+                 *  3) the number of times the alarm appears for a connection
                  * it then updates the mimic data with the number of connections
                  */
                 String batchSQL = "UPDATE allAlarms SET primaryCon = (SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + itemName + "' AND server = '" + itemServer + "'), "
@@ -689,7 +692,7 @@ public class HEART {
             }
             System.out.println("Please wait whilst database is updated. This may take some time...");
             statement.executeBatch();  //  execute the batch sql statement
-            System.out.println("   ... complete");
+            System.out.println("   ...complete");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);
         }
@@ -701,14 +704,16 @@ public class HEART {
      */
     public boolean isDPBPoint(String s) {
         boolean ans = false;
-        Pattern p = Pattern.compile("^\\p{Alpha}{1}\\d+$");  //  regex for letter, followed by many digits
+        //  regex for a database point is 1 letter followed by numbers
+        Pattern p = Pattern.compile("^\\p{Alpha}{1}\\d+$");  //  regular expression for letter, followed by many digits
         Matcher m = p.matcher(s);
         System.out.print("Input: " + s + "... ");
+        //  if the input string matches the format of the regular expression, set return value to be true
         if (m.find()) {
             //("Found match: " + m.group(0));
             ans = true;
         }
-        return ans;
+        return ans;  //  return value
     }
 
     /*
@@ -730,51 +735,55 @@ public class HEART {
 
         Scanner sc = new Scanner(fileline);
         String s;
+        //  while the strind has words
         while (sc.hasNext()) {
             s = sc.next();
+            //  if the word contains a comment symbol !
             if (s.contains("!")) {
-                int stingCounter = 0;
+                int stringCounter = 0;
                 // count occurences of !
                 for (int i = 0; i < s.length(); i++) {
                     if (s.charAt(i) == '!') {
-                        stingCounter++;
+                        stringCounter++;
                     }
                 }
-                if (stingCounter % 2 == 0) {
-                    // even
+                if (stringCounter % 2 == 0) {
+                    //  even !
+                    //  comment begins and ends, no action required
                 } else {
-                    // odd
-                    //  comment ^= true; // switch boolean variable - - alternative way of switching
+                    //  odd !
+                    //  comment either begins or ends, switch the comment variable
                     comment = !comment; // switch boolean variable
                 }
             }
 
             // if the code is not part of a comment
             if (!comment) {
-                if (s.length() == 1) {
-                } else if (s.equalsIgnoreCase("load")) {
+                if (s.length() == 1) { //  if string is a single character, do nothing
+                } else if (s.equalsIgnoreCase("load")) {  //  if 'load' is found
                     int count = mimicToDoLength - 1;
                     String foundMimic = sc.next();
                     while (count >= 0) {
                         //  if the mimic is not in the ToDo list, add it
                         if (count == 0) {
+                            //  check the list of found mimics and add new found one if not there
                             if (foundMimic.equals(mimicReadToDo[count])) {
                                 count--;  //  stop the while loop
                             } else {
-                                mimicReadToDo[mimicToDoLength] = foundMimic;
-                                mimicToDoLength++;  //  the ToDo list increases by 1
-                                count--;
+                                mimicReadToDo[mimicToDoLength] = foundMimic;  //  add the mimic to the list
+                                mimicToDoLength++;  //  increment the list length
+                                count--;  //  stop the while loop
                             }
-                        } //  compare the found mimic with what is already in the ToDo list
+                        }
                         else if (foundMimic.equals(mimicReadToDo[count])) {
-                            count = -1;
+                            count = -1;  //  mimic is already in the list, exit the while loop
                         } else {
-                            count--;
+                            count--;  //  check the next item in the list
                         }
 
                     }
                     //System.out.println(currentMimic + " contains " + foundMimic);
-                    // commented out for testing other parts
+                    //  insert the newly found mimic in to the SQL DB
                     insertConnection(server, currentMimic, foundMimic, "mimic");//*************************************** needs to be uncommented
                 } else if (s.equalsIgnoreCase("object")) {
                     numberObject++;
