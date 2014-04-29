@@ -39,6 +39,8 @@ public class MimicConnections {
     PreparedStatement pst2 = null;
     Statement statement;
 
+    String objectName;
+    int objectShapes;
     String[] mimicReadToDo;  //  this is the list of mimics that have been found in the system that are used
     String currentMimic;  //  the name of the mimic that is currently being analysed
     String filepath;  //  the file path where the mimics are stored
@@ -102,9 +104,7 @@ public class MimicConnections {
     public void doOrder() throws SQLException {
         conn = JavaConnect.ConnectDB();
         statement = conn.createStatement();
-        
-        
-        
+
         //  analyse mimics
         addAllMimcis("heathrow");
         System.out.println("********** addMimics **********");
@@ -240,11 +240,17 @@ public class MimicConnections {
         }
     }
 
+    public void addConnection(String server, String p, String s, String type) throws SQLException {
+        String idTag = p + "." + s;
+        String batchSQL = "IF NOT EXISTS (SELECT idTag FROM connections WHERE idTag = '" + idTag + "') BEGIN INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag + "', '" + server + "', '" + p + "', '" + s + "', '" + type + "') END;";
+        statement.addBatch(batchSQL);
+    }
+
     public void scanMimic(String filename, String fileline, String server) throws SQLException {
         //  replace all symbols with a space, other than comment symbol !
-        fileline.replaceAll("[^a-zA-z0-9!]", " ");
+        String wSpace = fileline.replaceAll("[^a-zA-z0-9!]", " ");
 
-        Scanner sc = new Scanner(fileline);
+        Scanner sc = new Scanner(wSpace);
         String s;
         //  while the strind has words
         while (sc.hasNext()) {
@@ -274,6 +280,7 @@ public class MimicConnections {
                 } else if (s.equalsIgnoreCase("load")) {  //  if 'load' is found
                     int count = mimicToDoLength - 1;
                     String foundMimic = sc.next();
+                    foundMimic = foundMimic.toUpperCase();
                     while (count >= 0) {
                         //  if the mimic is not in the ToDo list, add it
                         if (count == 0) {
@@ -285,6 +292,7 @@ public class MimicConnections {
                                 //insertConnection(server, currentMimic, foundMimic, "mimic");//*************************************** needs to be uncommented
                                 String batchSQL = "IF NOT EXISTS (SELECT idTag FROM mimicTree WHERE idTag = '" + idTag + "') BEGIN INSERT INTO mimicTree (idTag, server, pMimic, sMimic, layers) VALUES ('" + idTag + "', '" + server + "', '" + topMimic + "', '" + foundMimic + "', 1) END;";
                                 //  add SQL statements to batch
+
                                 statement.addBatch(batchSQL);
                                 System.out.println(batchSQL);
                                 mimicReadToDo[mimicToDoLength] = foundMimic;  //  add the mimic to the list
@@ -298,10 +306,61 @@ public class MimicConnections {
                         }
 
                     }
+                } else if (s.equalsIgnoreCase("object")) {
+                    System.out.println(topMimic + " " + currentMimic + " " + s);
+                    objectName = sc.next();
+                    objectShapes = 0;
+                    numberObject++;
+                    insideObjectShape = true;
+                } else if (s.equalsIgnoreCase("var")) {
+                    numberVar++;
+                } else if (s.equalsIgnoreCase("begin")) {
+                    numberBegin++;
+                } else if (s.equalsIgnoreCase("end")) {
+                    numberEnd++;
+                    if (numberBegin - numberEnd == 0) {
+                        insideObjectShape = false;
+                        if (objectShapes > 0) {
+                            String idTag = server + "." + currentMimic + "." + objectName;
+                            String batchSQL = "IF NOT EXISTS (SELECT idTag FROM objectShapes WHERE idTag = '" + idTag + "') BEGIN INSERT INTO objectShapes (idTag, server, mimic, object, shapes) VALUES ('" + idTag + "', '" + server + "', '" + currentMimic + "', '" + objectName + "', '" + objectShapes + "') END;";
+                            System.out.println(batchSQL);
+                            statement.addBatch(batchSQL);
+                            objectShapes = 0;
+                        }
+                    }
+                } else {
+
+                    if (insideObjectShape && shapeArray.contains(s)) {
+                        objectShapes++;
+                        numberTotalShapes++;
+                        numberObjectShape++;
+                        insideObjectShape = false;
+                        // String idTag = server + "." + currentMimic + "." + objectName;
+                        // String batchSQL = "IF NOT EXISTS (SELECT idTag FROM objectShapes WHERE idTag = '" + idTag + "') BEGIN INSERT INTO objectShapes (idTag, server, mimic, object) VALUES ('" + idTag + "', '" + server + "', '" + currentMimic + "', '" + objectName + "') END;";
+                        // System.out.println(batchSQL);
+//  add SQL statements to batch
+
+                    } else if (shapeArray.contains(s)) {
+                        objectShapes++;
+                        numberTotalShapes++;
+                    }
                 }
             }
         }
     }
+
+    /*
+     * a list of all shape keywords used in MDL
+     */
+    private static final Set<String> shapeArray = new HashSet<String>(Arrays.asList(
+            new String[]{
+                "rect",
+                "rotrect",
+                "polygon",
+                "fill",
+                "pie",
+                "arc"
+            }));
 
     public void readMimic(String filename, String server) throws SQLException {
         BufferedReader br = null;
