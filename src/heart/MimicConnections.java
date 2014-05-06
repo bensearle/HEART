@@ -6,11 +6,9 @@ package heart;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,11 +19,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
 
 /**
  *
@@ -68,17 +61,12 @@ public class MimicConnections {
      */
     public static void main(String[] args) throws SQLException {
         //  call the method to start analysing the HEART data
+        System.out.println("********** START **********");
         new MimicConnections().doOrder();
+        System.out.println("********** FINISH **********");
         //new HEART().oneOff();
     }
 
-    /*
-     * method used in test phases to call methods that need testing
-     */
-    public void oneOff() {
-        conn = JavaConnect.ConnectDB();
-
-    }
 
     /*
      * method to return a list of all the files in a specific directory
@@ -110,28 +98,23 @@ public class MimicConnections {
         System.out.println("********** addMimics **********");
         statement.executeBatch();
         System.out.println("********** batch **********");
-        System.out.print(statement);
-        //
     }
 
     /*
-     * method to analyse all mimics, regardless of server
-     * only used for testing
+     * 
      */
     public void addAllMimcis(String server) throws SQLException {
-        mimicReadToDo = new String[10000];  //  maximum number of mimics
-        mimicReadToDo[0] = "MAIN_CB";  //  starting mimics  
-        filepath = "C:\\HEART\\" + server + "\\Mimics\\";
         String[] fileNames = getFileNames("C:\\HEART\\" + server + "\\Mimics\\");
         //2788
 
-        mimicToDoLength = 1;
-        mimicDoneLength = 0;
-
+        //  for every mimic in the list
         for (String m : fileNames) {
+            String p = server;
+            String s = p + "." + m;
+            addConnectionTree(server, p, s);  //  add server/mimic connection
             //readMimic(m, server);
-            topMimic = m;
-            addMimics(server, m);
+            topMimic = m;  //  set the top mimic
+            addMimics(server, m);  //  add all mimic underneath the top mimic
             System.out.println(m);
         }
         //statement.executeBatch();
@@ -144,18 +127,18 @@ public class MimicConnections {
     public void addMimics(String server, String startMimic) throws SQLException {
         mimicReadToDo = new String[10000];  //  maximum number of mimics
         filepath = "C:\\HEART\\" + server + "\\Mimics\\";
-        mimicReadToDo[0] = startMimic;
+        mimicReadToDo[0] = server + "." + startMimic;
         mimicToDoLength = 1;
         mimicDoneLength = 0;
-
+        String tag;
         while (mimicToDoLength != mimicDoneLength) {
             //  reset counting variables
-            numberObject = 0;
-            numberObjectShape = 0;
-            numberTotalShapes = 0;
-            numberVar = 0;
-            numberDBPoint = 0;
-            linesOfCode = 0;
+            //    numberObject = 0;
+            //    numberObjectShape = 0;
+            //    numberTotalShapes = 0;
+            //    numberVar = 0;
+            //     numberDBPoint = 0;
+            //     linesOfCode = 0;
             numberBegin = 0;
             numberEnd = 0;
             //  set booleans to false
@@ -163,90 +146,33 @@ public class MimicConnections {
             insideObjectShape = false;
             comment = false;
 
-            currentMimic = mimicReadToDo[mimicDoneLength];  //  set the current mimic to the next one in the list
-            readMimic(currentMimic, server);  //  analyse the current mimic
+            tag = mimicReadToDo[mimicDoneLength];  //  set the current mimic to the next one in the list
+
+            /* System.out.println("");
+             delimiter = "\\.";
+             temp = tag.split("\\.");
+             for (int i = 0; i < temp.length; i++) {
+             System.out.println(temp[i]);
+             }*/
+            String[] parts = tag.split("\\.");  //  separate the tag in to a list of strings
+            int i = parts.length;
+            currentMimic = parts[parts.length - 1];  //  select the last part of the tag - mimic name
+            readMimic(currentMimic, server, tag);  //  analyse the current mimic
 
             // at this point insert to database the mimic name along with number of objects, lines of codes, etc
             //System.out.println(currentMimic + " has " + linesOfCode + " lines of code, " + numberObject + " object, " + numberObjectShape + " shapeobject, " + numberTotalShapes + " total shapes, " + numberBegin + " begin, " + numberEnd + " end, ");
             //  insert the mimic to the SQL DB, including all data that has been collected
-            insertMimic(server, currentMimic, linesOfCode, numberObject, numberObjectShape, numberTotalShapes, numberBegin, numberVar, numberDBPoint);
+            //insertMimic(server, currentMimic, linesOfCode, numberObject, numberObjectShape, numberTotalShapes, numberBegin, numberVar, numberDBPoint);
             mimicDoneLength++;  //  increment the number of mimics that have been analysed, so that the next one can be selected
         }
     }
 
-    /*
-     * method to add connections to SQL DB, only used for mimics, everything else uses batch SQL statements
-     */
-    public void insertConnection(String server, String primary, String secondary, String type) {
-        String idTag = server + "::" + primary + ":" + secondary;
-        try {
-            //  create the SQL query using the variables that are parsed in
-            String sql = "INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag + "', '" + server + "', '" + primary + "', '" + secondary + "', '" + type + "')";
-            pst = conn.prepareStatement(sql);
-            pst.execute();  //  execute SQL query
-            //("Database entry: " + type + " reference between " + primary + " and " + secondary);
-        } catch (Exception e) {
-            //JOptionPane.showMessageDialog(null, e);
-        }
-    }
-
-    /*
-     * method to add detailed mimic data to SQLDB
-     * does not include how many connections mimic has
-     * not all connections have been added at the point the mimic is added
-     * see updateConnectionsMimic() for adding of connections
-     */
-    public void insertMimic(String server, String mimicName, int loc, int object, int objectShape, int totalShape, int containers, int variables, int dbPoints) {
-        String idTag = server + "::" + mimicName;
-        try {
-            //  create the SQL query using the variables that are parsed in
-            String sql = "INSERT INTO allMimics (idTag, server, mimicName, loc, object, objectShape, totalShape, containers, variables, dbPoints) VALUES ('" + idTag + "', '" + server + "', '" + mimicName + "', '" + loc + "', '" + object + "', '" + objectShape + "', '" + totalShape + "', '" + containers + "', '" + variables + "', '" + dbPoints + "')";
-            pst = conn.prepareStatement(sql);
-            pst.execute();  //  execute SQL query
-            //("Database entry: " + server + " server, " + mimicName + " Mimic, " + loc + " LoC, " + object + " objects (" + objectShape + " shapes), " + totalShape + " total shapes, " + containers + " containers, " + variables + " variables, " + dbPoints + " DB points");
-        } catch (Exception e) {
-            //JOptionPane.showMessageDialog(null, e);
-        }
-    }
-
-    /*
-     * method to check whether a string is a DBPoint and return boolean value
-     * DBPoint must be 1 letter, at least 1 digit
-     */
-    public boolean isDPBPoint(String s) {
-        boolean ans = false;
-        //  regex for a database point is 1 letter followed by numbers
-        Pattern p = Pattern.compile("^\\p{Alpha}{1}\\d+$");  //  regular expression for letter, followed by many digits
-        Matcher m = p.matcher(s);
-        System.out.print("Input: " + s + "... ");
-        //  if the input string matches the format of the regular expression, set return value to be true
-        if (m.find()) {
-            //("Found match: " + m.group(0));
-            ans = true;
-        }
-        return ans;  //  return value
-    }
-
-    /*
-     * method to check whether input is a number and return boolean value
-     */
-    public boolean isNumeric(String input) {
-        try {
-            Integer.parseInt(input);
-            return true;
-        } catch (NumberFormatException e) {
-            // s is not numeric
-            return false;
-        }
-    }
-
-    public void addConnection(String server, String p, String s, String type) throws SQLException {
-        String idTag = p + "." + s;
-        String batchSQL = "IF NOT EXISTS (SELECT idTag FROM connections WHERE idTag = '" + idTag + "') BEGIN INSERT INTO connections (idTag, server, primaryItem, secondaryItem, connectionType) VALUES ('" + idTag + "', '" + server + "', '" + p + "', '" + s + "', '" + type + "') END;";
+    public void addConnectionTree(String server, String p, String s) throws SQLException {
+        String batchSQL = "INSERT INTO connectionTree (server, pItem, sItem) VALUES ('" + server + "', '" + p + "', '" + s + "');";
         statement.addBatch(batchSQL);
     }
 
-    public void scanMimic(String filename, String fileline, String server) throws SQLException {
+    public void scanMimic(String filename, String fileline, String server, String tag) throws SQLException {
         //  replace all symbols with a space, other than comment symbol !
         String wSpace = fileline.replaceAll("[^a-zA-z0-9!]", " ");
 
@@ -285,8 +211,9 @@ public class MimicConnections {
                         //  if the mimic is not in the ToDo list, add it
                         if (count == 0) {
                             //  check the list of found mimics and add new found one if not there
-                            if (foundMimic.equals(mimicReadToDo[count])) {
+                            if (foundMimic.equals(mimicReadToDo[count].split("\\.")[mimicReadToDo[count].split("\\.").length - 1])) {
                                 count--;  //  stop the while loop
+
                             } else {
                                 String idTag = server + "." + topMimic + "." + foundMimic;
                                 //insertConnection(server, currentMimic, foundMimic, "mimic");//*************************************** needs to be uncommented
@@ -295,11 +222,19 @@ public class MimicConnections {
 
                                 statement.addBatch(batchSQL);
                                 System.out.println(batchSQL);
-                                mimicReadToDo[mimicToDoLength] = foundMimic;  //  add the mimic to the list
+
+                                addConnectionTree(server, tag, tag + "." + foundMimic);
+                               /* tag = mimicReadToDo[mimicDoneLength];  //  set the current mimic to the next one in the list
+                                String[] parts = tag.split("\\.");  //  separate the tag in to a list of strings
+                                int i = parts.length;
+                                currentMimic = parts[parts.length - 1];  //  select the last part of the tag - mimic name
+*/
+                                //mimicReadToDo[mimicToDoLength].split("\\.")[mimicReadToDo[mimicToDoLength].split("\\.").length - 1] = foundMimic;
+                                mimicReadToDo[mimicToDoLength] = tag+"."+foundMimic;  //  add the mimic to the list
                                 mimicToDoLength++;  //  increment the list length
                                 count--;  //  stop the while loop
                             }
-                        } else if (foundMimic.equals(mimicReadToDo[count])) {
+                        } else if (foundMimic.equals(mimicReadToDo[count].split("\\.")[mimicReadToDo[count].split("\\.").length - 1])) {
                             count = -1;  //  mimic is already in the list, exit the while loop
                         } else {
                             count--;  //  check the next item in the list
@@ -307,8 +242,8 @@ public class MimicConnections {
 
                     }
                 } else if (s.equalsIgnoreCase("object")) {
-                    System.out.println(topMimic + " " + currentMimic + " " + s);
                     objectName = sc.next();
+                    addConnectionTree(server, tag , tag + "." + objectName);
                     objectShapes = 0;
                     numberObject++;
                     insideObjectShape = true;
@@ -323,7 +258,6 @@ public class MimicConnections {
                         if (objectShapes > 0) {
                             String idTag = server + "." + currentMimic + "." + objectName;
                             String batchSQL = "IF NOT EXISTS (SELECT idTag FROM objectShapes WHERE idTag = '" + idTag + "') BEGIN INSERT INTO objectShapes (idTag, server, mimic, object, shapes) VALUES ('" + idTag + "', '" + server + "', '" + currentMimic + "', '" + objectName + "', '" + objectShapes + "') END;";
-                            System.out.println(batchSQL);
                             statement.addBatch(batchSQL);
                             objectShapes = 0;
                         }
@@ -331,15 +265,15 @@ public class MimicConnections {
                 } else {
 
                     if (insideObjectShape && shapeArray.contains(s)) {
-                        objectShapes++;
-                        numberTotalShapes++;
-                        numberObjectShape++;
-                        insideObjectShape = false;
+                        addConnectionTree(server, tag + "." + objectName, tag + "." + objectName + "." + s);
+                        //objectShapes++;
+                        //numberTotalShapes++;
+                        // numberObjectShape++;
+
                         // String idTag = server + "." + currentMimic + "." + objectName;
                         // String batchSQL = "IF NOT EXISTS (SELECT idTag FROM objectShapes WHERE idTag = '" + idTag + "') BEGIN INSERT INTO objectShapes (idTag, server, mimic, object) VALUES ('" + idTag + "', '" + server + "', '" + currentMimic + "', '" + objectName + "') END;";
                         // System.out.println(batchSQL);
 //  add SQL statements to batch
-
                     } else if (shapeArray.contains(s)) {
                         objectShapes++;
                         numberTotalShapes++;
@@ -362,7 +296,7 @@ public class MimicConnections {
                 "arc"
             }));
 
-    public void readMimic(String filename, String server) throws SQLException {
+    public void readMimic(String filename, String server, String tag) throws SQLException {
         BufferedReader br = null;
         File file = new File(filepath, filename);
         if (file.exists()) {
@@ -373,7 +307,7 @@ public class MimicConnections {
                 while ((sCurrentLine = br.readLine()) != null) {
                     // Check that the string is not empty
                     if (sCurrentLine.trim().length() != 0) {
-                        scanMimic(filename, sCurrentLine, server);
+                        scanMimic(filename, sCurrentLine, server, tag);
                     }
                 }
             } catch (IOException e) {
@@ -390,25 +324,6 @@ public class MimicConnections {
             }
         } else {
             System.out.println("Cannot Find: " + filename);
-        }
-    }
-
-    /*
-     * method to delete all data in the SQLDB
-     */
-    public void emptyDatabase() {
-        try {
-            Statement statement = conn.createStatement();
-            statement.addBatch("DELETE FROM allMimics;");  //  add query to batch sql statement  
-            statement.addBatch("DELETE FROM allAlarms;");  //  add query to batch sql statement  
-            statement.addBatch("DELETE FROM allDBPoints;");  //  add query to batch sql statement  
-            statement.addBatch("DELETE FROM allMimics;");  //  add query to batch sql statement
-            statement.addBatch("DELETE FROM allOutstations;");  //  add query to batch sql statement  
-            statement.addBatch("DELETE FROM connections;");  //  add query to batch sql statement  
-            System.out.println("Everything deleted");
-            statement.executeBatch();  //  execute the batch sql statement
-        } catch (Exception e) {
-            //JOptionPane.showMessageDialog(null, e);
         }
     }
 }

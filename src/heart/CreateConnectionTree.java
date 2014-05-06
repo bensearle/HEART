@@ -22,7 +22,7 @@ import javax.swing.JTable;
  *
  * @author bsearle
  */
-public class CreateTree {
+public class CreateConnectionTree {
 
     Connection conn = null;
     ResultSet rs = null;
@@ -30,7 +30,7 @@ public class CreateTree {
 
     public static void main(String[] args) {
         // call the method to start the tree building process
-        new CreateTree().start();
+        new CreateConnectionTree().start();
     }
 
     public void start() {
@@ -48,32 +48,32 @@ public class CreateTree {
         //  tree for heathrow server
         System.out.println("<branch>\n"
                 + "<attribute name=\"name\" value=\"heathrow\"/>");
-        getBranch("BROWSER", "heathrow");  //  create the tree for mimics - top of tree will be a branch of the server
-        getBranch("os", "heathrow");  //  create the tree for outstations - top of tree will be a branch of the server
+        getBranch("heathrow", "heathrow");  //  create the tree for mimics - top of tree will be a branch of the server
+        //getBranch("os", "heathrow");  //  create the tree for outstations - top of tree will be a branch of the server
         System.out.println("</branch>");
         //  tree for heathro2 server
         System.out.println("<branch>\n"
                 + "<attribute name=\"name\" value=\"heathro2\"/>");
-        getBranch("BROWSER", "heathro2");  //  create the tree for mimics - top of tree will be a branch of the server
-        getBranch("os", "heathro2");  //  create the tree for outstations - top of tree will be a branch of the server
+        getBranch("heathro2", "heathro2");  //  create the tree for mimics - top of tree will be a branch of the server
+        //getBranch("os", "heathro2");  //  create the tree for outstations - top of tree will be a branch of the server
         System.out.println("</branch>");
         //  tree for heathro3 server
         System.out.println("<branch>\n"
                 + "<attribute name=\"name\" value=\"heathro3\"/>");
-        getBranch("BROWSER", "heathro3");  //  create the tree for mimics - top of tree will be a branch of the server
-        getBranch("os", "heathro3");  //  create the tree for outstations - top of tree will be a branch of the server
+        getBranch("heathro3", "heathro3");  //  create the tree for mimics - top of tree will be a branch of the server
+        //getBranch("os", "heathro3");  //  create the tree for outstations - top of tree will be a branch of the server
         System.out.println("</branch>");
         //  tree for heathro4 server
         System.out.println("<branch>\n"
                 + "<attribute name=\"name\" value=\"heathro4\"/>");
-        getBranch("BROWSER", "heathro4");  //  create the tree for mimics - top of tree will be a branch of the server
-        getBranch("os", "heathro4");  //  create the tree for outstations - top of tree will be a branch of the server
+        getBranch("heathro4", "heathro4");  //  create the tree for mimics - top of tree will be a branch of the server
+        //getBranch("os", "heathro4");  //  create the tree for outstations - top of tree will be a branch of the server
         System.out.println("</branch>");
         //  tree for heathro5 server
         System.out.println("<branch>\n"
                 + "<attribute name=\"name\" value=\"heathro5\"/>");
-        getBranch("BROWSER", "heathro5");  //  create the tree for mimics - top of tree will be a branch of the server
-        getBranch("os", "heathro5");  //  create the tree for outstations - top of tree will be a branch of the server
+        getBranch("heathro5", "heathro5");  //  create the tree for mimics - top of tree will be a branch of the server
+        //getBranch("os", "heathro5");  //  create the tree for outstations - top of tree will be a branch of the server
         System.out.println("</branch>");
         //  close the top branch - HEART
         System.out.println("</branch>");
@@ -87,30 +87,34 @@ public class CreateTree {
      */
     public void getBranch(String item, String server) {
         /*//  get the last part of - - heathrow.mimic.object.shape etc
-        String testString = "This.is.a.sentence";
-        String[] parts = testString.split(".");
-        String lastWord = parts[parts.length - 1];
-        System.out.println(lastWord); // "sentence"
-*/
+         String testString = "This.is.a.sentence";
+         String[] parts = testString.split(".");
+         String lastWord = parts[parts.length - 1];
+         System.out.println(lastWord); // "sentence"
+         */
         //  call the isBranch method to see if the node is a branch
         if (isBranch(item, server)) {
             try {
                 List<String> branches = new ArrayList<String>();  //  create a list of branches (or leaves) that this node has
                 //  SQL query to return all items where the item parsed in is the primary item
-                String sql = "SELECT * FROM connections WHERE primaryItem = '" + item + "' AND server = '" + server + "' ";
+                String sql = "SELECT * FROM connectionTree WHERE pItem = '" + item + "' AND server = '" + server + "' ";
                 pst = conn.prepareStatement(sql);
                 rs = pst.executeQuery();
                 //  go through the list
                 while (rs.next()) {
-                    String itemName = rs.getString("secondaryItem");  //  get the name secondary item
+                    String itemName = rs.getString("sItem");  //  get the name secondary item
                     //  add the item to the list of branches if it is not null
                     if (itemName != null) {
                         branches.add(itemName);
                     }
                 }
+
+                String[] parts = item.split("\\.");  //  separate the tag in to a list of strings
+                String print = parts[parts.length - 1];  //  select the last part of the tag - mimic name
+
                 //  print the start of the primary node
                 System.out.println("<branch>\n"
-                        + "<attribute name=\"name\" value=\"" + item + "\"/>");
+                        + "<attribute name=\"name\" value=\"" + print + "\"/>");
                 //  for every branch, create call the method to get the branches (or leaves) of that branch
                 for (String b : branches) {
                     getBranch(b, server);
@@ -124,9 +128,11 @@ public class CreateTree {
             }
         } //  if the node is not a branch then it is a leaf
         else {
+            String[] parts = item.split("\\.");  //  separate the tag in to a list of strings
+            String print = parts[parts.length - 1];  //  select the last part of the tag - mimic name
             //  print the enitre leaf
             System.out.println("<leaf>\n"
-                    + "<attribute name=\"name\" value=\"" + item + "\"/>");
+                    + "<attribute name=\"name\" value=\"" + print + "\"/>");
             System.out.println("</leaf>");
         }
     }
@@ -140,7 +146,7 @@ public class CreateTree {
         int count = 0;  //  set the count for the number of outgoing branches from the node
         try {
             //  execute SQL string to count the number of times the item is a primary item
-            String sql = "SELECT COUNT (*) AS count FROM connections WHERE primaryItem = '" + item + "' AND server = '" + server + "' ";
+            String sql = "SELECT COUNT (*) AS count FROM connectionTree WHERE pItem = '" + item + "' AND server = '" + server + "' ";
             pst = conn.prepareStatement(sql);
             rs = pst.executeQuery();
             //  go through the list of counts until the count goes above 1
