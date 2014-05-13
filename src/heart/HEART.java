@@ -225,12 +225,30 @@ public class HEART {
     */
     private static final Set<String> shapeArray = new HashSet<String>(Arrays.asList(
             new String[]{
-                "rect",
-                "rotrect",
-                "polygon",
+                "adjb",
+                "anyb",
+                "arc",
+                "bell",
+                "box",
+                "circle",
+                "menb",
+                "disk",
                 "fill",
+                "key",
+                "line",
                 "pie",
-                "arc"
+                "polygon",
+                "rect",
+                "rotadjb",
+                "rotanyb",
+                "rotarc",
+                "rotbox",
+                "rotmenb",
+                "rotpie",
+                "rotrect",
+                "rotselb",
+                "selb",
+                "text"
             }));
     
     /*

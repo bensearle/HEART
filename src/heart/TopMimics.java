@@ -19,14 +19,18 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
-import javax.swing.JOptionPane;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author bsearle
  */
-public class MimicConnections {
+public class TopMimics {
 
+    Set<String> mimicObjects = null;
+    boolean isTop = false; // boolean to show whether mimic is top level
+    String tempServer = "blank";
     Connection conn = null;
     ResultSet rs = null;
     PreparedStatement pst = null;
@@ -63,28 +67,16 @@ public class MimicConnections {
     public static void main(String[] args) throws SQLException {
         //  call the method to start analysing the HEART data
         System.out.println("********** START **********");
-        new MimicConnections().doOrder();
+        //new TopMimics().doOrder();
+        new TopMimics().testing();
         System.out.println("********** FINISH **********");
         //new HEART().oneOff();
     }
 
-
-    /*
-     * method to return a list of all the files in a specific directory
-     */
-    public static String[] getFileNames(String directoryPath) {
-        File dir = new File(directoryPath);
-        Collection<String> files = new ArrayList<String>();
-        if (dir.isDirectory()) {
-            File[] listFiles = dir.listFiles();
-
-            for (File file : listFiles) {
-                if (file.isFile()) {
-                    files.add(file.getName());
-                }
-            }
-        }
-        return files.toArray(new String[]{});
+    public void testing() throws SQLException {
+        conn = JavaConnect.ConnectDB();
+        statement = conn.createStatement();
+        getMimicObjects("BENTEST");
     }
 
     /*
@@ -94,16 +86,72 @@ public class MimicConnections {
         conn = JavaConnect.ConnectDB();
         statement = conn.createStatement();
 
-        //  analyse mimics
+        /*
+         * search BROWSER mimics to find top level mimics
+         */
+        isTop = true;
+        // readMimic (mimic, server, tag)
+        readMimic("BROWSER", "heathrow", "heathrow");
+        readMimic("BROWSER", "heathro2", "heathro2");
+        readMimic("BROWSER", "heathro3", "heathro3");
+        readMimic("BROWSER", "heathro4", "heathro4");
+        readMimic("BROWSER", "heathro5", "heathro5");
+        isTop = false;
+        statement.executeBatch();
+        
         getTopMimics("heathrow");
         System.out.println("********** addMimics **********");
         statement.executeBatch();
         System.out.println("********** batch **********");
     }
 
-    public void getTopMimics(String server) throws SQLException {
+    public void addMimic(String server, String mimic) throws SQLException {
+        String idTag = server + "." + mimic;
+        String batchSQL = "IF NOT EXISTS (SELECT idTag FROM heartMimics WHERE idTag = '" + idTag + "') BEGIN INSERT INTO heartMimics (idTag, server, mimicName) VALUES ('" + idTag + "', '" + server + "', '" + mimic + "') END;";
+        statement.addBatch(batchSQL);
+        if (isTop) {
+            String batchSQL2 = "UPDATE heartMimics SET isTop = 'true' WHERE idTag = '" + idTag + "';";
+            statement.addBatch(batchSQL2);
+        }
+        System.out.println(batchSQL);
+    }
 
-        String sql = "SELECT mimicName FROM topMimics;";
+    public void addConnectionTree(String server, String p, String s) throws SQLException {
+        String batchSQL = "INSERT INTO connectionTree (server, pItem, sItem) VALUES ('" + server + "', '" + p + "', '" + s + "');";
+        statement.addBatch(batchSQL);
+    }
+
+    public void addMimicMimicConnection(String p, String s) throws SQLException {
+        String idTag = p + "." + s;
+        String batchSQL = "IF NOT EXISTS (SELECT idTag FROM heartMimicConnections WHERE idTag = '" + idTag + "') BEGIN INSERT INTO heartMimicConnections (idTag, pMimic, sMimic) VALUES ('" + idTag + "', '" + p + "', '" + s + "') END;";
+        statement.addBatch(batchSQL);
+    }
+
+    /*
+     * method to get the accessible objects of a given shape
+     */
+    public void getMimicObjects(String mimicName) throws SQLException {
+        Set<String> objects = null;
+        String[] listObjects = new String[100];
+        int i = 0;
+        String sql = "SELECT object FROM heartObjects WHERE mimic IN (SELECT sMimic FROM heartMimicConnections WHERE pMimic = '" + mimicName + "');";
+        pst = conn.prepareStatement(sql);
+        rs = pst.executeQuery();
+        while (rs.next()) {
+            String o = rs.getString("object");
+            System.out.println(o);
+            listObjects[i] = o;
+            i++;
+            System.out.println(o);
+            //objects.add(o);       
+        }
+        System.out.println(Arrays.toString(listObjects));
+        mimicObjects = new HashSet<String>(Arrays.asList(listObjects));
+        System.out.println("*************" + mimicObjects);
+    }
+
+    public void getTopMimics(String server) throws SQLException {
+        String sql = "SELECT mimicName FROM heartMimics WHERE isTop = 'true';";
         pst = conn.prepareStatement(sql);
         rs = pst.executeQuery();
         while (rs.next()) {
@@ -113,16 +161,15 @@ public class MimicConnections {
             addConnectionTree(server, p, s);  //  add server/mimic connection
             //readMimic(m, server);
             topMimic = m;  //  set the top mimic
-            addMimics(server, m);  //  add all mimic underneath the top mimic
+            findMimics(server, m);  //  add all mimic underneath the top mimic
             System.out.println(m);
         }
     }
 
-
     /*
      * method to analyse used mimcs and add data to the SQL DB
      */
-    public void addMimics(String server, String startMimic) throws SQLException {
+    public void findMimics(String server, String startMimic) throws SQLException {
         mimicReadToDo = new String[10000];  //  maximum number of mimics
         filepath = "C:\\HEART\\" + server + "\\Mimics\\";
         mimicReadToDo[0] = server + "." + startMimic;
@@ -145,16 +192,10 @@ public class MimicConnections {
             comment = false;
 
             tag = mimicReadToDo[mimicDoneLength];  //  set the current mimic to the next one in the list
-
-            /* System.out.println("");
-             delimiter = "\\.";
-             temp = tag.split("\\.");
-             for (int i = 0; i < temp.length; i++) {
-             System.out.println(temp[i]);
-             }*/
             String[] parts = tag.split("\\.");  //  separate the tag in to a list of strings
             int i = parts.length;
             currentMimic = parts[parts.length - 1];  //  select the last part of the tag - mimic name
+            getMimicObjects(currentMimic); // create the list of objects that this mimic can use
             readMimic(currentMimic, server, tag);  //  analyse the current mimic
 
             // at this point insert to database the mimic name along with number of objects, lines of codes, etc
@@ -163,11 +204,6 @@ public class MimicConnections {
             //insertMimic(server, currentMimic, linesOfCode, numberObject, numberObjectShape, numberTotalShapes, numberBegin, numberVar, numberDBPoint);
             mimicDoneLength++;  //  increment the number of mimics that have been analysed, so that the next one can be selected
         }
-    }
-
-    public void addConnectionTree(String server, String p, String s) throws SQLException {
-        String batchSQL = "INSERT INTO connectionTree (server, pItem, sItem) VALUES ('" + server + "', '" + p + "', '" + s + "');";
-        statement.addBatch(batchSQL);
     }
 
     public void scanMimic(String filename, String fileline, String server, String tag) throws SQLException {
@@ -201,6 +237,31 @@ public class MimicConnections {
             // if the code is not part of a comment
             if (!comment) {
                 if (s.length() == 1) { //  if string is a single character, do nothing
+                } else if (s.equalsIgnoreCase("set")) {  //  if 'set' is found - indicates right click access
+                    if (sc.hasNext()) {
+                        String s1 = sc.next();
+                        if (s1.equalsIgnoreCase("mimic")) {
+                            String[] parts = fileline.replaceAll("\"", " ").split("\\s+");  //  separate the tag in to a list of strings
+                            //String[] parts = fileline.split("\\s+");  //  separate the tag in to a list of strings
+                            //String mimic = parts[parts.length - 1];  //  select the last part of the tag - mimic name
+                            if (parts.length >= 5) {
+                                Pattern p = Pattern.compile("\"([^\"]*)\"");
+                                Matcher m = p.matcher(fileline);
+                                while (m.find()) {
+                                    String mimic = m.group(1);
+                                    addMimic(tempServer.toLowerCase(), mimic.toUpperCase());
+                                    addConnectionTree(tempServer.toLowerCase(), tag, tag + "." + mimic.toUpperCase());
+                                }
+                                tempServer = server; // set the tempServer back to the original server
+                            }
+                        } else if (s1.equalsIgnoreCase("source")) { // if server 
+                            Pattern p = Pattern.compile("\"([^\"]*)\"");
+                            Matcher m = p.matcher(fileline);
+                            while (m.find()) {
+                                tempServer = m.group(1);
+                            }
+                        }
+                    }
                 } else if (s.equalsIgnoreCase("load")) {  //  if 'load' is found
                     int count = mimicToDoLength - 1;
                     String foundMimic = sc.next();
@@ -213,6 +274,7 @@ public class MimicConnections {
                                 count--;  //  stop the while loop
 
                             } else {
+                                addMimicMimicConnection(topMimic, foundMimic);
                                 String idTag = server + "." + topMimic + "." + foundMimic;
                                 //insertConnection(server, currentMimic, foundMimic, "mimic");//*************************************** needs to be uncommented
                                 String batchSQL = "IF NOT EXISTS (SELECT idTag FROM mimicTree WHERE idTag = '" + idTag + "') BEGIN INSERT INTO mimicTree (idTag, server, pMimic, sMimic, layers) VALUES ('" + idTag + "', '" + server + "', '" + topMimic + "', '" + foundMimic + "', 1) END;";
@@ -255,11 +317,14 @@ public class MimicConnections {
                         insideObjectShape = false;
                         if (objectShapes > 0) {
                             String idTag = server + "." + currentMimic + "." + objectName;
-                            String batchSQL = "IF NOT EXISTS (SELECT idTag FROM objectShapes WHERE idTag = '" + idTag + "') BEGIN INSERT INTO objectShapes (idTag, server, mimic, object, shapes) VALUES ('" + idTag + "', '" + server + "', '" + currentMimic + "', '" + objectName + "', '" + objectShapes + "') END;";
+                            String batchSQL = "IF NOT EXISTS (SELECT idTag FROM heartObjects WHERE idTag = '" + idTag + "') BEGIN INSERT INTO heartObjects (idTag, server, mimic, object, shapes) VALUES ('" + idTag + "', '" + server + "', '" + currentMimic + "', '" + objectName + "', '" + objectShapes + "') END;";
                             statement.addBatch(batchSQL);
                             objectShapes = 0;
                         }
                     }
+                } else if (mimicObjects.contains(s)) {
+                    // mimic objects needs to be initialised at some point
+                    addConnectionTree(server, topMimic, s);
                 } else {
                     if (insideObjectShape && shapeArray.contains(s)) {
                         addConnectionTree(server, tag + "." + objectName, tag + "." + objectName + "." + s);
@@ -280,21 +345,9 @@ public class MimicConnections {
         }
     }
 
-    /*
-     * a list of all shape keywords used in MDL
-     */
-    private static final Set<String> shapeArray = new HashSet<String>(Arrays.asList(
-            new String[]{
-                "rect",
-                "rotrect",
-                "polygon",
-                "fill",
-                "pie",
-                "arc"
-            }));
-
     public void readMimic(String filename, String server, String tag) throws SQLException {
         BufferedReader br = null;
+        filepath = "C:\\HEART\\" + server + "\\Mimics\\";
         File file = new File(filepath, filename);
         if (file.exists()) {
             //System.out.println("Searching " + filename);
@@ -323,4 +376,35 @@ public class MimicConnections {
             System.out.println("Cannot Find: " + filename);
         }
     }
+
+    /*
+     * a list of all shape keywords used in MDL
+     */
+    private static final Set<String> shapeArray = new HashSet<String>(Arrays.asList(
+            new String[]{
+                "adjb",
+                "anyb",
+                "arc",
+                "bell",
+                "box",
+                "circle",
+                "menb",
+                "disk",
+                "fill",
+                "key",
+                "line",
+                "pie",
+                "polygon",
+                "rect",
+                "rotadjb",
+                "rotanyb",
+                "rotarc",
+                "rotbox",
+                "rotmenb",
+                "rotpie",
+                "rotrect",
+                "rotselb",
+                "selb",
+                "text"
+            }));
 }
