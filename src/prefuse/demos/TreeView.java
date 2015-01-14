@@ -68,7 +68,7 @@ import prefuse.visual.sort.TreeDepthItemSorter;
  */
 public class TreeView extends Display {
 
-    public static final String TREE_CHI = "/chi-ontology.xml.gz";
+    public static final String TREE_CHI = "\\\\fst.local\\dfs\\folderredirection\\bsearle\\My Documents\\NetBeansProjects\\HEART\\test.xml";
     
     private static final String tree = "tree";
     private static final String treeNodes = "tree.nodes";
