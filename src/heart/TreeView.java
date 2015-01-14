@@ -145,7 +145,7 @@ public class TreeView extends Display {
         
         // create the filtering and layout
         ActionList filter = new ActionList();
-        filter.add(new FisheyeTreeFilter(tree, 1));
+        filter.add(new FisheyeTreeFilter(tree, 2));
         filter.add(new FontAction(treeNodes, FontLib.getFont("Tahoma", 16)));
         filter.add(treeLayout);
         filter.add(subLayout);
