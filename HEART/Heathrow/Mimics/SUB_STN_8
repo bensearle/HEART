@@ -1,0 +1,93 @@
+load mimic_libutil
+load lv_generator
+load lv_contactor
+load ocb_barcis
+load ocb_monitored
+load transformer
+
+
+!**********************************************************!
+
+ !  SUB 8 is programmed for Remote Start/Stop  !
+!       from Star Centre.                                      !
+
+!  Modified by Vijay Kara --- 22/11/2007              !
+
+!**********************************************************!
+
+!************* BUSBAR 8 **************!
+
+object busbar_8
+
+begin
+
+tfg = black x = 50 y = -55 add text ("8",ch = 25) clear
+
+lw =2
+
+x = 15 y = 140 add
+y -= 100 add
+line(fg=red) clear
+
+x = -30 y = 140 add
+x += 60 add
+line(fg=red,lw=4) clear
+
+x = 50 y = 25 add
+x -= 65 add
+y += 115 add
+line(fg=red) clear
+
+x = -75 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -50 y = -25 add y -= 50 add line (fg=red) clear
+x = 0 y = -25 add y -= 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+x = 100 y = -25 add y += 100 add line (fg=red) clear
+
+scale = 120
+
+x = -50 y = -50 ocb_mont(2500,2600,82,175,heathro2,1,"top")
+x = 0   y = -50 ocb_mont(2500,2610,83,176,heathro2,2,"top")
+x = 50  y = 0   ocb_mont(2500,2620,84,177,heathro2,3,"btm")
+x = 100 y = 0   ocb_mont(2500,2630,85,178,heathro2,4,"btm")
+
+
+
+scale = 140
+x = 30 y = 55 lv_generator(2500,2810,87,0,heathro2)
+
+
+scale = 100
+X = -15 Y = 55 transformer("LT 1","LOCAL") 
+x = 100 y = 45 transformer(".",",")
+
+scale = 120
+
+x = 0 y = 105 lv_changeover(2500,2800,86,heathro2)
+
+
+scale = 256
+just=centrecentre
+tfg=black
+ch=12
+
+x = -50 y = -100 text("SS45")
+x = -50 y = -85 text("P1")
+x = 0 y = -100 text("SS6")
+x = 0 y = -85 text("P1")
+x = 100 y = 85 text ("Feeder to")
+x = 100 y = 100 text ("Sub 86")
+x = 100 y = 115 text ("(Whisky Stands)")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -25 y = -25 busbar_8
+
+end
+
+mimic = main_object w=400,h=400,just=centrecentre,fg=white,bg=aquamarine3,resizable

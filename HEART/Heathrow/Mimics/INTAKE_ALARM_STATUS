@@ -1,0 +1,587 @@
+load mimic_libutil
+load ocb_alarm_test
+
+
+!************* NORTH INTAKE ALARM STATUS ***************!
+
+object north_intake_alarm_status = int
+
+begin
+
+if sub_alarm(1,100,heathrow) == 1
+or sub_alarm(1,120,heathrow) == 1
+or sub_alarm(1,160,heathrow) == 1
+or sub_alarm(1,180,heathrow) == 1
+or sub_alarm(1,200,heathrow) == 1
+or sub_alarm(1,220,heathrow) == 1
+or sub_alarm(1,260,heathrow) == 1
+or sub_alarm(1,280,heathrow) == 1
+or sub_alarm(1,300,heathrow) == 1
+or sub_alarm(1,320,heathrow) == 1
+or sub_alarm(1,340,heathrow) == 1
+or sub_alarm(1,380,heathrow) == 1
+or sub_alarm(1,400,heathrow) == 1
+or sub_alarm(1,420,heathrow) == 1
+or sub_alarm(1,440,heathrow) == 1
+or sub_alarm(1,450,heathrow) == 1
+or sub_alarm(1,460,heathrow) == 1
+or sub_alarm(1,470,heathrow) == 1
+or sub_alarm(1,140,heathrow) == 1
+or sub_alarm(1,240,heathrow) == 1
+or sub_alarm(1,360,heathrow) == 1 then
+begin
+  north_intake_alarm_status = 1
+end
+else
+if sub_alarm(1,100,heathrow) == 2
+or sub_alarm(1,120,heathrow) == 2
+or sub_alarm(1,160,heathrow) == 2
+or sub_alarm(1,180,heathrow) == 2
+or sub_alarm(1,200,heathrow) == 2
+or sub_alarm(1,220,heathrow) == 2
+or sub_alarm(1,260,heathrow) == 2
+or sub_alarm(1,280,heathrow) == 2
+or sub_alarm(1,300,heathrow) == 2
+or sub_alarm(1,320,heathrow) == 2
+or sub_alarm(1,340,heathrow) == 2
+or sub_alarm(1,380,heathrow) == 2
+or sub_alarm(1,400,heathrow) == 2
+or sub_alarm(1,420,heathrow) == 2
+or sub_alarm(1,440,heathrow) == 2
+or sub_alarm(1,450,heathrow) == 2
+or sub_alarm(1,460,heathrow) == 2
+or sub_alarm(1,470,heathrow) == 2
+or sub_alarm(1,140,heathrow) == 2
+or sub_alarm(1,240,heathrow) == 2
+or sub_alarm(1,360,heathrow) == 2 then
+begin
+  north_intake_alarm_status = 2
+end
+else
+if sub_alarm(1,100,heathrow) == 3
+or sub_alarm(1,120,heathrow) == 3
+or sub_alarm(1,160,heathrow) == 3
+or sub_alarm(1,180,heathrow) == 3
+or sub_alarm(1,200,heathrow) == 3
+or sub_alarm(1,220,heathrow) == 3
+or sub_alarm(1,260,heathrow) == 3
+or sub_alarm(1,280,heathrow) == 3
+or sub_alarm(1,300,heathrow) == 3
+or sub_alarm(1,320,heathrow) == 3
+or sub_alarm(1,340,heathrow) == 3
+or sub_alarm(1,380,heathrow) == 3
+or sub_alarm(1,400,heathrow) == 3
+or sub_alarm(1,420,heathrow) == 3
+or sub_alarm(1,440,heathrow) == 3
+or sub_alarm(1,450,heathrow) == 3
+or sub_alarm(1,460,heathrow) == 3
+or sub_alarm(1,470,heathrow) == 3
+or sub_alarm(1,140,heathrow) == 3
+or sub_alarm(1,240,heathrow) == 3
+or sub_alarm(1,360,heathrow) == 3 then
+begin
+  north_intake_alarm_status = 3
+end
+else
+begin
+  north_intake_alarm_status = 0
+end
+
+end
+
+
+!************* SOUTH INTAKE ALARM STATUS ***************!
+
+object south_intake_alarm_status = int
+begin
+
+if sub_alarm(1000,1100,heathrow) == 1
+or sub_alarm(1000,1120,heathrow) == 1
+or sub_alarm(1000,1140,heathrow) == 1
+or sub_alarm(1000,1160,heathrow) == 1
+or sub_alarm(1000,1180,heathrow) == 1
+or sub_alarm(1000,1200,heathrow) == 1
+or sub_alarm(1000,1220,heathrow) == 1
+or sub_alarm(1000,1240,heathrow) == 1
+or sub_alarm(1000,1700,heathrow) == 1
+or sub_alarm(1000,1710,heathrow) == 1
+or sub_alarm(1000,1260,heathrow) == 1
+or sub_alarm(1000,1720,heathrow) == 1
+or sub_alarm(1000,1730,heathrow) == 1
+or sub_alarm(1000,1280,heathrow) == 1
+or sub_alarm(1000,1300,heathrow) == 1
+or sub_alarm(1000,1320,heathrow) == 1
+or sub_alarm(1000,1340,heathrow) == 1
+or sub_alarm(1000,1360,heathrow) == 1
+or sub_alarm(1000,1380,heathrow) == 1
+or sub_alarm(1000,1400,heathrow) == 1
+or sub_alarm(1000,1420,heathrow) == 1
+or sub_alarm(1000,1440,heathrow) == 1
+or sub_alarm(1000,1460,heathrow) == 1
+or sub_alarm(1000,1740,heathrow) == 1
+or sub_alarm(1000,1750,heathrow) == 1
+or sub_alarm(1000,1480,heathrow) == 1
+or sub_alarm(1000,1760,heathrow) == 1
+or sub_alarm(1000,1770,heathrow) == 1
+or sub_alarm(1000,1500,heathrow) == 1
+or sub_alarm(1000,1520,heathrow) == 1
+or sub_alarm(1000,1540,heathrow) == 1
+or sub_alarm(1000,1560,heathrow) == 1
+or sub_alarm(1000,1580,heathrow) == 1
+or sub_alarm(1000,1600,heathrow) == 1
+or sub_alarm(1000,1620,heathrow) == 1
+or sub_alarm(1000,1640,heathrow) == 1
+or sub_alarm(1000,1660,heathrow) == 1
+or sub_alarm(1000,1680,heathrow) == 1 then
+begin
+  south_intake_alarm_status = 1
+end
+else
+if sub_alarm(1000,1100,heathrow) == 2
+or sub_alarm(1000,1120,heathrow) == 2
+or sub_alarm(1000,1140,heathrow) == 2
+or sub_alarm(1000,1160,heathrow) == 2
+or sub_alarm(1000,1180,heathrow) == 2
+or sub_alarm(1000,1200,heathrow) == 2
+or sub_alarm(1000,1220,heathrow) == 2
+or sub_alarm(1000,1240,heathrow) == 2
+or sub_alarm(1000,1700,heathrow) == 2
+or sub_alarm(1000,1710,heathrow) == 2
+or sub_alarm(1000,1260,heathrow) == 2
+or sub_alarm(1000,1720,heathrow) == 2
+or sub_alarm(1000,1730,heathrow) == 2
+or sub_alarm(1000,1280,heathrow) == 2
+or sub_alarm(1000,1300,heathrow) == 2
+or sub_alarm(1000,1320,heathrow) == 2
+or sub_alarm(1000,1340,heathrow) == 2
+or sub_alarm(1000,1360,heathrow) == 2
+or sub_alarm(1000,1380,heathrow) == 2
+or sub_alarm(1000,1400,heathrow) == 2
+or sub_alarm(1000,1420,heathrow) == 2
+or sub_alarm(1000,1440,heathrow) == 2
+or sub_alarm(1000,1460,heathrow) == 2
+or sub_alarm(1000,1740,heathrow) == 2
+or sub_alarm(1000,1750,heathrow) == 2
+or sub_alarm(1000,1480,heathrow) == 2
+or sub_alarm(1000,1760,heathrow) == 2
+or sub_alarm(1000,1770,heathrow) == 2
+or sub_alarm(1000,1500,heathrow) == 2
+or sub_alarm(1000,1520,heathrow) == 2
+or sub_alarm(1000,1540,heathrow) == 2
+or sub_alarm(1000,1560,heathrow) == 2
+or sub_alarm(1000,1580,heathrow) == 2
+or sub_alarm(1000,1600,heathrow) == 2
+or sub_alarm(1000,1620,heathrow) == 2
+or sub_alarm(1000,1640,heathrow) == 2
+or sub_alarm(1000,1660,heathrow) == 2
+or sub_alarm(1000,1680,heathrow) == 2 then
+begin
+  south_intake_alarm_status = 2
+end
+else
+if sub_alarm(1000,1100,heathrow) == 3
+or sub_alarm(1000,1120,heathrow) == 3
+or sub_alarm(1000,1140,heathrow) == 3
+or sub_alarm(1000,1160,heathrow) == 3
+or sub_alarm(1000,1180,heathrow) == 3
+or sub_alarm(1000,1200,heathrow) == 3
+or sub_alarm(1000,1220,heathrow) == 3
+or sub_alarm(1000,1240,heathrow) == 3
+or sub_alarm(1000,1700,heathrow) == 3
+or sub_alarm(1000,1710,heathrow) == 3
+or sub_alarm(1000,1260,heathrow) == 3
+or sub_alarm(1000,1720,heathrow) == 3
+or sub_alarm(1000,1730,heathrow) == 3
+or sub_alarm(1000,1280,heathrow) == 3
+or sub_alarm(1000,1300,heathrow) == 3
+or sub_alarm(1000,1320,heathrow) == 3
+or sub_alarm(1000,1340,heathrow) == 3
+or sub_alarm(1000,1360,heathrow) == 3
+or sub_alarm(1000,1380,heathrow) == 3
+or sub_alarm(1000,1400,heathrow) == 3
+or sub_alarm(1000,1420,heathrow) == 3
+or sub_alarm(1000,1440,heathrow) == 3
+or sub_alarm(1000,1460,heathrow) == 3
+or sub_alarm(1000,1740,heathrow) == 3
+or sub_alarm(1000,1750,heathrow) == 3
+or sub_alarm(1000,1480,heathrow) == 3
+or sub_alarm(1000,1760,heathrow) == 3
+or sub_alarm(1000,1770,heathrow) == 3
+or sub_alarm(1000,1500,heathrow) == 3
+or sub_alarm(1000,1520,heathrow) == 3
+or sub_alarm(1000,1540,heathrow) == 3
+or sub_alarm(1000,1560,heathrow) == 3
+or sub_alarm(1000,1580,heathrow) == 3
+or sub_alarm(1000,1600,heathrow) == 3
+or sub_alarm(1000,1620,heathrow) == 3
+or sub_alarm(1000,1640,heathrow) == 3
+or sub_alarm(1000,1660,heathrow) == 3
+or sub_alarm(1000,1680,heathrow) == 3 then
+begin
+  south_intake_alarm_status = 3
+end
+else
+begin
+  south_intake_alarm_status = 0
+end
+
+end
+
+
+!************* EAST INTAKE ALARM STATUS ***************!
+
+object east_intake_alarm_status = int
+begin
+
+if sub_alarm(2000,2520,heathrow) == 1
+or sub_alarm(2000,2500,heathrow) == 1
+or sub_alarm(2000,2480,heathrow) == 1
+or sub_alarm(2000,2460,heathrow) == 1
+or sub_alarm(2000,2440,heathrow) == 1
+or sub_alarm(2000,2420,heathrow) == 1
+or sub_alarm(2000,2400,heathrow) == 1
+or sub_alarm(2000,2380,heathrow) == 1
+or sub_alarm(2000,2560,heathrow) == 1
+or sub_alarm(2000,2570,heathrow) == 1
+or sub_alarm(2000,2360,heathrow) == 1
+or sub_alarm(2000,2340,heathrow) == 1
+or sub_alarm(2000,2320,heathrow) == 1
+or sub_alarm(2000,2300,heathrow) == 1
+or sub_alarm(2000,2540,heathrow) == 1
+or sub_alarm(2000,2550,heathrow) == 1
+or sub_alarm(2000,2280,heathrow) == 1
+or sub_alarm(2000,2260,heathrow) == 1
+or sub_alarm(2000,2240,heathrow) == 1
+or sub_alarm(2000,2220,heathrow) == 1
+or sub_alarm(2000,2200,heathrow) == 1
+or sub_alarm(2000,2180,heathrow) == 1
+or sub_alarm(2000,2160,heathrow) == 1
+or sub_alarm(2000,2140,heathrow) == 1
+or sub_alarm(2000,2120,heathrow) == 1
+or sub_alarm(2000,2100,heathrow) == 1 then
+begin
+  east_intake_alarm_status = 1
+end
+else
+if sub_alarm(2000,2520,heathrow) == 2
+or sub_alarm(2000,2500,heathrow) == 2
+or sub_alarm(2000,2480,heathrow) == 2
+or sub_alarm(2000,2460,heathrow) == 2
+or sub_alarm(2000,2440,heathrow) == 2
+or sub_alarm(2000,2420,heathrow) == 2
+or sub_alarm(2000,2400,heathrow) == 2
+or sub_alarm(2000,2380,heathrow) == 2
+or sub_alarm(2000,2560,heathrow) == 2
+or sub_alarm(2000,2570,heathrow) == 2
+or sub_alarm(2000,2360,heathrow) == 2
+or sub_alarm(2000,2340,heathrow) == 2
+or sub_alarm(2000,2320,heathrow) == 2
+or sub_alarm(2000,2300,heathrow) == 2
+or sub_alarm(2000,2540,heathrow) == 2
+or sub_alarm(2000,2550,heathrow) == 2
+or sub_alarm(2000,2280,heathrow) == 2
+or sub_alarm(2000,2260,heathrow) == 2
+or sub_alarm(2000,2240,heathrow) == 2
+or sub_alarm(2000,2220,heathrow) == 2
+or sub_alarm(2000,2200,heathrow) == 2
+or sub_alarm(2000,2180,heathrow) == 2
+or sub_alarm(2000,2160,heathrow) == 2
+or sub_alarm(2000,2140,heathrow) == 2
+or sub_alarm(2000,2120,heathrow) == 2
+or sub_alarm(2000,2100,heathrow) == 2 then
+begin
+  east_intake_alarm_status = 2
+end
+else
+if sub_alarm(2000,2520,heathrow) == 3
+or sub_alarm(2000,2500,heathrow) == 3
+or sub_alarm(2000,2480,heathrow) == 3
+or sub_alarm(2000,2460,heathrow) == 3
+or sub_alarm(2000,2440,heathrow) == 3
+or sub_alarm(2000,2420,heathrow) == 3
+or sub_alarm(2000,2400,heathrow) == 3
+or sub_alarm(2000,2380,heathrow) == 3
+or sub_alarm(2000,2560,heathrow) == 3
+or sub_alarm(2000,2570,heathrow) == 3
+or sub_alarm(2000,2360,heathrow) == 3
+or sub_alarm(2000,2340,heathrow) == 3
+or sub_alarm(2000,2320,heathrow) == 3
+or sub_alarm(2000,2300,heathrow) == 3
+or sub_alarm(2000,2540,heathrow) == 3
+or sub_alarm(2000,2550,heathrow) == 3
+or sub_alarm(2000,2280,heathrow) == 3
+or sub_alarm(2000,2260,heathrow) == 3
+or sub_alarm(2000,2240,heathrow) == 3
+or sub_alarm(2000,2220,heathrow) == 3
+or sub_alarm(2000,2200,heathrow) == 3
+or sub_alarm(2000,2180,heathrow) == 3
+or sub_alarm(2000,2160,heathrow) == 3
+or sub_alarm(2000,2140,heathrow) == 3
+or sub_alarm(2000,2120,heathrow) == 3
+or sub_alarm(2000,2100,heathrow) == 3 then
+begin
+  east_intake_alarm_status = 3
+end
+else
+begin
+  east_intake_alarm_status = 0
+end
+
+end
+
+
+!************* WEST INTAKE ALARM STATUS ***************!
+
+object west_intake_alarm_status = int
+begin
+
+if sub_alarm(3000,3100,heathrow) == 1
+or sub_alarm(3000,3120,heathrow) == 1
+or sub_alarm(3000,3140,heathrow) == 1
+or sub_alarm(3000,3160,heathrow) == 1
+or sub_alarm(3000,3180,heathrow) == 1
+or sub_alarm(3000,3200,heathrow) == 1
+or sub_alarm(3000,3220,heathrow) == 1
+or sub_alarm(3000,3240,heathrow) == 1
+or sub_alarm(3000,3260,heathrow) == 1
+or sub_alarm(3000,3300,heathrow) == 1
+or sub_alarm(3000,3320,heathrow) == 1
+or sub_alarm(3000,3340,heathrow) == 1
+or sub_alarm(3000,3360,heathrow) == 1
+or sub_alarm(3000,3380,heathrow) == 1
+or sub_alarm(3000,3400,heathrow) == 1
+or sub_alarm(3000,3420,heathrow) == 1
+or sub_alarm(3000,3440,heathrow) == 1
+or sub_alarm(3000,3460,heathrow) == 1
+or sub_alarm(3000,3480,heathrow) == 1
+or sub_alarm(3000,3500,heathrow) == 1
+or sub_alarm(3000,3510,heathrow) == 1 then
+begin
+  west_intake_alarm_status = 1
+end
+else
+if sub_alarm(3000,3100,heathrow) == 2
+or sub_alarm(3000,3120,heathrow) == 2
+or sub_alarm(3000,3140,heathrow) == 2
+or sub_alarm(3000,3160,heathrow) == 2
+or sub_alarm(3000,3180,heathrow) == 2
+or sub_alarm(3000,3200,heathrow) == 2
+or sub_alarm(3000,3220,heathrow) == 2
+or sub_alarm(3000,3240,heathrow) == 2
+or sub_alarm(3000,3260,heathrow) == 2
+or sub_alarm(3000,3300,heathrow) == 2
+or sub_alarm(3000,3320,heathrow) == 2
+or sub_alarm(3000,3340,heathrow) == 2
+or sub_alarm(3000,3360,heathrow) == 2
+or sub_alarm(3000,3380,heathrow) == 2
+or sub_alarm(3000,3400,heathrow) == 2
+or sub_alarm(3000,3420,heathrow) == 2
+or sub_alarm(3000,3440,heathrow) == 2
+or sub_alarm(3000,3460,heathrow) == 2
+or sub_alarm(3000,3480,heathrow) == 2
+or sub_alarm(3000,3500,heathrow) == 2
+or sub_alarm(3000,3510,heathrow) == 2 then
+begin
+  west_intake_alarm_status = 2
+end
+if sub_alarm(3000,3100,heathrow) == 3
+or sub_alarm(3000,3120,heathrow) == 3
+or sub_alarm(3000,3140,heathrow) == 3
+or sub_alarm(3000,3160,heathrow) == 3
+or sub_alarm(3000,3180,heathrow) == 3
+or sub_alarm(3000,3200,heathrow) == 3
+or sub_alarm(3000,3220,heathrow) == 3
+or sub_alarm(3000,3240,heathrow) == 3
+or sub_alarm(3000,3260,heathrow) == 3
+or sub_alarm(3000,3300,heathrow) == 3
+or sub_alarm(3000,3320,heathrow) == 3
+or sub_alarm(3000,3340,heathrow) == 3
+or sub_alarm(3000,3360,heathrow) == 3
+or sub_alarm(3000,3380,heathrow) == 3
+or sub_alarm(3000,3400,heathrow) == 3
+or sub_alarm(3000,3420,heathrow) == 3
+or sub_alarm(3000,3440,heathrow) == 3
+or sub_alarm(3000,3460,heathrow) == 3
+or sub_alarm(3000,3480,heathrow) == 3
+or sub_alarm(3000,3500,heathrow) == 3
+or sub_alarm(3000,3510,heathrow) == 3 then
+begin
+  west_intake_alarm_status = 3
+end
+else
+begin
+  west_intake_alarm_status = 0 
+end
+
+end
+
+
+!************* SUB 23 ALARM STATUS ***************!
+
+object sub_23_alarm_status = int
+begin
+
+if sub_alarm(4000,4390,heathrow) == 1
+or sub_alarm(4000,4280,heathrow) == 1
+or sub_alarm(4000,4290,heathrow) == 1
+or sub_alarm(4000,4100,heathrow) == 1
+or sub_alarm(4000,4120,heathrow) == 1
+or sub_alarm(4000,4140,heathrow) == 1
+or sub_alarm(4000,4310,heathrow) == 1
+or sub_alarm(4000,4160,heathrow) == 1
+or sub_alarm(4000,4320,heathrow) == 1
+or sub_alarm(4000,4330,heathrow) == 1
+or sub_alarm(4000,4340,heathrow) == 1
+or sub_alarm(4000,4350,heathrow) == 1
+or sub_alarm(4000,4360,heathrow) == 1
+or sub_alarm(4000,4180,heathrow) == 1
+or sub_alarm(4000,4370,heathrow) == 1
+or sub_alarm(4000,4380,heathrow) == 1
+or sub_alarm(4000,4200,heathrow) == 1
+or sub_alarm(4000,4220,heathrow) == 1
+or sub_alarm(4000,4240,heathrow) == 1
+or sub_alarm(4000,4260,heathrow) == 1 then
+begin
+  sub_23_alarm_status = 1
+end
+else
+if sub_alarm(4000,4390,heathrow) == 2
+or sub_alarm(4000,4280,heathrow) == 2
+or sub_alarm(4000,4290,heathrow) == 2
+or sub_alarm(4000,4100,heathrow) == 2
+or sub_alarm(4000,4120,heathrow) == 2
+or sub_alarm(4000,4140,heathrow) == 2
+or sub_alarm(4000,4310,heathrow) == 2
+or sub_alarm(4000,4160,heathrow) == 2
+or sub_alarm(4000,4320,heathrow) == 2
+or sub_alarm(4000,4330,heathrow) == 2
+or sub_alarm(4000,4340,heathrow) == 2
+or sub_alarm(4000,4350,heathrow) == 2
+or sub_alarm(4000,4360,heathrow) == 2
+or sub_alarm(4000,4180,heathrow) == 2
+or sub_alarm(4000,4370,heathrow) == 2
+or sub_alarm(4000,4380,heathrow) == 2
+or sub_alarm(4000,4200,heathrow) == 2
+or sub_alarm(4000,4220,heathrow) == 2
+or sub_alarm(4000,4240,heathrow) == 2
+or sub_alarm(4000,4260,heathrow) == 2 then
+begin
+  sub_23_alarm_status = 2
+end
+else
+if sub_alarm(4000,4390,heathrow) == 3
+or sub_alarm(4000,4280,heathrow) == 3
+or sub_alarm(4000,4290,heathrow) == 3
+or sub_alarm(4000,4100,heathrow) == 3
+or sub_alarm(4000,4120,heathrow) == 3
+or sub_alarm(4000,4140,heathrow) == 3
+or sub_alarm(4000,4310,heathrow) == 3
+or sub_alarm(4000,4160,heathrow) == 3
+or sub_alarm(4000,4320,heathrow) == 3
+or sub_alarm(4000,4330,heathrow) == 3
+or sub_alarm(4000,4340,heathrow) == 3
+or sub_alarm(4000,4350,heathrow) == 3
+or sub_alarm(4000,4360,heathrow) == 3
+or sub_alarm(4000,4180,heathrow) == 3
+or sub_alarm(4000,4370,heathrow) == 3
+or sub_alarm(4000,4380,heathrow) == 3
+or sub_alarm(4000,4200,heathrow) == 3
+or sub_alarm(4000,4220,heathrow) == 3
+or sub_alarm(4000,4240,heathrow) == 3
+or sub_alarm(4000,4260,heathrow) == 3 then
+begin
+  sub_23_alarm_status = 3
+end
+else
+begin
+  sub_23_alarm_status = 0
+end
+
+end
+
+
+!************* SUB 32 ALARM STATUS ***************!
+
+object sub_32_alarm_status = int
+begin
+
+if sub_alarm(5000,5370,heathrow) == 1
+or sub_alarm(5000,5360,heathrow) == 1
+or sub_alarm(5000,5260,heathrow) == 1
+or sub_alarm(5000,5240,heathrow) == 1
+or sub_alarm(5000,5220,heathrow) == 1
+or sub_alarm(5000,5350,heathrow) == 1
+or sub_alarm(5000,5340,heathrow) == 1
+or sub_alarm(5000,5330,heathrow) == 1
+or sub_alarm(5000,5320,heathrow) == 1
+or sub_alarm(5000,5200,heathrow) == 1
+or sub_alarm(5000,5180,heathrow) == 1
+or sub_alarm(5000,5160,heathrow) == 1
+or sub_alarm(5000,5310,heathrow) == 1
+or sub_alarm(5000,5300,heathrow) == 1
+or sub_alarm(5000,5290,heathrow) == 1
+or sub_alarm(5000,5280,heathrow) == 1
+or sub_alarm(5000,5140,heathrow) == 1
+or sub_alarm(5000,5120,heathrow) == 1
+or sub_alarm(5000,5100,heathrow) == 1 then
+begin
+  sub_32_alarm_status = 1
+end
+else
+if sub_alarm(5000,5370,heathrow) == 2
+or sub_alarm(5000,5360,heathrow) == 2
+or sub_alarm(5000,5260,heathrow) == 2
+or sub_alarm(5000,5240,heathrow) == 2
+or sub_alarm(5000,5220,heathrow) == 2
+or sub_alarm(5000,5350,heathrow) == 2
+or sub_alarm(5000,5340,heathrow) == 2
+or sub_alarm(5000,5330,heathrow) == 2
+or sub_alarm(5000,5320,heathrow) == 2
+or sub_alarm(5000,5200,heathrow) == 2
+or sub_alarm(5000,5180,heathrow) == 2
+or sub_alarm(5000,5160,heathrow) == 2
+or sub_alarm(5000,5310,heathrow) == 2
+or sub_alarm(5000,5300,heathrow) == 2
+or sub_alarm(5000,5290,heathrow) == 2
+or sub_alarm(5000,5280,heathrow) == 2
+or sub_alarm(5000,5140,heathrow) == 2
+or sub_alarm(5000,5120,heathrow) == 2
+or sub_alarm(5000,5100,heathrow) == 2 then
+begin
+  sub_32_alarm_status = 2
+end
+if sub_alarm(5000,5370,heathrow) == 3
+or sub_alarm(5000,5360,heathrow) == 3
+or sub_alarm(5000,5260,heathrow) == 3
+or sub_alarm(5000,5240,heathrow) == 3
+or sub_alarm(5000,5220,heathrow) == 3
+or sub_alarm(5000,5350,heathrow) == 3
+or sub_alarm(5000,5340,heathrow) == 3
+or sub_alarm(5000,5330,heathrow) == 3
+or sub_alarm(5000,5320,heathrow) == 3
+or sub_alarm(5000,5200,heathrow) == 3
+or sub_alarm(5000,5180,heathrow) == 3
+or sub_alarm(5000,5160,heathrow) == 3
+or sub_alarm(5000,5310,heathrow) == 3
+or sub_alarm(5000,5300,heathrow) == 3
+or sub_alarm(5000,5290,heathrow) == 3
+or sub_alarm(5000,5280,heathrow) == 3
+or sub_alarm(5000,5140,heathrow) == 3
+or sub_alarm(5000,5120,heathrow) == 3
+or sub_alarm(5000,5100,heathrow) == 3 then
+begin
+  sub_32_alarm_status = 3
+end
+else
+begin
+  sub_32_alarm_status = 0
+end
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

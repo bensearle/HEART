@@ -1,0 +1,90 @@
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: SUB_STN_52                               **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 07/05/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 1.0 (For RTU29-03 FAT)              **!
+!** Date: 02/04/12                                       **!
+!** Changes made:                                        **!
+!**  - Points re-mapped from old OS08 to new OS29.       **!
+!**  - These changes have been made as part of the A1    **!
+!**    Centre decommissioning project.                   **!
+!**********************************************************!
+
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!*********** BUSBAR 52 *************!
+
+object busbar_52
+
+begin
+
+just = centrecentre
+
+tfg = black x = 160 y = 0 add text ("52",ch = 35) clear
+x = -225 y = 25 add x +=400 add line(lw=4,fg=magenta3) clear
+lw=2
+
+x = -200 y = 25 add y += 50 add line (fg=magenta3) clear
+x = -150 y = 25 add y += 50 add line (fg=magenta3) clear
+x = 100 y = 25 add y += 55 add line (fg=magenta3) clear
+x = 150 y = 25 add y += 55 add line (fg=magenta3) clear
+
+
+x = -100 y = -25 add y += 50 add line (fg=magenta3) clear
+x = 0 y = -25 add y += 50 add line (fg=magenta3) clear
+x = 50 y = -25 add y += 50 add line (fg=magenta3) clear
+
+scale = 120
+x = -200 y = 50 ocb_mont(32700,33710,2958,8114,heathro2,1,"btm")
+x = -150 y = 50 ocb_mont(32700,33720,2959,8115,heathro2,2,"btm")
+x = -100 y = 0 ocb_mont(32700,33730,2960,8116,heathro2,3,"top")
+x =  -50 y = 25 ocb_mont(32700,33740,2961,8117,heathro2,4,"sect",angle=90)
+x =    0 y = 0 ocb_mont(32700,33750,2962,8118,heathro2,5,"top")
+x =   50 y = 0 ocb_mont(32700,33760,2963,8119,heathro2,6,"top")
+x =  100 y = 50 ocb_mont(32700,33770,2964,8120,heathro2,7,"btm")
+x =  150 y = 50 ocb_mont(32700,33780,2965,8121,heathro2,8,"btm")
+
+scale = 100
+x = -200 y = 95  transformer("T 3","")
+x = -150 y = 95  transformer("LT 1","LOCAL")
+!x =  100 y = 95  transformer("LT 2","LOCAL")!
+!x =  150 y = 95  transformer("LT 3","LOCAL")!
+
+scale = 260
+tfg = black ch=12
+x = -215 y = 125 text("ARRIVALS")
+x = -215 y = 140 text("OFFICE")
+x = -150 y = 125 text("SPARE")
+x = -100 y = -50 text("SUB 84")
+x = -100 y = -35 text("P1")
+x = 0 y = -50 text("SS29")
+x = 0 y = -35 text("P0")
+x = 50 y = -50 text("SUB 121")
+x = 50 y = -35 text("P2")
+x = 95 y = 90 text("SPARE")
+x = 150 y = 90 text("CABLE")
+x = 150 y = 105 text("POT")
+x = 150 y = 120 text("ENDED") 
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 25 y = -50 busbar_52
+
+end
+
+mimic = main_object w=600,h=350,just=centrecentre,fg=white,bg=aquamarine3,resizable

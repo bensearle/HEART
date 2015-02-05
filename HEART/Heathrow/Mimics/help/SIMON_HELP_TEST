@@ -1,0 +1,34 @@
+load mimic_libutil
+load SIMON_HELP_TEST_HELP
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+var helpstr = help string(30)
+
+begin
+
+
+x = 0 y = 0 rect(just=centrecentre,w=100,h=100,fg=decoroff)
+x = -50 y = 50 add y -= 100 add x += 100 add line(lw=1,fg=decorlight) clear
+x = -50 y = 50 add x += 100 add y -= 100 add line(lw=1,fg=decorshadow) clear
+
+just = centrecentre
+x = -1
+y = -29 add text(tfg=blue,ch=20,"This is a") clear
+y = -9 add text(tfg=blue,ch=20,"help test") clear
+y = 11 add text(tfg=blue,ch=20,"object") clear
+y = 31 add text(tfg=blue,ch=20,"for Reedy") clear
+x = 0
+y = -30 add text(tfg=red,ch=20,"This is a") clear
+y = -10 add text(tfg=red,ch=20,"help test") clear
+y = 10 add text(tfg=red,ch=20,"object") clear
+y = 30 add text(tfg=red,ch=20,"for Reedy") clear
+
+just=centrecentre
+x = 0 y = 0 w = 100 h = 100
+set text helpstr = "JEREMY_HELP"
+
+end
+
+mimic = main_object w=300,h=300,just=centrecentre,fg=white,bg=black,resizable

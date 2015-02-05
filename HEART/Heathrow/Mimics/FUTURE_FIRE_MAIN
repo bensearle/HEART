@@ -1,0 +1,428 @@
+!load mimic_libutil
+load FUTURE_FIRE_MAIN_HELP
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin!
+! HEATHROW CMS - FIRE MAIN
+
+loaded by: HIERARCHY
+
+!
+load mimic_libutil
+load electric_pump                          ! displays eletric pumps 1-7 !
+load diesel_pump                            ! displays diesel pumps 8-10 !
+load hand_valve                                   ! displays hand valves !
+load pressure_pump                         ! displays pressure pumps 1-3 !
+load sensor_w_high_sp                               ! displays flow data !
+load sensor_w_low_sp                            ! displays pressure data !
+load mmm_selector             ! displays calc mode for flow and pressure !
+load fmorders_tmp                          ! displays pump start numbers !
+load future_fire_main_status                    ! displays system status !
+load fire_main_setpoints                   ! displays firemain setpoints !
+load o2_display                               ! displays oxygen contents ! 
+load pressure_alarm			   !displays local pressure value!
+load flow_alarm                                 !display local flow value!
+load pmv_with_group_enable                                 ! lockouts 1&2!
+load pmv_with_group_enable3                               !phase 1 valves!
+load pmv_with_group_enable2                               !phase 2 valves!
+load pmv_with_enable                                  !  penstock valves !
+!load pmv_var !                                           ! mv 13 and 14 !
+load pmv_18_19		                		 !  mv 18 and 19 !
+load temp_pmv_var                                          !mv 13 and 14 !
+load aerator2                                        !reservoir aerators !
+load vcb_alarm                               ! alarms for electric pumps !
+load sump_pump                                   ! pump house sump pumps !
+load sump_hi_sensor                                ! sump overflow alarm !
+load analogue_display_only               ! displays mv 13 & 14 setpoints !
+load fire_main_backup                 ! displays fire main backup object !
+load main_hierarchy                          ! used to load other mimics !
+
+
+! 
+*********************************************************
+* DRAW FIRE MAIN PIPES IN BLUE                          *
+*********************************************************
+!
+
+object fg_valves
+
+begin
+
+
+lw=6 
+fg = blue
+x = -420 y = -250 add
+x = 700 add 
+y = 250 add
+x = -420 add
+y = -250 add
+line clear
+
+x = -220 ADD
+y = 250 add
+line clear
+
+y = 0 add
+x = -420 add 
+line clear
+
+x = 0 y = 250 add
+y = -250 add
+line clear
+
+x = 125 y = 250 add
+y = 500 add
+line clear
+
+x = 250 Y = -250 ADD
+y = 250 add
+line clear
+
+!*******spur for mv18 and mv19********!
+x = -288 y = 0 ADD
+y = 175 add
+line
+clear
+
+
+
+!****************************VALVES**********************************!
+
+scale = 200
+
+x=-220 y=-150 pmv_with_group_enable2(1,7300,15067,210,12,heathro2,heathrow,"n","MV 1")
+x=-220 y=  50 pmv_with_group_enable2(2500,7300,15067,2820,106,heathro2,heathrow,"n","MV 3")
+x=-220 y= 150 pmv_with_group_enable2(2500,7300,15067,2830,107,heathro2,heathrow,"n","MV 4")
+x=-75  y= 250 pmv_with_group_enable2(1500,7300,15067,1780,55,heathro2,heathrow,"y","MV 5")
+x=-175 y= 250 pmv_with_group_enable2(2500,7300,15067,2840,108,heathro2,heathrow,"y","MV6")
+x=-365 y=   0 pmv_with_group_enable2(4000,7300,15067,4280,166,heathro2,heathrow,"y","MV 7")
+x=-325 y= 250 pmv_with_group_enable2(3000,7300,15067,3430,142,heathro2,heathrow,"y","MV 8")
+
+!*********** Valve Through O/S 16 ***************!
+
+x=-220 y=-50 pmv_with_group_enable3(16000,15067,7300,16100,797,heathrow,heathro2,"n","MV 2")  
+
+!************* Motorised Valves *****************!
+
+x=75 y=250 pmv_with_group_enable3(15000,15067,7300,15455,777,heathrow,heathro2,"y","MV 9")
+x=0 y=0 pmv_with_group_enable3(15000,15067,7300,15475,778,heathrow,heathro2,"n","MV 10")
+x=-75 y=-250 pmv_with_group_enable3(15000,15067,7300,15565,783,heathrow,heathro2,"y","MV 15")
+x=75 y=-250 pmv_with_group_enable3(15000,15067,7300,15495,779,heathrow,heathro2,"y","MV 11")
+
+!************* Variables Valves ****************!
+
+x=160 y=-250 var_pmv(15000,15550,782,1085,15790,heathrow,"y","MV 14")
+scale=290
+y+=-60 analogue_display_only(1085,""," %",heathrow)
+y= 190 analogue_display_only(1083,""," %",heathrow)
+scale=200
+x=160 y=250 var_pmv(15000,15535,781,1083,15789,heathrow,"y","MV 13")
+
+!********** Motorised Valves 18 and 19 *********!
+
+scale=170
+x=-290 y=52 pmv_18_19(7000,15800,805,heathrow,"n","MV 18")
+
+!************** Lockout Valves *****************!
+
+y=148 pmv_18_19(7000,15810,806,heathrow,"n","MV 19")
+x=250 y=-150 pmv_with_group_enable(15000,15065,15615,787,heathrow,"n","LO 2")
+x=250 y=150 pmv_with_group_enable(15000,15065,15595,786,heathrow,"n","LO 1")
+
+!************* Penstock Valves *****************!
+
+SCALE = 180
+
+x=601 y=423 pmv_with_enable(15000,15265,765,heathrow,"n","P V 1")
+x=653 y=423 pmv_with_enable(15000,15285,766,heathrow,"n","P V 2")
+
+
+just = centrecentre
+scale = 240
+x=249 y=-1 
+rect(h=100,w=60,fg=white)
+x=250 y =0 
+rect(h=100,w=60,fg=decoroff)
+tfg=black
+y=-8 text ("SURGE")
+y=8 text ("TANK")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+goto_menu
+
+X=-245 Y=-360
+command_button(809,heathrow)
+clear
+
+
+! DRAW RESERVIOR !
+
+X=40 Y=-380  Add 
+Y=-345  Add 
+X=390  Add 
+Y=190  Add 
+X=40 Add 
+Y=225  Add 
+X=228  Add 
+Y=280  Add 
+X=-265 Add 
+Y=390  Add 
+X=310 Add 
+Y=335  Add 
+X=330 Add 
+Y=390  Add 
+X=530 Add 
+Y=280  Add 
+X=330 Add 
+Y=320  Add 
+X=310 Add 
+Y=225  Add 
+X=435 Add 
+Y=-380  Add 
+X=40 Add  
+fill(fg=blue)
+LINE clear
+
+scale = 200
+x = -220 y = -80 fg_valves
+
+x = 60  y = -350 add y = -275 add line(fg=blue,lw=5) clear
+x += 50 y = -350 add y = -275 add line(fg=blue,lw=5) clear
+x += 50 y = -350 add y = -275 add line(fg=blue,lw=5) clear
+x += 50 y = -350 add y = -275 add line(fg=blue,lw=5) clear
+x += 50 y = -350 add y = -275 add line(fg=blue,lw=5) clear
+
+x = 325  y = -200 add x = 400 add line(fg=blue,lw=5) clear
+x = 325  y = -75 add x = 400 add line(fg=blue,lw=5) clear
+x = 325  y =  50 add x = 400 add line(fg=blue,lw=5) clear
+
+x = 60  y = 115 add y = 200 add line(fg=blue,lw=5) clear
+x += 50 y = 115 add y = 200 add line(fg=blue,lw=5) clear
+x += 50 y = 115 add y = 200 add line(fg=blue,lw=5) clear
+x += 50 y = 115 add y = 200 add line(fg=blue,lw=5) clear
+x += 50 y = 115 add y = 200 add line(fg=blue,lw=5) clear
+
+x = -135 y = 135 add y -= 420 add line(fg=white,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+
+x = -250 y = 135 add y -= 420 add line(fg=white,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+y+=20 add y+=20 add line(fg=black,lw=3) clear
+
+x = 60  y = -310 pressure_pump(15000,15030,15425,775,heathrow) clear
+x += 50 y = -310 pressure_pump(15000,15030,15440,776,heathrow) clear
+x += 50 y = -310 electric_pump(15000,15770,15395,773,heathrow) clear
+x += 50 y = -310 electric_pump(15000,15768,15380,772,heathrow) clear
+x += 50 y = -310 electric_pump(15000,15766,15365,771,heathrow) clear
+
+x = 60  y = 155 pressure_pump(15000,15030,15410,774,heathrow) clear
+x += 50 y = 155 electric_pump(15000,15758,15305,767,heathrow) clear
+x += 50 y = 155 electric_pump(15000,15760,15320,768,heathrow) clear
+x += 50 y = 155 electric_pump(15000,15762,15335,769,heathrow) clear
+x += 50 y = 155 electric_pump(15000,15764,15350,770,heathrow) clear
+
+
+x = 360 y = -200 diesel_pump(15000,15772,15220,762,heathrow) clear
+x = 360 y = -75 diesel_pump(15000,15774,15235,763,heathrow) clear
+x = 360 y = 50 diesel_pump(15000,15776,15250,764,heathrow) clear
+angle = 0
+
+
+scale=250
+just=centrecentre
+
+scale=260
+X=500 Y=-370 mmm_selector(15000,15041,"Flow",heathrow)
+X=500 Y=-345 sensor_w_high_sp(15000,"","GPM ",15044,1098,1061,heathrow)
+X=500 Y=-310 mmm_selector(15000,15036,"Pres",heathrow)
+X=500 Y=-285 sensor_w_low_sp(15000,"","PSI ",15039,1097,1057,heathrow)
+
+
+!X=-12 Y=-320 analogue_display_only(1055,"","GPM",heathrow)!
+!X=-12 Y=-295 analogue_display_only(1053,"","PSI",heathrow)!
+!X=-12 Y=140  analogue_display_only(1056,"","GPM",heathrow)!
+!=-12 Y=165  analogue_display_only(1054,"","PSI",heathrow)!
+
+x=-12 y=-297 pressure_alarm(1053,heathrow)!PRESSURE 1!
+X=-12 Y=188  pressure_alarm(1054,heathrow)!PRESSURE 2!
+
+x=-12 y=-335 flow_alarm(1055,heathrow)    !FLOW 1!
+x=-12 y=150 flow_alarm(1056,heathrow)     !FLOW 2!
+
+
+x = -218 y = 370 o2_display(1050,heathrow)
+x = 205 y = 370  o2_display(1051,heathrow)
+x = 430 y = 370  o2_display(1052,heathrow)
+Clear
+
+scale=160
+x = -230 y = 320 aerator2(15000,15100,750,heathrow)
+x +=  56 y = 320 aerator2(15000,15110,751,heathrow)
+x +=  56 y = 320 aerator2(15000,15120,752,heathrow)
+x +=  56 y = 320 aerator2(15000,15130,753,heathrow)
+x +=  56 y = 320 aerator2(15000,15140,754,heathrow)
+x +=  56 y = 320 aerator2(15000,15150,755,heathrow)
+x +=  56 y = 320 aerator2(15000,15160,756,heathrow)
+x +=  56 y = 320 aerator2(15000,15170,757,heathrow)
+x +=  56 y = 320 aerator2(15000,15180,758,heathrow)
+x += 156 y = 320 aerator2(15000,15190,759,heathrow)
+x +=  56 y = 320 aerator2(15000,15200,760,heathrow)
+x +=  56 y = 320 aerator2(15000,15210,761,heathrow)
+clear
+
+X=269 Y=210  Add 
+Y=290  Add 
+LINE clear
+
+
+scale = 250
+x = 210 y = -125 vcb_alarm(15309,heathrow,1)
+y += 20 vcb_alarm(15324,heathrow,2)
+y += 20 vcb_alarm(15339,heathrow,3)
+y += 20 vcb_alarm(15354,heathrow,4)
+y += 20 vcb_alarm(15369,heathrow,5)
+y += 20 vcb_alarm(15384,heathrow,6)
+y += 20 vcb_alarm(15399,heathrow,7)
+
+scale = 200
+
+x = 100 y = -75 sump_sensor(15023,heathrow,"Sump Overflow")
+x = 100 y = -125 sump_pump(15000,15585,784,heathrow,0)
+x = 100 y = -25 sump_pump(15000,15590,785,heathrow,0)
+scale=210
+x = 120 y = 245 sump_sensor(15026,heathrow,"Lagoon High Level")
+x = 120 y = 265 sump_sensor(15027,heathrow,"Lagoon Overflow")
+x = -400 y = 380 sump_sensor(15020,heathrow,"Bus Section Closed")
+x = -400 y = 344 sump_sensor(15017,heathrow,"TRF1 Trip")
+x = -400 y = 362 sump_sensor(15018,heathrow,"TRF2 Trip")
+
+scale=150
+X=300 Y=115  hand_valve(15035,"",heathrow)
+
+X=300 Y=-277  hand_valve(15034,"",heathrow)
+ 
+angle = 270
+X=-123 Y=200  hand_valve(15033,"",heathrow) clear
+scale = 256
+x = -400 y = -362 fire_main_backup(16000,16200,810,heathrow) clear
+scale=280
+x=-425 y=-306
+future_fire_main_status(15000,15046,15050,7302,15757,heathrow,heathro2) clear
+x=-400 y=250
+pump_start_orders(15000,15047,15750,1065,15415,15430,15445,heathrow)
+!pump_start_orders(15000,15047,15750,1065,heathrow)!
+scale=260
+x=500 y=-100
+fire_main_setpoints(15000,1067,1087,heathrow)
+
+scale=200
+angle = 0
+just = centrecentre
+tfg = white
+ch = 16
+x = -400 y = 300 text("WARNING - PP2 AS THE LEAD PUMP WILL")
+X = -400 Y += 12 text("CAUSE THE SYSTEM TO OVERPRESSURISE")
+x = -335 y = -85 text ("CENTRAL")
+x = -335 y += 12 text ("AREA")
+
+x = -335 y = -165 text ("MAIN")
+x = -335 y += 12 text ("TUNNEL")
+
+x = -335 y = -7 text ("CARGO")
+x = -335        y += 12 text ("TUNNEL")
+
+scale=200
+x = -478 y = -35 text ("L23")
+x = -478 y = 40 text ("J10")
+
+!x = -300 y = -55 text ("GENERAL")
+x = -300 y += 12 text ("AVIATION")!
+
+x = 190  y = -210 text ("PUMP HOUSE")
+!x = 190 y += 12 text ("HOUSE")!
+
+x = -165 y = 190 text ("WASH")
+x = -165 y += 12 text ("OUT")
+
+x = -420 y = 125 text ("CARGO")
+x = -420 y += 12 text ("AREA")
+
+x = 330 y = 210 text ("WEIR")
+x = 200 y = -360 text ("WEIR")
+x = 410 y = -75  text ("WEIR")
+
+x = 0 y = 370 text ("RESERVOIR",CH=20)
+
+x = 60 y = -265  text ("PP 2")
+x += 50 TEXT ("PP 3")
+x += 50 TEXT ("EP 7")
+x += 50 TEXT ("EP 6")
+x += 50 TEXT ("EP 5")
+
+x = 60 y = 105  text ("PP 1")
+x += 50 TEXT ("EP 1")
+x += 50 TEXT ("EP 2")
+x += 50 TEXT ("EP 3")
+x += 50 TEXT ("EP 4")
+
+x = 300 y = -200  text ("DP 8")
+x = 300 y = -75  text ("DP 9")
+x = 300 y =  50  text ("DP 10")
+
+! Aerator numbers !
+y=290
+x=-230 text("AR 1")
+x+=56  text("AR 2")
+x+=56  text("AR 3")
+x+=56  text("AR 4")
+x+=56  text("AR 5")
+x+=56  text("AR 6")
+x+=56  text("AR 7")
+x+=56  text("AR 8")
+x+=56  text("AR 9")
+x=373  text("AR 10")
+x+=56  text("AR 11")
+x+=56  text("AR 12")
+
+X=100 Y=-160  TEXT ("SUMP PUMP 1")
+
+X=100 Y=8  TEXT ("SUMP PUMP 2")
+
+!MV13 &MV14 TEXT!
+
+x=!-82!-95 y=-355 TEXT("CONTROL")
+X=!-82!-95 Y=-342 TEXT("SETPOINT")
+X=!-82!-95 Y=35 TEXT("CONTROL")
+X=!-82!-95 Y=48 TEXT("SETPOINT")
+
+X=-12 Y=-355 TEXT ("FLOW 1")
+X=-12 Y=-317 TEXT("PRESSURE 1")
+
+X=-12 Y= 130 TEXT("FLOW 2")
+X=-12 Y= 168 TEXT("PRESSURE 2")
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable
+

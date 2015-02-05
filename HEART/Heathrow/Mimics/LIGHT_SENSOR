@@ -1,0 +1,80 @@
+! HEATHROW CMS - LIGHT SENSOR
+
+loaded by: CARGO_TUNNEL, MAIN_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+
+!
+************************************************************
+* LIGHT SENSOR OBJECT                                      *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object light_sensor(offset=int,e_offset=int,src=source)
+
+var low_light_alarm = input  alarm_row_type
+var light_level_ip = input  e_db_row_type
+var sensor_bg = loopback  colour
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source low_light_alarm then 
+   begin
+
+   set source low_light_alarm = src
+   set filter low_light_alarm.db_addr = lim_eq
+   set limit low_light_alarm.db_addr = db_address(int(b1) + offset - 1)
+   set persist low_light_alarm 
+   request low_light_alarm
+
+   set source light_level_ip = src
+   set filter light_level_ip.db_addr = lim_eq
+   set limit light_level_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist light_level_ip 
+   request light_level_ip
+
+   end
+
+
+! SELECT BG COLOUR !
+
+if low_light_alarm.alarm_status == w_note then
+   
+   sensor_bg = flashred
+
+else if low_light_alarm.alarm_status == w_clr then
+
+   sensor_bg = red
+
+else sensor_bg = decoroff
+
+just = centrecentre
+
+
+! DRAW SENSOR !
+
+rect(fg=sensor_bg,h=20,w=180) 
+x -= 90 y += 10 add y -= 20 add x += 180 add line(lw=1,fg=decorlight) clear
+x = 90 y = -10 add y += 20 add x -= 180 add line(lw=1,fg=decorshadow) clear
+x = 0 y = 0 text (tfg=black,ch=15,"Light = "+int(light_level_ip.e_value)+" lumens/sqft")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = 10 light_sensor(100,3,heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

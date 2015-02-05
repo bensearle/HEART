@@ -1,0 +1,150 @@
+LOAD mimic_libutil
+LOAD arcs_report_graph
+LOAD arcs_report_table
+
+TYPE e_db_row_type = db_elements(db_addr,e_value)
+
+OBJECT last_changeover_time(e_offset=INT,src=SOURCE)
+
+VAR last_time = INPUT e_db_row_type
+
+BEGIN
+
+SET SOURCE last_time = src
+SET FILTER last_time.db_addr = LIM_EQ
+SET LIMIT last_time.db_addr = db_address("E" + e_offset)
+SET PERSIST last_time
+REQUEST last_time
+
+JUST=CENTRECENTRE
+
+X = -74 Y = -79 ADD X += 150 ADD Y += 160 ADD
+X -= 150 ADD Y -= 160 ADD LINE(FG=DECORLIGHT,LW=1) CLEAR
+
+X = -75 Y = -80 ADD X += 150 ADD Y += 160 ADD
+X -= 150 ADD Y -= 160 ADD LINE(FG=DECORSHADOW,LW=1) CLEAR
+
+X = 1 Y = -49 ADD TEXT(TFG=DECORLIGHT,FONT=FONT_BOLD,CH=15,"Last") CLEAR
+X = 0 Y = -50 ADD TEXT(TFG=BLACK,FONT=FONT_BOLD,CH=15,"Last") CLEAR
+
+X = 1 Y = -29 ADD TEXT(TFG=DECORLIGHT,FONT=FONT_BOLD,CH=15,"Changeover") CLEAR
+X = 0 Y = -30 ADD TEXT(TFG=BLACK,FONT=FONT_BOLD,CH=15,"Changeover") CLEAR
+
+X = 1 Y = -9 ADD TEXT(TFG=DECORLIGHT,FONT=FONT_BOLD,CH=15,"Time") CLEAR
+X = 0 Y = -10 ADD TEXT(TFG=BLACK,FONT=FONT_BOLD,CH=15,"Time") CLEAR
+
+X = 0 Y = 30 RECT(FG=WHITE,W=100,H=30) CLEAR
+
+X = 50 Y = 15 ADD X -= 100 ADD Y += 30 ADD LINE(FG=DECORSHADOW,LW=1) CLEAR
+X = 50 Y = 15 ADD Y += 30 ADD X -= 100 ADD LINE(FG=DECORLIGHT,LW=1) CLEAR
+
+X = 0 Y = 30 ADD TEXT(CH=16,TFG=BLUE,FONT=FONT_BOLD,
+                                   INT(last_time.e_value) + " mS") CLEAR
+
+END
+
+OBJECT report_history
+
+VAR call_var_plc_a = POPUP north_table_plc_a
+VAR call_var_plc_b = POPUP north_table_plc_b
+
+BEGIN
+
+JUST=CENTRECENTRE
+X = 1 Y= -259 TEXT(CH=20,TFG=DECORLIGHT,"Arcs Report History - NORTH INTAKE") CLEAR
+X = 0 Y= -260 TEXT(CH=20,TFG=BLACK,"Arcs Report History - NORTH INTAKE") CLEAR
+
+X = 320 Y = -285 ADD X -= 640 ADD
+Y += 50 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = 320 Y = -284 ADD X -= 639 ADD
+Y += 49 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+X = 319 Y =-285 ADD Y += 49 ADD
+X -= 639 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = 320 Y = -285 ADD Y += 50 ADD
+X -= 640 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+
+
+
+X = 1 Y= -219 TEXT(CH=20,TFG=DECORLIGHT,"PLC A") CLEAR
+X = 0 Y= -220 TEXT(CH=20,TFG=GREY40,"PLC A") CLEAR
+
+X = -40 Y = -220 ADD X -= 280 ADD
+Y += 240 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = 40 Y = -220 ADD X += 280 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = 40 Y = -219 ADD X += 280 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+X = -40 Y = -219 ADD X -= 279 ADD
+Y += 239 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+
+X = -320 Y = 20 ADD
+X += 639 ADD Y -= 240 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = -319 Y = 21 ADD
+X += 639 ADD Y -= 241 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+
+
+X = 1 Y= 36 TEXT(CH=20,TFG=DECORLIGHT,"PLC B") CLEAR
+X = 0 Y= 35 TEXT(CH=20,TFG=GREY40,"PLC B") CLEAR
+
+X = -40 Y = 35 ADD X -= 280 ADD
+Y += 240 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = 40 Y = 35 ADD X += 280 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = 40 Y = 36 ADD X += 280 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+X = -40 Y = 36 ADD X -= 279 ADD
+Y += 239 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+
+X = -320 Y = 275 ADD
+X += 639 ADD Y -= 240 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = -319 Y = 276 ADD
+X += 639 ADD Y -= 241 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+
+X = -80 Y = -5 arcs_graph(2300,heathrow)
+X = -80 Y = 250 arcs_graph(2301,heathrow)
+
+X = 145 Y = -25 COMMAND_BUTTON("Table of Values","",150,"",CH=15)
+IF SELB(X=220,Y=-15,W=150,H=20) THEN
+   BEGIN
+    SET UNPINNED call_var_plc_a
+    SET TITLE call_var_plc_a = "North PLC A Table of Values"    
+    REQUEST call_var_plc_a
+   END
+
+X = 145 Y = 230 COMMAND_BUTTON("Table of Values","",150,"",CH=15)
+IF SELB(X=220,Y=240,W=150,H=20) THEN
+   BEGIN
+    SET UNPINNED call_var_plc_b
+    SET TITLE call_var_plc_b = "North PLC B Table of Values"    
+    REQUEST call_var_plc_b
+   END
+
+CLEAR
+
+X = 220 Y = -125 last_changeover_time(2300,heathrow) CLEAR
+
+X = 220 Y = 130 last_changeover_time(2301,heathrow) CLEAR
+
+END
+
+OBJECT main_object (bg,fg,w,h,tbg,tfg)
+BEGIN
+
+X = 0 Y = 0 report_history
+
+END
+
+MIMIC = main_object W=700,H=600,JUST=CENTRECENTRE,
+FG=WHITE,BG=DECOROFF,RESIZABLE

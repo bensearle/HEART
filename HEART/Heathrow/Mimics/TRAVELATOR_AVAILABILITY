@@ -1,0 +1,286 @@
+load report_tllib
+Load REPLIB
+load debug_libutil
+
+CONST column_width = 80
+
+
+TYPE KEYED_TWO_A_VALUES = TABLE (
+	! 1RW !    ID = ID,
+	!  R  !       STREAM = STREAM,
+	!  R  !          STREAM_NAME = STREAM_NAME,
+	!  R  !       KEYNUMBER = KEYNUMBER,
+	! 2RW !    TIME = CS_TIME,
+	!  RW !    KEYED_TWO_A_VALUES_1 = REAL,
+	!  RW !    KEYED_TWO_A_VALUES_2 = REAL )
+
+type stats_display_type = enum( percent_time_true = "Percentage true",
+				ft_transitions = "False-true transitions")
+
+!*******************************************************************************!
+!February is a leap year every fourth year, except at the turn of the century.!
+!There are 29 days in a leap year for february, normally 28!
+!Every 400 years the century year is also a leap year!
+!Thus 1900 is not a leap year, 1996 and 2000 are leap years!
+
+!Beware though, because MDL doesn't know that 2000 is a leap year, nor do DOS !
+!PC's. SUN machines do recognize 29-Feb-2000!
+
+!Original Object did not work, was re-written 30-6-1999 !
+!Jan, mar, may,Jul,Aug,Oct,Dec = 31 !
+!Apr,Jun,Sep,Nov = 30 !
+
+!*******************************************************************************!
+
+
+object daysInMonth ( ip_date = string) = int
+
+var str_month = string(3)
+var year = int
+begin
+
+str_month = getchars(4,3,time(ip_date))
+CASE str_month OF
+"APR","JUN","SEP","NOV"
+   daysInMonth = 30
+"FEB" 
+   begin 
+      year = int(getchars(8,4,time(ip_date)))
+      if (((year % 4 == 0) and (year % 100 <> 0)) or (year % 400 == 0)) then
+	 begin
+	 daysInMonth = 29
+	 end
+      else
+	   daysInMonth = 28
+   end
+DEFAULT
+   daysInMonth = 31
+end
+
+! ------------------------------------------------------------------------------------------------------------------- !
+! This object will display boolean statistics for single element !
+! The choice is :                                                                 !
+! percent_time_true      : The percentage of the period for which the element was true is displayed ! 
+! ft_transitions : The number of fasle-true transitions for the period is displayed !
+! The object also returns the percentage time true !
+! ------------------------------------------------------------------------------------------------------------------- !
+
+object display_boolean_stats(ch,just,realf,
+			server_name = source,
+				address = db_address,
+				report_period = report_period_type,
+				stats_display = stats_display_type,
+			var_busy = loopback yesno)=real
+
+! INPUT !
+var boolean_data = input keyed_two_a_values[40]
+
+! TEMPORARY !
+var i = int
+var time_true = real
+var total_transitions = real
+var percent_true = real
+var final_text = string
+var temp_time1 = int
+var temp_time2 = int
+var temp_time = time
+var num_days_over = int
+
+var requested_data = loopback yesno
+begin
+
+! calculate the total time for last month in seconds !
+! ------------------------------------------------------------------------- !
+
+   num_days_over = int(getchars(1,2,current_time))
+   temp_time = time(int(current_time) - (num_days_over * 86400))
+
+! request the boolean stats data for last month !
+! -------------------------------------------------------------------- !
+if invalid requested_data then
+   begin
+   requested_data = yes
+   set source boolean_data = arhsource(server_name)
+
+   set filter boolean_data.time = lim_ge_lt2
+
+   timef = local_dmy_hms
+   set limit boolean_data.time = time ("01" + getchars(3,9,temp_time))
+
+   timef = local_dmy_hms
+   temp_time1 = int(get limit boolean_data.time)
+   temp_time2 = int(daysInMonth(temp_time))*86400
+   set limit2 boolean_data.time = time(temp_time1+temp_time2)
+
+
+   set filter boolean_data.stream_name = lim_eq
+   set limit boolean_data.stream_name = server_name + " B_STATS"
+   
+   set filter boolean_data.keynumber = lim_eq
+   set limit boolean_data.keynumber = int(getchars(2,6, address))
+   
+   request boolean_data   
+   end
+! calculate the total time true in seconds !
+! ----------------------------------------------------------- !
+if valid boolean_data then
+   begin
+   if lastrow boolean_data > 0 then
+      begin   
+      time_true = 0
+      for i from 1 to lastrow boolean_data do
+         begin
+         time_true += boolean_data[i].keyed_two_a_values_2
+         end
+      time_true = time_true*60
+
+      ! calculate the percentage of the month that the element was true !
+      ! ------------------------------------------------------------------------------------------------- !
+      percent_true = 100*(time_true/(lastrow boolean_data*86400)) 
+
+      ! calculate the total number of false to true transitions in the month ! 
+      ! ------------------------------------------------------------------------------------------------- !
+      total_transitions = 0
+      for i from 1 to lastrow boolean_data do
+         total_transitions += boolean_data[i].keyed_two_a_values_1
+      end 
+   else
+      begin
+      percent_true = 0 
+      end
+   end
+! display the text required !
+! -------------------------------------- !
+case stats_display of
+   percent_time_true    final_text = percent_true
+   ft_transitions               final_text = total_transitions
+   default                      begin end
+
+text(final_text)
+! prevent printing until the data has been obtained !
+! ------------------------------------------------------------------------- !
+if get busy boolean_data then
+   begin
+   var_busy = yes
+   end
+else
+   begin 
+   display_boolean_stats = percent_true
+   end
+end
+			
+! ***************************************************************************************** !
+!----------------- COMMUNICATIONS STATUS REPORT ------------------------!
+
+object TRAV_REPORT(w,h,fg,bg,report_period=report_period_type,report_date=string,just)=yesno
+
+var i =int
+var real1 = real
+var real2 = real
+var real3 = real
+var real4 = real
+var getting_data = loopback yesno
+var temp_time = time
+var num_days_over = int
+begin
+getting_data = no
+FONT=FONT_BOLD
+tfg=white
+num_days_over = int(getchars(1,2,current_time))
+temp_time = time(int(current_time) - (num_days_over * 86400))
+
+
+x=218 y=19  text(ch=20,"TRAVELATOR STATUS REPORT",just=topcentre)
+x=218 y=4  text(ch=10,"TRAVELATOR STATUS " + toupper(report_period)  + " REPORT",just=topcentre)
+x=218 y=42 text("FOR:" + getchars(4,9,temp_time),just=topcentre)
+X=3 Y=2 W=200+(column_width*3) H=248  box
+Clear
+X=4 Y=80 Add
+X=203+(column_width*3) Add
+line
+Clear
+X=4 Y=120 Add
+X=203+(column_width*3) Add
+line
+for i from 1 to 9 do
+   begin
+   clear
+   x=4 y+=13 add
+   x=203+(column_width*3) add 
+   line
+   end
+clear
+x=200 y=80 Add
+y=250 Add
+line
+for i from 1 to 2 do
+   begin
+   clear
+   x+=column_width y=80 Add
+   y=250 Add
+   line
+   end
+FG=BLACK
+REALF=FIXED3
+FONT=FONT_NORMAL
+
+x=45 y=95 text(ch=8,"TRAVELATOR",JUST=CENTRECENTRE)
+     x+=160 text(ch=8,"% TIME",JUST=CENTRELEFT)
+     x+=column_width text(ch=8,"% TIME",JUST=CENTRELEFT)
+     x+=column_width text(ch=8,"AVAILABILITY",JUST=CENTRELEFT)
+x=45 y=110 text(ch=8,"",JUST=CENTRECENTRE)
+     x+=160 text(ch=8,"STOPPED",JUST=CENTRELEFT)
+     x+=column_width text(ch=8,"KEYSWITCH OFF",JUST=CENTRELEFT)
+     x+=column_width text(ch=8,"(%)",JUST=CENTRELEFT)
+
+h=10 w=80 ch=10 just = centreright
+x=10 y=126 text("Travelator 1A (L9157)",JUST=CENTRELEFT) 
+x=230 real1 = display_boolean_stats (heathro4,b1014,report_period,percent_time_true, getting_data,realf= fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1008,report_period,percent_time_true, getting_data,realf = fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1360,report_period,percent_time_true, getting_data,realf = fixed1)
+
+x=10 y+=13 text("Travelator 1B (L9158)",JUST=CENTRELEFT) 
+x=230 real1 = display_boolean_stats (heathro4,b1034,report_period,percent_time_true, getting_data,realf= fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1028,report_period,percent_time_true, getting_data,realf = fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1361,report_period,percent_time_true, getting_data,realf = fixed1)
+
+x=10 y+=13 text("Travelator 2C (L9159)",JUST=CENTRELEFT) 
+x=230 real1 = display_boolean_stats (heathro4,b1054,report_period,percent_time_true, getting_data,realf= fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1048,report_period,percent_time_true, getting_data,realf = fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1362,report_period,percent_time_true, getting_data,realf = fixed1)
+
+x=10 y+=13 text("Travelator 2D (L9160)",JUST=CENTRELEFT) 
+x=230 real1 = display_boolean_stats (heathro4,b1074,report_period,percent_time_true, getting_data,realf= fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1068,report_period,percent_time_true, getting_data,realf = fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1363,report_period,percent_time_true, getting_data,realf = fixed1)
+
+x=10 y+=13 text("Travelator 3E (L9161)",JUST=CENTRELEFT) 
+x=230 real1 = display_boolean_stats (heathro4,b1094,report_period,percent_time_true, getting_data,realf= fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1088,report_period,percent_time_true, getting_data,realf = fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1364,report_period,percent_time_true, getting_data,realf = fixed1)
+
+x=10 y+=13 text("Travelator 3F (L9162)",JUST=CENTRELEFT) 
+x=230 real1 = display_boolean_stats (heathro4,b1114,report_period,percent_time_true, getting_data,realf= fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1108,report_period,percent_time_true, getting_data,realf = fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1365,report_period,percent_time_true, getting_data,realf = fixed1)
+
+x=10 y+=13 text("Travelator 3G (L9163)",JUST=CENTRELEFT) 
+x=230 real1 = display_boolean_stats (heathro4,b1134,report_period,percent_time_true, getting_data,realf= fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1128,report_period,percent_time_true, getting_data,realf = fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1366,report_period,percent_time_true, getting_data,realf = fixed1)
+
+x=10 y+=13 text("Travelator 3H (L9164)",JUST=CENTRELEFT) 
+x=230 real1 = display_boolean_stats (heathro4,b1154,report_period,percent_time_true, getting_data,realf= fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1148,report_period,percent_time_true, getting_data,realf = fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1367,report_period,percent_time_true, getting_data,realf = fixed1)
+
+x=10 y+=13 text("Travelator 3J (L9165)",JUST=CENTRELEFT) 
+x=230 real1 = display_boolean_stats (heathro4,b1174,report_period,percent_time_true, getting_data,realf= fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1168,report_period,percent_time_true, getting_data,realf = fixed1)
+x+=column_width real2 = display_boolean_stats (heathro4,b1368,report_period,percent_time_true, getting_data,realf = fixed1)
+
+FG=BLACK
+REALF=FIXED3
+FONT=FONT_NORMAL
+trav_report=getting_data
+end

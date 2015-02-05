@@ -1,0 +1,12 @@
+helptext test = "
+this is a test of the help file
+"
+helptext rectangle = "
+test
+"
+helptext ray = "this is a test
+
+"
+helptext test1 = "
+test test test
+"

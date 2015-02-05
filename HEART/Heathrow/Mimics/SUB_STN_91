@@ -1,0 +1,56 @@
+load mimic_libutil
+load oil_switch
+load ocb_monitored
+load fuse_sw
+load transformer
+
+
+!************ BUSBAR 91 *************!
+
+object busbar_91
+begin
+
+fg = green4
+just = centrecentre
+tfg = black x = 65 y = -15 add text ("91",ch = 25) clear
+tfg = black x = 85 y = 135 add text ("91A",ch = 25) clear
+x = -75 y = 0 add x = 75 add line(lw=4) clear
+x = 30 y = 150 add x += 80 add line (lw=4,fg=green4) clear
+lw=2
+
+x =  50   y = 0 add y += 50 add line clear
+x =  -50  y = 0 add y -= 50 add line clear
+x =  0    y = 0 add y += 150 add x += 30 add line clear
+x = 70 y = 150 add y += 50 add line clear
+
+scale = 120
+x = -50 y = - 25 ocb_mont(2000,9500,650,330,heathro2,1,"top")
+x = 0 y = 25 ocb_mont(2000,9510,651,331,heathro2,2,"btm")
+x = 50 y = 25 ocb_mont(2000,9520,652,332,heathro2,3,"btm")
+
+x =  70 y = 175 hv_fuse(25112,278,1390,heathrow,"c")
+!
+x = 0  y = 25 hv_fuse(25113,279,1391,heathrow,"c")
+x = 50 y = 25 hv_fuse(25114,280,1392,heathrow,"c")
+!
+scale = 100
+X =  50  Y = 70 add transformer("LT 1","")
+x = 70 y = 220 add transformer("LT 1","")
+
+just=centrecentre
+scale = 260
+tfg=black ch=12
+x = -50 y = -60 text("62 P7")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+x = -30 y = -90 busbar_91
+
+end
+
+mimic = main_object w=300,h=350,just=centrecentre,fg=white,bg=aquamarine3,resizable

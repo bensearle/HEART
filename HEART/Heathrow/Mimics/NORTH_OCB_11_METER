@@ -1,0 +1,27 @@
+load mimic_libutil
+load overview_transformer_meter
+
+
+! ***************** NORTH OCB 11 METER ****************** !
+
+object north_meter_11
+
+begin
+
+x = 0 y = -100 add y += 200 add line(lw=4,fg=red) clear
+x = 0 y = 0 hv_overview_meter(18601,812,6,heathrow,"small_ammeter","Sub 87")
+x = 0 y = -110 add text(just=centrecentre,tfg=white,ch=15,"From North Intake")
+x = 0 y = 110 add text(just=centrecentre,tfg=white,ch=15,"To Sub 87")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 200
+
+x = 0 y = 0 north_meter_11
+
+end
+
+mimic = main_object w=220,h=220,just=centrecentre,fg=white,bg=black,resizable

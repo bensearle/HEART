@@ -1,0 +1,32 @@
+helptext LEVEL_CONTROL_HELP = "LEVEL CONTROL
+
+-------------
+
+This object has two possible states it can display, either enabled or disabled. This is represented by the text status on the object:
+
+
+Blue Foreground - Level Ctrl: Enabled
+
+
+Blue Foreground - Level Ctrl: Disabled
+
+
+
+CONTROL MENU
+
+------------
+
+
+Disable Level Control
+
+---------------------
+
+By selected Disable Level Control, the PLC will cease to control the automatic sequence of starting and stopping the transfer pumps and the opening and closing of MV 4 and MV 5. 
+
+
+Enable Level Control
+
+--------------------
+
+By selecting Enable Level Control, the PLC will gain control of the transfer pumps and motorised valves to automatically control the level of water within both the East and West tanks to the setpoints specified.
+"

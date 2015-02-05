@@ -1,0 +1,608 @@
+! HEATHROW CMS - FIRE MAIN PUMP ORDERS
+
+loaded by: FIRE_MAIN
+!
+
+load mimic_libutil
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type electric_type = enum (el1="1 2 3 4 5 6 7",
+                       el2="2 3 4 5 6 7 1",
+                       el3="3 4 5 6 7 1 2",
+                       el4="4 5 6 7 1 2 3",
+                       el5="5 6 7 1 2 3 4",
+                       el6="6 7 1 2 3 4 5",
+                       el7="7 1 2 3 4 5 6",
+                       eln="none")
+
+type diesel_type = enum (d8="8 9 10",d9="9 10 8",d10="10 8 9",dn="none")
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+! 
+****************************************************************
+* PUMP START ORDERS OBJECT                                     *
+* this object is called by the Top Level variable (mimic)      *
+****************************************************************
+!
+
+object pump_start_orders(comms_fail=int,inter_offset=int,pres_offset=int,ed_offset=int,pump1_fail=int,pump2_fail=int,pump3_fail=int,src=source)
+
+var electric_start_pump_ip = input  e_db_row_type
+var diesel_start_pump_ip = input  e_db_row_type
+
+var press_123 = input  b_db_row_type
+var press_231 = input  b_db_row_type
+var press_312 = input  b_db_row_type
+var press_123_req = input  b_db_row_type
+var press_231_req = input  b_db_row_type
+var press_312_req = input  b_db_row_type
+var return_status = input  b_db_row_type
+var in_demand_ip = input  b_db_row_type
+var plca_comms_ip = input  b_db_row_type
+var plcb_comms_ip = input  b_db_row_type
+var pump1_failed = input  b_db_row_type
+var pump2_failed = input  b_db_row_type
+var pump3_failed = input  b_db_row_type
+
+var items_added = loopback  int
+
+var pporder = loopback  string
+var elorder = loopback  string
+var dorder = loopback  string
+
+var pressure_start_pump = loopback int
+var pressure_text = loopback string(20)
+var electric_start_pump = loopback int
+var electric_text = loopback electric_type
+var diesel_start_pump = loopback int
+var diesel_text = loopback diesel_type
+
+var pressure_pump_menu = menu  string(80)
+var electric_pump_menu = menu  string(80)
+var diesel_pump_menu = menu  string(80)
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source electric_start_pump_ip then
+   begin
+
+   set source plca_comms_ip = src
+   set filter plca_comms_ip.db_addr = lim_eq
+   set limit plca_comms_ip.db_addr = db_address(int(b1) + comms_fail-1)
+   set persist plca_comms_ip 
+   request plca_comms_ip
+
+   set source plcb_comms_ip = src
+   set filter plcb_comms_ip.db_addr = lim_eq
+   set limit plcb_comms_ip.db_addr = db_address(int(b1) + comms_fail)
+   set persist plcb_comms_ip 
+   request plcb_comms_ip
+
+   set source electric_start_pump_ip = src
+   set filter electric_start_pump_ip.db_addr = lim_eq
+   set limit electric_start_pump_ip.db_addr = db_address(int(e1) + ed_offset-1)
+   set persist electric_start_pump_ip 
+   request electric_start_pump_ip
+
+   set source diesel_start_pump_ip = src
+   set filter diesel_start_pump_ip.db_addr = lim_eq
+   set limit diesel_start_pump_ip.db_addr = db_address(int(e1) + ed_offset)
+   set persist diesel_start_pump_ip 
+   request diesel_start_pump_ip
+
+   set source press_123 = src
+   set filter press_123.db_addr = lim_eq
+   set limit press_123.db_addr = db_address(int(b1) + pres_offset + 2)
+   set persist press_123 
+   request press_123
+
+   set source press_231 = src
+   set filter press_231.db_addr = lim_eq
+   set limit press_231.db_addr = db_address(int(b1) + pres_offset + 3)
+   set persist press_231 
+   request press_231
+
+   set source press_312 = src
+   set filter press_312.db_addr = lim_eq
+   set limit press_312.db_addr = db_address(int(b1) + pres_offset + 4)
+   set persist press_312 
+   request press_312
+
+   set source pump1_failed = src
+   set filter pump1_failed.db_addr = lim_eq
+   set limit pump1_failed.db_addr = db_address(int(b1) + pump1_fail -1)
+   set persist pump1_failed
+   request pump1_failed
+
+   set source pump2_failed = src
+   set filter pump2_failed.db_addr = lim_eq
+   set limit pump2_failed.db_addr = db_address(int(b1) + pump2_fail -1)
+   set persist pump2_failed
+   request pump2_failed
+
+   set source pump3_failed = src
+   set filter pump3_failed.db_addr = lim_eq
+   set limit pump3_failed.db_addr = db_address(int(b1) + pump3_fail -1)
+   set persist pump3_failed
+   request pump3_failed
+
+   set source in_demand_ip = src
+   set filter in_demand_ip.db_addr = lim_eq
+   set limit  in_demand_ip.db_addr = db_address(int(b1) + inter_offset-1)
+   set persist in_demand_ip 
+   request in_demand_ip
+
+   end
+
+
+! CASE MENU OPTIONS !
+
+if valid pressure_pump_menu then
+   begin
+   case pressure_pump_menu of
+
+        "1 2 3"
+        begin
+        if in_demand_ip.b_value==off then
+          set_b_value(db_address(int(b1) + pres_offset -1), src, on)
+        end
+ 
+        "2 3 1"
+        begin
+        if in_demand_ip.b_value==off then
+          set_b_value(db_address(int(b1) + pres_offset + 0), src ,on)
+        end
+	
+	"3 1 2"
+	begin
+	if in_demand_ip.b_value==off then
+	  set_b_value(db_address(int(b1) + pres_offset + 1), src ,on)
+	end   
+
+        default begin end
+
+   set invalid pressure_pump_menu
+   end
+
+if valid electric_pump_menu then
+   begin
+   case electric_pump_menu of
+
+        "1 2 3 4 5 6 7"
+        begin
+        electric_start_pump=1
+        end
+
+        "2 3 4 5 6 7 1"
+        begin
+        electric_start_pump=2
+        end
+
+        "3 4 5 6 7 1 2"
+        begin
+        electric_start_pump=3
+        end
+
+        "4 5 6 7 1 2 3"
+        begin
+        electric_start_pump=4
+        end
+
+        "5 6 7 1 2 3 4"
+        begin
+        electric_start_pump=5
+        end
+
+        "6 7 1 2 3 4 5"
+        begin
+        electric_start_pump=6
+        end
+
+        "7 1 2 3 4 5 6"
+        begin
+        electric_start_pump=7
+        end
+
+        default begin end
+
+    if in_demand_ip.b_value==off then
+      set_e_value(db_address(int(e1) + ed_offset -1), src ,electric_start_pump)
+    set invalid electric_pump_menu
+    end
+
+if valid diesel_pump_menu then
+   begin
+   case diesel_pump_menu of
+
+        "8 9 10"
+        begin
+        diesel_start_pump=8
+        end
+
+        "9 10 8"
+        begin
+        diesel_start_pump=9
+        end
+ 
+        "10 8 9"
+        begin
+        diesel_start_pump=10
+        end
+
+        default begin end
+
+   if in_demand_ip.b_value==off then
+     set_e_value(db_address(int(e1) + ed_offset), src ,diesel_start_pump)
+   set invalid diesel_pump_menu
+
+   end
+
+
+! CONFIGURE MENU !
+
+just=centrecentre
+x=0 y=-24
+w=240 h=24
+set rect pressure_pump_menu
+set title pressure_pump_menu = "PRESSURE PUMP SEQUENCE"
+
+set empty pressure_pump_menu
+
+if plca_comms_ip.b_value == 0 or
+   plcb_comms_ip.b_value == 0 then
+   begin
+
+!if press_123.b_value and pump_failed.b_value==off then
+     begin
+     set add pressure_pump_menu = "2 3 1"
+     set add pressure_pump_menu = "3 1 2"
+     end
+   
+   else if press_231.b_value and pump_failed.b_value==off then
+     begin
+     set add pressure_pump_menu = "1 2 3"
+     set add pressure_pump_menu = "3 1 2"
+     end
+   
+   else if press_312.b_value and pump_failed.b_value==off then
+     begin
+     set add pressure_pump_menu = "1 2 3"
+     set add pressure_pump_menu = "2 3 1"
+     end
+
+   else 
+     begin
+     set add pressure_pump_menu = "1 2 3"
+     set add pressure_pump_menu = "2 3 1"
+     set add pressure_pump_menu = "3 1 2"
+     end
+
+
+  end!
+
+if press_123.b_value and pump2_failed.b_value==off and pump3_failed.b_value==off then
+     begin
+     set add pressure_pump_menu = "2 3 1"
+     set add pressure_pump_menu = "3 1 2"
+     end
+   
+   else if press_231.b_value and pump1_failed.b_value==off and pump3_failed.b_value==off then
+     begin
+     set add pressure_pump_menu = "1 2 3"
+     set add pressure_pump_menu = "3 1 2"
+     end
+   
+   else if press_312.b_value and pump1_failed.b_value==off and pump2_failed.b_value==off then
+     begin
+     set add pressure_pump_menu = "1 2 3"
+     set add pressure_pump_menu = "2 3 1"
+     end
+
+else if press_123.b_value and pump2_failed.b_value==on and pump3_failed.b_value==off then
+     begin
+          set add pressure_pump_menu = "3 1 2"
+     end
+
+else if press_123.b_value and pump2_failed.b_value==off and pump3_failed.b_value==on then
+     begin
+          set add pressure_pump_menu = "2 3 1"
+     end
+
+else if press_231.b_value and pump1_failed.b_value==on and pump3_failed.b_value==off then
+     begin
+          set add pressure_pump_menu = "3 1 2"
+     end
+
+else if press_231.b_value and pump1_failed.b_value==off and pump3_failed.b_value==on then
+     begin
+          set add pressure_pump_menu = "1 2 3"
+     end
+
+else if press_312.b_value and pump1_failed.b_value==on and pump2_failed.b_value==off then
+     begin
+          set add pressure_pump_menu = "2 3 1"
+     end
+
+else if press_312.b_value and pump1_failed.b_value==off and pump2_failed.b_value==on then
+     begin
+          set add pressure_pump_menu = "1 2 3"
+     end
+
+else if press_123.b_value and pump2_failed.b_value==on and pump3_failed.b_value==on then
+     begin
+          set add pressure_pump_menu = "NOT AVAILABLE"
+     end
+
+else if press_231.b_value and pump1_failed.b_value==on and pump3_failed.b_value==on then
+     begin
+          set add pressure_pump_menu = "NOT AVAILABLE"
+     end
+
+else if press_312.b_value and pump1_failed.b_value==on and pump2_failed.b_value==on then
+     begin
+          set add pressure_pump_menu = "NOT AVAILABLE"
+     end
+
+
+   else 
+     begin
+     set add pressure_pump_menu = "1 2 3"
+     set add pressure_pump_menu = "2 3 1"
+     set add pressure_pump_menu = "3 1 2"
+     end
+end
+if press_123.b_value then
+  pporder="1 2 3"
+else if press_231.b_value then
+  pporder="2 3 1"
+else if press_312.b_value then
+  pporder="3 1 2"
+else
+  pporder="none"
+
+just=centrecentre
+x=0 y=1
+w=240 h=22
+set rect electric_pump_menu
+set title electric_pump_menu = "ELECTRIC PUMP SEQUENCE"
+
+set empty electric_pump_menu
+
+if plca_comms_ip.b_value == 0 or
+   plcb_comms_ip.b_value == 0 then
+   begin
+   set add electric_pump_menu="1 2 3 4 5 6 7"
+   set add electric_pump_menu="2 3 4 5 6 7 1"
+   set add electric_pump_menu="3 4 5 6 7 1 2"
+   set add electric_pump_menu="4 5 6 7 1 2 3"
+   set add electric_pump_menu="5 6 7 1 2 3 4"
+   set add electric_pump_menu="6 7 1 2 3 4 5"
+   set add electric_pump_menu="7 1 2 3 4 5 6"
+   end
+
+case int(electric_start_pump_ip.e_value) of
+     
+         1
+         begin
+         set remove electric_pump_menu="1 2 3 4 5 6 7"
+         electric_text=el1
+         end
+
+         2
+         begin
+         set remove electric_pump_menu="2 3 4 5 6 7 1"
+         electric_text=el2
+         end
+
+         3
+         begin
+         set remove electric_pump_menu="3 4 5 6 7 1 2"
+         electric_text=el3
+         end
+
+         4
+         begin
+         set remove electric_pump_menu="4 5 6 7 1 2 3"
+         electric_text=el4
+         end
+
+
+         5
+         begin
+         set remove electric_pump_menu="5 6 7 1 2 3 4"
+         electric_text=el5
+         end
+
+         6
+         begin
+         set remove electric_pump_menu="6 7 1 2 3 4 5"
+         electric_text=el6
+         end
+
+         7
+         begin
+         set remove electric_pump_menu="7 1 2 3 4 5 6"
+         electric_text=el7
+         end
+
+         default
+         begin
+         electric_text=eln
+         end
+if in_demand_ip.b_value ==1 then
+  begin
+  set remove electric_pump_menu="1 2 3 4 5 6 7"
+  set remove electric_pump_menu="2 3 4 5 6 7 1"
+  set remove electric_pump_menu="3 4 5 6 7 1 2"
+  set remove electric_pump_menu="4 5 6 7 1 2 3"
+  set remove electric_pump_menu="5 6 7 1 2 3 4"
+  set remove electric_pump_menu="6 7 1 2 3 4 5"
+  set remove electric_pump_menu="7 1 2 3 4 5 6"
+  set add electric_pump_menu="N/A WHILST ON DEMAND"
+  end
+
+
+just=centrecentre
+x=0 y=24
+w=240 h=22
+set rect diesel_pump_menu
+set title diesel_pump_menu = "DIESEL PUMP SEQUENCE"
+
+set empty diesel_pump_menu
+
+if plca_comms_ip.b_value == 0 or
+   plcb_comms_ip.b_value == 0 then
+   begin
+   set add diesel_pump_menu="8 9 10"
+   set add diesel_pump_menu="9 10 8"
+   set add diesel_pump_menu="10 8 9"
+   end
+
+case int(diesel_start_pump_ip.e_value) of
+     
+         8
+         begin
+         set remove diesel_pump_menu="8 9 10"
+         diesel_text=d8
+         end
+
+         9
+         begin
+         set remove diesel_pump_menu="9 10 8"
+         diesel_text=d9
+         end
+
+         10
+         begin
+         set remove diesel_pump_menu="10 8 9"
+         diesel_text=d10
+         end
+
+         default 
+         begin
+         diesel_text=dn
+         end
+if in_demand_ip.b_value ==1 then
+  begin
+  set remove diesel_pump_menu="8 9 10"
+  set remove diesel_pump_menu="9 10 8"
+  set remove diesel_pump_menu="10 8 9"
+  set add diesel_pump_menu="N/A WHILST ON DEMAND"
+  end
+
+! DRAW SYMBOL !
+
+x=0 y=0
+rect(w=240,h=70,fg=decoroff)
+x-=120 y+=35 add
+y-=70 add
+x+= 240 add
+line(lw=2,fg=decorlight)
+clear
+add
+y+=70 add
+x-=240 add
+line(lw=2,fg=decorshadow)
+clear
+
+x=-120 y=-13 add
+x+=240 add
+line(lw=1,fg=decorshadow)
+clear
+y+=1 add
+x-=240 add
+line(lw=1,fg=decorlight)
+clear
+
+x=-120 y=11 add
+x+=240 add
+line(lw=1,fg=decorshadow)
+clear
+y+=1 add
+x-=240 add
+line(lw=1,fg=decorlight)
+clear
+
+ch=17
+just=centreleft
+x=-113 y=-44
+text(tfg=white,"PUMP START SEQUENCE")
+y=-22
+text(tfg=black,"PRESSURE ")
+y+=23
+text(tfg=red,"ELECTRIC")
+y+=24
+text(tfg=blue,"DIESEL")
+
+y=-22
+x=10
+text(tfg=black,pporder)
+y+=23
+text(tfg=red,electric_text)
+y+=24
+text(tfg=blue,diesel_text)
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+pump_start_orders(15000,15047,15750,1065,15415,15430,15445,heathrow)
+end
+
+mimic = main_object w=300,h=240,just=centrecentre,fg=white,bg=black,resizable

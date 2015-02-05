@@ -1,0 +1,50 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!************ BUSBAR 74 *************!
+
+object busbar_74
+begin
+
+tfg = black x = -100 y = -55 add text ("74",ch = 25) clear
+lw=2
+x = -100 y = -25 add x = 150 add line(lw=4,fg=blue) clear
+
+x = -75 y = -25 add y += 50 add line (fg=blue) clear
+x = -25 y = -25 add y += 50 add line (fg=blue) clear
+x = 25 y = -25 add y += 50 add line (fg=blue) clear
+x = 75 y = -25 add y -= 50 add line (fg=blue) clear
+x = 125 y = -25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = -75 y = 0 ocb_mont(3000,3570,177,302,heathrow,1,"btm")
+x = -25 y = 0 ocb_mont(3000,3580,178,303,heathrow,2,"btm")
+x = 25 y = 0 ocb_mont(3000,3590,179,304,heathrow,3,"btm")
+x = 75 y = -50 ocb_mont(3000,3600,180,305,heathrow,4,"top")
+x = 125 y = -50 ocb_mont(3000,3610,181,306,heathrow,5,"top")
+
+scale = 100
+X =  -75  y = 45 add transformer("T C","LOCAL")
+X =  -25  Y = 45 add transformer("T B","LOCAL")
+X =    25 Y = 45 add transformer("T A","LOCAL") 
+
+scale = 260 just = centrecentre
+tfg = black ch=12
+x = 75 y = -100 text("SS44")
+x = 75 y = -85 text("P8")
+x = 125 y = -100 text("SS-279")
+x = 125 y = -85 text("P3")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -25 busbar_74
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

@@ -1,0 +1,71 @@
+! HEATHROW CMS - ANALOGUE DISPLAY ONLY
+
+loaded by: CARGO_TUNNEL, FIRE_MAIN
+!
+
+load mimic_libutil
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+
+!
+***************************************************************
+* ANALOGUE DISPLAY ONLY OBJECT                                *
+* this object is called by the Top Level variable (mimic)     *
+***************************************************************
+!
+
+object analogue_display_only(e_offset=int,ident=string,units=string,src=source)
+
+var analogue_ip = input  e_db_row_type
+var box_text = loopback  string
+var box_width = loopback  int
+
+begin
+
+just=centrecentre
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+if invalid get source analogue_ip then 
+
+   begin
+
+   set source analogue_ip = src
+   set filter analogue_ip.db_addr = lim_eq
+   set limit analogue_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set priority analogue_ip.db_addr = 15
+   set persist analogue_ip 
+   set mayexist analogue_ip
+   request analogue_ip
+
+   end
+
+
+! DRAW SYMBOL !
+
+box_text = ident+" "+int(analogue_ip.e_value)+" "+units
+box_width=length(box_text)+10
+
+rect(fg=decoroff,h=20,w=box_width) 
+x -= box_width/2 
+y += 10 add 
+y -= 20 add 
+x += box_width add 
+line(lw=1,fg=decorlight) clear
+x = box_width/2
+y = -10 add 
+y += 20 add 
+x -= box_width add 
+line(lw=1,fg=decorshadow) clear
+x = 0 y = 0 text (tfg=black,ch=15,box_text)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=260
+y = 10 analogue_display_only(100,"Calc Vis","",heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

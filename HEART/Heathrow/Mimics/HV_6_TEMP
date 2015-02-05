@@ -1,0 +1,684 @@
+!** Control and Monitoring System 	**!
+!** Modified by AM (CCS) - 19/08/10 	**!
+!** Sub 108 RTU Installed		**!
+!-------------------------------!
+
+!**********Hv Ring 6************!
+
+
+load mimic_libutil
+load hv_6_sub_stations
+load ocb
+load hv_cable_ident
+Load BROWSER
+load hv_lib
+
+!************* SUB 57 ***************!
+
+object sub_57
+
+begin
+
+sub_symbol_57
+
+lw=2
+
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x =0 y = 0 ocb_mont(7000,7970,487,737,heathrow,5,"top")
+x = 50  y = 0 ocb_mont(7000,7930,579,1370,heathrow,6,"top")
+clear
+
+end
+
+!************* SUB 92 *************!
+
+object sub_92
+
+begin
+
+sub_symbol_92
+
+lw=2
+x = -52 y = 25 add y = -25 add line(fg=red) clear
+x = 53 y = 25 add y = -25 add line(fg=red) clear
+x = 105 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x = -52  y = 0 ocb_mont(6000,6230,611,902,heathro2,3,"top")
+x = 53   y = 0 ocb_mont(6000,6250,613,904,heathro2,5,"top")
+x = 105 y = 0 ocb_mont(6000,6260,614,905,heathro2,6,"top")
+clear
+
+end
+
+
+!************* Relocated SUB 56A *************!
+
+object sub_56a
+
+begin
+
+sub_symbol_56a
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 breaker("eclipse",1600,1655,160,550,int,HEATHRO4,1,"TOP",int)
+x = 50 y = 0 breaker("eclipse",1600,1675,161,551,int,HEATHRO4,2,"TOP",int)
+
+
+clear
+
+end
+
+
+!************* SUB 87 ****************!
+
+object sub_87
+
+begin
+
+sub_symbol_87
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(5000,5050,250,250,heathro3,1,"top")
+x = 50 y = 0 ocb_mont(5000,5070,252,252,heathro3,3,"top")
+
+clear
+
+end
+
+
+!************* SUB 36 *************!
+
+object sub_36
+begin
+
+sub_symbol_36
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x =     0  y =  0  ocb_mont(7000,7490,439,689,heathrow,3,"top")
+x =    50  y =  0  ocb_mont(7000,7500,440,690,heathrow,4,"top")
+
+end
+
+
+!************* SUB 37 ***************!
+
+object sub_37
+
+begin
+
+sub_symbol_37
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x =     0  y =  0  ocb_mont(10000,10090,904,534,heathro2,5,"top")
+x =    50  y =  0  ocb_mont(10000,10100,905,535,heathro2,6,"top")
+end
+
+
+!************* OLD TFP ***************!
+
+!object sub_old_tfp
+
+begin
+
+sub_symbol_old_tfp
+
+lw=2
+x = 25 y = 25 add y = -15 add line(fg=red) clear
+
+
+end!
+
+
+!************** SUB 1 **************!
+
+object sub_1
+
+begin
+
+sub_symbol_1
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+
+
+x =   0   y =  0  ocb_mont(4500,4630,174,353,heathro2,1,"top")
+x =   50  y =  0  ocb_mont(4500,4640,175,354,heathro2,2,"top")
+
+end
+
+
+!************* SUB 30 ***************!
+
+object sub_30
+
+begin
+
+sub_symbol_30
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x =     0  y =  0  ocb_mont(7000,7320,422,672,heathrow,3,"top")
+x =    50  y =  0  ocb_mont(7000,7330,423,673,heathrow,4,"top")
+
+end
+
+
+!************ SUB 31 *************!
+
+object sub_31
+
+begin
+
+sub_symbol_31
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x =   0   y = 0  ocb_mont(7000,7350,425,675,heathrow,1,"top")
+x =   50  y = 0  ocb_mont(7000,7360,426,676,heathrow,2,"top")
+
+end
+
+!************** SUB 140 **************!
+
+object sub_140
+
+begin
+
+sub_symbol_140
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+
+x =   0 y =  0  ocb_mont(0,0,630,910,heathro2,1,"top")
+
+end
+
+!***************** SUB 23 ****************!
+
+object sub_23
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var="sub_stn_23"
+
+W=150 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"Sub 23",just=centrecentre) clear
+
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+x = 100 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x =   0 y = 0  ocb(4000,4200,216,391,heathrow,17,"top")
+x =  50 y = 0  ocb(4000,4220,217,392,heathrow,18,"top")
+x = 100 y = 0  ocb(4000,4240,218,393,heathrow,19,"top")
+end
+
+
+!************* SUB 32 ***************!
+
+object sub_32
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "sub_stn_32"
+
+W=150 H=25 X=-75 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 0 y = 38 text(tfg=white,ch=25,"Sub 32",just=centrecentre) clear
+
+x = -75 y = 50 add y -= 25 add x += 150 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = -50 y = 25 add y = -25 add line(fg=red) clear
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x = -50 y = 0 ocb(5000,5220,268,489,heathrow,19,"top")
+x = 0  y = 0 ocb(5000,5240,1040,490,heathrow,20,"top")
+x = 50 y = 0 ocb(5000,5260,1041,491,heathrow,21,"top")
+
+end
+
+
+!************* SUB 47 ***************!
+object sub_47
+
+begin
+
+sub_symbol_47
+
+lw=2
+!x = 0 y = 25 add y = -25 add line(fg=red) clear!
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+!x = 0 y = 0 ocb_barcis(20596,833,1108,heathrow,1,"top")
+x = 50 y = 0 ocb_barcis(20540,831,1106,heathrow,4,"top")
+x = 50 y = 0 ocb_barcis(20560,832,1107,heathrow,5,"top")!
+
+!x = 0   y = 0 ocb_mont(1,140,7,5,heathro2,1,"top")!
+x = 0  y = 0 ocb_mont(1,170,10,8,heathro2,4,"top")
+x = 50 y = 0 ocb_mont(1,180,11,9,heathro2,5,"top")
+
+end
+
+!************* SUB 108 ***************!
+object sub_108
+
+begin
+
+sub_symbol_108
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+!** New Sub 108 RTU Intalled and database linkages updated **!
+!** x =  0 y = 0  ocb_mont_with_earth(6000,6870,912,542,heathro2,3,"top")
+x =  50 y = 0 ocb_mont_with_earth(6000,6890,914,544,heathro2,5,"top") **!
+x =  0 y = 0  ocb_mont_with_earth(12220,12260,618,1310,heathro4,3,"top")
+x =  50 y = 0 ocb_mont_with_earth(12220,12270,620,1312,heathro4,5,"top")
+end
+
+!************** SUB 129 T2B North ****************!
+
+object sub_129
+begin
+
+sub_symbol_129
+	lw=2
+	x = 0 y = 25 add y -= 50 add line(fg=red) clear
+	x = 25 y = 100 add y -= 50 add line(fg=red) clear
+	x = 75 y = 100 add y -= 50 add line(fg=red) clear
+	x = 100 y = 25 add y -= 50 add line(fg=red) clear
+
+	x = 0 y = 0 ocb_mont_lib(3000,3100,130,600,heathro4,1,"top")
+	x = 25 y = 75 ocb_mont_lib(3000,3110,131,601,heathro4,2,"btm")
+	x = 75 y = 75 ocb_mont_lib(3000,3120,132,602,heathro4,3,"btm")
+	x = 100 y = 0 ocb_mont_lib(3000,3130,133,603,heathro4,4,"top")
+end
+
+!************** SUB 263 T2B Site Supplies ****************!
+
+object sub_263
+
+begin
+
+sub_symbol_263
+
+lw=2
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+
+x= 50 y=0 hv_switch_obj(	"RMU",		int,		3207,		143,		613,		heathro4,		"2",		"top",		int,		int, 		int,		int,	int)
+end
+
+!************** SUB 264 T2B Welfare Facility ****************!
+
+object sub_264
+
+begin
+
+sub_symbol_264
+
+lw=2
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+
+x= 50 y=0 hv_switch_obj(	"RMU",		int,		3231,		146,		616,		heathro4,		"2",		"top",		int,		int, 		int,		int,	int)
+end
+
+!************ SUB 122 *************!
+
+!object sub_122
+
+begin
+
+sub_symbol_122
+
+lw=2
+x = -25 y = 25 add y = -25 add line(fg=red) clear
+x = 25 y = 25 add y = -25 add line(fg=red) clear
+
+scale = 120
+x =   -25   y = 0  ocb_mont(0,4500,210,210,heathro3,1,"top")
+x =   25  y = 0  ocb_mont(0000,4550,215,215,heathro3,6,"top")
+
+end!
+
+
+!*********** HV 6 NORTH INTAKE ************!
+
+object hv_6_north_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "north_intake"
+
+W=250 H=25 X=-100 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"North Intake",just=centrecentre) clear
+
+x = 150 y = 25 add x -= 250 add y += 25 add line (fg=white) clear
+x = 150 y = 25 add y += 25 add x -= 250 add line (fg=grey40) clear
+
+lw=2
+x = -50 y = 25 add y = -25 add line(fg=red) clear
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+x = 100 y = 25 add y = -25 add line(fg=red) clear
+
+
+scale=120
+x = -50 y = 0 ocb(1,180,5,29,heathrow,6,"top")
+x = 0 y = 0 ocb(1,200,6,30,heathrow,7,"top")
+x = 50 y = 0 ocb(1,260,9,33,heathrow,11,"top")
+x = 100 y = 0 ocb(1,280,10,34,heathrow,13,"top")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+clear
+
+y = -300
+x = -450 sub_23
+x = -225 sub_31
+x = 0 sub_30
+x = 190 sub_57
+x = 425 sub_32
+
+y = -150
+x = -450 sub_108
+x = -330 sub_47
+x = -190 sub_1
+x = -35 sub_129
+x = 220 sub_92
+x = 425 sub_36
+!x = -325 sub_old_tfp!
+
+
+y = -15
+x = -60 sub_263
+x = 60 sub_264
+x = 250 sub_140
+x = -450 sub_56a
+x = 425 sub_37
+
+y = 150
+x = -400 sub_87
+
+y = 200
+x = 0 hv_6_north_intake
+
+lw=2
+
+!SS23-18 TO SS32-21!
+x =-400 y = -325 add
+y -= 45 add
+x += 875 add
+y += 45 add
+line(fg=red) clear
+x = 37 y = -370 cable_ident("red","maggot","6.3") clear
+
+!SS23-19 TO SS31-1!
+x = -350 y = -325 add
+y -= 15 add
+x += 125 add
+y += 15 add
+line(fg=red) clear
+x = -285 y = -340 cable_ident("red","maggot","4.1") clear
+
+!SS31-2 TO SS30-4!
+x = -175 y = -325 add
+y -= 30 add
+x += 225 add
+y += 30 add
+line(fg=red) clear
+x = -65 y = -355 cable_ident("red","maggot","5.0") clear
+
+!SS57-5 TO SS32-19!
+x =190 y = -325 add
+y -= 30 add
+x += 185 add
+y += 32 add
+line(fg=red) clear
+x = 330 y = -355 cable_ident("red","maggot","5.0") clear
+
+!SS32-20 TO SS36-3!
+x = 425 y = -325 add
+y -= 30 add
+x += 100 add
+y += 150 add
+x -= 100 add
+y += 30 add
+line(fg=red) clear
+x = 470 y = -205 cable_ident("red","maggot","5.6") clear
+
+!SS36-4 TO SS37-5!
+x = 475 y = -175 add
+y -= 15 add
+x += 50 add
+y += 135 add
+x -= 100 add
+y += 30 add
+line(fg=red) clear
+x = 470 y = -55 cable_ident("red","maggot","5.6") clear
+
+!SS37-6 TO NI-13!
+x = 475 y = -25 add
+y -= 15 add
+x += 50 add
+y += 120 add
+x -= 425 add
+y += 95 add
+line(fg=red) clear
+x =300 y = 80 cable_ident("red","maggot","5.6") clear
+
+!SS57-6 TO SS92-3!
+x = 240 y = -325 add
+y -= 15 add
+x += 60 add
+y += 120 add
+x -=132 add
+y += 52 add
+line(fg=red) clear
+x = 270 y = -340 cable_ident("red","maggot","5.7") clear
+
+! Modified for Sub 129 !
+!SS92-5 TO NI-7
+x = 273 y = -175 add
+y -= 30 add
+x += 115 add
+y += 255 add
+x -= 388 add
+y += 130 add
+line(fg=red) clear
+x = 150 y = 50 cable_ident("red","maggot","5.7") clear
+!
+
+!SS92-6 TO SS140-1!
+x = 325 y = -175 add
+y -= 15 add
+x += 40 add
+y += 120 add
+x -= 115 add
+y += 30 add
+line(fg=red) clear
+
+!SS30-3 TO SS1-P2!
+x = 0 y = -325 add
+y -= 15 add
+x -= 140 add
+y += 165 add
+line(fg=red) clear
+!x = 80 y = -220 cable_ident("red","maggot","4.1") clear!
+
+!SS1-1 TO SS47-4!
+x =-190 y = -175 add
+y -= 30 add
+x -= 140 add
+y += 30 add
+line(fg=red) clear
+x = -300 y = -205 cable_ident("red","maggot","4.1") clear
+
+!SS47-5 TO NI-6!
+x = -280 y = -175 add
+y -= 15 add
+x += 50 add
+y += 255 add
+x += 180 add
+y += 110 add
+line(fg=red) clear
+x = -255 y = -190 cable_ident("red","maggot","4.1") clear
+
+!SS23-17 TO SS108-5!
+x = -450 y = -325 add
+y -= 15 add
+x -= 50 add
+y += 135 add
+x += 100 add
+y += 30 add
+line(fg=red) clear
+x = -445 y = -205 cable_ident("red","maggot","5.0") clear
+
+!SS108-3 TO SS56-1!
+x = -450 y = -175 add
+y -= 15 add
+x -= 50 add
+y += 120 add
+x += 50 add
+y += 40 add
+line(fg=red) clear
+x = -475 y = -70 cable_ident("red","maggot","5.0") clear
+
+!SS56-4 TO SS87-3!
+x = -400 y = -30 add
+y -= 40 add
+x += 50 add
+y += 195 add
+line(fg=red) clear
+x = -375 y = -70 cable_ident("red","maggot","5.0") clear
+
+!SS87-1 TO NI-11!
+x = -400 y = 125 add
+y -= 45 add
+x += 450 add
+y += 95 add
+line(fg=red) clear
+x = -200 y = 80 cable_ident("red","maggot","5.0") clear
+
+!SS47-1 TO OLD TFP!
+!x = -200 y = -175 add
+y -= 15 add
+x -= 100 add
+y += 25 add
+line(fg=red) clear!
+
+!SS129-1 TO NI-7!
+x = -35 y = -175 add
+y -= 15 add
+x -= 60 add
+y += 240 add
+x += 95 add
+y += 130 add
+line(fg=red) clear
+x = -30 y = 50 cable_ident("red","maggot","5.7") clear
+
+!SS129-2 TO SS263-2!
+x = -10 y = -50 add
+y += 10 add
+line(fg=red) clear
+
+!SS129-3 TO SS264-2!
+x = 40 y = -50 add
+y += 10 add
+x += 71 add
+line(fg=red) clear
+
+!SS129-4 TO SS92-5!
+x = 65 y = -175 add
+y -= 30 add
+x += 208 add
+y += 30 add
+line(fg=red) clear
+
+
+x = -570 y = 310 browser(1066,heathrow,1140)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

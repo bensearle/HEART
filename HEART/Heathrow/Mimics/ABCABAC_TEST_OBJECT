@@ -1,0 +1,41 @@
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+object test_object(b_offset=int,src=source)
+
+var b_input = input b_db_row_type
+var object_fg = loopback colour
+
+begin
+
+   set source b_input = src
+   set filter b_input.db_addr = lim_eq
+   set limit b_input.db_addr = db_address(int(b1) + b_offset - 1)
+   set persist b_input
+   request b_input
+
+if b_input.b_value then
+   object_fg = green4
+else
+  object_fg = white
+
+just=centrecentre
+
+x = 0 y = 0 rect(w=60,h=60,fg=decoroff) clear
+x = -30 y = 30 add y -= 60 add x += 60 add line(lw=1,fg=decorlight) clear
+x = -30 y = 30 add x += 60 add y -= 60 add line(lw=1,fg=decorshadow) clear
+
+x = 0 y = 0 add circle(lw=4,w=45,h=45,fg=object_fg) clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+test_object(17100,heathrow)
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=decoroff,resizable

@@ -1,0 +1,1916 @@
+
+
+!object MAIN_OBJECT
+begin
+end!
+
+
+!**	HEATHROW\COMMS_REPORT_PAGE3	**!
+
+!** 	Modified by Firstco - 29 Nov 2012					**!
+!** 	Inclusion of new OS29 Star MER						**!
+!** 	Removal of old OS08 / Addition of new OS08 Sub 302	**!
+!** 	Removal of Hex Interface OS09						**!
+!** 	Removal of Seprols OS37, OS38 & OS41				**!
+!** 	Upgrade of OS11 & OS12 to Ethernet					**!
+
+!** 	Modified by CORE - 10 Oct 2012	**!
+!** 	Inclusion of OS146  Sub 226		**!
+
+!** 	Modified by CORE - 30 Aug 2012	**!
+!** 	Inclusion of OS127  Sub 228		**!
+
+!** 	Modified by CORE - 09 Aug 2012	**!
+!** 	Inclusion of OS145  Sub 262		**!
+!** 	Inclusion of OS137  Sub 293		**!
+
+!** 	Modified by SS/VK - 27 Mar 2012	**!
+!** 	Correct all Ethernet Mono Fld 3 to Call **!
+!**	Fail Boolean to give correct updates    **!
+
+!** 	Modified by CORE - 02 Dec 2011	**!
+!** 	Inclusion of OS138  Sub 279		**!
+!** 	Inclusion of OS139  Energy Centre	**!
+!** 	Inclusion of OS140  EAAR		**!
+!** 	Removal of OS105  Sub223		**!
+
+!** 	Modified by ULTRA - Steve Leatherbarrow 21 June 2011	**!
+!** 	Inclusion of OS132, T5C Subs			**!
+
+!** 	Modified by CORE - 29 Sept 2011	**!
+!** 	Inclusion of OS133  T2 Sub 260 A	**!
+!** 	Inclusion of OS134  T2 Sub 260 B	**!
+
+!** 	Modified by CORE - 3 June 2011	**!
+!** 	Inclusion of OS130  PT5TBS T5C	**!
+!** 	Inclusion of OS131  PT5TBS WIB	**!
+
+
+!** 	Modified by CORE - 26 May 2011	**!
+!** 	Inclusion of OS135  Substation 294	**!
+
+
+!** 	Modified by ULTRA - 05 Aug 2009	**!
+!** 	Inclusion of OS121 Substation 58	**!
+!** 					**!
+
+load report_tllib
+load REPLIB
+load archive2_std_libutil
+load debug_libutil
+
+
+CONST column_width = 60 
+CONST time_period = "01-Feb-2001 06:25"
+
+TYPE KEYED_TWO_A_VALUES = TABLE (
+	! 1RW !  ID = ID,
+	!  R  ! STREAM = STREAM,
+	!  R  !  STREAM_NAME = STREAM_NAME,
+	!  R  ! KEYNUMBER = KEYNUMBER,
+	! 2RW !  TIME = CS_TIME,
+	!  RW !  KEYED_TWO_A_VALUES_1 = REAL,
+	!  RW !  KEYED_TWO_A_VALUES_2 = REAL )
+
+type stats_display_type = enum( percent_time_true = "Percentage true",
+				ft_transitions = "False-true transitions")
+
+!*******************************************************************************!
+!February is a leap year every fourth year, except at the turn of the century.!
+!There are 29 days in a leap year for february, normally 28!
+!Every 400 years the century year is also a leap year!
+!Thus 1900 is not a leap year, 1996 and 2000 are leap years!
+
+!Beware though, because MDL doesn't know that 2000 is a leap year, nor do DOS !
+!PC's. SUN machines do recognize 29-Feb-2000!
+
+!Original Object did not work, was re-written 30-6-1999 !
+!Jan, mar, may,Mar,Mar,Oct,Dec = 31 !
+!Mar,Mar,Sep,Nov = 30 !
+
+!*******************************************************************************!
+
+
+object daysInMonth ( ip_date = string) = int
+
+var str_month = string(3)
+var year = int
+begin
+
+str_month = getchars(4,3,time(ip_date))
+CASE str_month OF
+"APR","JUN","SEP","NOV"
+ daysInMonth = 30
+"FEB" 
+ begin 
+  year = int(getchars(8,4,time(ip_date)))
+  if (((year % 4 == 0) and (year % 100 <> 0)) or (year % 400 == 0)) then
+	begin
+	daysInMonth = 29
+	end
+  else
+	 daysInMonth = 28
+ end
+DEFAULT
+ daysInMonth = 31
+end
+
+! ------------------------------------------------------------------------------------------------------------------- !
+! This object will return boolean statistics for single element !
+! The choice is :     !
+! percent_time_true  : The percentage of the period for which the element was true is displayed ! 
+! ft_transitions : The number of fasle-true transitions for the period is displayed !
+! The object also returns the percentage time true !
+! ------------------------------------------------------------------------------------------------------------------- !
+
+object return_boolean_stats(ch,just,realf,
+			server_name = source,
+				address = db_address,
+				report_period = report_period_type,
+				stats_display = stats_display_type,
+			var_busy = loopback yesno)=string
+! INPUT !
+var boolean_data = input keyed_two_a_values[40]
+
+! TEMPORARY !
+var i = int
+var time_true = real
+var total_transitions = real
+var percent_true = real
+var final_text = string
+var temp_time1 = int
+var temp_time2 = int
+var temp_time = time
+var num_days_over = int
+
+var requested_data = loopback yesno
+begin
+
+! calculate the total time for last month in seconds !
+! ------------------------------------------------------------------------- !
+
+	num_days_over = int(getchars(1,2,time(time_period)))
+	temp_time = time(int(current_time) - (num_days_over * 86400))
+
+! request the boolean stats data for last month !
+! -------------------------------------------------------------------- !
+	if invalid requested_data then
+	begin
+	requested_data = yes
+	set source boolean_data = arhsource(server_name)
+
+	set filter boolean_data.time = lim_ge_lt2
+
+	timef = local_dmy_hms
+	set limit boolean_data.time = time ("01" + getchars(3,9,temp_time))
+
+	timef = local_dmy_hms
+	temp_time1 = int(get limit boolean_data.time)
+	temp_time2 = int(daysInMonth(temp_time))*86400
+	set limit2 boolean_data.time = time(temp_time1+temp_time2)
+
+	set filter boolean_data.stream_name = lim_eq
+	set limit boolean_data.stream_name = server_name + " B_STATS"
+ 
+	set filter boolean_data.keynumber = lim_eq
+	set limit boolean_data.keynumber = convert_db_address_to_keynumber(address) 
+ 
+	request boolean_data 
+	end
+! calculate the total time true in seconds !
+! ----------------------------------------------------------- !
+debug("BUSY :"+get busy boolean_data+" VALID :"+valid boolean_data+" LASTROW :"+lastrow boolean_data)
+if valid boolean_data then
+ begin
+ if lastrow boolean_data > 0 then
+  begin 
+  time_true = 0
+  for i from 1 to lastrow boolean_data do
+ begin
+ time_true += boolean_data[i].keyed_two_a_values_2
+ end
+  time_true = time_true*60
+
+  ! calculate the percentage of the month that the element was true !
+  ! ------------------------------------------------------------------------------------------------- !
+  percent_true = 100*(time_true/(lastrow boolean_data*86400)) 
+
+  ! calculate the total number of false to true transitions in the month ! 
+  ! ------------------------------------------------------------------------------------------------- !
+  total_transitions = 0
+  for i from 1 to lastrow boolean_data do
+ total_transitions += boolean_data[i].keyed_two_a_values_1
+  end 
+ else
+  begin
+  percent_true = 0 
+  end
+ end
+! display the text required !
+! -------------------------------------- !
+case stats_display of
+ percent_time_true  final_text = percent_true
+ ft_transitions final_text = total_transitions
+ default  begin end
+
+! prevent printing until the data has been obtained !
+! ------------------------------------------------------------------------- !
+if get busy boolean_data then
+ begin
+ var_busy = yes
+ end
+else
+ begin 
+ return_boolean_stats = final_text
+ end
+end
+
+			
+! ***************************************************************************************** !
+!----------------- COMMUNICATIONS STATUS REPORT ------------------------!
+
+object COMMSTAT_REPORT(w,h,fg,bg,report_period=report_period_type,report_date=string,just)=yesno
+
+var i =int
+var fld_1 = string
+var fld_2 = string
+var fld_3 = string
+var fld_4 = string
+var fld_5 = string
+var fld_6 = string
+
+var getting_data = loopback yesno
+var temp_time = time
+var num_days_over = int
+
+VAR text_file = FILEWRITE string
+
+Begin
+getting_data = no
+FONT=FONT_BOLD
+
+num_days_over = int(getchars(1,2,time(time_period)))
+temp_time = time(int(current_time) - (num_days_over * 86400))
+
+	SET RESET text_file
+	SET FILE text_file = "comms-report-" + getchars(4,8,temp_time) + ".htm"
+	SET NOAPPEND text_file
+	text_file = ""
+	text_file += ""
+	request text_file
+	SET APPEND text_file
+	text_file= "<html><head><link rel=stylesheet href=css/text.css type=text/css></head><body text=#FFFFFF bgcolor=#004080>"
+	request text_file
+	text_file= "<font face=Verdana, Arial, Helvetica, sans-serif size=2 color=#FFFFFF>" 
+	request text_file
+	text_file= "<center>" 
+	request text_file
+	text_file= "<font size=4><b>Communications Status Report</b></font><br><br>For: " + getchars(4,8,temp_time) + "<br><br>" 
+	request text_file
+	text_file= "<table width=85% align=center border=1>" 
+	request text_file
+	text_file= "<th width=22% class=headertext2>PLC</th><th width=13% class=headertext2>% Time PLC A Line A</th><th width=13% class=headertext2>% Time PLC B Line B</th>"
+	request text_file
+	text_file= "<th width=13% class=headertext2>% Time No Comms Line A</th><th width=13% class=headertext2>% Time No Comms Line B</th>"
+	request text_file
+	text_file= "<th width=13% class=headertext2>No. Duty Changed A to B</th><th width=13% class=headertext2>No. Duty Changed B to A</th>" 
+	request text_file
+
+	fld_1 = return_boolean_stats (heathrow,b44,report_period,percent_time_true, getting_data,realf= fixed1)
+	fld_2 = return_boolean_stats (heathrow,b45,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b62,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b63,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathrow,b44,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b45,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS1 North Intake</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro2,b16201,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS02 Sub143</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+
+	fld_3 = return_boolean_stats (heathrow,b40001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS03 Sub111 (WBC III)</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b3043,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b3044,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b3067,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b3068,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathrow,b3043,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b3044,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS4 West Intake</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b4019 ,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b4020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b4035,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b4036,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathrow,b3043,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b3044,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS5 Sub 23</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b5020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b5021,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b5031,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b5032,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b5020,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b5021,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS6 Sub 32</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b6026,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b6027,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b6036,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b6037,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b6026,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b6027,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS7 Sub 62</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	!** Modified by J. Taylor - Firstco **!
+	!** Old OS08 (Old Control Tower) Decommissioned. New OS08 (T3IB Sub 302) Added **!
+	fld_1 = return_boolean_stats (heathro5,b26010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro5,b26011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro5,b26000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro5,b26001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro5,b26010,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro5,b26011,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS08 Sub 302</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	!** Modified by J. Taylor - Firstco **!
+	!** Old OS09 (Old Control Tower, Hex Interface) Decommissioned. **!
+	!** fld_1 = return_boolean_stats (heathrow,b9003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b9004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b9086,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b9087,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b9003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b9004,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS9 Hex Interface</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_1 = return_boolean_stats (heathrow,b10420,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b10421,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b10310,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b10311,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b10420,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b10421,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS10 Cargo Tunnel</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	!** Modified by J. Taylor - Firstco **!
+	!** Outstation 11 upgraded to ethernet. **!
+	!** fld_1 = return_boolean_stats (heathro3,b3003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b3004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b3012,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b3013,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b3003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b3004,report_period,ft_transitions, getting_data,realf = fixed0) **!
+	
+	fld_3 = return_boolean_stats (heathro3,b3001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS11 CTA RM East</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by J. Taylor - Firstco **!
+	!** Outstation 12 upgraded to ethernet. **!
+	!** fld_1 = return_boolean_stats (heathro3,b3503,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b3504,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b3512,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b3513,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b3503,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b3504,report_period,ft_transitions, getting_data,realf = fixed0) **!
+	
+	fld_3 = return_boolean_stats (heathro3,b3501,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS12 CTA RM West</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b13013,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b13014,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b13022,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b13023,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b13013,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b13014,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS13 FEGP T3</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b14016,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b14017,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b14028,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b14028,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b14016,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b14017,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS14 FEGP T4</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b15058,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b15059,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b15900,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b15901,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathrow,b15058,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b15059,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS15 Firemain</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b16026,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b16027,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b16050,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b16051,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b16026,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b16027,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS16 Bld 139</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	!** Modified by SS/VK - SLC Upgraded (by Firstco) **!
+	!** fld_1 = return_boolean_stats (heathro2,b4,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b5,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b21,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b22,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b4,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b5,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS17 Sub 3</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro2,b2,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS17 Sub 3</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+
+	!** Modified by AM (CCS) - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathro2,b503,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b504,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b520,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b520,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b503,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b504,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS18 Sub 4</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+	
+	fld_3 = return_boolean_stats (heathro2,b501,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS18 Sub 4</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+	
+	!** Modified by AM (CCS) - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathro2,b1003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b1004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b1020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b1020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b1003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b1004,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS19 Sub 5</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro2,b1001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS19 Sub 5</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by AM (CCS) - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathrow,b1003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b1004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b1020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b1020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b1003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b1004,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS20 Sub 6</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathrow,b1001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS20 Sub 6</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by AM (CCS) - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathro2,b2003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b2004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b2020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b2021,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b2003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b2004,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS21 Sub 7</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+	
+	fld_3 = return_boolean_stats (heathro2,b2001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS21 Sub 7</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by SS/VK - SLC Upgraded (by Firstco) **!
+	!** fld_1 = return_boolean_stats (heathro2,b2503,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b2504,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b2520,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b2521,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b2503,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b2504,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS22 Sub 8</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro2,b2501,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS22 Sub 8</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by SS/VK - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathro2,b3003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b3004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b3020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b3021,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b3003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b3004,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS23 Sub 9</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro2,b3001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS23 Sub 9</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro2,b10310,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b10311,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b10315,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b10316,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro2,b10310,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b10311,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS24 Sub 162</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+
+
+
+
+
+	!********************************************************!
+	!* Modified by Carl Cheetham (PDS Limited)	*!
+	!* On 15/04/08				*!
+	!*					*!
+	!* As part of the CTA Sewage Project		*!
+	!* PDS Ref: 3326				*!
+	!********************************************************!
+
+	fld_1 = return_boolean_stats	(heathro4,	b16800,	report_period,	percent_time_true,	getting_data,	realf = fixed1)
+	fld_2 = return_boolean_stats	(heathro4,	b16801,	report_period,	percent_time_true,	getting_data,	realf = fixed1)
+	fld_3 = return_boolean_stats	(heathro4,	b16970,	report_period,	percent_time_true,	getting_data,	realf = fixed1)
+	fld_4 = return_boolean_stats	(heathro4,	b16971,	report_period,	percent_time_true,	getting_data,	realf = fixed1)
+	fld_5 =return_boolean_stats 	(heathro4,	b16800,	report_period,	ft_transitions, 	getting_data,	realf = fixed0)
+	fld_6 = return_boolean_stats	(heathro4,	b16801,	report_period,	ft_transitions, 	getting_data,	realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS25 CTA Sewage</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	!** Modified by AM (CCS) - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathro2,b4503,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b4504,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b4520,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b4521,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b4503,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b4504,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS26 Sub 14</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro2,b4501,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS26 Sub 14</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by AM (CCS) - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathro2,b5003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b5004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b5020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b5021,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b5003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b5004,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS27 Sub 20</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro2,b5001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS27 Sub 20</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** fld_1 = return_boolean_stats (heathro2,b5503,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b5504,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b4520,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b4521,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b5503,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b5504,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS28 Sub 26</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+	!
+
+	fld_3 = return_boolean_stats (heathro2,b16681,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS28 SUB148</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by J. Taylor - Firstco **!
+	!** New OS29 (Star MER) Added **!
+	fld_1 = return_boolean_stats (heathro2,b32710,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b32711,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b32700,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b32701,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro2,b32710,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b32711,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS29 Star MER</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+	
+	!**** OS 30  is Spare    ***!
+	!** fld_1 = return_boolean_stats (heathro2,b7003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b7004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b7020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b7021,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b7003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b7004,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS30 Sub 58</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+	!
+
+	fld_1 = return_boolean_stats (heathro2,b20004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b20005,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b20010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b20011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b20004,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b20005,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS32 33kV</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro2,b21004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b21005,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b21010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b21011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b21004,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b21005,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS33 South Intake</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro2,b22004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b22005,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b22010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b22011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b22004,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b22005,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS34 East Intake</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b31002,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b31003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b31000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b31001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b31002,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b31003,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS36 Sub 116</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+	
+	!** Modified by J. Taylor - Firstco **!
+	!** Seprol OS37 decommissioned **!
+	!** fld_1 = return_boolean_stats (heathrow,b34202,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b34203,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b34200,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b34201,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b34202,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b34203,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS37 Sealand Rd</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	!** Modified by J. Taylor - Firstco **!
+	!** Seprol OS38 decommissioned **!
+	!** fld_1 = return_boolean_stats (heathrow,b34002,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b34003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b34000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b34001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b34002,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b34003,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS38 Pier 7</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_1 = return_boolean_stats (heathrow,b32002,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b32003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b32000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b32001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b32002,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b32003,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS39 Sub 115</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b33002,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b33003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b33000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b33001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b33002,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b33003,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS40 Sub 114</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	!** Modified by J. Taylor - Firstco **!
+	!** Seprol OS41 decommissioned **!
+	!** fld_1 = return_boolean_stats (heathrow,b34402,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b34403,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b34400,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b34401,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b34402,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b34403,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS41 Custom Hse</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	!** Modified by SS/VK - SLC Upgraded (by Firstco) **!
+	!** fld_1 = return_boolean_stats (heathro2,b13000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b13001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b13134,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b13135,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b13000,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b13001,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS42 Sub 112</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro2,b13001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS42 Sub 112</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by SS/VK - SLC Upgraded (by Firstco) **!
+	!** fld_1 = return_boolean_stats (heathro2,b13500,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b13501,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b13650,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b13651,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b13500,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b13501,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS43 Sub 113</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro2,b13501,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS43 Sub 113</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by SS/VK - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathro2,b10003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b10004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b10020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b10021,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b10003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b10004,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS45 Sub 37</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro2,b10001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS45 Sub 37</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro2,b25014,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b25015,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b25023,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b25024,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b25014,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b25015,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS46 MTun South</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro2,b26064,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b26065,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b26073,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b26074,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b26064,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b26065,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS47 MTun North</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathrow,b10312,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b10313,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS48 CTun North</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathrow,b10314,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b10315,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS49 CTun South</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+
+	!***   Sub 119 -- Not in USE -- Decommisioned **!
+	!** fld_1 = return_boolean_stats (heathro3,b1546,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b1547,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b1552,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b1553,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b1546,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b1547,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS50 Sub 119</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+	!
+
+	fld_1 = return_boolean_stats (heathro3,b684,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b685,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b690,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b691,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b684,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b685,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS51 Sub 105</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+
+	!** Modified by SS/VK - SLC Upgraded (by Firstco) **!
+	!** fld_1 = return_boolean_stats (heathro3,b2094,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b2095,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b2280,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b2281,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b2094,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b2095,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS52 Sub 118</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro3,b2081,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS52 Sub 118</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+
+	fld_3 = return_boolean_stats (heathro4,b1331,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS53 Subways</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	
+	!** Modified by AM (CCS) - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathro3,b5003,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b5004,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b5020,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b5021,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b5003,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b5004,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS54 Sub 87</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro3,b5001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS54 Sub 87</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+	
+	fld_3 = return_boolean_stats (heathro2,b12351,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS55 Sub 11A</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by SS/VK - SLC Upgraded (by Firstco) **!
+	!** fld_1 = return_boolean_stats (heathro3,b1073,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b1074,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b1090,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b1091,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b1073,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b1074,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS56 Sub 103</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro3,b1071,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS56 Sub 103</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end	
+
+	fld_1 = return_boolean_stats (heathro3,b5510,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b5511,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b5500,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b5501,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b5510,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b5511,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS57 BSP CTA</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	!** Modified by SS/VK - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathro3,b2610,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b2611,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b2600,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b2601,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b2610,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b2611,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS58 Sub 120</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathro3,b2601,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS58 Sub 120</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end	
+
+	fld_1 = return_boolean_stats (heathro3,b6010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b6011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b6000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b6001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b6010,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b6011,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS59 Sub 121</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b9010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b9011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b9015,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b9016,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b9010,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b9011,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS60 Kiosk CKFWS</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b4001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS61 Kiosk CK1</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b4301,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS62 Kiosk CK2</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b4801,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS63 Kiosk CK3</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b5001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS64 Kiosk CK4</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b5301,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS65 Kiosk CK5</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b5801,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS66 Kiosk CK6</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b6201,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS67 Kiosk CK7</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b6601,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS68 Kiosk CK8</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b7801,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS69 Kiosk CK9</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b9410,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b9411,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b9415,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b9416,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b9410,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b9411,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS70 Kiosk CKT4</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+	
+	fld_3 = return_boolean_stats (heathrow,b38001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS71 FWPS</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathrow,b41001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS72 Sub 135</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+	
+	fld_1 = return_boolean_stats (heathrow,b2010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b2011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b2015,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b2016,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b2010,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b2011,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS74 Sub 182</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro2,b11310,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b11311,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b11315,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b11316,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro2,b11310,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b11311,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS75 Sub 183</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b10510,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b10511,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b10500,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b10501,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b10510,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b10511,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS79 Sub 126</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b2100,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS77 10cm Radar</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro2,b7400,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS78 NAA Subs</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathrow,b35500,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS80 Sub 132</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathrow,b37000,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS81 Sub 128</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!** Modified by AM (CCS) - SLC Upgraded **!
+	!** fld_1 = return_boolean_stats (heathrow,b39510,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b39511,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b39500,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b39501,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathrow,b39510,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b39511,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS84 Sub 10</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end **!
+
+	fld_3 = return_boolean_stats (heathrow,b39501,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS84 Sub 10</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro4,b15510,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro4,b15511,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro4,b15500,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro4,b15501,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro4,b15510,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro4,b15511,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS85 WSD</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b27010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b27011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b27000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b27001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b27010,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b27011,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS86 FFFWPS</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro3,b32800,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS87 T5 NAA13</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b27910,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b27911,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b27900,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b27901,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b27910,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b27911,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS88 WTC1</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b29060,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b29061,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b29050,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b29051,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro3,b29060,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b29061,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS89 WTC2</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b9000,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS90 T5 PCS - SLL</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b10200,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS91T5 PCS-SWOT</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b10800,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS92 T5 PCS - CLP</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b11910,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS93 Fuel Farm</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b12010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b12011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b12000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b12001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro3,b12010,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b12011,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS94 Sub 137</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b45310,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b45311,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b45300,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b45301,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathrow,b45310,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b45311,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS95 Sub 151</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+
+	fld_1 = return_boolean_stats (heathrow,b42110,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b42111,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b42100,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b42101,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathrow,b42110,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b42111,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS96 Sub 152</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b43610,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b43611,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b43600,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b43601,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathrow,b43610,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b43611,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS97 Sub 156</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathrow,b44460,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathrow,b44461,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathrow,b44450,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathrow,b44451,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathrow,b44460,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathrow,b44461,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS98 Sub 150</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro3,b27850,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS99 T5 DOR</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro3,b27875,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS100 T5 LOR</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b21010,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b21011,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b21000,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b21001,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro3,b21010,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b21011,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS101 Sub 153</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b22260,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b22261,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b22250,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b22251,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro3,b22260,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b22261,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS102 Sub 185</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b23760,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b23761,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b23750,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b23751,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro3,b23760,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b23761,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS103 Sub 186</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b25310,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b25311,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b25300,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b25301,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro3,b25310,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b25311,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS104 Sub 154</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+
+	fld_1 = return_boolean_stats (heathro2,b27310,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b27311,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b27300,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b27301,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro2,b27310,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b27311,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS106 EC Subs</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro2,b27001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS107 Sub 26A</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro3,b29901,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS108 Sub 139</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b1601,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS109 Sub 56</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+	
+	fld_3 = return_boolean_stats (heathro3,b32501,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS110 Sub 147</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	!*** T3P6 not in USE --Decommissioned  **!
+	!** fld_3 = return_boolean_stats (heathro4,b13450,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS121 T3P6</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end **!
+
+	fld_1 = return_boolean_stats (heathro2,b28210,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b28211,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b28200,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b28201,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro2,b28210,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b28211,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS115 Sub 155</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro2,b29001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS117 Sub 138</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro3,b30301,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS111 NAR TB1</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro3,b30701,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS112 SAR TB3</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro3,b31501,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS113 SAR TB4</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+	
+	fld_3 = return_boolean_stats (heathro3,b31901,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS114 SAR TB5</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro2,b16201,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS02 SUB 143</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+
+	fld_3 = return_boolean_stats (heathro2,b16681,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS28 SUB 148</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro2,b23701,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS116 T5A Subs</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro2,b8201,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS118 T5B Subs</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro2,b11810,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b11811,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b11800,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b11801,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro2,b11810,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b11811,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS119 Sub 184</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b14001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS120 T5 CV11</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b2601,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS121 Sub 58</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b3301,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS122 CCP 01</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b12101,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS123 CCP 02</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b17601,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS124 CCP 03</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	fld_3 = return_boolean_stats (heathro4,b18101,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS125 T4 CIP Sew</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+	
+	fld_1 = return_boolean_stats (heathro4,b18410,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b18411,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b18400,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b18401,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro2,b18410,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b18411,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS126 Sub 225</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro2,b29260,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b29261,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b29250,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b29251,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro2,b29260,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b29261,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS128 Main Tunnel South</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro2,b30410,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b30411,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b30400,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b30401,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro2,b30410,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro2,b30411,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS129 Main Tunnel North</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_boolean_stats (heathro3,b33410,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro3,b33411,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro3,b33400,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro3,b33401,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 = return_boolean_stats (heathro3,b33410,report_period,ft_transitions, getting_data,realf = fixed0)
+	fld_6 = return_boolean_stats (heathro3,b33411,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS50 Sub 191</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+		request text_file
+	end
+
+	! *****  OUTSTATION 135  - SUBSTATION 294    *****!
+
+              fld_1 = return_boolean_stats (heathro2,b31560,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_2 = return_boolean_stats (heathro2,b31561,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_3 = return_boolean_stats (heathro2,b31550,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_4 = return_boolean_stats (heathro2,b31551,report_period,percent_time_true, getting_data,realf = fixed1)
+	fld_5 =return_boolean_stats (heathro2,b31560,report_period,ft_transitions, getting_data,realf = fixed0)
+     	fld_6 = return_boolean_stats (heathro2,b31561,report_period,ft_transitions, getting_data,realf = fixed0)
+	if (getting_data==no) then
+	begin
+	            text_file = "<tr><td class=text>OS135 Sub 294</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+
+	          request text_file
+	end
+
+	
+
+	! *****  OUTSTATION 130  - PT5TBS T5C    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b11,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b12,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b1,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b2,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b11,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b12,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS130 PT5TBS T5C</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+	! *****  OUTSTATION 131  - PT5TBS WIB T3    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b1011,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b1012,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b1001,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b1002,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b1011,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b1012,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS131 PT5TBS WIB T3</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+	! *****  OUTSTATION 132  - T5C SUBS    *****!
+
+	fld_3 = return_boolean_stats (heathro4,b21001,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS132 T5C Subs</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	! *****  OUTSTATION 133  - T2 Sub 260 A    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b4510,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b4511,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b4500,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b4501,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b4510,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b4511,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS133 T2 SUB 260 A</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+	! *****  OUTSTATION 134  - T2 Sub 260 B    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b5810,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b5811,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b5800,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b4501,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b5810,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b5811,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS134 T2 SUB 260 B</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+	! *****  OUTSTATION 138  - Energy Centre Sub279    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b7257,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b7258,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b7202,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b7203,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b7257,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b7258,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS138 SUB 279</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+	! *****  OUTSTATION 139  - Energy Centre LV    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b8457,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b8458,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b8402,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b8403,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b8457,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b8458,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS139 Energy Centre LV</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+	! *****  OUTSTATION 140  - EAAR Tunnels    *****!
+
+	fld_3 = return_boolean_stats (heathro4,b8900,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS140 EAAR Tunnels</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+
+	! *****  OUTSTATION 145  - T2 Cooling Station Sub262    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b10210,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b10211,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b10200,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b10201,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b10210,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b10211,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS145 SUB 262</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+	! *****  OUTSTATION 137  - Substation 293    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b2511,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b2512,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b2501,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b2502,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b2511,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b2512,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS137 SUB 293</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+	! *****  OUTSTATION 141  - Substation 280    *****!
+
+	fld_3 = return_boolean_stats (heathro5,b11200,report_period,percent_time_true, getting_data,realf = fixed1)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>OS141 T2A Substations</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>" + fld_3 + "</td><td class=text>N/A</td><td class=text>N/A</td><td class=text>N/A</td></tr>"
+		request text_file
+	end
+
+	! *****  OUTSTATION 127  - Substation 228    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b3510,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b3511,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b3500,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b3501,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b3510,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b3511,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS127 SUB 228</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+	! *****  OUTSTATION 146  - Substation 226    *****!
+
+              fld_1 = return_boolean_stats (heathro5,b14310,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A DUTY  ****!
+	fld_2 = return_boolean_stats (heathro5,b14311,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B DUTY  ****!
+	fld_3 = return_boolean_stats (heathro5,b14300,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC A SCADA TO PLC W/D FAULT ****!
+	fld_4 = return_boolean_stats (heathro5,b14301,report_period,percent_time_true, getting_data,realf = fixed1)  !****  PLC B SCADA TO PLC W/D FAULT ****!
+	fld_5 = return_boolean_stats (heathro5,b14310,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC A DUTY  ****!
+     	fld_6 = return_boolean_stats (heathro5,b14311,report_period,ft_transitions, getting_data,realf = fixed0)          !****  PLC B DUTY  ****!
+	if (getting_data==no) then
+	begin
+	         text_file = "<tr><td class=text>OS146 SUB 226</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td><td class=text>" + fld_5 + "</td><td class=text>" + fld_6 + "</td></tr>"
+	          request text_file
+	end
+
+
+	text_file= "</table></center>" 
+	request text_file
+	text_file= "</body></html>" 
+	request text_file
+	SET RESET text_file
+
+	FG=BLACK
+	REALF=FIXED3
+	FONT=FONT_NORMAL
+	commstat_report=getting_data
+end

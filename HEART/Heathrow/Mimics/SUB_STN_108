@@ -1,0 +1,86 @@
+!** Modified by AM (CCS) - 19/08/10 	**!
+!** New Sub 108 RTU Installed	**!
+
+load mimic_libutil
+load ocb_mont_with_earth
+load intruder_display
+load transformer
+
+!*********** BUSBAR 108 *************!
+
+object busbar_108
+begin
+
+just = centrecentre
+
+tfg = black x = -120 y =-80 add text ("108",ch = 25) clear
+
+x = -125 y = -25 add x = 225 add line(lw=4,fg=red) clear
+
+lw=2
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y += 50 add line (fg=red) clear
+x =  100  y = -25 add y -= 50 add line (fg=red) clear
+x =  150  y = -25 add y += 50 add line (fg=red) clear
+x =  200  y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+!** New Sub 108 RTU Intallated and databases linkages updated **!
+!** Old db linkages commented out **!
+!** x =  -100 y = 0 ocb_mont_with_earth(6000,6850,910,540,heathro2,1,"btm")
+x =  -50  y =  0  ocb_mont_with_earth(6000,6860,911,541,heathro2,2,"btm")
+x =  0  y =  -50  ocb_mont_with_earth(6000,6870,912,542,heathro2,3,"top")
+x =   50  y =  0  ocb_mont_with_earth(6000,6880,913,543,heathro2,4,"btm")
+x =  100  y = -50 ocb_mont_with_earth(6000,6890,914,544,heathro2,5,"top")
+x =     150 y = 0 ocb_mont_with_earth(6000,6900,915,545,heathro2,6,"btm")
+x =   200 y = 0 ocb_mont_with_earth(6000,6910,916,546,heathro2,7,"btm") **!
+
+!** New db linkages added **!
+x =  -100 y = 0 ocb_mont_with_earth(12220,12250,616,1308,heathro4,1,"btm")
+x =  -50  y =  0  ocb_mont_with_earth(12220,12255,617,1309,heathro4,2,"btm")
+x =  0  y =  -50  ocb_mont_with_earth(12220,12260,618,1310,heathro4,3,"top")
+x =   50  y =  0  ocb_mont_with_earth(12220,12265,619,1311,heathro4,4,"btm")
+x =  100  y = -50 ocb_mont_with_earth(12220,12270,620,1312,heathro4,5,"top")
+x =     150 y = 0 ocb_mont_with_earth(12220,12275,621,1313,heathro4,6,"btm")
+x =   200 y = 0 ocb_mont_with_earth(12220,12280,622,1314,heathro4,7,"btm")
+
+scale = 180
+x = -120 y = -50 int_sensor(6950,heathro2,"INT")
+
+scale = 100
+X =  -100 Y = 45 transformer("Tx 1","LOCAL")
+X =  -50 Y = 45 transformer("LT 1","LOCAL")
+X =  50   Y = 45 transformer("LT 2","LOCAL")
+X =  150   Y = 45 transformer("LT 3","LOCAL")
+X =  200 Y = 45 transformer("Tx 2","LOCAL")
+
+scale = 256 just = centrecentre
+tfg = black ch = 12
+x = 0 y = -100 text("56a")
+x = 0 y = -85 text("P1")
+x = 100 y = -100 text("27")
+x = 100 y = -85 text("P5")
+
+x = -100 y = 75 text("FCC")
+x = -100 y = 90 text("Chiller")
+x = 200 y = 75 text("FCC")
+x = 200 y = 90 text("Chiller")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -40 busbar_108
+
+end
+
+mimic = main_object w=430,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+
+
+

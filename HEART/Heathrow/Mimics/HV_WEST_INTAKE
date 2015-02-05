@@ -1,0 +1,134 @@
+  ! Control and Monitoring System !
+!-------------------------------!
+
+!***********Hv Ring 9**********!
+
+load mimic_libutil
+load ocb
+load hex_ocb
+load ocb_118
+load hv_9_sub_stations
+load hv_9_sub_stations_b
+Load BROWSER
+load bsp_breakers
+load hv_cable_ident
+load hv_lib
+
+
+
+!************* SUB 51 ***************!
+
+object sub_51
+
+begin
+
+sub_symbol_51
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=blue) clear
+x = 50 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(7000,7670,457,707,heathrow,4,"top")
+x = 50 y = 0 ocb_mont(7000,7690,459,709,heathrow,6,"top")
+clear
+
+end
+
+
+
+!************** WEST INTAKE **************!
+
+object hv_9_west_intake
+var call_var = toplevel string
+begin
+	set source call_var = heathrow
+	set selfreplace call_var
+	set mimic call_Var = "west_intake"
+
+	W=200 H=25 X=-75 Y=25 RECT(fg=decoroff)
+
+	if anyb then
+	  begin
+	    request call_var
+	  end
+
+	x = 25 y = 38 text(tfg=white,ch=25,"West Intake",just=centrecentre) clear
+	
+	x = 125 y = 25 add x -= 200 add y += 25 add line (fg=white) clear
+	x = 125 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear
+
+	lw=2
+	x = -50  y = 100 add y = 50 add line (fg=blue) clear
+	x = 0  y = 100 add y = 50 add line (fg=blue) clear
+	x = 50  y = 100 add y = 50 add line (fg=blue) clear
+	x = 100  y = 100 add y = 50 add line (fg=blue) clear
+	
+	scale = 120
+	x = -50 y = 75 ocb(3000,3220,157,282,heathrow,8,"btm")
+	x = 0 y = 75 ocb(3000,3260,159,284,heathrow,10,"btm")
+	x = 50 y = 75 ocb(3000,3300,161,286,heathrow,12,"btm")
+	x = 100 y = 75 ocb(3000,3420,168,293,heathrow,19,"btm")
+end
+
+
+
+!************** SUB 129 ****************!
+
+object sub_129
+begin
+	x=10 y=-70 sub_symbol_129
+	lw=2
+	x = 20 y = -45 add y -= 50 add line(fg=blue) clear
+	x = 70 y = -45 add y -= 50 add line(fg=blue) clear
+
+	x = 20 y = -70 ocb_mont_lib(3000,3100,130,600,heathro4,1,"top")
+	x = 70 y = -70 ocb_mont_lib(3000,3130,133,603,heathro4,4,"top")
+end
+
+
+
+!object main_object (bg,fg,w,h,tbg,tfg)!
+object subs_layout
+begin
+	clear
+	x = -125 y = -320 sub_51
+	x = -20 y = -545 hv_9_west_intake
+	x = 75 y = -250 sub_129
+	clear
+
+	lw=2
+
+	!** SS51-6 TO SS129-1 **!
+	x = -75 y = -340 add y -= 25 add line(fg=blue)  add
+	x += 170 add y += 25 add
+	line(fg=blue) clear
+
+
+	!** WI-10 TO SS129-4 **!
+	x = -20 y = -450  add y += 60 add line(fg=blue)  add
+	x += 165 add
+	y += 50 add
+	line(fg=blue) clear
+	X = 55 Y = -390 cable_ident("blue","maggot","7.0") clear
+
+
+!** WI-12 TO SS51-4 **!
+	x = 30 y = -450  add y += 45 add line(fg=blue)  add
+	x -= 155 add
+	y += 60 add
+	line(fg=blue) clear
+	X = -55 Y = -405 cable_ident("blue","maggot","7.0") clear
+
+
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=-5 Y=112 subs_layout
+x = -570 y = 365 browser(1069,heathrow,1140)
+end
+mimic = main_object w=1140,h=900,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+

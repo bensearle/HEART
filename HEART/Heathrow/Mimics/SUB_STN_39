@@ -1,0 +1,56 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!************* BUSBAR 39 ***************!
+
+object busbar_39(just)
+
+begin
+
+just=centrecentre
+tfg = black x = -60 y =- 20 add text ("39",ch = 25) clear
+x = -130 y = 25 add x +=250 add line(lw=4,fg=magenta3) clear
+
+lw=2
+x =  -100 y = 25 add y += 50 add line (fg=magenta3) clear
+x = -50 y = 25 add y += 50 add line (fg=magenta3) clear
+x =  0 y = 25 add y += 50 add line (fg=magenta3) clear
+x =   50  y = -25 add y += 50 add line (fg=magenta3) clear
+x =   100 y = -25 add y += 50 add line (fg=magenta3) clear
+
+scale = 120
+x = -100 y = 50 ocb_mont(7000,8700,1017,4222,heathrow,1,"btm")
+x = -50 y = 50 ocb_mont(7000,8710,1018,4223,heathrow,2,"btm")
+x = 0 y = 50 ocb_mont(7000,7610,451,701,heathrow,3,"btm")
+x = 50 y = 0 ocb_mont(7000,7620,452,702,heathrow,4,"top")
+x = 100 y = 0 ocb_mont(7000,7630,453,703,heathrow,5,"top")
+
+scale = 100
+x = -100 y = 95  transformer("Tx 1","")
+x = -50 y = 95  transformer("Tx 2","")
+x = 0 y = 95  transformer("LT 1","")
+
+scale = 256
+tfg = black ch = 12
+x = 50 y = -35 text("P5")
+x = 50 y = -50 text("SS29 ")
+x = 100 y = -35 text("P1")
+x = 100 y = -50 text("SS132")
+x = -100 y = 130 text("T 3")
+x = -100 y = 145 text("HBS")
+x = -50 y = 130 text("T 3")
+x = -50 y = 145 text("HBS")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = -50 busbar_39
+
+end
+
+mimic = main_object w=300,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

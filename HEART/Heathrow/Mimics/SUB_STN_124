@@ -1,0 +1,53 @@
+load mimic_libutil
+load oil_switch
+load fuse_sw
+load transformer
+
+
+!************* BUSBAR 124 *************!
+
+object busbar_124
+begin
+tfg = black x = 85 y = -10 add text ("124",ch = 30) clear
+x = -25 y = 25 add x = 130 add line(lw=4,fg=yellow) clear
+
+lw=2
+x =   0 y = -30 add y += 55 add line (fg=yellow) clear
+x =  50 y = -25 add y += 50 add line (fg=yellow) clear
+x =  100 y = 25 add y += 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(26087,1032,4225,heathrow,"c")
+x = 50 y = 0 oil_switch(26089,1033,4226,heathrow,"c")
+x = 100 y = 50 hv_fuse(26091,1034,4227,heathrow,"c")
+
+scale = 100
+
+X =  100  Y = 95 add transformer("TX1","LOCAL")
+
+
+scale=260
+tfg=black ch=12
+just=centrecentre
+x = 15  y = 0 text("1")
+x = 65  y =0 text("2")
+x = 115 y = 50 text("3")
+
+x = 0 y = -55 text("SS145")
+x = 0 y = -40 text("P1")
+
+x = 55 y = -50 text("Sub 111")
+x = 50 y = -35 text("P 2")
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -50 y = -20 busbar_124
+
+end
+
+mimic = main_object w=350,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

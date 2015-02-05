@@ -1,0 +1,44 @@
+load mimic_libutil
+load ocb_monitored
+
+!**************************BUSBAR M1/12*************************!
+
+object busbar_m1_12
+
+begin
+
+tfg = black x = -35 y = 5 add text ("M1/12",ch = 25) clear
+x = -50 y = 0 add x = 50 add line (lw=4,fg=red) clear
+
+lw = 2
+
+x = -25 y = 0 add y -= 50 add line (fg=red) clear
+x =  25 y = 0 add y -= 50 add line (fg=red) clear
+
+scale = 120
+
+x = -25 y = -25 ocb_mont(1500,1710,50,86,heathro2,1,"top")
+x =  25 y = -25 ocb_mont(1500,1720,51,87,heathro2,2,"top")
+
+scale = 256
+just=centrecentre
+tfg=black
+ch=12
+x = -25 y = -75 text("SS127")
+x = -25 y = -60 text("P1")
+x =  25 y = -75 text("S1")
+x =  25 y = -60 text("P24")
+
+x =  0 y = 45 text("BA Maint")
+x =  0 y = 55 text("Area")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y= 25 busbar_m1_12
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=aquamarine3,resizable

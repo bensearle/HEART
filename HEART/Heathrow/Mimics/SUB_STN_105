@@ -1,0 +1,155 @@
+!**	HEATHROW\SUB_STN_105				**!
+!** 	Modified by ULTRA - 29 Apr 2009			**!
+!** 	Panels 5 and 12 updated in line with T4 Tomorrow Project **!
+!** 							**!
+!************Modified by SS/VK **********************!
+!** Panel 12 changed to Tx16, T4 Tomorrow********!
+!****changed on 14th January 2009*****************!
+
+
+
+load ss105_breaker
+load breaker_meter
+load earth_switch
+! breaker_meter(address,tag_address,src,min_range,max_range, units=string(8), meter_name, help_name=string(30),realf)!
+load hv_hierarchy
+load SUB_STN_105_HELP
+
+const x_spacing = 50
+const y_cb = 50
+const y_feeder = 100
+const y_tx = 250
+const y_meter = 98
+const y_busbar=0 
+const CB_scale=120
+
+!*************** Substation 105 *****************!
+object ss_105(bg,fg,w,h,tbg,tfg)
+begin
+
+x=0 y=y_busbar
+
+! Draw Bus Bar !
+ fg=Green4
+x = -360	move x = 40 add line(lw=4)
+x = 40 move x = 360 add line(lw=4)
+
+! Label Sections !
+tfg = black ch=14
+x = -220  text ("BUS",just=bottomcentre,y=y-ch)
+              text ("SECTION 1",just=bottomcentre)
+x = 200 text ("BUS",just=bottomcentre,y=y-ch)
+            text ("SECTION 2",just=bottomcentre)
+
+clear
+lw=3
+FG=GREEN4
+realf=fixed1
+
+!y = y_vcb hex_ocb(31005,31270,31035,520,2421,heathrow,1,"btm","vcb_1",scale=120)
+y = y_meter hex_meter(2605,342,heathrow,0,100,"A","TX 1","ammeter_1",scale=200)
+!
+lw=2
+! Section 1 Earth Switch !
+x = -x_spacing/2 y=y_busbar add y+= y_feeder/2 add line y+=y_feeder/2
+move y-=y_cb earth_switch(680,669,16,HEATHRO3,"BTM",scale=CB_scale)
+text ("Sect 1",just=topcentre,y=-65,ch=12)
+text ("Earth",just=topcentre,y=-50,ch=12)
+text ("Switch",just=topcentre,y=-35,ch=12)
+
+! CB 5 Transformer 15 !
+y=0
+x -= x_spacing  move y=y_busbar  add y+= y_feeder add line
+move y-=y_cb ss105_breaker(680,560,14,120,160,HEATHRO3,5,"btm",0,scale=CB_scale)
+move y+=y_meter breaker_meter(121,28,heathro3,0,400,"A","TX 15","",scale=150)
+x = -75 y = 225 text ("T4",just=bottomcentre,y=y-ch,tfg = blue,scale = 200)
+x = -75 y = 235 text ("Check in",just=bottomcentre,y=y-ch,tfg = blue,scale = 200)
+
+! CB 4 Sth Intake !
+x= -75 y=0
+x -= x_spacing  move y=y_busbar add y= -y_feeder add line
+move y+=y_cb ss105_breaker(680,545,13,115,160,HEATHRO3,4,"TOP",20,scale=CB_scale)
+move y-=y_meter breaker_meter(116,26,heathro3,0,400,"A","Sth Intake","",scale=150)
+x= -175 breaker_meter(117,27,heathro3,9,13,"kV","Sth Intake","",scale=150)
+
+
+x= -125 y=0
+! CB 3 Transformer 6!
+x -= x_spacing  move y=y_busbar add y+= y_feeder add line
+move y-=y_cb ss105_breaker(680,530,12,110,160,HEATHRO3,3,"btm",0,scale=CB_scale)
+move y+=y_meter breaker_meter(111,25,heathro3,0,150,"A","TX 6","",scale=150)
+
+! CB 2  Transformer 5 !
+x -= x_spacing  move y=y_busbar add y+= y_feeder add line
+move y-=y_cb ss105_breaker(680,515,11,105,160,HEATHRO3,2,"btm",0,scale=CB_scale)
+move y+=y_meter breaker_meter(106,24,heathro3,0,150,"A","TX 5","",scale=150)
+
+! CB 1 T4 TBF/ABF!
+x -= x_spacing  move y=y_busbar add y+= y_feeder add line
+move y-=y_cb ss105_breaker(680,500,10,100,160,HEATHRO3,1,"btm",0,scale=CB_scale)
+move y+=y_meter breaker_meter(101,23,heathro3,0,150,"A","TX 1","",scale=150)
+x = -275 y = 225 text ("T4",just=bottomcentre,y=y-ch,tfg = blue,scale = 200)
+x = -275 y = 235 text ("TBF/ABF",just=bottomcentre,y=y-ch,tfg = blue,scale = 200)
+
+! CB 7 Busbar !
+x = x_spacing/2  move y=y_busbar 
+ss105_breaker(680,575,17,125,160,HEATHRO3,7,"sect",10,scale=CB_scale)
+move y+=y_meter breaker_meter(126,29,heathro3,0,800,"A","BS 1/2","",scale=150)
+
+y=0
+! CB 8 SS 62 !
+x += x_spacing  move y=y_busbar add y-= y_feeder add line
+move y+=y_cb ss105_breaker(680,590,18,130,160,HEATHRO3,8,"TOP",40,scale=CB_scale)
+move y-=y_meter breaker_meter(131,31,heathro3,0,400,"A","Sub 62","",scale=150)
+x=25
+breaker_meter(132,30,heathro3,9,13,"kV","Sub 62","",scale=150)
+y=y_busbar
+
+x=75
+! CB 9 Transformer 4 !
+x += x_spacing  move y=y_busbar add y+= y_feeder add line
+move y-=y_cb ss105_breaker(680,605,19,135,160,HEATHRO3,9,"btm",0,scale=CB_scale)
+move y+=y_meter breaker_meter(136,32,heathro3,0,150,"A","TX 4","",scale=150)
+
+! CB 10 Transformer 7 !
+x += x_spacing  move y=y_busbar add y+= y_feeder add line
+move y-=y_cb ss105_breaker(680,620,20,140,160,HEATHRO3,10,"btm",0,scale=CB_scale)
+move y+=y_meter breaker_meter(141,33,heathro3,0,150,"A","TX 7","",scale=150)
+
+! CB 11 T4 TBF/ABF!
+x += x_spacing  move y=y_busbar add y+= y_feeder add line
+move y-=y_cb ss105_breaker(680,635,21,145,160,HEATHRO3,11,"btm",0,scale=CB_scale)
+move y+=y_meter breaker_meter(146,34,heathro3,0,150,"A","TX 2","",scale=150) 
+x = 225 y = 225 text ("T4",just=bottomcentre,y=y-ch,tfg = blue,scale = 200)
+x = 225 y = 235 text ("TBF/ABF",just=bottomcentre,y=y-ch,tfg = blue,scale = 200)
+y=y_busbar
+
+! CB 12 Transformer 16 !
+x += x_spacing  move y=y_busbar add y+= y_feeder add line
+move y-=y_cb ss105_breaker(680,650,22,150,0,HEATHRO3,12,"btm",0,scale=CB_scale)
+move y+=y_meter breaker_meter(151,35,heathro3,0,150,"A","TX 16","",scale=150)
+x = 275 y = 225 text ("T4",just=bottomcentre,y=y-ch,tfg = blue,scale = 200)
+x = 275 y = 235 text ("Check in",just=bottomcentre,y=y-ch,tfg = blue,scale = 200)
+
+y=y_busbar text ("105",just=bottomcentre,CH=25,TFG=BLACK)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+VAR helpstr = help string(30)
+begin
+
+!*** Mimic Help***!
+just = centrecentre
+x = 0 y = 0
+w=1000 h=500
+set text helpstr = "sub_stn_105_help"
+
+just=centrecentre
+goto_menu
+!command_button(571, heathrow, x=450, y=200)!
+ss_105
+
+end
+
+mimic = main_object w=850,h=550,just=centrecentre,fg=white,bg=aquamarine3,resizable

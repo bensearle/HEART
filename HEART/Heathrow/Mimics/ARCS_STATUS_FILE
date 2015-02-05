@@ -1,0 +1,1085 @@
+load mimic_libutil
+LOAD gadgets_libutil
+LOAD arcs_diagnostics_file
+LOAD arcs_confirm_file
+LOAD arcs_report_history_north
+LOAD arcs_report_history_west
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+TYPE b_bool_type 	= db_elements(b_value)
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+
+end
+
+
+!-----------------------------------------------------------------------------!
+!  SYSTEM STATUS                                                              !
+!-----------------------------------------------------------------------------!
+
+OBJECT status_box(north_os_offset=INT,north_plc_offset=INT,west_os_offset=INT,west_plc_offset=INT,src=SOURCE)
+
+! VARIABLE DECLARATION !
+
+VAR main_menu = MENU	STRING(40)
+VAR diagnostic_window = POPUP diagnostic_popup
+VAR system_text = STRING(10)
+VAR system_text_colour = COLOUR
+VAR popup_box = POPUP confirm_popup
+VAR control_select = LOOPBACK STRING(15)
+VAR control_confirm = LOOPBACK YESNO
+VAR helpstr = HELP string(30)
+
+VAR call_var_north = POPUP arcs_report_history_north
+VAR call_var_west = POPUP arcs_report_history_west
+VAR north_report_select = LOOPBACK YESNO
+VAR west_report_select = LOOPBACK YESNO
+
+! NORTH !
+
+VAR north_test = ONOFF
+VAR north_enabled = ONOFF
+VAR north_disabled = ONOFF
+VAR north_fault = ONOFF
+VAR north_primary = ONOFF
+VAR north_secondary = ONOFF
+VAR north_failed = ONOFF
+VAR north_initiated = ONOFF
+VAR north_completed = ONOFF
+VAR north_mode_error = ONOFF
+VAR north_test_initiated = ONOFF
+VAR north_test_completed = ONOFF
+VAR north_prisec_error = ONOFF
+VAR north_a_wdog_failed = ONOFF	
+VAR north_b_wdog_failed = ONOFF	
+
+VAR north_os_comms = input b_bool_type[2]
+VAR north_status_inputs = input b_bool_type[10]
+VAR north_mode_inputs = input b_bool_type[15]
+VAR north_comms_inputs = input b_bool_type[4]
+VAR north_controls = input b_bool_type[10]
+
+VAR north_mode = LOOPBACK STRING(15)	! PLC MODE INDICATOR !
+VAR north_prisec = LOOPBACK STRING(15)	! PLC PRIMARY / SECONDARY INDICATOR !
+
+VAR north_mode_total = INT	! TOTAL OF MODE INPUTS ON FROM PLC A !
+VAR north_mode_colour = COLOUR		! MODE TEXT COLOUR !
+VAR north_prisec_colour = COLOUR	! PRIMARY / SECONDARY TEXT COLOUR !
+VAR north_colour = COLOUR		! STATUS BOX COLOUR !
+
+! WEST !
+
+VAR west_test = ONOFF
+VAR west_enabled = ONOFF
+VAR west_disabled = ONOFF
+VAR west_fault = ONOFF
+VAR west_primary = ONOFF
+VAR west_secondary = ONOFF
+VAR west_failed = ONOFF
+VAR west_initiated = ONOFF
+VAR west_completed = ONOFF
+VAR west_mode_error = ONOFF
+VAR west_test_initiated = ONOFF
+VAR west_test_completed = ONOFF
+VAR west_prisec_error = ONOFF
+VAR west_a_wdog_failed = ONOFF
+VAR west_b_wdog_failed = ONOFF
+
+VAR west_os_comms = input b_bool_type[2]
+VAR west_comms_inputs = input b_bool_type[4]
+VAR west_status_inputs = input b_bool_type[10]
+VAR west_mode_inputs = input b_bool_type[15]
+
+VAR west_mode = LOOPBACK STRING(15)	! PLC MODE INDICATOR !
+VAR west_prisec = LOOPBACK STRING(15)	! PLC PRIMARY / SECONDARY INDICATOR !
+
+VAR west_mode_total = INT
+
+VAR west_mode_colour = COLOUR	! MODE TEXT COLOUR !
+VAR west_prisec_colour = COLOUR	! PRIMARY / SECONDARY TEXT COLOUR !
+
+VAR west_colour = COLOUR	! STATUS BOX COLOUR !
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+   set source north_os_comms = src
+   set filter north_os_comms.db_addr = lim_ge
+   set limit north_os_comms.db_addr = db_address(int(b1) + north_os_offset - 1)
+   set priority north_os_comms.db_addr = 15
+   set persist north_os_comms
+   set mayexist north_os_comms
+   request north_os_comms
+
+   set source north_comms_inputs = src
+   set filter north_comms_inputs.db_addr = lim_ge
+   set limit north_comms_inputs.db_addr = db_address(int(b1) + north_plc_offset + 69)
+   set priority north_comms_inputs.db_addr = 15
+   set persist north_comms_inputs
+   set mayexist north_comms_inputs
+   request north_comms_inputs
+
+   set source north_mode_inputs = src
+   set filter north_mode_inputs.db_addr = lim_ge
+   set limit north_mode_inputs.db_addr = db_address(int(b1) + north_plc_offset + 49)
+   set priority north_mode_inputs.db_addr = 15
+   set persist north_mode_inputs
+   set mayexist north_mode_inputs
+   request north_mode_inputs
+
+   set source north_controls = src
+   set filter north_controls.db_addr = lim_ge
+   set limit north_controls.db_addr = db_address(int(b1) + north_plc_offset + 19)
+   set priority north_controls.db_addr = 15
+   set persist north_controls
+   set mayexist north_controls
+   request north_controls
+
+   set source west_os_comms = src
+   set filter west_os_comms.db_addr = lim_ge
+   set limit west_os_comms.db_addr = db_address(int(b1) + west_os_offset - 1)
+   set priority west_os_comms.db_addr = 15
+   set persist west_os_comms
+   set mayexist west_os_comms
+   request west_os_comms
+
+   set source west_comms_inputs = src
+   set filter west_comms_inputs.db_addr = lim_ge
+   set limit west_comms_inputs.db_addr = db_address(int(b1) + west_plc_offset + 69)
+   set priority west_comms_inputs.db_addr = 15
+   set persist west_comms_inputs
+   set mayexist west_comms_inputs
+   request west_comms_inputs
+
+   set source west_mode_inputs = src
+   set filter west_mode_inputs.db_addr = lim_ge
+   set limit west_mode_inputs.db_addr = db_address(int(b1) + west_plc_offset + 49)
+   set priority west_mode_inputs.db_addr = 15
+   set persist west_mode_inputs
+   set mayexist west_mode_inputs
+   request west_mode_inputs
+
+   north_a_wdog_failed = north_status_inputs[19].b_value
+   north_b_wdog_failed = north_status_inputs[20].b_value
+
+   west_a_wdog_failed = west_status_inputs[19].b_value
+   west_b_wdog_failed = west_status_inputs[20].b_value
+
+! ---------------------------- SET VARIABLES -------------------------------- !
+
+north_test = north_mode_inputs[1].b_value
+north_enabled = north_mode_inputs[2].b_value
+north_disabled = north_mode_inputs[3].b_value
+north_fault = north_mode_inputs[4].b_value
+north_primary = north_mode_inputs[5].b_value
+north_secondary = north_mode_inputs[6].b_value
+north_failed = north_mode_inputs[7].b_value
+north_initiated = north_mode_inputs[8].b_value
+north_completed = north_mode_inputs[9].b_value
+north_mode_error = north_mode_inputs[10].b_value
+north_test_initiated = north_mode_inputs[11].b_value
+north_test_completed = north_mode_inputs[12].b_value
+north_prisec_error = north_mode_inputs[13].b_value
+
+north_a_wdog_failed = north_comms_inputs[1].b_value
+north_b_wdog_failed = north_comms_inputs[2].b_value
+
+west_test = west_mode_inputs[1].b_value
+west_enabled = west_mode_inputs[2].b_value
+west_disabled = west_mode_inputs[3].b_value
+west_fault = west_mode_inputs[4].b_value
+west_primary = west_mode_inputs[5].b_value
+west_secondary = west_mode_inputs[6].b_value
+west_failed = west_mode_inputs[7].b_value
+west_initiated = west_mode_inputs[8].b_value
+west_completed = west_mode_inputs[9].b_value
+west_mode_error = west_mode_inputs[10].b_value
+west_test_initiated = west_mode_inputs[11].b_value
+west_test_completed = west_mode_inputs[12].b_value
+west_prisec_error = west_mode_inputs[13].b_value
+
+west_a_wdog_failed = west_comms_inputs[1].b_value
+west_b_wdog_failed = west_comms_inputs[2].b_value
+
+! ---------------------------- DIAGNOSTIC TEXT ------------------------------ !
+!
+X=0 Y=200 TEXT(TFG=BLACK,CH=15,"TEST B750: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_test)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"ENABLED B751: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_enabled)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"DISABLED B752: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_disabled)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"COMPLETED B758: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_completed)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"INITIATED B757: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_initiated)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"FAILED B756: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_failed)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"ERROR B759: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_mode_error)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"PRIMARY B754: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_primary)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"SECONDARY B755: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_secondary)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"FAULT B753: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_fault)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"TEST INIT B760: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_test_initiated)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"TEST END B761: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_test_completed)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"PRI/SEC ERR B762: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_prisec_error)
+
+X=0 Y+=40 TEXT(TFG=BLACK,CH=15,"ENABLE B720: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_controls[1].b_value)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"DISABLE B721: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_controls[2].b_value)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"SET PRI B724: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_controls[4].b_value)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"SET SEC B725: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_controls[5].b_value)
+
+X=0 Y+=40 TEXT(TFG=BLACK,CH=15,"A WDOG B770: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_a_wdog_failed)
+X=0 Y+=20 TEXT(TFG=BLACK,CH=15,"B WDOG B771: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,north_b_wdog_failed)
+
+X=200 Y=200 TEXT(TFG=BLACK,CH=15,"TEST B3750: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_test)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"ENABLED B3751: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_enabled)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"DISABLED B3752: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_disabled)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"COMPLETED B3758: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_completed)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"INITIATED B3757: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_initiated)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"FAILED B3756: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_failed)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"ERROR B3759: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_mode_error)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"PRIMARY B3754: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_primary)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"SECONDARY B3755: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_secondary)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"FAULT B3753: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_fault)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"TEST INIT B3760: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_test_initiated)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"TEST END B3761: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_test_completed)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"PRI/SEC ERR B3762: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_prisec_error)
+
+X=200 Y+=40 TEXT(TFG=BLACK,CH=15,"A WDOG B3770: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_a_wdog_failed)
+X=200 Y+=20 TEXT(TFG=BLACK,CH=15,"B WDOG B3771: ")
+X+=140 Y+=0 TEXT(TFG=BLACK,CH=15,west_b_wdog_failed)
+!
+x=0 y=0 clear
+
+
+! ---------------------------- DRAW STATUS BOX ------------------------------ !
+
+! SET COLOUR !
+
+
+
+north_colour=DECOROFF
+
+IF north_os_comms[1].b_value AND north_os_comms[2].b_value THEN
+  north_colour = MAGENTA
+ELSE IF north_os_comms[1].b_value OR north_os_comms[2].b_value THEN
+  north_colour = RED
+ELSE IF north_a_wdog_failed AND north_b_wdog_failed THEN
+  north_colour = MAGENTA
+ELSE IF north_a_wdog_failed OR north_b_wdog_failed THEN
+  north_colour = RED
+ELSE
+  north_colour = GREEN
+
+IF west_os_comms[1].b_value AND west_os_comms[2].b_value THEN
+  west_colour = MAGENTA
+ELSE IF west_os_comms[1].b_value OR west_os_comms[2].b_value THEN
+  west_colour = RED
+ELSE IF west_a_wdog_failed AND west_b_wdog_failed THEN
+  west_colour = MAGENTA
+ELSE IF west_a_wdog_failed OR west_b_wdog_failed THEN
+  west_colour = RED
+ELSE
+  west_colour = GREEN
+
+! STATUS BOX !
+FG = decoroff
+H=180 W=355
+RECT(FG=DECOROFF)
+SET RECT main_menu
+
+! OUTLINE !
+X=355 Y=0 ADD
+X-=355 ADD 
+Y+=180 ADD LINE(FG=WHITE) CLEAR
+X=0 Y=180 ADD
+X+=355 ADD
+Y-=180 ADD LINE(FG=GREY) CLEAR
+
+! NORTH BOX !
+X=15 Y=40
+W=155 H=25
+RECT(FG=north_colour)
+IF SELB THEN
+  REQUEST diagnostic_window(1,700,2300,"NORTH",HEATHROW)
+
+X=15 Y=65 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=WHITE) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=GREY) CLEAR
+
+! WEST BOX !
+X=185 Y=40
+W=155 H=25
+RECT(FG=west_colour)
+IF SELB THEN
+  REQUEST diagnostic_window(701,3700,2310,"WEST",HEATHROW)
+
+X=185 Y=65 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=WHITE) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=GREY) CLEAR
+
+! UNDERLINE !
+X=15 Y=30 ADD
+X+=325 ADD LINE(FG=WHITE) CLEAR
+X=15 Y=31 ADD
+X+=325 ADD LINE(FG=GREY) CLEAR
+
+X=15 Y=110 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=GREY) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=WHITE) CLEAR
+
+X=185 Y=110 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=GREY) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=WHITE) CLEAR
+
+X=15 Y=165 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=GREY) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=WHITE) CLEAR
+
+X=185 Y=165 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=GREY) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=WHITE) CLEAR
+
+x=0y=0
+X+=15 Y+=2 TEXT(TFG=BLACK,CH=27,"ARCS")
+X=58 Y=43 TEXT(TFG=BLACK,CH=20,"NORTH")
+X+=180 Y+=0 TEXT(TFG=BLACK,CH=20,"WEST")
+X-=225 Y+=28 TEXT(TFG=GREY,CH=13,"STATUS")
+X-=0 Y+=55  TEXT(TFG=GREY,CH=13,"PRIMARY/SECONDARY")
+X+=170 Y-=55 TEXT(TFG=GREY,CH=13,"STATUS")
+X-=0 Y+=55  TEXT(TFG=GREY,CH=13,"PRIMARY/SECONDARY")
+
+CLEAR
+
+! --------------------------- NORTH STATUS TEXT ----------------------------- !
+
+! RESET ERROR FLAGS !
+
+IF north_a_wdog_failed == OFF OR north_b_wdog_failed == OFF THEN
+BEGIN
+  north_mode = "ERROR"
+  north_mode_colour = RED
+  north_prisec = "ERROR"
+  north_prisec_colour = RED
+END
+
+north_mode_total = 0
+
+
+! DETERMINE NUMBER OF STATUS INDICATIONS FROM EACH PLC !
+
+IF north_test THEN north_mode_total = north_mode_total + 1
+IF north_enabled THEN north_mode_total = north_mode_total + 1
+IF north_disabled THEN north_mode_total = north_mode_total + 1
+IF north_initiated THEN north_mode_total = north_mode_total + 1
+IF north_completed THEN north_mode_total = north_mode_total + 1
+IF north_mode_error THEN north_mode_total = north_mode_total + 1
+IF north_test_initiated THEN north_mode_total = north_mode_total + 1
+IF north_test_completed THEN north_mode_total = north_mode_total + 1
+
+! DETERMINE MODE !
+
+IF north_mode_total > 1 THEN
+BEGIN
+  north_mode = "ERROR"
+  north_mode_colour = RED
+END
+ELSE IF north_mode_error THEN
+BEGIN
+  north_mode = "ERROR"
+  north_mode_colour = RED
+END
+ELSE IF north_test THEN
+BEGIN
+  north_mode = "TEST"
+  north_mode_colour = GREEN
+END
+ELSE IF north_enabled THEN
+BEGIN
+  north_mode = "ENABLED"
+  north_mode_colour = GREEN
+END
+ELSE IF north_disabled THEN
+BEGIN
+  north_mode = "DISABLED"
+  north_mode_colour = GREEN
+END
+ELSE IF north_completed THEN
+BEGIN
+  north_mode = "C/O COMPLETED"
+  north_mode_colour = FLASHGREEN
+END
+ELSE IF north_initiated THEN
+BEGIN
+  north_mode = "C/O INITIATED"
+  north_mode_colour = FLASHGREEN
+END
+ELSE IF north_failed THEN
+BEGIN
+  north_mode = "FAILED"
+  north_mode_colour = RED
+END
+ELSE IF north_test_initiated THEN
+BEGIN
+  north_mode = "TEST INITIATED"
+  north_mode_colour = FLASHGREEN
+END
+ELSE IF north_test_completed THEN
+BEGIN
+  north_mode = "TEST COMPLETED"
+  north_mode_colour = FLASHGREEN
+END
+ELSE
+BEGIN
+  north_mode = "ERROR"
+  north_mode_colour = RED
+END
+
+
+IF north_fault or north_failed THEN
+BEGIN
+  north_mode_colour = RED
+END
+
+
+! DISPLAY MODE STATUS !
+
+IF north_a_wdog_failed AND north_b_wdog_failed THEN
+  north_mode_colour = MAGENTA
+ELSE IF north_os_comms[1].b_value AND north_os_comms[2].b_value THEN
+  north_mode_colour = MAGENTA
+
+IF INVALID north_mode THEN
+  north_mode = "UNKNOWN"
+
+X=20 Y=90
+X+=0 Y+=0 TEXT(TFG=north_mode_colour,CH=18,north_mode)
+
+
+! DETERMINE PRIMARY/SECONDARY STATUS !
+
+IF north_prisec_error THEN
+BEGIN
+  north_prisec = "ERROR"
+  north_prisec_colour = RED
+END
+ELSE IF north_primary AND north_secondary THEN
+BEGIN
+  north_prisec = "ERROR"
+  north_prisec_colour = RED
+END
+ELSE IF north_primary AND north_secondary == OFF THEN
+BEGIN
+  north_prisec = "PRIMARY"
+  north_prisec_colour = GREEN
+END
+ELSE IF north_secondary AND north_primary == OFF THEN
+BEGIN
+  north_prisec = "SECONDARY"
+  north_prisec_colour = GREEN
+END
+ELSE IF north_primary == OFF AND north_secondary == OFF THEN
+BEGIN
+  north_prisec = "NOT SELECTED"
+  north_prisec_colour = GREEN
+END
+ELSE
+BEGIN
+  north_prisec = "ERROR"
+  north_prisec_colour = RED
+END
+
+IF north_fault or north_failed THEN
+BEGIN
+  north_prisec_colour = RED
+END
+
+
+! DISPLAY PRIMARY/SECONDARY STATUS !
+
+IF north_a_wdog_failed AND north_b_wdog_failed THEN
+  north_prisec_colour = MAGENTA
+ELSE IF north_os_comms[1].b_value AND north_os_comms[2].b_value THEN
+  north_prisec_colour = MAGENTA
+
+IF INVALID north_prisec THEN
+  north_prisec = "UNKNOWN"
+
+x=20 y=90
+X+=0 Y+=55 TEXT(TFG=north_prisec_colour,CH=18,north_prisec)
+
+
+! --------------------------- WEST STATUS TEXT ----------------------------- !
+
+! RESET ERROR FLAGS !
+
+IF west_a_wdog_failed == OFF OR west_b_wdog_failed == OFF THEN
+BEGIN
+  west_mode = "ERROR"
+  west_mode_colour = RED
+  west_prisec = "ERROR"
+  west_prisec_colour = RED
+END
+
+west_mode_total = 0
+
+
+! DETERMINE NUMBER OF STATUS INDICATIONS FROM EACH PLC !
+
+IF west_test THEN west_mode_total = west_mode_total + 1
+IF west_enabled THEN west_mode_total = west_mode_total + 1
+IF west_disabled THEN west_mode_total = west_mode_total + 1
+IF west_initiated THEN west_mode_total = west_mode_total + 1
+IF west_completed THEN west_mode_total = west_mode_total + 1
+IF west_mode_error THEN west_mode_total = west_mode_total + 1
+IF west_test_initiated THEN west_mode_total = west_mode_total + 1
+IF west_test_completed THEN west_mode_total = west_mode_total + 1
+
+! DETERMINE MODE !
+
+IF west_mode_total > 1 THEN
+BEGIN
+  west_mode = "ERROR"
+  west_mode_colour = RED
+END
+ELSE IF west_mode_error THEN
+BEGIN
+  west_mode = "ERROR"
+  west_mode_colour = RED
+END
+ELSE IF west_test THEN
+BEGIN
+  west_mode = "TEST"
+  west_mode_colour = GREEN
+END
+ELSE IF west_enabled THEN
+BEGIN
+  west_mode = "ENABLED"
+  west_mode_colour = GREEN
+END
+ELSE IF west_disabled THEN
+BEGIN
+  west_mode = "DISABLED"
+  west_mode_colour = GREEN
+END
+ELSE IF west_completed THEN
+BEGIN
+  west_mode = "C/O COMPLETED"
+  west_mode_colour = FLASHGREEN
+END
+ELSE IF west_initiated THEN
+BEGIN
+  west_mode = "C/O INITIATED"
+  west_mode_colour = FLASHGREEN
+END
+ELSE IF west_failed THEN
+BEGIN
+  west_mode = "FAILED"
+  west_mode_colour = RED
+END
+ELSE IF west_test_initiated THEN
+BEGIN
+  west_mode = "TEST INITIATED"
+  west_mode_colour = FLASHGREEN
+END
+ELSE IF west_test_completed THEN
+BEGIN
+  west_mode = "TEST COMPLETED"
+  west_mode_colour = FLASHGREEN
+END
+ELSE
+BEGIN
+  west_mode = "ERROR"
+  west_mode_colour = RED
+END
+
+IF west_fault or west_failed THEN
+BEGIN
+  west_mode_colour = RED
+END
+
+
+! DISPLAY MODE STATUS !
+
+IF west_a_wdog_failed AND west_b_wdog_failed THEN
+  west_mode_colour = MAGENTA
+ELSE IF west_os_comms[1].b_value AND west_os_comms[2].b_value THEN
+  west_mode_colour = MAGENTA
+
+IF INVALID west_mode THEN
+  west_mode = "UNKNOWN"
+
+X=190 Y=90
+X+=0 Y+=0 TEXT(TFG=west_mode_colour,CH=18,west_mode)
+
+
+! DETERMINE PRIMARY/SECONDARY STATUS !
+
+IF west_prisec_error THEN
+BEGIN
+  west_prisec = "ERROR"
+  west_prisec_colour = RED
+END
+ELSE IF west_primary AND west_secondary THEN
+BEGIN
+  west_prisec = "ERROR"
+  west_prisec_colour = RED
+END
+ELSE IF west_primary AND west_secondary == OFF THEN
+BEGIN
+  west_prisec = "PRIMARY"
+  west_prisec_colour = GREEN
+END
+ELSE IF west_secondary AND west_primary == OFF THEN
+BEGIN
+  west_prisec = "SECONDARY"
+  west_prisec_colour = GREEN
+END
+ELSE IF west_primary == OFF AND west_secondary == OFF THEN
+BEGIN
+  west_prisec = "NOT SELECTED"
+  west_prisec_colour = GREEN
+END
+ELSE
+BEGIN
+  west_prisec = "ERROR"
+  west_prisec_colour = RED
+END
+
+IF west_fault OR west_failed THEN
+BEGIN
+  west_prisec_colour = RED
+END
+
+
+! DISPLAY PRIMARY/SECONDARY STATUS !
+
+IF west_a_wdog_failed AND west_b_wdog_failed THEN
+  west_prisec_colour = MAGENTA
+ELSE IF west_os_comms[1].b_value AND west_os_comms[2].b_value THEN
+  west_prisec_colour = MAGENTA
+
+IF INVALID west_prisec THEN
+  west_prisec = "UNKNOWN"
+
+x=190 y=90
+X+=0 Y+=55 TEXT(TFG=west_prisec_colour,CH=18,west_prisec)
+
+
+! ------------------------- SYSTEM STATUS TEXT ------------------------------ !
+
+IF north_os_comms[1].b_value AND north_os_comms[2].b_value THEN
+BEGIN
+  system_text = " "
+END
+ELSE IF west_os_comms[1].b_value AND west_os_comms[2].b_value THEN
+BEGIN 
+  system_text = " "
+END
+ELSE IF north_a_wdog_failed AND north_b_wdog_failed THEN
+BEGIN
+  system_text = " "
+END
+ELSE IF west_a_wdog_failed AND west_b_wdog_failed THEN
+BEGIN
+  system_text = " "
+END
+ELSE IF north_enabled AND west_enabled THEN
+BEGIN
+  system_text = "ENABLED"
+  system_text_colour = GREEN
+END  
+ELSE IF north_test AND west_test THEN
+BEGIN
+  system_text = "TEST"
+  system_text_colour = GREEN
+END
+ELSE
+  system_text = " "
+
+IF north_a_wdog_failed OR north_b_wdog_failed THEN
+  system_text_colour = RED
+ELSE IF west_a_wdog_failed OR west_b_wdog_failed THEN
+  system_text_colour = RED
+ELSE IF north_fault OR west_fault THEN
+  system_text_colour = RED
+
+X=95 Y=2 TEXT(TFG=system_text_colour,CH=27,system_text)
+
+
+! ----------------------------- MENU OPTIONS -------------------------------- !
+
+SET TITLE main_menu = "Control Options"
+SET REMOVE main_menu = "System Enable"
+SET REMOVE main_menu = "System Disable"
+SET REMOVE main_menu = "System Reset"
+SET REMOVE main_menu = "Test Mode"
+SET REMOVE main_menu = "Manual Initiate"
+SET REMOVE main_menu = "North Primary / West Secondary"
+SET REMOVE main_menu = "West Primary / North Secondary"
+SET REMOVE main_menu = "North Report History"
+SET REMOVE main_menu = "West Report History"
+SET ADD main_menu = "North Report History"
+SET ADD main_menu = "West Report History"
+
+IF (north_enabled OR west_enabled) OR (north_test OR west_test) THEN
+BEGIN
+  SET ADD main_menu = "System Disable"
+END
+
+IF (north_enabled AND west_enabled) OR (north_test AND west_test) THEN
+BEGIN
+  SET ADD main_menu = "Manual Initiate"
+END
+
+IF (north_failed OR west_failed) OR (north_fault OR west_fault) THEN
+BEGIN
+  SET ADD main_menu = "System Reset"
+END
+ELSE IF (north_completed OR west_completed) OR (north_initiated OR west_initiated) THEN
+BEGIN
+  SET ADD main_menu = "System Reset"
+END
+ELSE IF (north_test_completed OR west_test_completed) OR (north_test_initiated OR west_test_initiated) THEN
+BEGIN
+  SET ADD main_menu = "System Reset"
+END
+ELSE IF (north_mode_total > 1 OR north_mode_error) OR (west_mode_total > 1 OR west_mode_error) THEN
+BEGIN
+  SET ADD main_menu = "System Reset" 
+END
+
+IF north_disabled AND west_disabled THEN
+BEGIN
+  SET ADD main_menu = "System Enable"
+  SET ADD main_menu = "Test Mode"
+  SET ADD main_menu = "North Primary / West Secondary"
+  SET ADD main_menu = "West Primary / North Secondary"
+END
+
+IF (north_os_comms[1].b_value AND north_os_comms[2].b_value) OR (west_os_comms[1].b_value AND west_os_comms[2].b_value) THEN
+BEGIN
+  SET REMOVE main_menu = "System Enable"
+  SET REMOVE main_menu = "Test Mode"
+  SET REMOVE main_menu = "Manual Initiate"
+  SET REMOVE main_menu = "North Primary / West Secondary"
+  SET REMOVE main_menu = "West Primary / North Secondary"
+END
+
+IF (north_a_wdog_failed AND north_b_wdog_failed) OR (west_a_wdog_failed AND west_b_wdog_failed) THEN
+BEGIN
+  SET REMOVE main_menu = "System Enable"
+  SET REMOVE main_menu = "Test Mode"
+  SET REMOVE main_menu = "Manual Initiate"
+  SET REMOVE main_menu = "North Primary / West Secondary"
+  SET REMOVE main_menu = "West Primary / North Secondary"
+END
+
+
+IF VALID main_menu THEN
+BEGIN
+
+
+
+CASE main_menu OF
+
+  "System Enable"
+  BEGIN
+    control_select = "ENABLE"
+    north_report_select = NO
+    west_report_select = NO
+  END
+  
+  "System Disable"
+  BEGIN
+    control_select = "DISABLE"
+    north_report_select = NO
+    west_report_select = NO
+  END
+
+  "System Reset"
+  BEGIN
+    control_select = "RESET"
+    north_report_select = NO
+    west_report_select = NO
+  END
+
+  "Test Mode"
+  BEGIN
+    control_select = "TEST"
+    north_report_select = NO
+    west_report_select = NO
+  END
+
+  "Manual Initiate"
+  BEGIN  
+    control_select = "INITIATE"
+    north_report_select = NO
+    west_report_select = NO
+  END
+
+  "North Primary / West Secondary"
+  BEGIN
+    control_select = "NORTH PRIMARY"
+    north_report_select = NO
+    west_report_select = NO
+  END
+
+  "West Primary / North Secondary"
+  BEGIN
+    control_select = "WEST PRIMARY"
+    north_report_select = NO
+    west_report_select = NO
+  END
+
+  "North Report History"
+  BEGIN
+  north_report_select = YES
+  west_report_select = NO
+  END
+
+  "West Report History"
+  BEGIN
+  west_report_select = YES
+  north_report_select = NO
+  END
+
+  DEFAULT
+  BEGIN
+  END
+
+    IF north_report_select == YES AND west_report_select == NO THEN
+      BEGIN
+       SET TITLE call_var_north = "North Report History"
+       REQUEST call_var_north
+      END
+
+   ELSE IF west_report_select == YES AND north_report_select == NO THEN
+      BEGIN
+       SET TITLE call_var_west = "West Report History"
+       REQUEST call_var_west
+      END
+
+   ELSE
+     BEGIN
+        X=0 Y=200
+        SET UNPINNED popup_box
+        SET TITLE popup_box = ""
+        REQUEST popup_box(control_select)
+     END
+
+SET INVALID main_menu
+CLEAR
+
+END
+
+IF popup_box == YES AND control_select == "ENABLE" THEN
+BEGIN
+  set_b_value(db_address(int(b1) + north_plc_offset + 19), src, ON)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + north_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 22), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 23), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 24), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 25), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 19), src, ON)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + west_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 22), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 23), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 24), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 25), src, OFF)      
+  control_select = ""
+END
+
+IF popup_box == YES AND control_select == "DISABLE" THEN
+BEGIN
+  set_b_value(db_address(int(b1) + north_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 20), src, ON)
+  set_b_value(db_address(int(b1) + north_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 22), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 23), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 24), src, OFF)          
+  set_b_value(db_address(int(b1) + north_plc_offset + 25), src, OFF)          
+  set_b_value(db_address(int(b1) + west_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 20), src, ON)
+  set_b_value(db_address(int(b1) + west_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 22), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 23), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 24), src, OFF)  
+  set_b_value(db_address(int(b1) + west_plc_offset + 25), src, OFF)  
+  control_select = ""
+END
+
+IF popup_box == YES AND control_select == "RESET" THEN
+BEGIN
+  set_b_value(db_address(int(b1) + north_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + north_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 22), src, ON)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 23), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 24), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 25), src, OFF)   
+  set_b_value(db_address(int(b1) + west_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + west_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 22), src, ON)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 23), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 24), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 25), src, OFF)
+  control_select = ""
+END
+
+IF popup_box == YES AND control_select == "TEST" THEN
+BEGIN
+  set_b_value(db_address(int(b1) + north_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + north_plc_offset + 21), src, ON)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 22), src, OFF)     
+  set_b_value(db_address(int(b1) + north_plc_offset + 23), src, OFF)     
+  set_b_value(db_address(int(b1) + north_plc_offset + 24), src, OFF)     
+  set_b_value(db_address(int(b1) + north_plc_offset + 25), src, OFF)   
+  set_b_value(db_address(int(b1) + west_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + west_plc_offset + 21), src, ON)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 22), src, OFF)     
+  set_b_value(db_address(int(b1) + west_plc_offset + 23), src, OFF)     
+  set_b_value(db_address(int(b1) + west_plc_offset + 24), src, OFF)     
+  set_b_value(db_address(int(b1) + west_plc_offset + 25), src, OFF)
+  control_select = ""
+END
+
+IF popup_box == YES AND control_select == "INITIATE" THEN
+BEGIN
+  set_b_value(db_address(int(b1) + north_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + north_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 22), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 23), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 24), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 25), src, ON)   
+  set_b_value(db_address(int(b1) + west_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + west_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 22), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 23), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 24), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 25), src, ON)  
+  control_select = ""
+END
+
+IF popup_box == YES AND control_select == "NORTH PRIMARY" THEN
+BEGIN
+  set_b_value(db_address(int(b1) + north_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + north_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 22), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 23), src, ON)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 24), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 25), src, OFF)   
+  set_b_value(db_address(int(b1) + west_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + west_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 22), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 23), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 24), src, ON)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 25), src, OFF) 
+  control_select = ""
+END
+
+IF popup_box == YES AND control_select == "WEST PRIMARY" THEN
+BEGIN
+  set_b_value(db_address(int(b1) + north_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + north_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + north_plc_offset + 22), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 23), src, OFF)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 24), src, ON)      
+  set_b_value(db_address(int(b1) + north_plc_offset + 25), src, OFF)   
+  set_b_value(db_address(int(b1) + west_plc_offset + 19), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 20), src, OFF)
+  set_b_value(db_address(int(b1) + west_plc_offset + 21), src, OFF)    
+  set_b_value(db_address(int(b1) + west_plc_offset + 22), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 23), src, ON)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 24), src, OFF)      
+  set_b_value(db_address(int(b1) + west_plc_offset + 25), src, OFF)   
+  control_select = ""
+END
+
+X=0 Y=0 W=355 H=180
+SET TEXT helpstr = "ARCS_STATUS_HELP"
+
+END
+
+OBJECT MAIN_OBJECT(BG,FG,W,H,TFG,TBG)
+BEGIN
+
+X=-177 Y=-100 status_box(1,700,3000,3700,heathrow)
+
+END
+
+MIMIC = MAIN_OBJECT 
+W=500,H=300,JUST=CENTRECENTRE,FG=WHITE,BG=AQUAMARINE3

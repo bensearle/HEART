@@ -1,0 +1,321 @@
+! HEATHRW CMS - HEX_FIREMAIN_VALVE 
+
+loaded by: FIREMAIN
+!
+
+type e_test_row =  db_alarm_config(db_addr, config_number, test_value)
+type e_test_table =  e_test_row[6]
+
+type c_db_row_type =  db_elements(db_addr,c_value)
+type panel_item_row = table (str = string(40))
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!******************************************************************!
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=400,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+!******************************************************************!
+helptext hex_firemain_valve_object_help = "\t\tHEX METER - GENERIC HELP\n
+There is no help for this particular meter.\n
+This is the generic help for a meter on the Heathrow Express substations (sub 114, 115 and 116).\n
+The following parameters are required:
+address		e.g. 2400 = E2400
+tag_address	e.g. 334 = C334
+src		e.g. HEATHROW
+min_range	bottom value on bargraph
+max_range	top value on bargraph
+units		e.g. kV
+meter_name	displayed at the top of the meter
+help_name	identification string for meter specific help
+	       (replaces this help)
+realf		e.g. fixed2 displays 2 decimal places
+
+"
+
+!
+************************************************************
+* METER OBJECT                                           *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object hex_firemain_valve (plc_address=int,address=int,tag_address=string,src=source, valve_name=string, help_name=string(30),angle)
+
+var help_area = help string_30
+
+var plc_fail = input db_elements (b_value)[2]
+
+var valve_ip = input db_elements (b_value, alarm_status)[3]
+var tag_message_ip = input db_elements (c_value)
+
+var open_ip = int(0,1)
+var closed_ip = int(0,1)
+var flow_ip = int(0,1)
+
+var line_a_fail = int(0,1)
+var line_b_fail = int(0,1)
+
+
+var main_menu = menu string
+var tag_message_panel = panel panel_item_row
+
+begin
+! INITIALISATION !
+! REQUEST INPUTS FROM SCOPE !
+
+if invalid get source valve_ip then 
+   begin
+
+   set source valve_ip = src
+   set priority valve_ip.db_addr = 9
+   set filter valve_ip.db_addr = lim_ge
+   set limit valve_ip.db_addr = db_address("B"+address)
+   set persist valve_ip 
+   request valve_ip
+
+ set source plc_fail = src
+   set priority plc_fail.db_addr = 9
+   set filter plc_fail.db_addr = lim_ge
+   set limit plc_fail.db_addr = db_address("B"+plc_address)
+   set persist plc_fail 
+   request plc_fail
+
+
+!REQUEST TAG MESSAGE FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address("C"+tag_address)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   end
+
+
+open_ip = int(valve_ip[1].b_value)
+closed_ip = int(valve_ip[2].b_value)
+flow_ip = int(valve_ip[3].b_value)
+
+line_a_fail = int(plc_fail[1].b_value)
+line_b_fail = int(plc_fail[2].b_value)
+
+! DRAW METER BACKGROUND !
+
+just = centrecentre
+
+clear
+
+if  flow_ip then
+   begin
+    fg = blue
+    x=-35 y=0 add line x=35 add line lw=3 
+  end
+  else
+    begin
+    fg = white
+    x=-35 y=0 add line x=35 add line lw=3
+  end
+
+if flow_ip then
+   begin
+   tfg = flashred
+   x = 20 y = 40 add text ("flow")!20 40!
+   end
+else
+   begin
+   tfg = white
+   x = 20 y = 40 add text ("no flow")  
+   end
+
+   clear
+
+if tag_message_ip.c_value <> "" then
+   rotrect(h = 30, w= 50,x=-0,y=0, fg = yellow)
+
+! DETERMINE COLOUR FOR THE VALVE ACCORDING TO ITS INPUT STATES !
+if open_ip and not closed_ip then
+   fg = green
+if closed_ip and not open_ip then
+   fg = white
+if open_ip and closed_ip then
+   fg = flashred
+if not open_ip and not closed_ip then
+   fg = red
+if line_a_fail and line_b_fail then
+   fg = magenta
+
+
+! IF VALVE IS IN ALAM THEN ALARM COLOURS OVERRIDE POSITION COLOURS !
+! IF ALARM HAS BEEN ACCEPTED DRAW VALVE IN RED !
+if valve_ip[1].alarm_status == w_clr or
+   valve_ip[2].alarm_status == w_clr then
+   fg = red
+
+! IF ALARM IS UNACCEPTED DRAW VALVE FLASHING RED!
+if valve_ip[1].alarm_status == w_note or
+   valve_ip[2].alarm_status == w_note then
+   fg = flashred
+
+if (open_ip and not closed_ip) or
+   (open_ip and closed_ip) or 
+   (not open_ip and not closed_ip) then
+ 
+  begin
+lw=3
+x=0 y= 0 add line  y=-13 add line x=10 add line x=-10 add line
+lw=4
+
+h = 20 w = 40
+x = 0 y = 0 
+
+x = -w/2 y = -h/2 move
+x = w/2 y = h/2 add
+y = -h/2 add
+x = -w/2 y = h/2 add
+fill 
+clear
+end
+
+else if not open_ip and closed_ip then
+ begin
+lw=3
+x=0 y= 0 add line  y=13   set filter valve_ip.db_addr = lim_ge
+   set filter valve_ip.db_addr = lim_ge
+ add line y=10 add line y=-10add line
+lw=4
+
+h = 20 w = 40
+x = 0 y = 0 
+
+y = -w/2 x = -h/2 move
+y = w/2 x = h/2 add
+x = -h/2 add
+y = -w/2 x = h/2 add
+fill 
+clear
+end
+
+tfg = white
+x=20 y=-42 add text  (valve_name)
+
+! CONFIGURE MENU !
+
+x=0 y=0 just = centrecentre
+set rotrect main_menu
+set title main_menu =valve_name
+set empty main_menu
+set add main_menu = "Alter Tag Message"
+set add main_menu = "Clear Tag Message"
+
+! RESPOND TO MENU SELECTIONS !
+
+if valid main_menu then
+   begin
+
+   case main_menu of
+
+      "Alter Tag Message"
+         begin
+         set title tag_message_panel = "Modify Tag Message for " !+ valve_name!
+         set label tag_message_panel.str = "Tag Message"
+         set value tag_message_panel.str = tag_message_ip.c_value
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tag Message"
+         begin
+         set_c_value(db_address("C"+tag_address), src, "")
+         end
+
+        default
+            begin
+            end
+
+   set invalid main_menu
+   end
+
+
+! WRITE NEW TAG MESSAGE TO SCOPE !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address("C"+tag_address),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+! DISPLAY TAG MESSAGE PANEL IF SELB PRESSED!
+
+if selb and tag_message_ip.c_value <> "" and not get busy tag_message_panel then
+    message_text_box(tag_message_ip.c_value)
+
+! HELP !
+if help_name <> "" then
+   set text help_area = help_name
+else
+   set text help_area = "hex_firemain_valve_object_help"
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=228
+realf = fixed0
+x = -50 hex_firemain_valve(15000,3,11,heathrow,"Pier 7 ","", angle =0)
+ 
+x = 50 hex_firemain_valve(15000,3,11,heathrow,"Pier 7 ","", angle =90)
+ 
+
+! Exit button !
+!scale = 256
+x=10 y = 150  h = 20  w= 120 fg = red2
+rect (fg=fg-1) x ++ y++ h -- w--
+rect (fg=fg+2) h-- w--
+rect(fg= fg +selb) tfg = white
+text ("Exit")
+if selb then exit
+!
+
+end
+
+mimic = main_object w=200,h=180,just=centrecentre,fg=black,bg=lightblue4,resizable

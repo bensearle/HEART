@@ -1,0 +1,707 @@
+Load SUB_STN_A_HELP
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load BROWSER
+load hv_lib
+load lv_breaker
+load dual_bus_objects
+
+
+!**************** TEMP SUB A ****************!
+object Sub_A
+Begin
+w = 900 h = 20 x = -300 y =-510 RECT (fg=decoroff)
+x = 190 y = -500 text(tfg=BLACK,ch=18,"TEMP SUB A",just=centrecentre) clear
+x = 600 y = -510 add x -= 900 add y += 20 add line (fg=white) clear
+x = 600 y = -510 add y += 20 add x -= 900 add line (fg=grey40) clear
+x = -200 y = -550 text(tfg=black,ch=20,"FED FROM 33KV CENTRAL BSP P 5")
+lw = 2
+x = -255 y = -510 add y -= 45 add line (fg=yellow) clear
+x = -255 y = -450 add y -=39 add line (fg=yellow) clear
+x = -30 y = -450 add y -= 39 add line (fg=yellow) clear
+x = 195 y = -450 add y -= 39 add line (fg=yellow) clear
+x = 530 y = -450 add y -=39 add line (fg=yellow) clear
+scale = 200
+x = -255 y = -532 ocb_mont_lib(14001,14150,603,403,heathro3,3,"top")
+x = -255 y = -467 ocb_mont_lib(14001,14140,602,402,heathro3,4,"btm")
+x =  -30 y = -468 ocb_mont_lib(14001,14160,604,404,heathro3,5,"btm")
+x = 195 y = -468 ocb_mont_lib(14001,14170,605,405,heathro3,6,"btm")
+x = 530 y = -468 ocb_mont_lib(14001,14180,606,406,heathro3,7,"btm")
+scale = 256
+End
+
+!**************** SUB 151 ****************!
+object Sub_151
+Begin
+w = 900 h = 20 x = -300 y =-510 RECT (fg=decoroff)
+x = 150 y = -500 text(tfg=BLACK,ch=18,"T5 NORTH MAIN SUB 151",just=centrecentre) clear
+x = 600 y = -510 add x -= 900 add y += 20 add line (fg=white) clear
+x = 600 y = -510 add y += 20 add x -= 900 add line (fg=grey40) clear
+
+lw = 2
+x = -100 y = -510 add y -= 45 add line (fg=yellow) clear
+x = -255 y = -450 add y -=39 add line (fg=yellow) clear
+x = -30 y = -450 add y -= 39 add line (fg=yellow) clear
+x = 195 y = -450 add y -= 39 add line (fg=yellow) clear
+x = 530 y = -450 add y -=39 add line (fg=yellow) clear
+scale = 100
+x = -100 y = -532 modbus_cb(45300,46293,45640,2563,6863,6980,heathrow,13,"top",130,int,string,int,int)
+x = -255 y = -467 modbus_cb(45300,46284,45460,2554,6854,6980,heathrow,4,"btm",40,int,string,int,int)
+x =  -30 y = -468 modbus_cb(45300,46296,45700,2566,6866,6980,heathrow,16,"btm",160,int,string,int,int)
+x = 195 y = -468 modbus_cb(45300,46301,45800,2571,6871,6980,heathrow,21,"btm",210,int,string,int,int)
+x = 530 y = -468 modbus_cb(45300,46306,45900,2576,6876,6980,heathrow,26,"btm",260,int,string,int,int)
+scale = 256
+End
+
+!**************** Sub 152 ****************!
+object Sub_152
+Begin
+w = 500 h = 20 x = -300 y =-510 RECT (fg=decoroff)
+x = -35 y = -500 text(tfg=BLACK,ch=18,"T5 SOUTH MAIN SUB 152",just=centrecentre) clear
+x = 200 y = -510 add x -= 500 add y += 20 add line (fg=white) clear
+x = 200 y = -510 add y += 20 add x -= 500 add line (fg=grey40) clear
+lw = 2
+x = 150 y = -510 add y -= 45 add line (fg=yellow) clear
+x = -255 y = -450 add y -=39 add line (fg=yellow) clear
+x = 80 y = -450 add y -= 39 add line (fg=yellow) clear
+
+scale =100
+x =-255  y=-467 modbus_cb(42100,43159,42380,1560,6306,6445,heathrow,10,"btm",100,int,string,int,int)
+x =80 y=-468 modbus_cb(42100,43160,42400,1561,6307,6445,heathrow,11,"btm",110,int,string,int,int)
+x =150 y= -532 modbus_cb(42100,43161,42420,1562,6308,6445,heathrow,12,"top",120,int,string,int,int)
+scale =255
+End
+
+
+!************************ Ring 1 Subs *************************!
+
+!**************** SUB U ****************!
+Object Sub_U
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub U",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,650,440,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,651,441,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,652,442,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx U","Local")
+scale = 256
+End
+ 
+!**************** SUB AA ****************!
+Object Sub_AA
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub AA",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,653,443,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,654,444,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,655,445,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx AA","Local")
+scale = 256
+End
+
+!**************** SUB K ****************!
+Object Sub_K
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub K",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,656,446,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,657,447,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,658,448,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx K","Local")
+scale = 256
+End
+
+!**************** SUB L ****************!
+Object Sub_L
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub L",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,659,449,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,660,450,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,661,451,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx L","Local")
+scale = 256
+End
+
+!**************** SUB M ****************!
+Object Sub_M
+Begin
+w = 140 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 70 y = 36 text(tfg=white,ch=18,"Sub M",just=centrecentre) clear
+x = 140 y = 25 add x -= 140 add y += 20 add line (fg=white) clear
+x = 140 y = 25 add y += 20 add x -= 140 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+x = 120 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,662,452,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,663,453,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,664,454,heathro3,3,"btm")
+x = 120 y = 69 ocb_mont_lib(0,0,665,455,heathro3,4,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx M","Local")
+scale = 256
+End
+
+!**************** SUB W ****************!
+Object Sub_W
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub W",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,666,456,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,667,457,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,668,458,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx W","Local")
+scale = 256
+End
+
+!**************** SUB S ****************!
+Object Sub_S
+Begin
+w = 140 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 70 y = 36 text(tfg=white,ch=18,"Sub S",just=centrecentre) clear
+x = 140 y = 25 add x -= 140 add y += 20 add line (fg=white) clear
+x = 140 y = 25 add y += 20 add x -= 140 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+x = 120 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,669,459,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,670,460,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,671,461,heathro3,3,"btm")
+x = 120 y = 69 ocb_mont_lib(0,0,672,462,heathro3,4,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx S","Local")
+scale = 256
+End
+
+!**************** SUB V ****************!
+Object Sub_V
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub V",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,673,463,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,674,464,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,675,465,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx V","Local")
+scale = 256
+End
+
+!**************** SUB T ****************!
+Object Sub_T
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub T",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,676,466,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,677,467,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,678,468,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx T","Local")
+scale = 256
+End
+
+!************************ Ring 2 Subs *************************!
+
+!**************** SUB Y ****************!
+Object Sub_Y
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub Y",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,679,469,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,680,470,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,681,471,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx Y","Local")
+scale = 256
+End
+
+!**************** SUB Q ****************!
+Object Sub_Q
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub Q",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,682,472,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,683,473,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,684,474,heathro3,3,"btm") clear
+x = 85 y = 105 text (tfg=black,ch=15,"Morgan Vinci",just=centrecentre)
+x = 85 y = 120 text (tfg=black,ch=15,"HV Switchboard",just=centrecentre)
+scale = 256
+End
+
+!**************** SUB R ****************!
+Object Sub_R
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub R",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,715,611,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,716,612,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,717,613,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx R","Local")
+scale = 256
+End
+
+!**************** SUB I ****************!
+Object Sub_I
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub I",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,718,614,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,719,615,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,720,616,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx I","Local")
+scale = 256
+End
+
+!**************** SUB AC ****************!
+Object Sub_AC
+Begin
+w = 140 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 70 y = 36 text(tfg=white,ch=18,"Sub AC",just=centrecentre) clear
+x = 140 y = 25 add x -= 140 add y += 20 add line (fg=white) clear
+x = 140 y = 25 add y += 20 add x -= 140 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+x = 120 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,685,475,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,686,476,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,687,477,heathro3,3,"btm")
+x = 120 y = 69 ocb_mont_lib(0,0,688,478,heathro3,4,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx AC","Local")
+scale = 256
+End
+
+!**************** SUB Z ****************!
+Object Sub_Z
+Begin
+w = 140 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 70 y = 36 text(tfg=white,ch=18,"Sub Z",just=centrecentre) clear
+x = 140 y = 25 add x -= 140 add y += 20 add line (fg=white) clear
+x = 140 y = 25 add y += 20 add x -= 140 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+x = 120 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,727,623,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,728,624,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,729,625,heathro3,3,"btm")
+x = 120 y = 69 ocb_mont_lib(0,0,730,626,heathro3,4,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx Z","Local")
+scale = 256
+End
+
+!**************** SUB X ****************!
+!Object Sub_X
+Begin
+w = 140 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 70 y = 36 text(tfg=white,ch=18,"Sub X",just=centrecentre) clear
+x = 140 y = 25 add x -= 140 add y += 20 add line (fg=white) clear
+x = 140 y = 25 add y += 20 add x -= 140 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+x = 120 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,689,479,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,690,480,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,691,481,heathro3,3,"btm")
+x = 120 y = 69 ocb_mont_lib(0,0,692,482,heathro3,4,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx X","Local")
+scale = 256
+End!
+
+!************************ Ring 3 Subs *************************!
+
+!**************** SUB D ****************!
+Object Sub_D
+Begin
+w = 140 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 70 y = 36 text(tfg=white,ch=18,"Sub D",just=centrecentre) clear
+x = 140 y = 25 add x -= 140 add y += 20 add line (fg=white) clear
+x = 140 y = 25 add y += 20 add x -= 140 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+x = 120 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,693,483,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,694,484,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,695,485,heathro3,3,"btm")
+x = 120 y = 69 ocb_mont_lib(0,0,696,486,heathro3,4,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx D","Local")
+scale = 256
+End
+
+!**************** SUB C ****************!
+Object Sub_C
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub C",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,697,487,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,698,488,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,699,489,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx C","Local")
+scale = 256
+End
+
+!**************** SUB E ****************!
+Object Sub_E
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub E",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,700,490,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,701,491,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,702,492,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx E","Local")
+scale = 256
+End
+
+!**************** SUB F ****************!
+Object Sub_F
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub F",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,721,617,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,722,618,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,723,619,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx F","Local")
+scale = 256
+End
+
+!**************** SUB H ****************!
+Object Sub_H
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub H",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,724,620,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,725,621,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,726,622,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx H","Local")
+scale = 256
+End
+
+!**************** SUB N ****************!
+Object Sub_N
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub N",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,703,493,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,704,494,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,705,495,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx N","Local")
+scale = 256
+End
+
+!**************** SUB O ****************!
+Object Sub_O
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub O",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,709,434,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,710,435,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,711,436,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx O","Local")
+scale = 256
+End
+
+!**************** SUB P ****************!
+Object Sub_P
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub P",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,712,437,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,713,438,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,714,439,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx P","Local")
+scale = 256
+End
+
+!**************** SUB G ****************!
+Object Sub_G
+Begin
+w = 100 h = 20 x = 0 y =25 RECT (fg=decoroff)
+x = 50 y = 36 text(tfg=white,ch=18,"Sub G",just=centrecentre) clear
+x = 100 y = 25 add x -= 100 add y += 20 add line (fg=white) clear
+x = 100 y = 25 add y += 20 add x -= 100 add line (fg=grey40) clear
+lw = 2
+x = 15 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 45 add line (fg=yellow) clear
+x = 85 y = 46 add y +=45 add line (fg=yellow) clear
+scale = 200
+x = 15 y = 2 ocb_mont_lib(0,0,706,496,heathro3,1,"top")
+x = 50 y = 2 ocb_mont_lib(0,0,707,497,heathro3,2,"top")
+x = 85 y = 69 ocb_mont_lib(0,0,708,498,heathro3,3,"btm") clear
+scale = 70
+x = 85 y = 105 add transformer ("Tx G","Local")
+scale = 256
+End
+
+!**************************************************************************************************************************!
+
+Object main_object(w,h,fg,bg)
+var helpstr = help string(30)
+Begin
+scale = 256
+! HELP !
+just = centrecentre
+x = 0 y = 0
+W=1600 H=1050
+set text helpstr = "SUB_STN_A_HELP"
+
+x = 120 y = 40 Sub_151
+x -= 550 y = 40 Sub_152
+!**************** Ring 1 Layout ****************!
+x = -700 y = -370 Sub_U
+x = -700 y = -210 Sub_AA
+x = -700 y = -40 Sub_T
+x = -700 y = 115 Sub_V
+x = -700 y = 270 Sub_S
+x = -400 y = 285 Sub_W
+x = -250 y = 115 Sub_P
+x = -460 y = -40 Sub_M
+x = -400 y = -210 Sub_L
+x = -400 y = -370 Sub_K
+x = -460 y = 115 Sub_O
+x = -250 y = -40 Sub_N
+lw = 2
+!**** Sub 152 P10 - Sub U P1 ****!
+x = -685 y = -390 add y -= 20 add line (fg=yellow) clear
+!**** Sub U P2 - Sub AA P1 ****!
+x = -650 y = -390 add y -=10 add x += 85 add y += 155 add x  -= 120 add y += 20 add line (fg=yellow) clear
+!**** Sub AA P2 - Sub T P1 ****!
+x = -650 y = -230 add x += 85 add y += 150 add x -= 120 add y += 20 add line (fg=yellow) clear
+!**** Sub T P2 - Sub V P2 ****!
+x = -650 y = -60 add y -= 5 add x += 85 add y += 150 add x -= 85 add y += 10 add line (fg=yellow) clear
+!**** Sub V P1 - Sub S P2 ****!
+x = -685 y = 95 add y -= 10 add x -=50 add y += 120 add x +=85 add y += 50 add line (fg=yellow) clear
+!**** Sub S P1 - Sub W P2 ****!
+x = -685 y = 255 add y -= 35 add x -= 50 add y += 190 add x += 495 add y -= 155 add x -=110 add y += 10 add line (fg=yellow) clear
+!**** Sub W P1 - Sub O P2 ****!
+x = -385 y = 270 add y -= 25 add x +=96 add y -=150 add x -=120  add line (fg=yellow) clear
+!**** Sub M P1 - Sub L P1 ****!
+x = -445 y = -60 add y -=170 add x +=60  add line (fg=yellow) clear
+!**** Sub L P2 - Sub K P1 ****!
+x = -350 y = -230 add y -=15  add x -= 95 add y -= 155 add x += 60 add y += 10 add line (fg=yellow) clear
+!**** Sub K P2 - Sib 152 P11 ****!
+x = -350 y = -390 add y -=20 add line (fg=yellow) clear
+!**** Sub O P1 - Sub P P2 ****!
+x = -445 y = 100 add y -=15 add x+=245 add y +=10 add line (fg=yellow) clear
+!**** Sub M P2 - Sub N P1 ****!
+x = -410 y = -60 add y -=10 add x +=175 add y +=10 add line (fg=yellow) clear
+!**** Sub P P1 - Sub N P2 ****!
+x = -235 y = 95 add x -= 35 add y += 145  add x += 150 add y -= 310 add x -=80 add y +=10 add line (fg=yellow) clear
+!**************** Ring 2 Layout ****************!
+x = -150 y = -350 Sub_Y
+x = -150 y = -135 Sub_Q
+x = 40 y = -105 Sub_AC
+x = 300 y = -350 Sub_Z
+!x = 40 y = -350 Sub_X!
+x = -25 y = 115 Sub_R 
+x = 150 y  = 115 Sub_I
+lw = 2
+!**** Sub 151 P4 - Sub Y P1 ****!
+x = -135 y = -410 add y += 40 add line (fg=yellow) clear
+!**** Sub Y P2 - Sub Q P1 ****!
+x = -100 y = -370 add y -= 20 add x += 75 add y += 185 add x -= 110 add y += 50 add line (fg=yellow) clear
+!**** Sub Q P2 - Sub R P1 ****!
+x = -100 y = -155 add y -= 20 add x += 90 add y += 275 add line (fg=yellow) clear
+!**** Sub R P2 - Sub I P2 ****!
+x = 25 y = 100 add y -= 20 add x +=90 add y += 175 add x += 150 add y -= 180 add x -= 65 add y +=20 add line (fg=yellow) clear
+!**** Sub I P1 - Sub AC P2 ****!
+x = 165 y = 100 add y -= 70 add x += 60 add y -= 175 add x -= 135 add y += 20 add line (fg=yellow) clear
+!**** Sub AC P1 - Sub Z P1 ****!
+x = 55 y = -125 add y -= 50 add x += 220 add y -= 200 add x += 40 add y += 15 add line (fg=yellow) clear
+!**** Sub D P2 - Sub 151 P16 ****!
+x = 90 y = -370 add y -= 40 add line (fg=yellow) clear
+!**** Sub 151 P21 - Sub Z P2 ****!
+x = 315 y = -410 add y += 20 add x += 35 add y+= 30 add line (fg=yellow) clear
+
+!**************** Ring 3 Layout ****************!
+x = 75 y = -350 Sub_D
+x = 350 y = -105 Sub_C
+x = 350 y = 115 Sub_E
+x = 600 y = -350 Sub_G 
+x = 600 y = 115 Sub_F
+x = 600 y = -105 Sub_H
+
+lw = 2
+!**** Sub D P2 - Sub C P2 ****!
+x = 125 y = -370 add y -= 20 add x += 115 add y += 175 add x += 160 add y += 100 add line (fg=yellow) clear
+!**** Sub C P1 - Sub E P2 ****!
+x = 365 y = -120 add y -= 25 add x -= 45 add y += 120 add x += 80 add y += 120 add line (fg=yellow) clear
+!**** Sub E P1 - Sub F P2 ****!
+x = 365 y = 100 add y -= 25 add x -= 40 add y += 180 add x += 400 add y -= 185 add x -= 75  add y+= 30 add line (fg=yellow) clear
+!**** Sub F P1 - Sub H P2 ****!
+x = 615 y -= 5 add y -= 50 add x += 110 add y -= 190 add x -= 75 add y += 30 add line (fg=yellow) clear
+!**** Sub H P1 - Sub G P1 ****!
+x = 615 y -= 5 add y -= 25 add x -= 100 add y -= 245 add x += 100 add y += 45 add line (fg=yellow) clear
+!**** Sub G P2 - Sub 151 P26 ****!
+x = 650 y = -410 add y += 40 add line (fg=yellow) clear
+x = 580 y += 330  text(tfg=yellow,ch=15,"SUB H NOT YET IN USE",just=centrecentre) clear
+x = 580 y += 220  text(tfg=yellow,ch=15,"SUB F NOT YET IN USE",just=centrecentre) clear
+
+
+!**************** Browser ****************!
+x = -800 y = 436 browser(636,heathro3,1140)
+
+
+
+
+End
+
+mimic = MAIN_OBJECT W=1600, H=1050, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE

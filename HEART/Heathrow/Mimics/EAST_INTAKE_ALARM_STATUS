@@ -1,0 +1,48 @@
+load mimic_libutil
+load ocb_alarm_test
+
+
+!************* EAST INTAKE ALARM STATUS ***************!
+
+object east_intake_alarm_status = int
+begin
+
+if sub_alarm(2000,2520,heathrow) > 0
+or sub_alarm(2000,2500,heathrow) > 0
+or sub_alarm(2000,2480,heathrow) > 0
+or sub_alarm(2000,2460,heathrow) > 0
+or sub_alarm(2000,2440,heathrow) > 0
+or sub_alarm(2000,2420,heathrow) > 0
+or sub_alarm(2000,2400,heathrow) > 0
+or sub_alarm(2000,2380,heathrow) > 0
+or sub_alarm(2000,2560,heathrow) > 0
+or sub_alarm(2000,2570,heathrow) > 0
+or sub_alarm(2000,2360,heathrow) > 0
+or sub_alarm(2000,2340,heathrow) > 0
+or sub_alarm(2000,2320,heathrow) > 0
+or sub_alarm(2000,2300,heathrow) > 0
+or sub_alarm(2000,2540,heathrow) > 0
+or sub_alarm(2000,2550,heathrow) > 0
+or sub_alarm(2000,2280,heathrow) > 0
+or sub_alarm(2000,2260,heathrow) > 0
+or sub_alarm(2000,2240,heathrow) > 0
+or sub_alarm(2000,2220,heathrow) > 0
+or sub_alarm(2000,2200,heathrow) > 0
+or sub_alarm(2000,2180,heathrow) > 0
+or sub_alarm(2000,2160,heathrow) > 0
+or sub_alarm(2000,2140,heathrow) > 0
+or sub_alarm(2000,2120,heathrow) > 0
+or sub_alarm(2000,2100,heathrow) > 0 
+then
+  east_intake_alarm_status = 1
+else
+  east_intake_alarm_status = 0
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

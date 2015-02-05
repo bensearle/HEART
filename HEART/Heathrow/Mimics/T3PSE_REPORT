@@ -1,0 +1,1093 @@
+Load XTEL_READ_WRITE_LIB
+load report_tllib
+load REPLIB
+load archive2_std_libutil
+load debug_libutil
+
+! state machine descriptions for object log_on !
+! -------------------------------------------------------------------- !
+const find_user_number = 1
+const find_current_fors = 2
+const log_on_to_source = 3
+const state_finished = 4
+
+! state machine descriptions for main object !
+! ------------------------------------------------------------------ !
+const log_on_to_scope = 1
+const do_calcs = 2
+
+CONST column_width = 60
+
+!*** Boolean Stats Recovery ***!
+TYPE KEYED_TWO_A_VALUES = TABLE (
+	! 1RW !  ID = ID,
+	!  R  ! STREAM = STREAM,
+	!  R  !  STREAM_NAME = STREAM_NAME,
+	!  R  ! KEYNUMBER = KEYNUMBER,
+	! 2RW !  TIME = CS_TIME,
+	!  RW !  KEYED_TWO_A_VALUES_1 = REAL,
+	!  RW !  KEYED_TWO_A_VALUES_2 = REAL )
+
+type stats_display_type = enum( percent_time_true = "Percentage true",
+				ft_transitions = "False-true transitions", time_unavailable = "Time Unavailable")
+
+!*** Analogue / Engineering / Real Stats Recovery ***!
+TYPE KEYED_THREE_A_VALUES = TABLE (
+	! 1RW !  ID = ID,
+	!  R  ! STREAM = STREAM,
+	!  R  !  STREAM_NAME = STREAM_NAME,
+	!  R  ! KEYNUMBER = KEYNUMBER,
+	! 2RW !  TIME = CS_TIME,
+	!  RW !  KEYED_THREE_A_VALUES_1 = REAL,
+	!  RW !  KEYED_THREE_A_VALUES_2 = REAL,
+	!  RW !  KEYED_THREE_A_VALUES_3 = REAL )
+
+type rstats_display_type = enum( avg_val = "Average",
+				max_val = "Maximum",
+				min_val = "Minimum")
+
+type rstats_val_display_type = enum( max_real_val = "Maximum",
+				min_real_val = "Minimum")
+
+
+
+
+
+
+
+object debug(str = string)
+var op = filewrite string
+
+begin
+set reset op
+set console op
+set value op = str
+request op
+
+end
+
+object refresh(src = source)
+var op = output b_value_type
+
+begin
+set source op = src
+request op
+
+end
+
+! *********************************************************** !
+
+object log_on (server_name = source, users_name = string, password = string, mastered_for = set(area)) = int
+
+var current_fors = input workstations(wrkstn_is_me,current_mastered_areas)
+var workstation_op = output workstations (user_number, login_password, current_mastered_areas)
+var user_ip = input users(user_number)
+var log_on_progress = string
+var state = loopback int
+
+begin
+if invalid state then state = find_user_number
+
+! find the user number from the user name !
+! -------------------------------------------------------------- !
+
+if state == find_user_number then
+   begin
+   
+   if invalid get source user_ip then
+      begin
+      set source user_ip = server_name
+      set mayexist user_ip
+      set filter user_ip.name = lim_eq
+      set limit user_ip.name = users_name
+      request user_ip
+      end
+   
+   if valid user_ip and not get busy user_ip then
+       state = find_current_fors   
+   end
+
+
+! find any currently mastered FORs !
+! --------------------------------------------------------- !
+
+if state == find_current_fors then
+   begin
+   
+   if invalid get source current_fors then
+      begin
+      set source current_fors = server_name
+      set filter current_fors.wrkstn_is_me = lim_eq
+      set limit current_fors.wrkstn_is_me = yes
+      request current_fors
+      end
+
+   if valid current_fors and not get busy current_fors then
+      state = log_on_to_source   
+  end
+
+! log on to Xtel as the specified user, mastering the additional FORs !
+! ---------------------------------------------------------------------------------------------------- !
+
+if state == log_on_to_source then
+   begin
+   
+   if invalid get source workstation_op then
+      begin
+      set source workstation_op = server_name
+      set old_default workstation_op
+      set default workstation_op
+      set old_off workstation_op.user_number
+      set old_off workstation_op.login_password
+      set old_off workstation_op.current_mastered_areas
+      set filter workstation_op.wrkstn_is_me = lim_eq
+      set limit workstation_op.wrkstn_is_me = yes
+      set value workstation_op.user_number = user_ip.user_number
+      set value workstation_op.login_password = password 
+      set value workstation_op.current_mastered_areas = mastered_for + current_fors.current_mastered_areas
+  
+      request workstation_op   
+      end
+
+   if valid workstation_op and get status workstation_op == "" then
+      state = state_finished
+      
+   end
+
+
+
+if invalid get status workstation_op then
+   log_on = 0
+else
+   log_on = ((state == state_finished) and (get status workstation_op == ""))
+
+end
+
+! *************************************************************************** !
+
+
+object log_on_for_read (server_name = source, users_name = string, password = string) = int
+
+var workstation_op = output workstations (user_number, login_password)
+var user_ip = input users(user_number)
+var log_on_progress = string
+var state = loopback int
+
+begin
+if invalid state then state = find_user_number
+
+! find the user number from the user name !
+! -------------------------------------------------------------- !
+
+if state == find_user_number then
+   begin
+   if invalid get source user_ip then
+      begin
+      set source user_ip = server_name
+      set mayexist user_ip
+      set filter user_ip.name = lim_eq
+      set limit user_ip.name = users_name
+      request user_ip
+      end
+   
+   if valid user_ip and not get busy user_ip then
+      state = log_on_to_source   
+   end
+
+
+! log on to Xtel as the specified user !
+! -------------------------------------------------- !
+
+if state == log_on_to_source then
+   begin
+   
+   if invalid get source workstation_op then
+      begin
+      set source workstation_op = server_name
+      set old_default workstation_op
+      set default workstation_op
+      set old_off workstation_op.user_number
+      set old_off workstation_op.login_password
+      set filter workstation_op.wrkstn_is_me = lim_eq
+      set limit workstation_op.wrkstn_is_me = yes
+      set value workstation_op.user_number = user_ip.user_number
+      set value workstation_op.login_password = password 
+  
+      request workstation_op   
+      end
+
+   if valid workstation_op and get status workstation_op == "" then
+      state = state_finished     
+   end
+
+
+if invalid get status workstation_op then
+   log_on_for_read = 0
+else
+   log_on_for_read = ((state == state_finished) and (get status workstation_op == ""))
+
+end
+
+! *************************************************************************** !
+
+
+
+
+! ------------------------------------------------------------------------------------------------------------------- !
+! This object will return boolean statistics for single element !
+! The choice is :     !
+! percent_time_true  : The percentage of the period for which the element was true is displayed ! 
+! ft_transitions : The number of fasle-true transitions for the period is displayed !
+! The object also returns the percentage time true !
+! ------------------------------------------------------------------------------------------------------------------- !
+
+object return_boolean_stats(ch,just,realf,
+			server_name = source,
+				address = db_address,
+				report_period = report_period_type,
+				stats_display = stats_display_type,
+			var_busy = loopback yesno)=string
+! INPUT !
+var boolean_data = input keyed_two_a_values[40]
+
+! TEMPORARY !
+var i = int
+var time_true = real
+var total_transitions = real
+var percent_true = real
+
+var final_text = string
+var temp_time1 = int
+var temp_time2 = int
+var temp_time = time
+var num_days_over = int
+
+var requested_data = loopback yesno
+begin
+
+! calculate the total time for last month in seconds !
+! ------------------------------------------------------------------------- !
+
+
+
+! request the boolean stats data for last month !
+! -------------------------------------------------------------------- !
+	if invalid requested_data then
+	begin
+	requested_data = yes
+	set source boolean_data = arhsource(server_name)
+
+	set filter boolean_data.time = lim_le_gt2
+
+	timef = local_dmy_hms
+	set limit boolean_data.time = time(current_time)
+
+	timef = local_dmy_hms
+	temp_time1 = int(get limit boolean_data.time)
+	temp_time2 =30*86400
+	set limit2 boolean_data.time = time(temp_time1-temp_time2)
+
+	set filter boolean_data.stream_name = lim_eq
+	set limit boolean_data.stream_name = server_name + " B_STATS"
+ 
+	set filter boolean_data.keynumber = lim_eq
+	set limit boolean_data.keynumber = convert_db_address_to_keynumber(address) 
+ 
+	request boolean_data 
+	end
+
+	! calculate the total time true in seconds !
+! ----------------------------------------------------------- !
+!
+debug("BUSY :"+get busy boolean_data+" VALID :"+valid boolean_data+" LASTROW :"+lastrow boolean_data)
+!
+if valid boolean_data then
+ begin
+ if lastrow boolean_data > 0 then
+  begin 
+  time_true = 0
+  for i from 1 to lastrow boolean_data do
+ begin
+ time_true += boolean_data[i].keyed_two_a_values_2
+ end
+  time_true = time_true*60
+
+  ! calculate the percentage of the month that the element was true taking into account the allowed maintenance period (6hrs/day) !
+  ! ------------------------------------------------------------------------------------------------- !
+
+  percent_true =100 - (100 * (time_true/(30*64800)))
+
+  ! calculate the total number of false to true transitions in the month ! 
+  ! ------------------------------------------------------------------------------------------------- !
+  total_transitions = 0
+  for i from 1 to lastrow boolean_data do
+ total_transitions += boolean_data[i].keyed_two_a_values_1
+  end 
+ else
+  begin
+  percent_true = 100
+  time_true = 0 
+  end
+ end
+! display the text required !
+! -------------------------------------- !
+case stats_display of
+ percent_time_true  final_text = percent_true
+ ft_transitions final_text = total_transitions
+ time_unavailable final_text = time_true
+ default  begin end
+
+! prevent printing until the data has been obtained !
+! ------------------------------------------------------------------------- !
+if get busy boolean_data then
+ begin
+ var_busy = yes
+ end
+else
+ begin 
+ return_boolean_stats = final_text
+ end
+end
+
+!----------------- Passenger Sensitive Equipment Status Report ------------------------!
+
+object T3PSE_AVAIL_REPORT(w,h,fg,bg,report_period=report_period_type,report_date=string,just)=yesno
+
+var i =int
+var fld_1 = string
+var fld_2 = string
+var fld_3 = string
+var fld_4 = string
+var fld_5 = string
+var fld_6 = string
+
+var getting_data = loopback yesno
+
+var text_file = FILEWRITE string
+
+var travs_num = real
+var travs_total = real
+var trav_avail = real
+
+var esc_num = real
+var esc_total = real
+var esc_avail = real
+
+var goods_num = real
+var goods_total = real
+var goods_avail = real
+
+var pax_num = real
+var pax_total = real
+var pax_avail = real
+
+var air_num = real
+var air_total = real
+var air_avail = real
+
+
+! loopback variables !
+var state = loopback int
+var logged_on = loopback int
+
+var total_travs 	= real
+var total_esc	= real
+var total_goods	= real
+var total_pax	= real
+var total_air	= real
+
+var init = int
+Begin
+	getting_data = no
+
+
+
+
+	!*** Start of Travelators Calculation ***!
+	travs_num = 13		! * number of travelators - used in availability calc* !
+	travs_total = 0		! * initial value for travelators - used in availability calc* !
+	trav_avail = 0		! * initial value for travelators - used in availability calc* !
+
+	! ** fld_3 request is for percentage time true (unavailable) ** !
+
+	!*** Travelator  1 ***!
+	fld_3 = return_boolean_stats (heathrow,b9521,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  2 ***!
+	fld_3 = return_boolean_stats (heathrow,b9522,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  3 ***!
+	fld_3 = return_boolean_stats (heathrow,b9523,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  4 ***!
+	fld_3 = return_boolean_stats (heathrow,b9524,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  5 ***!
+	fld_3 = return_boolean_stats (heathro3,b2843,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  6 ***!
+	fld_3 = return_boolean_stats (heathro3,b2842,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  11 ***!
+	fld_3 = return_boolean_stats (heathrow,b9531,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  3E ***!
+	fld_3 = return_boolean_stats (heathro4,b36,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  3F ***!
+	fld_3 = return_boolean_stats (heathro4,b37,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  3G ***!
+	fld_3 = return_boolean_stats (heathro4,b38,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  3H ***!
+	fld_3 = return_boolean_stats (heathro4,b39,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  3J ***!
+	fld_3 = return_boolean_stats (heathro4,b40,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+	!*** Travelator  14 ***!
+	fld_3 = return_boolean_stats (heathro4,b13373,report_period,percent_time_true, getting_data,realf = fixed2)
+	travs_total = travs_total + real (fld_3)
+
+
+	!*** Calculate the total percentage the travelators are Available ***!
+	trav_avail = 100 * (travs_total / (travs_num*100))
+
+
+	!*** End of Travelators Calculation ***!
+
+
+
+
+	!*** Start of Escalators Calculation ***!
+	esc_num = 14		! * number of escalators- used in availability calc* !
+	esc_total = 0		! * initial value for escalators- used in availability calc* !
+	esc_avail = 0		! * initial value for escalators- used in availability calc* !
+
+	!*** Escalator 1 ***!
+	fld_3 = return_boolean_stats (heathrow,b9501,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+
+	!*** Escalator 2 ***!
+	fld_3 = return_boolean_stats (heathrow,b9502,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+
+	!*** Escalator 3 ***!
+	fld_3 = return_boolean_stats (heathrow,b9503,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+
+	!*** Escalator 4 ***!
+	fld_3 = return_boolean_stats (heathrow,b9504,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+
+	!*** Escalator 5 ***!
+	fld_3 = return_boolean_stats (heathrow,b9505,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+
+	!*** Escalator 6 ***!
+	fld_3 = return_boolean_stats (heathrow,b9506,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+	
+	!*** Escalator 7 ***!
+	fld_3 = return_boolean_stats (heathrow,b9507,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+	
+	!*** Escalator 9 ***!
+	fld_3 = return_boolean_stats (heathrow,b9509,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+	
+	!*** Escalator 10 ***!
+	fld_3 = return_boolean_stats (heathrow,b9510,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+	
+	!*** Escalator 11 ***!
+	fld_3 = return_boolean_stats (heathrow,b9511,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+	
+	!*** Escalator 12 ***!
+	fld_3 = return_boolean_stats (heathrow,b9512,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+	
+	!*** Escalator 14 ***!
+	fld_3 = return_boolean_stats (heathrow,b9514,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+	
+	!*** Escalator 25 ***!
+	fld_3 = return_boolean_stats (heathro4,b13371,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+
+	!*** Escalator 26 ***!
+	fld_3 = return_boolean_stats (heathro4,b13383,report_period,percent_time_true, getting_data,realf = fixed2)
+	esc_total = esc_total + real (fld_3)
+
+	!*** Calculate the total percentage the escalators are Available ***!
+	esc_avail = 100 * (esc_total / (esc_num*100))
+
+	!*** End of Escalators Calculation***!
+
+
+	!*** Start of Goods Lift Calculation ***!
+	goods_num = 24		! * number of goods lifts - used in availability calc* !
+	goods_total = 0		! * initial value for goods lifts- used in availability calc* !
+	goods_avail = 0		! * initial value for goods lifts- used in availability calc* !
+
+	!*** Goods Lift 3 ***!
+	fld_3 = return_boolean_stats (heathrow,b9603,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift 4 ***!
+	fld_3 = return_boolean_stats (heathrow,b9604,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift 5 ***!
+	fld_3 = return_boolean_stats (heathrow,b9605,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift 35 ***!
+	fld_3 = return_boolean_stats (heathrow,b9635,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift 58 ***!
+	fld_3 = return_boolean_stats (heathrow,b9658,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift 62 ***!
+	fld_3 = return_boolean_stats (heathrow,b9662,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+
+	!*** Goods Lift 63 ***!
+	fld_3 = return_boolean_stats (heathrow,b9663,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+
+	!*** Goods Lift 66 ***!
+	fld_3 = return_boolean_stats (heathrow,b9666,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH4 ***!
+	fld_3 = return_boolean_stats (heathrow,b9667,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH5 ***!
+	fld_3 = return_boolean_stats (heathrow,b9668,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH6 ***!
+	fld_3 = return_boolean_stats (heathrow,b9669,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH7 ***!
+	fld_3 = return_boolean_stats (heathrow,b9670,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH8 ***!
+	fld_3 = return_boolean_stats (heathrow,b9671,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH9 ***!
+	fld_3 = return_boolean_stats (heathrow,b9672,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH15 ***!
+	fld_3 = return_boolean_stats (heathrow,b9679,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH17 ***!
+	fld_3 = return_boolean_stats (heathrow,b9680,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH21 ***!
+	fld_3 = return_boolean_stats (heathrow,b9681,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH24 ***!
+	fld_3 = return_boolean_stats (heathrow,b9673,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+
+	!*** Goods Lift BH25 ***!
+	fld_3 = return_boolean_stats (heathrow,b9674,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH26 ***!
+	fld_3 = return_boolean_stats (heathrow,b9675,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH27 ***!
+	fld_3 = return_boolean_stats (heathrow,b9676,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH28 ***!
+	fld_3 = return_boolean_stats (heathrow,b9677,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH29 ***!
+	fld_3 = return_boolean_stats (heathrow,b9678,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Goods Lift BH31 ***!
+	fld_3 = return_boolean_stats (heathrow,b9682,report_period,percent_time_true, getting_data,realf = fixed2)
+	goods_total = goods_total + real (fld_3)
+	
+	!*** Calculate the total percentage the goods lifts that are Available ***!
+
+	goods_avail = 100 * (goods_total / (goods_num*100))
+
+
+	!*** End of Goods Lift Calculation ***!
+
+
+	!*** Start of Pax Lift Table ***!
+	pax_num = 52		! * number of escalators- used in availability calc* !
+	pax_total = 0		! * initial value for escalators- used in availability calc* !
+	pax_avail = 0		! * initial value for escalators- used in availability calc* !
+
+	!*** Pax Lift 6 ***!
+	fld_3 = return_boolean_stats (heathrow,b9606,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+
+	!*** Pax Lift 7 ***!
+	fld_3 = return_boolean_stats (heathrow,b9607,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 8 ***!
+	fld_3 = return_boolean_stats (heathrow,b9608,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 9 ***!
+	fld_3 = return_boolean_stats (heathrow,b9609,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 10 ***!
+	fld_3 = return_boolean_stats (heathrow,b9610,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 11 ***!
+	fld_3 = return_boolean_stats (heathrow,b9611,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 12 ***!
+	fld_3 = return_boolean_stats (heathrow,b9612,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 13 ***!
+	fld_3 = return_boolean_stats (heathrow,b9613,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 14 ***!
+	fld_3 = return_boolean_stats (heathrow,b9614,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 15 ***!
+	fld_3 = return_boolean_stats (heathrow,b9615,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 16 ***!
+	fld_3 = return_boolean_stats (heathrow,b9616,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 17 ***!
+	fld_3 = return_boolean_stats (heathrow,b9617,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 22 ***!
+	fld_3 = return_boolean_stats (heathrow,b9622,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 23 ***!
+	fld_3 = return_boolean_stats (heathrow,b9623,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 24 ***!
+	fld_3 = return_boolean_stats (heathrow,b9624,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 25 ***!
+	fld_3 = return_boolean_stats (heathrow,b9625,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 26 ***!
+	fld_3 = return_boolean_stats (heathrow,b9626,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 27 ***!
+	fld_3 = return_boolean_stats (heathrow,b9627,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 28 ***!
+	fld_3 = return_boolean_stats (heathrow,b9628,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 29 ***!
+	fld_3 = return_boolean_stats (heathrow,b9629,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 30 ***!
+	fld_3 = return_boolean_stats (heathrow,b9630,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+
+	!*** Pax Lift 32 ***!
+	fld_3 = return_boolean_stats (heathrow,b9632,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+
+	!*** Pax Lift 33 ***!
+	fld_3 = return_boolean_stats (heathrow,b9633,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 34 ***!
+	fld_3 = return_boolean_stats (heathrow,b9634,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 36 ***!
+	fld_3 = return_boolean_stats (heathrow,b9636,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 37 ***!
+	fld_3 = return_boolean_stats (heathrow,b9637,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 38 ***!
+	fld_3 = return_boolean_stats (heathrow,b9638,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 39 ***!
+	fld_3 = return_boolean_stats (heathrow,b9639,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 40 ***!
+	fld_3 = return_boolean_stats (heathrow,b9640,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 41 ***!
+	fld_3 = return_boolean_stats (heathrow,b9641,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 42 ***!
+	fld_3 = return_boolean_stats (heathrow,b9642,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 43 ***!
+	fld_3 = return_boolean_stats (heathrow,b9643,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 44 ***!
+	fld_3 = return_boolean_stats (heathrow,b9644,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 45 ***!
+	fld_3 = return_boolean_stats (heathrow,b9645,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 46 ***!
+	fld_3 = return_boolean_stats (heathrow,b9646,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 47 ***!
+	fld_3 = return_boolean_stats (heathrow,b9647,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 48 ***!
+	fld_3 = return_boolean_stats (heathrow,b9648,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 49 ***!
+	fld_3 = return_boolean_stats (heathrow,b9649,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 50 ***!
+	fld_3 = return_boolean_stats (heathrow,b9650,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 51 ***!
+	fld_3 = return_boolean_stats (heathrow,b9651,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 52 ***!
+	fld_3 = return_boolean_stats (heathrow,b9652,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 53 ***!
+	fld_3 = return_boolean_stats (heathrow,b9653,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+
+	!*** Pax Lift 54 ***!
+	fld_3 = return_boolean_stats (heathrow,b9654,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 55 ***!
+	fld_3 = return_boolean_stats (heathrow,b9655,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 56 ***!
+	fld_3 = return_boolean_stats (heathrow,b9656,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 57 ***!
+	fld_3 = return_boolean_stats (heathrow,b9657,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 59 ***!
+	fld_3 = return_boolean_stats (heathrow,b9659,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 60 ***!
+	fld_3 = return_boolean_stats (heathrow,b9660,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 64 ***!
+	fld_3 = return_boolean_stats (heathrow,b9664,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 65 ***!
+	fld_3 = return_boolean_stats (heathrow,b9665,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+	
+	!*** Pax Lift 67 ***!
+	fld_3 = return_boolean_stats (heathro4,b13259,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+
+	!*** Pax Lift 68 ***!
+	fld_3 = return_boolean_stats (heathro4,b13260,report_period,percent_time_true, getting_data,realf = fixed2)
+	pax_total = pax_total + real (fld_3)
+
+	!*** Calculate the total percentage the pax lifts that are Available ***!
+
+	pax_avail = 100 * (pax_total / (pax_num*100))
+
+	!*** End of Pax Lift Calculation ***!
+
+
+	!*** Start of Air Bridge Table ***!
+	air_num = 35		! * number of air bridges- used in availability calc* !
+	air_total = 0		! * initial value for  air bridges- used in availability calc* !
+	air_avail = 0		! * initial value for  air bridges- used in availability calc* !
+
+	!*** Air Bridge 302 ***!
+	fld_3 = return_boolean_stats (heathrow,b9541,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 304 ***!
+	fld_3 = return_boolean_stats (heathrow,b9543,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 306 ***!
+	fld_3 = return_boolean_stats (heathrow,b9546,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 307 ***!
+	fld_3 = return_boolean_stats (heathrow,b9547,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 308A ***!
+	fld_3 = return_boolean_stats (heathrow,b9549,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 308B ***!
+	fld_3 = return_boolean_stats (heathrow,b9550,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 309A ***!
+	fld_3 = return_boolean_stats (heathrow,b9551,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 310B ***!
+	fld_3 = return_boolean_stats (heathrow,b9553,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 313A ***!
+	fld_3 = return_boolean_stats (heathrow,b9554,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+
+	!*** Air Bridge 313B ***!
+	fld_3 = return_boolean_stats (heathrow,b9555,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 314A ***!
+	fld_3 = return_boolean_stats (heathrow,b9556,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 314B ***!
+	fld_3 = return_boolean_stats (heathrow,b9557,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 315A ***!
+	fld_3 = return_boolean_stats (heathrow,b9558,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 315B ***!
+	fld_3 = return_boolean_stats (heathrow,b9559,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 316A ***!
+	fld_3 = return_boolean_stats (heathrow,b9560,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 316B ***!
+	fld_3 = return_boolean_stats (heathrow,b9561,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 317A ***!
+	fld_3 = return_boolean_stats (heathrow,b9562,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 317B ***!
+	fld_3 = return_boolean_stats (heathrow,b9563,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 318A ***!
+	fld_3 = return_boolean_stats (heathrow,b9564,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 318B ***!
+	fld_3 = return_boolean_stats (heathrow,b9565,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+
+	!*** Air Bridge 319A ***!
+	fld_3 = return_boolean_stats (heathrow,b9566,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 319B ***!
+	fld_3 = return_boolean_stats (heathrow,b9567,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 320A ***!
+	fld_3 = return_boolean_stats (heathrow,b9568,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 320B ***!
+	fld_3 = return_boolean_stats (heathrow,b9569,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 321A ***!
+	fld_3 = return_boolean_stats (heathrow,b9570,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 321B ***!
+	fld_3 = return_boolean_stats (heathrow,b9571,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 322 ***!
+	fld_3 = return_boolean_stats (heathrow,b9572,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 323A ***!
+	fld_3 = return_boolean_stats (heathrow,b9573,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 324B ***!
+	fld_3 = return_boolean_stats (heathrow,b9576,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 325A ***!
+	fld_3 = return_boolean_stats (heathrow,b9577,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 325B ***!
+	fld_3 = return_boolean_stats (heathrow,b9578,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 326A ***!
+	fld_3 = return_boolean_stats (heathrow,b9579,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 326B ***!
+	fld_3 = return_boolean_stats (heathrow,b9580,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 327A ***!
+	fld_3 = return_boolean_stats (heathrow,b9581,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Air Bridge 327B ***!
+	fld_3 = return_boolean_stats (heathrow,b9582,report_period,percent_time_true, getting_data,realf = fixed2)
+	air_total = air_total + real (fld_3)
+	
+	!*** Calculate the total percentage of air bridges that are Available ***!
+
+	air_avail = 100 * (air_total / (air_num*100))
+	
+	!*** End of Air Bridge Calculation ***!
+
+
+	!** Main Calculations and Output to Database **!
+	realf=fixed2
+
+
+	total_travs 	= trav_avail
+   	total_esc		= esc_avail
+   	total_goods	= goods_avail
+   	total_pax		= pax_avail
+   	total_air		= air_avail
+
+
+
+
+		SET RESET text_file
+		SET FILE text_file = "//Richardw/htmlpage/t3pse_stats.htm"
+		SET NOAPPEND text_file
+		text_file = ""
+		text_file += ""
+		request text_file
+		SET APPEND text_file
+		text_file= "Travelator " + total_travs + "  Escalator " + total_esc + " Goods_Lift " + total_goods  + " Pax_Lift " + total_pax + " Airbridge " + total_air
+		request text_file
+		SET RESET text_file
+		!debug("File update")!
+
+
+
+
+! * text to debug calculations* !
+
+	tfg=blue
+!
+	x=0 y=0 text("TRAVS AVAIL = "+trav_avail)
+	y+=20 text("TOTAL TRAVS = "+total_travs)
+
+	tfg=red
+
+	x=200 y=0 text("ESC AVAIL = "+esc_avail)
+	y+=20 text("TOTAL ESC = "+total_esc)
+
+
+	tfg=black
+
+	x=400 y=0 text("AIR AVAIL = "+air_avail)
+	y+=20 text("TOTAL AIR = "+total_air)
+
+
+	tfg=red
+
+	x=0 y=100 text("Goods AVAIL = "+goods_avail)
+	y+=20 text("TOTAL Goods = "+total_goods)
+
+
+	tfg=black
+
+	x=400 y=100 text("Pax AVAIL = "+pax_avail)
+	y+=20 text("TOTAL Pax = "+total_pax)
+!
+	FG=BLACK
+	REALF=FIXED3
+	FONT=FONT_NORMAL
+	T3PSE_AVAIL_REPORT=getting_data
+end

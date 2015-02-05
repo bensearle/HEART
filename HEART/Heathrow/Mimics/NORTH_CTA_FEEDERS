@@ -1,0 +1,20 @@
+load mimic_libutil
+load ammeter
+load transformer_meter
+load NORTH_CTA_FEEDERS_HELP
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=400
+y = 0 x = -150 ammeter(6,heathrow,"0-400A","SUB 87") clear
+tfg = black
+y = 200  x = - 180 add text ("OCB 11") clear
+y = 0 x =  0 ammeter(4,heathrow,"0-400A","SUB 47")
+tfg = black
+y = 200  x = -40 add text ("OCB 6") clear
+y = 0 x =  150 ammeter(8,heathrow,"0-400A","SUB 37")
+tfg = black
+y = 200  x = 120 add text ("OCB 13") clear
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=aquamarine3,resizable

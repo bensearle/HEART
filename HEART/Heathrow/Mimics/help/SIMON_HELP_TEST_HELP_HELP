@@ -1,0 +1,2 @@
+helptext JEREMY_HELP = "Hello Jeremy, this is how you create help. With the objects created as advanced files the helptext is not automatically created for you. Therefore you use the helptext utility to do so. Feel free to use this as an example.
+P.S. you do not have to use quite as many help's in the file name as I have."

@@ -1,0 +1,72 @@
+helptext TANK_ANALOGUE_DISPLAY_HELP = "TANK ANALOGUE DISPLAY
+
+---------------------
+
+This help page is divided into two sections; Transfer Pump Setting and MV 4 and MV 5 settings.
+
+
+	TRANSFER PUMP SETTINGS
+
+	----------------------
+
+
+This object displays both the start and stop levels of the East tank that the transfer pumps require. If the East tank falls below the start level then the transfer pumps will start so long as the West tank is sufficently above the abort level. If the East tank rises to above the stop level then the transfer pumps will stop. An alarm condition arises if the high or low level float sensors are triggered. The alarm colours are as follows:
+
+
+Flashred Background - IN ALARM (WAITING FOR NOTE)
+
+
+Red Background - IN ALARM (WAITING FOR CLEAR)
+
+
+CONTROL MENU
+
+------------
+
+
+Alter Stop Point Level
+
+----------------------
+
+By selecting this control option, a popup box is presented and the required percentage can be entered. This percentage is written to the PLC and the transfer pump will stop when the water level reaches this level.
+
+
+Alter Start Point Level
+
+-----------------------
+
+By selecting this control option, a popup box is presented and the required percentage can be entered. This percentage is written to the PLC and the transfer pump will start when the water level reaches this level.
+
+
+	MV 4 AND MV 5 SETTINGS
+
+	----------------------
+
+
+This object displays both the open and close levels of the West tank that both MV 4 and MV 5 require. If the West tank falls below the open level then the valves will open. If the West tank rises to above the close level then the valves will close. An alarm condition arises if the high or low level float sensors are triggered. The alarm colours are as follows:
+
+
+Flashred Background - IN ALARM (WAITING FOR NOTE)
+
+
+Red Background - IN ALARM (WAITING FOR CLEAR)
+
+
+CONTROL MENU
+
+------------
+
+
+Alter Close Valve Level
+
+-----------------------
+
+By selecting this control option, a popup box is presented and the required percentage can be entered. This percentage is written to the PLC and the valves will close when the water level reaches this level.
+
+
+Alter Open Valve Level
+
+----------------------
+
+By selecting this control option, a popup box is presented and the required percentage can be entered. This percentage is written to the PLC and the valves will open when the water level reaches this level.
+"

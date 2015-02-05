@@ -1,0 +1,399 @@
+! HEATHROW CMS - MOT GEN (motor/generator set)
+
+loaded by: FEGP_T2, FEGP_T3, FEGP_T4
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type panel_item_row = table (str=string(20))
+
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+ 
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+************************************************************
+* FEGP MOTOR/GENERATOR SET                                 *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object fegp_mot_gen(fg,bg,plc_offset=int,b_offset=int,c_offset=int,
+                    src=source)
+
+! INPUTS!
+VAR plc_a_comms_fail_ip = input  b_db_row_type
+VAR plc_b_comms_fail_ip = input  b_db_row_type
+
+VAR running = input  b_db_row_type
+VAR permit_to_work = input  b_db_row_type
+
+!ALARMS!
+VAR running_discr = input  alarm_row_type
+VAR motor_fault = input  alarm_row_type
+VAR motor_fault_discr = input  alarm_row_type
+VAR hz50_failure = input  alarm_row_type
+VAR hz50_fail_discr = input  alarm_row_type
+VAR alt_failure = input  alarm_row_type
+VAR alt_fail_discr = input  alarm_row_type
+
+!CHARACTER INPUTS!
+VAR tagged_message = input  c_db_row_type
+
+! LOOPBACKS !
+VAR mot_gen_bg = loopback  colour
+VAR mot_gen_fg = loopback  colour
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source plc_a_comms_fail_ip then 
+   begin
+
+   set source plc_a_comms_fail_ip = src
+   set filter plc_a_comms_fail_ip.db_addr = lim_eq
+   set limit plc_a_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset -1)
+   set persist plc_a_comms_fail_ip 
+   request plc_a_comms_fail_ip
+ 
+   set source plc_b_comms_fail_ip = src
+   set filter plc_b_comms_fail_ip.db_addr = lim_eq
+   set limit plc_b_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset)
+   set persist plc_b_comms_fail_ip 
+   request plc_b_comms_fail_ip
+
+   set source permit_to_work = src
+   set filter permit_to_work.db_addr = lim_eq
+   set limit permit_to_work.db_addr = db_address(int(b1) + b_offset -1)
+   set persist permit_to_work 
+   request permit_to_work
+
+   set source running = src
+   set filter running.db_addr = lim_eq
+   set limit running.db_addr = db_address(int(b1) + b_offset)
+   set persist running 
+   request running
+
+   set source motor_fault = src
+   set filter motor_fault.db_addr = lim_eq
+   set limit motor_fault.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist motor_fault 
+   request motor_fault
+
+   set source hz50_failure = src
+   set filter hz50_failure.db_addr = lim_eq
+   set limit hz50_failure.db_addr = db_address(int(b1) + b_offset + 2)
+   set persist hz50_failure 
+   request hz50_failure
+
+   set source alt_failure = src
+   set filter alt_failure.db_addr = lim_eq
+   set limit alt_failure.db_addr = db_address(int(b1) + b_offset + 3)
+   set persist alt_failure 
+   request alt_failure
+
+   set source running_discr = src
+   set filter running_discr.db_addr = lim_eq
+   set limit running_discr.db_addr = db_address(int(b1) + b_offset + 4)
+   set persist running_discr 
+   request running_discr
+   
+   set source motor_fault_discr = src
+   set filter motor_fault_discr.db_addr = lim_eq
+   set limit motor_fault_discr.db_addr = db_address(int(b1) + b_offset + 5)
+   set persist motor_fault_discr 
+   request motor_fault_discr
+   
+   set source hz50_fail_discr = src
+   set filter hz50_fail_discr.db_addr = lim_eq
+   set limit hz50_fail_discr.db_addr = db_address(int(b1) + b_offset + 6)
+   set persist hz50_fail_discr 
+   request hz50_fail_discr
+  
+   set source alt_fail_discr = src
+   set filter alt_fail_discr.db_addr = lim_eq
+   set limit alt_fail_discr.db_addr = db_address(int(b1) + b_offset + 7)
+   set persist alt_fail_discr 
+   request alt_fail_discr
+
+   set source tagged_message = src
+   set filter tagged_message.db_addr = lim_eq
+   set limit tagged_message.db_addr = db_address(int(c1) + c_offset - 1)
+   set persist tagged_message 
+   request tagged_message
+   end
+
+
+! SELECT MOT GEN BG COLOUR ! 
+
+if permit_to_work.b_value then
+  begin
+  mot_gen_bg = orange
+  end
+
+else if tagged_message.c_value <> "" then 
+  begin
+  mot_gen_bg = yellow
+  end
+
+else
+  mot_gen_bg = decoroff     
+
+
+! SELECT MOT GEN FG COLOUR !
+
+if plc_a_comms_fail_ip.b_value and plc_b_comms_fail_ip.b_value then
+  mot_gen_fg = magenta
+
+else if motor_fault.alarm_status       == w_note or 
+        hz50_failure.alarm_status      == w_note or
+        alt_failure.alarm_status       == w_note or
+        running_discr.alarm_status     == w_note or
+        motor_fault_discr.alarm_status == w_note or
+        hz50_fail_discr.alarm_status   == w_note or
+        alt_fail_discr.alarm_status    == w_note then
+   mot_gen_fg = flashred
+
+else if motor_fault.alarm_status       == w_clr or 
+        hz50_failure.alarm_status      == w_clr or
+        alt_failure.alarm_status       == w_clr or
+        running_discr.alarm_status     == w_clr or
+        motor_fault_discr.alarm_status == w_clr or
+        alt_fail_discr.alarm_status    == w_clr then
+   mot_gen_fg = red
+
+else if running.b_value then
+   mot_gen_fg = green
+
+else 
+   mot_gen_fg = white
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w=90 h=70 
+set rect main_menu
+set title main_menu  = "Motor/Generator Set"
+set remove main_menu = "Alter Tagged Message"
+set remove main_menu = "Clear Tagged Message"
+set remove main_menu = "Alter Permit to Work"
+
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+   case main_menu of
+      "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Permit to Work"
+         begin
+         if permit_to_work.b_value then
+            begin
+            set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+            end
+         else if permit_to_work.b_value == off then
+            begin
+            set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+            end
+         end
+
+         default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+
+! TAG MESSAGE BOX !
+
+if selb and tagged_message.c_value <> "" then
+   begin
+   message_text_box(tagged_message.c_value)
+   end
+
+
+! MAIN MENU OPTIONS !
+
+set add main_menu = "Alter Tagged Message"
+set add main_menu = "Clear Tagged Message"
+set add main_menu = "Alter Permit to Work"
+
+
+! DRAW MOT GEN !
+
+bg=mot_gen_bg
+fg=mot_gen_fg
+just = centrecentre
+rect (w=90,h=70,fg=bg)
+clear
+x -= 45 y += 35 add
+y -= 70 add
+x += 90 add line (fg=white) clear 
+y += 1 add
+y += 69 add
+x -= 90 add line (fg=black) clear
+x += 45 y -= 35
+y+=10 add
+rect (w=60,h=20,bg=fg)
+y-=20 add
+rect (w=60,h=20,bg=fg)
+ch=10
+tfg = black
+add text ("Motor")
+y+=20
+add text ("Generator")
+clear
+fg = white
+x-=30 y+=10  add 
+y-=40 add
+x+=60 add
+line
+clear
+y+=20 add
+x-=60 add
+line
+clear
+fg = black
+y+=20 add
+x+=60 add
+y-=40 add
+line
+clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+!scale = 700!
+fegp_mot_gen(19990,19900,50,heathrow)
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=red,bg=decoroff,resizable
+

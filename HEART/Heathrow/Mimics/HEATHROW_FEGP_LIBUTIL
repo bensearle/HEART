@@ -1,0 +1,20 @@
+!***************************************************************************!
+!***   Creation date: 10 August 1994                                     ***!
+!***   Library file for Fixed Electrical Ground Power Mimics             ***!
+!***************************************************************************!
+
+load heathrow_libutil
+
+load fegp_fcb
+load fegp_mot_gen
+load fegp_cubicle
+load monitor
+load temp_sensor
+load isolator
+load oil_switch
+load start_contactor
+object main_object(fg,bg,just)
+begin
+text("fegp library")
+end
+

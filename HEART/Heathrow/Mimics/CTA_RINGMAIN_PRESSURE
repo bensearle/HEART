@@ -1,0 +1,307 @@
+load mimic_libutil
+
+type c_db_row_type =  db_elements(db_addr,c_value)
+
+type e_alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type e_test_row =  db_alarm_config(db_addr,
+			           config_number,
+			           test_value)
+
+type e_test_table =  e_test_row[6]
+
+type panel_item_row = table(str=string(40))
+
+type menu_options_type = enum(
+           tag_message = "Alter Tagged Message",
+         untag_message = "Clear Tagged Message")
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=400,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+! 
+*************************************************************
+* PRESSURE SETPOINT                                         *
+* this object is called by the Top Level variable (mimic)   *
+*************************************************************
+!
+
+object cta_ringmain_pressure(c_offset=int,e_offset=int,src=source)
+
+var pres_alarm              = input  e_alarm_row_type
+var pres_level_ip           = input  e_db_row_type
+var input_setpoint          = input  e_test_table
+var output_setpoint         = output e_test_table
+var tag_message_ip          = input c_db_row_type
+
+var temp_menu               = menu  string
+var high_setpoint_panel     = panel  int
+var low_setpoint_panel      = panel  int
+
+var items_added             = loopback  int
+var sensor_bg               = loopback  colour
+var sensor_fg               = loopback  colour
+var dot_fg                  = loopback  colour
+var temp_sps                = loopback  string
+var box_text                = loopback  string
+var box_width               = loopback  int
+
+var pressure_level_int      = loopback int
+var pressure_level_real     = loopback real
+var tag_message_panel       = panel panel_item_row
+var main_menu               = menu string(30)
+var stand_control_menu      = menu menu_options_type
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source pres_alarm then 
+   begin
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   set source pres_alarm = src
+   set filter pres_alarm.db_addr = lim_eq
+   set limit pres_alarm.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist pres_alarm 
+   request pres_alarm
+
+   set source pres_level_ip = src
+   set filter pres_level_ip.db_addr = lim_eq
+   set limit pres_level_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist pres_level_ip 
+   request pres_level_ip
+
+   set source    input_setpoint = src
+   set filter    input_setpoint.db_addr = lim_eq
+   set limit     input_setpoint.db_addr = db_address(int(e1) + e_offset - 1)
+   set mayexist  input_setpoint
+   set mustexist input_setpoint.db_addr
+   set mustexist input_setpoint.config_number
+   set persist   input_setpoint
+   request       input_setpoint
+
+   end
+
+!*************** TAG MESSAGE PANEL *******************!
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+!****************** MAIN MENU ************************!
+
+
+just = centrecentre
+x=35 y=-40 w=380 h=160 
+set rect main_menu
+set title main_menu="Meter Menu"
+set remove main_menu="Alter Tag Message"
+set remove main_menu="Clear Tag Message"
+set add main_menu="Alter Tag Message"
+set add main_menu="Clear Tag Message"
+
+!********** CASE MENU OPTIONS **************!
+
+if valid main_menu then
+   begin
+
+   case main_menu of
+        "Alter High Alarm Level"
+            begin
+            set title high_setpoint_panel = "Alter High Alarm Level"
+            set unpinned high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter Low Alarm Level"
+            begin
+            set title low_setpoint_panel = "Alter Low Alarm Level"
+            set unpinned low_setpoint_panel
+            request low_setpoint_panel
+            end
+
+        "Alter Tag Message"
+            begin
+            set title tag_message_panel = "Modify Tag Message"
+            set label tag_message_panel.str = "Tag Message :"
+            set unpinned tag_message_panel
+            request tag_message_panel
+            end
+
+        "Clear Tag Message"
+            begin
+            set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+            end
+       
+
+        default
+            begin
+            end
+
+   set invalid main_menu
+   end
+
+!********************** TAG MESSAGE BOX *********************!
+
+x = 0 y = 0
+w = 250 h = 250
+if selb and tag_message_ip.c_value <> "" then
+   begin
+    message_text_box(tag_message_ip.c_value)
+   end
+
+!********************** CONFIGURE MENU **********************!
+
+if valid input_setpoint then
+   temp_sps = "High = "+ int(input_setpoint[1].test_value) +"  Low = " +int(input_setpoint[2].test_value)
+x=35 y=-40
+w=380 h=160
+set rect main_menu
+set title main_menu = temp_sps
+
+if invalid items_added then
+  begin
+  set add main_menu   = "Alter High Alarm Level"
+  set add main_menu   = "Alter Low Alarm Level"
+  items_added = 1
+  end
+
+
+!****************** WRITE INPUT TO SERVER ***********************!
+
+if valid high_setpoint_panel and high_setpoint_panel > input_setpoint[2].test_value then
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[1].test_value = high_setpoint_panel
+   request output_setpoint
+   set invalid high_setpoint_panel
+   end
+
+if valid low_setpoint_panel and low_setpoint_panel < input_setpoint[1].test_value then 
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[2].test_value = low_setpoint_panel
+   request output_setpoint
+   set invalid low_setpoint_panel
+   end
+
+!************* SELECT OBJECT FG COLOUR ***************!
+
+if pres_alarm.alarm_status == w_note then
+   
+   sensor_fg = flashred
+
+else if pres_alarm.alarm_status == w_clr then
+
+   sensor_fg = red
+
+else sensor_fg = blue
+
+!************* SELECT OBJECT BG COLOUR ***************!
+
+if tag_message_ip.c_value <> "" then
+   
+   sensor_bg = yellow
+
+else sensor_bg = black
+
+!*************** DRAW DISPLAY *****************!
+
+just=centrecentre
+
+x = 35 y = -40 rect(w=380,h=160,fg=black) clear
+x = 35 y = -40 rect(w=362,h=142,fg=sensor_bg) clear
+x = 35 y = -40 rect(w=352,h=132,fg=black) clear
+x = 35 y = -40 rect(w=340,h=120,fg=decoroff) clear
+x = -151 y = 35 add x += 372 add y -= 151 add line(fg=decorshadow,lw=2) clear
+x = -151 y = 35 add y -= 151 add x += 372 add line(fg=decoroff,lw=2) clear
+x = -138 y = 23 add x += 346 add y -= 126 add line(fg=decorlight,lw=2) clear
+x = -138 y = 23 add y -= 126 add x += 346 add line(fg=white,lw=2) clear
+
+x = 29 y = -34 text(tfg=grey60,just=centrecentre,font=font_bold,ch=100,realf=fixed2,pres_level_ip.e_value)
+x = 34 y = -41 text(tfg=white,just=centrecentre,font=font_bold,ch=100,realf=fixed2,pres_level_ip.e_value)
+x = 35 y = -40 text(tfg=sensor_fg,just=centrecentre,font=font_bold,ch=100,realf=fixed2,pres_level_ip.e_value)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+var helpstr = help string(30)
+
+begin
+
+scale = 180
+
+x = -25 y = 0 cta_ringmain_pressure(107,1612,heathro3)
+
+x = -1 y = 51 add text(just=centrecentre,tfg=decorlight,ch=25,"CTA Ringmain Pressure (in Bar)")
+x = 0 y = 50 add text(just=centrecentre,tfg=blue,ch=25,"CTA Ringmain Pressure (in Bar)")
+
+scale = 256
+just = centrecentre
+x = 0 y = 0
+w = 300 h = 200
+set text helpstr = "pressure_help"
+
+end
+
+mimic = main_object w=300,h=200,top=2,just=centrecentre,bg=lightblue,resizable

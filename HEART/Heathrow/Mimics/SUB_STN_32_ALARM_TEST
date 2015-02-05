@@ -1,0 +1,40 @@
+load mimic_libutil
+load ocb_alarm_test
+
+object sub_stn_32_alarm_status = int
+begin
+
+if sub_alarm(5000,5370,heathrow) > 0
+or sub_alarm(5000,5360,heathrow) > 0
+or sub_alarm(5000,5260,heathrow) > 0
+or sub_alarm(5000,5240,heathrow) > 0
+or sub_alarm(5000,5220,heathrow) > 0
+or sub_alarm(5000,5350,heathrow) > 0
+or sub_alarm(5000,5340,heathrow) > 0
+or sub_alarm(5000,5330,heathrow) > 0
+or sub_alarm(5000,5320,heathrow) > 0
+or sub_alarm(5000,5200,heathrow) > 0
+or sub_alarm(5000,5180,heathrow) > 0
+or sub_alarm(5000,5160,heathrow) > 0
+or sub_alarm(5000,5310,heathrow) > 0
+or sub_alarm(5000,5300,heathrow) > 0
+or sub_alarm(5000,5290,heathrow) > 0
+or sub_alarm(5000,5280,heathrow) > 0
+or sub_alarm(5000,5140,heathrow) > 0
+or sub_alarm(5000,5120,heathrow) > 0
+or sub_alarm(5000,5100,heathrow) > 0
+then
+  sub_stn_32_alarm_status = 1
+else
+  sub_stn_32_alarm_status = 0
+
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,531 @@
+! HEATHROW CMS - HV 6
+
+loaded by: HIERARCHY
+!
+
+load mimic_libutil
+load intakes
+load ocb
+load ocb_monitored
+load ocb_barcis
+load transformer
+load lv_generator
+load lv_generator_nrc
+load lv_contactor
+load lv_contactor_nrc
+load fuse_sw
+load oil_switch
+load hierarchy
+
+
+object bar_57
+begin
+tfg = white x = 20 y = -55 text ("57",ch =25) clear
+
+X = 50 Y = 25 text("Spare",tfg=white,ch=12,just=centrecentre)
+x = 110 y = 25 text("E/Pier",tfg=white,ch=12,just=centrecentre)
+!x = 110 y = 35 text("Site Supply",tfg=white,ch=12,just=centrecentre)!
+
+lw=2
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   50  y = -25 add y += 30 add line (fg=red) clear
+x =   80  y = -25 add y -= 50 add line (fg=red) clear
+x =  110  y = -25 add y += 30 add line (fg=red) clear
+
+scale = 120
+x =   -100 y = -50 ocb_mont(7000,7930,483,733,heathrow,1,"top")
+x =   -50  y =  0  ocb_mont(7000,7940,484,734,heathrow,2,"btm")
+x =     0  y =  0  ocb_mont(7000,7950,485,735,heathrow,3,"btm")
+x =    50  y =  0  ocb_mont(7000,7960,486,736,heathrow,4,"btm")
+x =    80  y = -50 ocb_mont(7000,7970,487,737,heathrow,5,"top")
+x =   110  y =  0  ocb_mont(7000,8360,579,1370,heathrow,6,"btm")
+
+scale = 100
+
+X =  -50 Y = 45 transformer("LT 1","LOCAL")
+X =  0   Y = 45 transformer("LT 2","LOCAL")
+
+
+end
+
+object bar_56
+begin
+tfg = white x = 45 y = -20 add text ("56",ch =25) clear
+
+lw=2
+scale = 260
+X=100 Y=50  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=129 Y=50  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=95 Y=135  ADD
+x=135  ADD
+line (fg=red,lw=2) clear
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+x =  100  y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x =   -100 y = -50 ocb_barcis(23700,973,1248,heathrow,1,"top")
+x =   -50  y =  0  ocb_barcis(23720,974,1249,heathrow,2,"btm")
+x =     0  y =  0  ocb_barcis(23740,975,1250,heathrow,3,"btm")
+x =    50  y = -50 ocb_barcis(23780,977,1252,heathrow,4,"top")
+x =   100  y =   0 ocb_barcis(23760,976,1251,heathrow,5,"btm")
+
+scale = 100
+
+X =  -50 Y = 45 transformer("BA","FEGP")
+X =  0   Y = 45 transformer("LT 1","LOCAL")
+X =  100 Y = 45 transformer("LT 2","LOCAL")
+
+scale = 140
+x = 140 y = 45 lv_generator_nrc(25212,23806,23802,241,heathrow,"common")
+scale = 120
+x = 115 y = 100 lv_changeover_nrc(23806,242,heathrow)
+
+end
+
+
+object bar_87
+begin
+lw=2
+tfg = white x = 35 y = -20 add text ("87",ch =25) clear
+x = -50 y = -25 add x = 50 add line(lw=4,fg=red) clear
+x =  -30  y = -25 add y -= 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   30  y = -25 add y -= 50 add line (fg=red) clear
+
+scale=120
+x =   -30  y =  -50  ocb_mont(7000,8330,576,1367,heathrow,1,"top")
+x =     0  y =  0    ocb_mont(7000,8340,577,1368,heathrow,2,"btm")
+x =    30  y =  -50  ocb_mont(7000,8350,578,1369,heathrow,3,"top")
+
+scale=100
+X =  0   Y = 45 transformer("LT 1","")
+
+end
+
+
+object bar_36
+begin
+lw=2
+tfg = white x = -100 y = -55 add text ("36",ch =25) clear
+
+
+x = -125 y = -25 add x = 75 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+
+
+scale = 120
+x =   -100 y =  0    ocb_mont(7000,7470,437,687,heathrow,1,"btm")
+x =   -50  y =  0    ocb_mont(7000,7480,438,688,heathrow,2,"btm")
+x =     0  y =  -50  ocb_mont(7000,7490,439,689,heathrow,3,"top")
+x =    50  y =  -50  ocb_mont(7000,7500,440,690,heathrow,4,"top")
+
+
+scale = 100
+
+X =  -100 Y = 45 transformer("LT 1","LOCAL")
+X =  -50   Y = 45 transformer("LT 2","LOCAL")
+
+scale = 260
+
+x = -100 y = 70 text ("Local",ch = 12,just=centrecentre)
+x = -100 y = 85 text ("Tx",ch = 12,just=centrecentre)
+x = -50 y = 70 text ("Pier 3",ch = 12,just=centrecentre)
+x = -50 y = 85 text ("FEGP Tx",ch = 12,just=centrecentre)
+
+end
+
+object bar_37
+begin
+tfg = white x = -100 y = -55 add text ("37",ch =25) clear
+lw=2
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+x =  100  y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x =   -100 y =  0    ocb_mont(7000,7510,441,691,heathrow,1,"btm")
+x =   -50  y =  0    ocb_mont(7000,7520,442,692,heathrow,2,"btm")
+x =     0  y =  -50  ocb_mont(7000,7530,443,693,heathrow,3,"top")
+x =    50  y =  -50  ocb_mont(7000,7540,444,694,heathrow,4,"top")
+x =    100 y =  0    ocb_mont(7000,7550,445,695,heathrow,5,"btm")
+
+scale = 100
+
+X =  -100  Y = 45 transformer("BA","FEGP")
+X =  -50   Y = 45 transformer("LT 2","LOCAL")
+X =   100  Y = 45 transformer("LT 1","LOCAL")
+
+scale = 260
+x = -100 y = 70 text(tfg=white,ch=12,just=centrecentre,"HAL")
+x = -100 y = 85 text(tfg=white,ch=12,just=centrecentre,"FEGP")
+end
+
+object bar_71
+begin
+lw=2
+tfg = white x = 100 y = -5 add text ("71",ch =25) clear
+x = -25 y = 25 add x = 125 add line(lw=4,fg=red) clear
+
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+
+x =  50 y = 25 add y += 30 add line (fg=red) clear
+x =  100 y = 25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25020,40,1310,heathrow,"c")
+
+x = 50 y = 50 hv_fuse(25022,41,1311,heathrow,"o")
+x = 100 y = 50 hv_fuse(25024,42,1312,heathrow,"c")
+
+scale = 100
+X =  100  Y = 95 add transformer("LT 1","LOCAL")
+
+scale=260
+tfg=white ch=12
+x = 10 y = -5 text("1")
+x = 60 y = 45 text("2")
+x = 110 y = 45 text("3")
+end
+
+
+object bar_1
+begin
+lw=2
+tfg = white x = 65 y = -55 add text ("1",ch = 25) clear
+
+
+x = -125 y = -25 add x = 75 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =  -50  y = -25 add y -= 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   50  y = -25 add y += 50 add line (fg=red) clear
+
+
+scale = 120
+x =   -100 y =  -50  ocb_barcis(23428,961,1236,heathrow,1,"top")
+x =   -50  y =  -50  ocb_barcis(23448,962,1237,heathrow,2,"top")
+x =     0  y =    0  ocb_barcis(23468,963,1238,heathrow,3,"btm")
+x =    50  y =    0  ocb_barcis(23488,964,1239,heathrow,4,"btm")
+
+
+scale = 100
+
+X =  0 Y = 45 transformer("LT 2","LOCAL")
+X =  50   Y = 45 transformer("LT 1","LOCAL")
+
+
+end
+
+
+object bar_30
+begin
+lw=2
+tfg = white x = 95 y = -55 add text ("30",ch = 25) clear
+X = -50 Y = 25 text("Spare",tfg=white,ch=12,just=centrecentre)
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 30 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+x =   100 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x =   -100 y =  0    ocb_mont(7000,7300,420,670,heathrow,1,"btm")
+x =   -50  y =  0    ocb_mont(7000,7310,421,671,heathrow,2,"btm")
+x =     0  y =  -50  ocb_mont(7000,7320,422,672,heathrow,3,"top")
+x =    50  y =  -50  ocb_mont(7000,7330,423,673,heathrow,4,"top")
+x =    100  y = 0    ocb_mont(7000,7340,424,674,heathrow,5,"btm")
+
+
+scale = 100
+
+X =  -100 Y = 45 transformer("LT 1","")
+X =  100   Y = 45 transformer("LT","")
+
+scale=260
+tfg =white ch=12
+x = 80 y = 65 text("R/Mail")
+
+end
+
+object bar_31
+begin
+lw=2
+tfg = white x = 100 y = -55 add text ("31",ch = 25) clear
+
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =  -50  y = -25 add y -= 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   50  y = -25 add y += 50 add line (fg=red) clear
+x =   100 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x =   -100 y =  -50  ocb_mont(7000,7350,425,675,heathrow,1,"top")
+x =   -50  y =  -50  ocb_mont(7000,7360,426,676,heathrow,2,"top")
+x =     0  y =    0  ocb_mont(7000,7370,427,677,heathrow,3,"btm")
+x =    50  y =    0  ocb_mont(7000,7380,428,678,heathrow,4,"btm")
+x =    100 y =    0  ocb_mont(7000,7390,429,679,heathrow,5,"btm")
+scale = 100
+
+X =  0 Y = 45 transformer("LT 1","")
+X =  50   Y = 45 transformer("MSCP","")
+X =  100   Y = 45 transformer("","")
+
+scale = 260
+tfg = white ch=12
+x = 44 y = 65 text("5")
+x = 77 y = 65 text("Freight")
+x = 83 y = 77 text("Shed")
+end
+
+object bar_23
+begin
+tfg = white x = 170 y = -25 add text ("23",ch = 25) clear
+lw=2
+
+x = -225 y = -25 add x = 200 add line(lw=4,fg=red) clear
+
+x = -200  y = -25 add y -= 40 add line (fg=red) clear
+x = -150  y = -25 add y -= 40 add line (fg=red) clear
+x =  150  y = -25 add y -= 40 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+x =   100 y = -25 add y -= 50 add line (fg=red) clear
+
+
+scale = 120
+x = -200   y = -50  ocb(4000,4100,202,377,heathrow,3,"top")
+x = -150   y = -50  ocb(4000,4120,204,379,heathrow,5,"top")
+x = -100   y = -25  ocb(4000,4140,205,380,heathrow,6,"sect",angle=90)
+x =  -50   y = -25  ocb(4000,4180,213,388,heathrow,14,"sect",angle=90)
+x =  0  y =   -50   ocb(4000,4200,216,391,heathrow,17,"top")
+x = 50  y =    -50  ocb(4000,4220,217,392,heathrow,18,"top")
+x = 100 y =    -50  ocb(4000,4240,218,393,heathrow,19,"top")
+x =  150   y = -50  ocb(4000,4260,219,394,heathrow,20,"top")
+end
+
+object bar_32
+begin
+tfg = white x = 120 y =  -25 add text ("32",ch =25) clear
+lw=2
+
+x = -175 y = -25 add x = 150 add line(lw=4,fg=red) clear
+
+
+x = -150  y = -25 add y -= 50 add line (fg=red) clear
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 40 add line (fg=red) clear
+x =   50  y = -25 add y -= 40 add line (fg=red) clear
+x =  100  y = -25 add y -= 40 add line (fg=red) clear
+
+
+scale = 120
+
+x =  -150     y =  -50 ocb(5000,5120,251,476,heathrow,2,"top")
+x =   -100    y =  -50 ocb(5000,5140,252,477,heathrow,3,"top")
+x = -50       y = -25  ocb(5000,5180,258,483,heathrow,9,"sect",angle=90)
+x = 0         y = -50  ocb(5000,5220,264,489,heathrow,15,"top")
+x = 50        y = -50  ocb(5000,5240,265,490,heathrow,16,"top")
+x = 100       y = -50  ocb(5000,5260,266,491,heathrow,17,"top")
+
+end
+
+object bar_47
+begin
+tfg = white x = -175 y = -55 add text ("47",ch = 25) clear
+lw=2
+
+x = -175 y = -25 add x = 75 add line(lw=4,fg=red) clear
+
+x = -150  y = -25 add y += 50 add line (fg=red) clear
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+
+
+scale = 120
+x =   -150 y =  0    ocb_barcis(20596,833,1108,heathrow,1,"btm")
+x =   -100 y =  0    ocb_barcis(20520,830,1105,heathrow,2,"btm")
+x =   -50  y =  0    ocb_barcis(20500,829,1104,heathrow,3,"btm")
+x =     0  y =  -50  ocb_barcis(20540,831,1106,heathrow,4,"top")
+x =    50  y =  -50  ocb_barcis(20560,832,1107,heathrow,5,"top")
+
+
+scale = 100
+
+X =  -100 Y = 45 transformer("LT 2","LOCAL")
+X =  -50   Y = 45 transformer("LT 1","")
+ 
+scale = 260
+tfg = white ch=12
+x = -68 y = 65 text("Police")
+x = -128 y = 65 text("Customs")
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+goto_menu
+x = 500 y = 350 command_button(225,heathrow)
+lw=2
+
+Clear
+X=-250 Y=-375  Add 
+Y=-390  Add 
+X=-530 Add  
+Y=25  Add 
+LINE(fg=red,LW=2) ! ss57 to ss23 ! 
+
+Clear
+X=-200 Y=-375  Add 
+Y=-395  Add 
+X=150   Add 
+Y=-370  Add 
+LINE(fg=red,LW=2) ! ss23 to ss32 !
+
+Clear
+X=100 Y=-375  Add 
+Y=-385  Add 
+X=555   Add 
+Y=-55  Add 
+X=220 Add 
+y = 25 Add 
+LINE(fg=red,LW=2) ! ss32 to ss 36 !
+
+Clear
+X=269 Y=25  Add 
+X=426  Add 
+LINE(fg=red,LW=2) ! ss36 to ss37 !
+
+Clear
+X=475 Y=25  Add 
+Y=10  Add 
+X=558 Add 
+Y=200  Add 
+X=100 Add 
+Y=255  Add 
+LINE(fg=red,LW=2) ! ss37 to NI !
+
+Clear
+X=-100 Y=255  Add 
+Y=240  Add 
+X=-5  Add
+y=110 add
+x=-35 add 
+Y=25  Add 
+X=-4 Add 
+LINE(fg=red,LW=2) ! NI to ss56 via ss87 !
+
+Clear
+x=55 y=25 add
+y=10 add
+x=-120 add
+y=25 add
+LINE(fg=red,LW=2) ! NI to ss56 via ss87 !
+
+
+Clear
+X=-351 Y=25  Add 
+X=-269 Add 
+LINE(fg=red,LW=2) ! ss57 to ss56 !
+
+Clear
+X=-500 Y=-125  Add 
+Y=-60  Add 
+X=-350 Add 
+Y=-130  Add 
+X=-300 Add 
+y=-120 add
+LINE(fg=red,LW=2) ! ss47 to ss71 !
+
+Clear
+X=-300 Y=-225  Add 
+Y=-265  Add 
+X=-560  Add 
+Y=215  Add 
+X=-250  Add 
+Y=255  Add 
+LINE(fg=red,LW=2) ! ss47 to NI !
+
+Clear
+X=-350 Y=-225  Add 
+Y=-250  Add 
+X=-220  Add 
+Y=-225  Add 
+LINE(fg=red,LW=2) ! ss47 to ss1 !
+
+Clear
+X=-170 Y=-225  Add 
+Y=-240  Add 
+X=120   Add 
+Y=-225  Add 
+LINE(fg=red,LW=2) ! ss1 to ss30 !
+
+Clear
+X=170 Y=-225  Add 
+Y=-245  Add 
+X=350 Add 
+Y=-225  Add 
+LINE(fg=red,LW=2) ! ss30 to ss31 !
+
+Clear
+X=-150 Y=-375  Add 
+Y=-385  Add 
+X=5  Add 
+Y=-275  Add 
+X=300  Add 
+Y=-225  Add 
+LINE(fg=red,LW=2) ! ss23 to ss31 !
+
+x = -250 y = -300 bar_23
+x = 250 y = -300 bar_32
+x = -350 y = -150 bar_47
+x = -120 y = -150 bar_1
+x = 120 y = -150 bar_30
+x = 400 y = -150 bar_31
+x = -300 y = -100 bar_71
+x = -430 y = 100 bar_57
+x = -170 y = 100 bar_56
+x = 25   y = 100 bar_87
+x = 220 y = 100 bar_36
+x = 425 y = 100 bar_37
+x = 0 y = 300 north_intake
+
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

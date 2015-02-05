@@ -1,0 +1,13 @@
+helptext sub_stn_105_help = "Sub Station 105 Mimic
+
+_______________________________________
+
+Shows position of breakers & earth switches for 
+sub station 105.
+
+Breakers 4,7 & 8 are user controllable.
+
+All the breakers have an associated current
+meter.
+_______________________________________
+"

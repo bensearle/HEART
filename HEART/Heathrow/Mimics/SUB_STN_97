@@ -1,0 +1,59 @@
+load mimic_libutil
+load transformer
+load ocb_monitored
+
+
+!******************* BUSBAR 97 ******************!
+
+object busbar_97
+
+begin
+
+just = centrecentre
+
+scale = 260
+tfg = black x = 75 y = -15 add text ("97",ch = 25) clear
+
+x = -30 y = 0 add x = 190 add line(fg=magenta3,lw=4) clear
+x = 190 y = 0 add x = 380 add line(fg=green4,lw=4) clear
+lw=2
+x = 0 y = 0 add y -= 50 add line (fg=magenta3) clear
+x = 100 y = 0 add y += 50 add line (fg=magenta3) clear
+x = 150 y = 0 add y += 50 add line (fg=magenta3) clear
+x = 300 y = 0 add y += 50 add line (fg=green4) clear
+x = 350 y = 0 add y -= 50 add line (fg=green4) clear
+
+scale = 120
+x = 0 y = -25 ocb_mont(16000,16220,1008,2031,heathrow,1,"top")
+x = 100 y = 25 ocb_mont(16000,16240,1010,2032,heathrow,3,"btm")
+x = 150 y = 25 ocb_mont(16000,16250,1011,2033,heathrow,4,"btm")
+angle = 90 
+x = 200 y = 0 ocb_mont(16000,16260,1012,2034,heathrow,5,"sect")
+angle = 0
+x = 300 y = 25 ocb_mont(16000,16280,1013,2035,heathrow,7,"btm")
+x = 350 y = -25 ocb_mont(16000,16290,1014,2036,heathrow,8,"top")
+
+scale = 100
+x = 100 y = 70 add transformer("T 2","")
+x = 150 y = 70 add transformer("LT 1","")
+x = 300 y = 70 add transformer("LT 2","")
+
+scale = 260
+just = centrecentre
+tfg=black
+ch=12
+x = 100 y = 100 text("Pier 4A")
+x = 0 y = -60 text("53 P1")
+x = 350 y = -60 text("96 P1")
+ 
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -175 y = -25 busbar_97
+
+end
+
+mimic = main_object w=550,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

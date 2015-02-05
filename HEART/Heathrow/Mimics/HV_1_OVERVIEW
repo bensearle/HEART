@@ -1,0 +1,28 @@
+load mimic_libutil
+load hv_1_sub_stations
+
+
+!************** HV 1 ***************!
+
+object hv_1
+begin
+
+just = centrecentre
+
+scale = 220
+x = 0 y = 0 sub_symbol_54
+x = 0 y = 25 sub_symbol_82
+x = 0 y = 50 sub_symbol_98
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just =centrecentre
+x = -20 y = -50 hv_1
+
+end
+
+mimic = main_object w=100,h=125,just=centrecentre,fg=white,bg=black,resizable

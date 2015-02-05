@@ -1,0 +1,200 @@
+! HEATHROW CMS - TITLE PAGE
+
+loaded by: cmd parser
+!
+
+load mimic_libutil
+load hierarchy
+
+object highlight_box(just,wdt=int,hgt=int,box_c=colour,tl_c=colour,br_c=colour)
+
+! An object to draw a highlighted box, origin 0,0.                           !
+! Box size is given by width = wdt & height = hgt                            !
+! box_c is colour of box                                                     ! 
+! tl_c is colour of top and left borders                                     !
+! br_c is colour of bottom and right borders                                 !
+
+begin
+
+rect(w=(wdt),h=(hgt),fg=(box_c))   ! Draw rectangle                          !
+clear                              ! Clear points list                       !
+x -= (wdt/2) y += (hgt/2) add
+y -= (hgt) add
+x += (wdt) add line(lw=1,fg=(tl_c))! Draw top left highlight                 ! 
+clear                              ! Clear points list                       !
+
+y += 1 add
+y += (hgt-1) add
+x -= (wdt-1) add line(lw=1,fg=(br_c)) 
+                                   ! Draw bottom-right highlight             !
+
+clear                              ! Clear points list                       !
+
+end                                ! End of object                           !
+
+!****************************************************************************!
+
+object t_heathrow(just)  ! Object to display Heathrow logo!
+
+begin
+ 
+ fg = grey
+ tfg = grey
+ x -= 10 
+ ch = 50 
+ add text ("Heathrow")
+ x = 50
+ y -= 35
+ ch = 25 add text ("B A A") clear
+
+ x = 32 y = -35 add
+ x += 4 y +=3 add
+ x += 3 y -= 7 add 
+ fill clear             !draw first plane!
+
+ x=57 y = -35 add
+ x += 4 y +=3 add
+ x += 3 y -= 7 add 
+ fill clear             !draw second plane!
+
+ x=98 y = -46 add
+ x += 4 y +=3 add
+ x += 3 y -= 7 add 
+ fill(fg=green3) clear  !draw green plane!
+
+ x=92 y=-35
+ rect(w=15,h=17,fg=green3)
+ x=99 
+ y=-43 add
+ x -=17 y +=18 add
+ x +=9 add
+ fill(fg=white)         !draw flight symbol!
+ 
+end
+
+!****************************************************************************!
+
+object ser_logo(just)   ! Object to display servelec logo !
+
+begin
+
+ x = 15
+ tfg = red
+ ch = 20   font = font_bold 
+ y -= 5 add text ("S e r v e l e c")
+
+ tfg = white
+ ch = 10   font = font_italic
+ y += 15 add text ("Committed To Quality")
+ clear
+
+ fg = white   ! Display white lined pattern!
+ x = -60 
+ y = 24 add   y -= 40 add
+ x -= 2 add   y += 30 add
+ x -= 2 add   y -= 30 add
+ y += 5 add   x -= 2 add
+ y -= 5 add   x -= 2 add
+ y += 20 add  x += 2 add
+ y -= 13 add  x += 2 add
+ line clear
+ 
+ y += 14 
+ x -= 2 add   y += 9 add
+ x -= 2 add   y -= 9 add
+ x -= 2 add   y += 9 add
+ x -= 2 add   y -= 25 add
+ x += 2 add   y -= 5 add
+ y += 8 add   x += 2 add
+ line clear
+ 
+ x -= 4       y += 2 add
+ x += 2 add   y += 10 add
+ line clear
+ 
+ x -= 4 
+ y += 3 add   x -= 2 add
+ y -= 23 add  y += 5 add   
+ x += 2 add   y += 18 add
+ line clear
+ 
+ x -= 6 add
+ y -= 23 add  x += 2 add
+ y += 30 add  x -= 2 add
+ y -= 5 add   x -= 10 add
+ line clear
+ 
+ y -= 2 add   x += 10 add
+ line
+ 
+end
+
+!****************************************************************************!
+
+object banner(just)  ! Object to display title banner!
+begin
+  highlight_box(1025,100,red,black,black)
+  highlight_box(1000,80,gold,white,black)
+  tfg=red
+  ch = 50   font = font_bold 
+  add text ("Control & Monitoring System")
+end
+
+!****************************************************************************!
+
+object ser_ref(just)  ! Object to display servelec reference!
+begin
+  highlight_box(200,50,decoroff,decorshadow,white)
+  ch=20
+  tfg=yellow
+  font=font_bold
+  add text ("SER REF: H33/10")
+end
+
+!****************************************************************************!
+
+object po_no(just)  ! Object to display PO.No!
+begin
+  highlight_box(300,50,decoroff,decorshadow,white)
+  tfg=yellow
+  ch = 20   font = font_bold
+  add text ("P.O.No. HAL/92/102/IJ/1")
+
+end
+
+!****************************************************************************!
+
+object main_object(fg,bg,h,w,tbg,tfg)
+
+begin
+ just=centrecentre
+ goto_menu
+ x=450 y=350
+ command_button(100,heathrow)
+
+ scale=500
+ x = -300
+ y = -10
+ ser_logo
+ 
+ x = 275
+ y = -10
+ scale=300
+ t_heathrow
+
+ scale=250
+ x =0 
+ y = -300
+ banner
+
+ y = 250
+ x = -300
+ ser_ref
+
+ y = 250
+ x = 250
+ po_no
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

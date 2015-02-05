@@ -1,0 +1,803 @@
+
+!******************************************************************************!
+!                       Created by Vijay Kara                                           !
+!                              date 3/2/2009                                                
+!
+
+!   This mimic is for veiwing purposes only and does not allow any    !
+!    live CONTROL or Monitoring                                                     !
+
+!******************************************************************************!
+
+!*******T5 Track Transit System***********!
+
+
+
+load mimic_libutil
+load ocb_monitored
+load hv_switch
+load hv_lib
+load isolator1
+load isolator2
+load isolator3
+load isolator3a
+load isolator4
+load isolator4a
+load isolator5
+load isolator6
+load isolator7
+load isolator8
+load lv_breaker
+load browser
+
+
+
+object busbar_tts
+begin
+
+
+scale=260
+
+!tfg = blue x = -170 y = -570 add text ("Terminal 5 Track Transit System",ch = 40) clear!
+!tfg = blue x = -110 y = -520 add text ("Power Distribution System",ch = 40) clear!
+
+
+!************************Track line Lower***************************************!
+fg=red
+lw=6
+x = -600 y = 300 add x += 130 add line clear !***Track****!
+y = 285 x = -600 add y += 30 add line (lw=1, fg=red) clear  ! **Bottom end track stop ** !
+y = 285 x = -470 add y += 30 add line (lw=1, fg=red) clear
+y = 285 x = -463 add y += 30 add line (lw=1, fg=red) clear
+x = -462 y = 300 add x += 100 add line clear   !***Track****!
+y = 285 x = -362 add y += 30 add line (lw=1, fg=red) clear
+y = 285 x = -355 add y += 30 add line (lw=1, fg=red) clear
+x = -355 y = 300 add x += 100 add line clear    !***Track****!
+y = 285 x = -255 add y += 30 add line (lw=1, fg=red) clear
+y = 285 x = -248 add y += 30 add line (lw=1, fg=red) clear
+x = -248 y = 300 add x += 130 add line clear    !***Track****!
+y = 285 x = -118 add y += 30 add line (lw=1, fg=red) clear
+y = 285 x = -111 add y += 30 add line (lw=1, fg=red) clear
+x = -110 y = 300 add x += 130 add line clear    !***Track****!
+y = 285 x = 19 add y += 30 add line (lw=1, fg=red) clear
+y = 285 x = 26 add y += 30 add line (lw=1, fg=red) clear
+x = 26 y = 300 add x += 100 add line clear    !***Track****!
+y = 285 x = 126 add y += 30 add line (lw=1, fg=red) clear
+y = 285 x = 133 add y += 30 add line (lw=1, fg=red) clear
+x = 133 y = 300 add x += 100 add line clear    !***Track****!
+y = 285 x = 233 add y += 30 add line (lw=1, fg=red) clear
+y = 285 x = 240 add y += 30 add line (lw=1, fg=red) clear
+x = 240 y = 300 add x += 150 add line clear    !***Track****!
+y = 285 x = 390 add y += 30 add line (lw=1, fg=red) clear
+y = 285 x = 397 add y += 30 add line (lw=1, fg=red) clear
+x = 398 y = 300 add x += 75 add line clear    !***Track****!
+y = 285 x = 472 add y += 30 add line (lw=1, fg=red) clear
+y = 285 x = 480 add y += 30 add line (lw=1, fg=red) clear
+x = 480 y = 300 add x += 110 add line clear    !***Track****!
+y = 285 x = 590 add y += 30 add line (lw=1, fg=red) clear
+
+!****************connecting lines on Main Track***************************************!
+lw=3
+y = 23  x = -520  add y += 280 add line clear  !**OCB 9****!
+y = 23  x = -570  add y += 45 add line clear    !**Top Line GSAN**!
+y = 95  x = -570  add y += 30 add line clear    !**Bottom Line GSAN**!
+x =-580 y = 125 add x += 20 add line clear      !******Earth Tag******!
+x =-578 y = 130 add x += 15 add line clear      !******Earth Tag******!
+x =-574 y = 135 add x += 10 add line clear      !******Earth Tag******!
+y = 250  x = -570  add y += 50 add line clear  !**Bottom Line GSAS**!
+y = 185  x = -570  add y += 30 add line clear  !**Top Line GSAS**!
+x =-580 y = 185 add x += 20 add line clear      !******Earth Tag******!
+x =-578 y = 180 add x += 15 add line clear      !******Earth Tag******!
+x =-574 y = 175 add x += 10 add line clear      !******Earth Tag******!
+y = 23  x = -220  add y += 280 add line clear  !**South Guideway line****!
+y = 23  x = -150  add y += 280 add line clear  !**South Guideway line****!
+y = 23  x = -10  add y += 280 add line clear
+y = 23  x = 290  add y += 280 add line clear
+y = 23  x = -70  add y += 40 add line clear   !**Top Line GSMN**!
+y = 100  x = -70  add y += 30 add line clear   !**Bottom Line GSMN**!
+x =-80 y = 128 add x += 20 add line clear      !******Earth Tag******!
+x =-77 y = 133 add x += 15 add line clear      !******Earth Tag******!
+x =-75 y = 138 add x += 10 add line clear      !******Earth Tag******!
+y = 245  x = -70  add y += 55 add line clear  !**Bottom Line GSMS**!
+y = 190  x = -70  add y += 30 add line clear  !**Top Line GSMS**!
+x =-80 y = 190 add x += 20 add line clear      !******Earth Tag******!
+x =-78 y = 185 add x += 15 add line clear      !******Earth Tag******!
+x =-75 y = 180 add x += 10 add line clear      !******Earth Tag******!
+y = 25  x = 350  add y += 40 add line clear   !**TOP Line GSCN**!
+y = 100  x = 350  add y += 30 add line clear   !**Bottom Line GSCN**!
+x =340 y = 128 add x += 20 add line clear      !******Earth Tag******!
+x =342 y = 133 add x += 15 add line clear      !******Earth Tag******!
+x =345 y = 138 add x += 10 add line clear      !******Earth Tag******!
+y = 250  x = 350  add y += 50 add line clear  !**Bottom Line GSCS**!
+y = 183  x = 350  add y += 30 add line clear  !**Top Line GSCS**!
+x =340 y = 185 add x += 20 add line clear      !******Earth Tag******!
+x =342 y = 178 add x += 15 add line clear      !******Earth Tag******!
+x =345 y = 173 add x += 10 add line clear      !******Earth Tag******!
+y = 23  x = 550  add y += 30 add line clear   !**Top Line MGSN 1**!
+y = 90  x = 570  add y += 10 add line clear   !**Bottom Line MGSN 1**!
+y = 90  x = 550  add x += 20 add line clear   !**Bottom Line MGSN 1**!
+x =560 y = 100 add x += 20 add line clear      !******Earth Tag******!
+x =562 y = 105 add x += 15 add line clear      !******Earth Tag******!
+x =565 y = 110 add x += 10 add line clear      !******Earth Tag******!
+
+
+!******************connecting lines at GC11S****************************************!
+lw=3
+x = -495 y = 300 add y += 170 add line clear  !****Left Side*********!
+x =-494 y = 470 add x += 260 add line clear   !***Bottom Line******!
+x = -234 y = 300 add y += 170 add line clear   !****Right Side*********!
+x =-494 y = 402 add x += 70 add line clear 
+x =-410 y = 402 add x += 95 add line clear 
+x =-305 y = 402 add x += 70 add line clear 
+x = -420 y = 300 add y += 75 add line clear
+x = -310 y = 300 add y += 75 add line clear
+x = -370 y = 352 add y += 50 add line clear
+x =-380 y = 350 add x += 20 add line clear      !******Earth Tag******!
+x =-378 y = 345 add x += 15 add line clear      !******Earth Tag******!
+x =-376 y = 340 add x += 10 add line clear      !******Earth Tag******!
+
+
+!******************connecting lines at GC13A****************************************!
+lw=3
+x = -140 y = 300 add y += 75 add line clear  !****Left Side*********!
+x =-140 y = 375 add x += 50 add line clear   !***Bottom Line******!
+x = -90 y = 300 add y += 75 add line clear   !****Right Side*********!
+
+!******************connecting lines at GC21S****************************************!
+lw=3
+x = 0 y = 300 add y += 170 add line clear  !****Left Side*********!
+x =0 y = 470 add x += 260 add line clear   !***OCB Line******!
+x = 260 y = 300 add y += 170 add line clear   !****Right Side*********!
+x =0 y = 402 add x += 60 add line clear 
+x =80 y = 402 add x += 95 add line clear 
+x =190 y = 402 add x += 70 add line clear 
+x = 70 y = 300 add y += 75 add line clear
+x = 185 y = 300 add y += 75 add line clear
+x = 130 y = 352 add y += 50 add line clear
+x =120 y = 350 add x += 20 add line clear    !******Earth Tag******!
+x =123 y = 345 add x += 15 add line clear    !******Earth Tag******!
+x =125 y = 340 add x += 10 add line clear    !******Earth Tag******!
+
+!******************connecting lines at MGS S1,S2 & C1****************************************!
+lw=3
+x = 370 y = 300 add y += 220 add line clear  !****Left Side*********!
+x =370 y = 520 add x += 240 add line clear   !***Bottom Line******!
+x = 420 y = 300 add y += 70 add line clear    !***Top Line***!
+x = 520 y = 300 add y += 70 add line clear    !***Top Line***!
+x = 410 y = 395 add y += 125 add line clear   !****Under OCB Line***!
+x = 510 y = 395 add y += 125 add line clear   !****Under OCB Line***!
+x =610 y = 395 add y += 125 add line clear    !****Under OCB Line***!
+x = 430 y = 395 add x += 25 add line clear  !****Small Connection***!
+x = 454 y = 395 add y += 75 add line clear
+x =445 y = 470 add x += 20 add line clear  !******Earth Tag****!
+x =448 y = 477 add x += 15 add line clear  !******Earth Tag****!
+x =450 y = 482 add x += 10 add line clear  !******Earth Tag****!
+x = 530 y = 395 add x += 25 add line clear  !****Small Connection***!
+x = 555 y = 395 add y += 75 add line clear
+x =545 y = 470 add x += 20 add line clear  !******Earth Tag****!
+x =548 y = 477 add x += 15 add line clear  !******Earth Tag****!
+x =550 y = 482 add x += 10 add line clear  !******Earth Tag****!
+x = 630 y = 395 add x += 25 add line clear  !****Small Connection***!
+x = 655 y = 395 add y += 75 add line clear
+x =645 y = 470 add x += 20 add line clear  !******Earth Tag****!
+x =648 y = 477 add x += 15 add line clear  !******Earth Tag****!
+x =650 y = 482 add x += 10 add line clear  !******Earth Tag****!
+
+!***********************SLM to  SHM Lines***************!
+lw=3
+x = 550 y = 180 add x += 100 add line clear    
+x = 650 y = 165 add y += 30 add line clear   
+x = 620 y = 180 add y += 180 add line clear  
+
+!******************connecting lines at GS115****************************************!
+lw=3
+x = -370 y = 167 add x += 35 add line clear  !****Centre Tap Line*********!
+x =-305 y = 120 add y += 35 add line clear   !***Box Left Line******!
+x = -305 y = 120 add x += 50 add line clear   !****Box Centre Line*********!
+x =-255 y = 120 add y += 50 add line clear   !***Box Right Line******!
+x = -255 y = 167 add x += 35 add line clear  !****OCB Tap Line*********!
+
+x = -305 y = 180 add y += 20 add line clear
+x =-315 y = 198 add x += 20 add line clear   !******Earth Tag******!
+x =-313 y = 204 add x += 15 add line clear   !******Earth Tag******!
+x =-310 y = 210 add x += 10 add line clear   !******Earth Tag******!
+
+!******************connecting lines at GS215****************************************!
+lw=3
+x = 90 y = 163 add x += 35 add line clear  !****Centre Tap Line*********!
+x = 65 y = 118 add y += 33 add line clear   !***Box Left Line******!
+x = 18 y = 118 add x += 48 add line clear   !****Box Centre Line*********!
+x =18 y = 120 add y += 50 add line clear   !***Box Right Line******!
+x = -10 y = 167 add x += 28 add line clear  !****OCB Tap Line*********!
+
+x = 65 y = 175 add y += 23 add line clear
+x = 55 y = 198 add x += 20 add line clear   !******Earth Tag******!
+x = 58 y = 204 add x += 15 add line clear   !******Earth Tag******!
+x = 61 y = 210 add x += 10 add line clear   !******Earth Tag******!
+
+
+!*************Trackline  Upper***************************!
+fg=green4
+x = -600 y = 25 add x += 130 add line(lw=6) clear  !***Track****!
+
+y = 10 x = -600 add y += 30 add line (lw=1, fg=green4) clear  ! **Top end track stop **  !
+y = 10 x = -470 add y += 30 add line (lw=1, fg=green4) clear
+y = 10 x = -463 add y += 30 add line (lw=1, fg=green4) clear
+x = -462 y = 25 add x += 100 add line(lw=5) clear   !***Track****!
+y = 10 x = -362 add y += 30 add line (lw=1, fg=green4) clear
+y = 10 x = -355 add y += 30 add line (lw=1, fg=green4) clear
+x = -355 y = 25 add x += 100 add line(lw=5) clear   !***Track****!
+y = 10 x = -255 add y += 30 add line (lw=1, fg=green4) clear
+y = 10 x = -248 add y += 30 add line (lw=1, fg=green4) clear
+x = -248 y = 25 add x += 130 add line(lw=5) clear   !***Track****!
+y = 10 x = -118 add y += 30 add line (lw=1, fg=green4) clear
+y = 10 x = -111 add y += 30 add line (lw=1, fg=green4) clear
+x = -110 y = 25 add x += 130 add line(lw=5) clear   !***Track****!
+y = 10 x = 19 add y += 30 add line (lw=1, fg=green4) clear
+y = 10 x = 26 add y += 30 add line (lw=1, fg=green4) clear
+x = 26 y = 25 add x += 100 add line(lw=5) clear   !***Track****!
+y = 10 x = 126 add y += 30 add line (lw=1, fg=green4) clear
+y = 10 x = 133 add y += 30 add line (lw=1, fg=green4) clear
+x = 133 y = 25 add x += 100 add line(lw=5) clear   !***Track****!
+y = 10 x = 233 add y += 30 add line (lw=1, fg=green4) clear
+y = 10 x = 240 add y += 30 add line (lw=1, fg=green4) clear
+x = 240 y = 25 add x += 150 add line(lw=5) clear   !***Track****!
+y = 10 x = 390 add y += 30 add line (lw=1, fg=green4) clear
+y = 10 x = 397 add y += 30 add line (lw=1, fg=green4) clear
+x = 397 y = 25 add x += 254 add line(lw=5) clear   !***Track****!
+y = 10 x = 650 add y += 30 add line (lw=1, fg=green4) clear
+
+
+
+!******************connecting lines at GC11N****************************************!
+lw=3
+x = -495 y = -145 add y += 170 add line clear  !****Left Side*********!
+x =-494 y = -145 add x += 260 add line clear   !***Top OCB Line******!
+x = -234 y = -145 add y += 170 add line clear   !****Right Side*********!
+x =-494 y = -75 add x += 60 add line clear 
+x =-410 y = -75 add x += 85 add line clear 
+x =-305 y = -75 add x += 70 add line clear 
+x = -420 y = -50 add y += 75 add line clear
+x = -310 y = -50 add y += 75 add line clear
+x = -370 y = -75 add y += 50 add line clear
+x =-380 y = -25 add x += 20 add line clear   !******Earth Tag******!
+x =-378 y = -20 add x += 15 add line clear   !******Earth Tag******!
+x =-376 y = -15 add x += 10 add line clear   !******Earth Tag******!
+
+!******************connecting lines at GC12A****************************************!
+lw=3
+x = -140 y = -50 add y += 75 add line clear  !****Left Side*********!
+x =-140 y = -50 add x += 50 add line clear   !***OCB  Line******!
+x = -90 y = -50 add y += 75 add line clear   !****Right Side*********!
+
+!******************connecting lines at GC21N****************************************!
+lw=3
+x = 0 y = -145 add y += 170 add line clear  !****Left Side*********!
+x =0 y = -145 add x += 260 add line clear   !***Top OCB Line******!
+x = 260 y = -145 add y += 170 add line clear   !****Right Side*********!
+x =0 y = -75 add x += 60 add line clear 
+x =80 y = -75 add x += 97 add line clear 
+x =190 y = -75 add x += 70 add line clear 
+x = 70 y = -50 add y += 75 add line clear
+x = 185 y = -50 add y += 75 add line clear
+x = 130 y = -75 add y += 50 add line clear
+x =120 y = -25 add x += 20 add line clear    !******Earth Tag******!
+x =123 y = -20 add x += 15 add line clear     !******Earth Tag******!
+x =125 y = -15 add x += 10 add line clear    !******Earth Tag******!
+
+!******************connecting lines at GC22A****************************************!
+lw=3
+x = 370 y = -50 add y += 75 add line clear  !****Left Side*********!
+x =370 y = -50 add x += 130 add line clear   !***OCB Line******!
+x = 500 y = -50 add y += 75 add line clear   !****Right Side*********!
+
+
+!**********************OCB's************************!
+
+scale = 240
+
+x = -375  y = -145 lv_breaker("",0,17170,1942,8822,heathro4,"   ","sect",int,int,int)  
+x = -519  y = 155  lv_breaker("",0,17180,1943,8823,heathro4,"   ","top",int,int,int)
+x = -219  y = 100  lv_breaker("",0,17190,1944,8824,heathro4,"   ","top",int,int,int)
+x = -219  y = 220  lv_breaker("",0,17200,1945,8825,heathro4,"   ","top",int,int,int)
+x = -360  y = 470  lv_breaker("",0,17210,1946,8827,heathro4,"   ","sect",int,int,int)
+x = -115  y = -50  lv_breaker("",0,17220,1947,8827,heathro4,"   ","sect",int,int,int)
+x = -115  y = 375  lv_breaker("",0,17230,1948,8828,heathro4,"   ","sect",int,int,int)
+x = -10   y = 100  lv_breaker("",0,17240,1949,8829,heathro4,"   ","top",int,int,int)
+x = -10   y = 220  lv_breaker("",0,17250,1950,8830,heathro4,"   ","top",int,int,int)
+x = 130   y = -145 lv_breaker("",0,17260,1951,8831,heathro4,"   ","sect",int,int,int)
+x = 130   y = 470  lv_breaker("",0,17270,1952,8832,heathro4,"   ","sect",int,int,int)
+x = 290   y = 155  lv_breaker("",0,17280,1953,8833,heathro4,"   ","top",int,int,int)
+x = 430   y = -50  lv_breaker("",0,17290,1954,8834,heathro4,"   ","sect",int,int,int)
+x = 410   y = 440  lv_breaker("",0,17300,1955,8835,heathro4,"   ","top",int,int,int)
+x = 510   y = 440  lv_breaker("",0,17310,1956,8836,heathro4,"   ","top",int,int,int)
+x = 610   y = 440  lv_breaker("",0,17320,1957,8837,heathro4,"   ","top",int,int,int)
+x = -210  y = -250 lv_breaker("",0,17120,1937,8817,heathro4,"   ","top",int,int,int)
+x = -150  y = -250 lv_breaker("",0,17150,1940,8820,heathro4,"   ","top",int,int,int)
+x = -210  y = -350 lv_breaker("",0,17110,1936,8816,heathro4,"   ","top",int,int,int)
+x = -150  y = -350 lv_breaker("",0,17140,1939,8819,heathro4,"   ","top",int,int,int)
+x = -180  y = -305 lv_breaker("",0,17130,1938,8818,heathro4,"  ","sect",int,int,int)
+x = -420  y = -290 lv_breaker("",0,17100,1935,8815,heathro4,"  ","sect",int,int,int)
+x = 60    y = -290 lv_breaker("",0,17160,1941,8821,heathro4,"  ","sect",int,int,int)
+
+
+!***********************Isolators***************************!
+
+scale=180
+x=-300 y=-290 isolator5(fg=black,b17353,heathro4)  !******At 102*****!
+x=-60  y=-290 isolator6(fg=black,b17354,heathro4)   !******At 202*****!
+x=-420  y=-58 isolator3a(fg=black,b17345,heathro4)    !******At GS 112*****!
+x=-310  y=-58 isolator3(fg=black,b17344,heathro4)    !******At GS 111*****!
+x=70   y=-58 isolator3a(fg=black,b17343,heathro4)     !******At GS 212*****!
+x=185  y=-58 isolator3(fg=black,b17342,heathro4)    !******At GS 211*****!
+x=-420  y=385 isolator4(fg=black,b17346,heathro4)  !******At GS 113*****!
+x=-310  y=385 isolator4a(fg=black,b17347,heathro4)   !******At GS 114*****!
+x=70   y=385 isolator4(fg=black,b17348,heathro4)    !******At GS 213*****!
+x=185  y=385 isolator4a(fg=black,b17349,heathro4)   !******At GS 214*****!
+x=620  y=378 isolator4(fg=black,b17350,heathro4)   !******At MGSS1*****!
+x=520  y=378 isolator4(fg=black,b17351,heathro4)   !******At MGSS2*****!
+x=420  y=377 isolator4(fg=black,b17352,heathro4)   !******At MGSC1*****!
+x=-320  y=167 isolator2(fg=black,b17341,heathro4)   !******At GS 115*****!
+x=80  y=163 isolator1(fg=black,b17340,heathro4)   !******At GS 215*****!
+x=-280 y=-215 isolator6(fg=black,b17362,heathro4) !****GS101*****!
+x=-80 y=-215 isolator5(fg=black,b17363,heathro4)    !****GS201***!
+x=-570 y=80 isolator7(fg=black,b17355,heathro4)  !***GSAN***!
+x=-570 y=230 isolator8(fg=black,b17356,heathro4)  !***GSAS***!
+x=-70 y=80 isolator7(fg=black,b17357,heathro4)  !***GSMN***!
+x=-70 y=230 isolator8(fg=black,b17358,heathro4)  !***GSMS***!
+x=350 y=80 isolator7(fg=black,b17359,heathro4)  !***GSCN***!
+x=350 y=230 isolator8(fg=black,b17360,heathro4)  !***GSCS***!
+x=550 y= 70 isolator7(fg=black,b17361,heathro4)  !***MGSN 1***!
+
+
+!***********************HV Switch***************************!
+
+scale = 140
+
+x= -360 y=-290 hv_switch_obj("RMU",int,17370,1958,8838,heathro4,".","top",int,int,int,int,int,angle=90)   !*****At 
+400A***************!
+x= 0      y=-290 hv_switch_obj("RMU",int,17372,1959,8839,heathro4,".","top",int,int,int,int,int,angle=90)  !*****At 
+600A***************!
+
+!************************************Tx 10 & Tx 11****************************************!
+scale=200
+x= -143 y= -493	transformer_select("TYPE4",8200,15,8332,1755,INT,heathro2,"T5B-TX10","SS155-",10,INT,white,green,scale=100)
+x= -207 y= -493	transformer_select("TYPE4",8200,15,8347,1756,INT,heathro2,"T5B-TX11","SS156-",11,INT,white,green,scale=100)
+
+
+!*********************North Guideway**************************!
+
+fg=green4 lw=5
+x = -210 y = 25 add y -= 265 add line clear !****Left Side Green *********!
+x = -150 y = 25 add y -= 265 add line (lw=5, fg=red) clear  
+x = -210 y = -215 add x -= 53 add line clear !***Left Side Green**!
+x = -95 y = -215 add x -= 55 add line (lw=5, fg=red) clear
+x = -295 y = -182 add y -= 30 add line clear !***Green  at GS 101**!
+x = -65 y = -182 add y -= 30 add line (lw=5, fg=red) clear   !**at GS 201***!
+x = -210 y = -260 add y -= 70 add line clear   !****Green *********!
+x = -150 y = -260 add y -= 70 add line (lw=5, fg=red) clear  
+x = -210 y = -290 add x -= 70 add line clear !***Green**!
+x = -80 y = -290 add x -= 70 add line (lw=5, fg=red) clear
+x = -210 y = -360 add y -= 35 add line clear   !****Green *********!
+x = -150 y = -360 add y -= 35 add line (lw=5, fg=red) clear  
+x = -195 y = -305 add x -= 15 add line clear !***Green**!
+x = -150 y = -305 add x -= 15 add line (lw=5, fg=red) clear
+x = -320 y = -290 add x -= 20 add line clear !***Green**!
+x = -20 y = -290 add x -= 20 add line (lw=5, fg=red) clear
+x = -370 y = -290 add x -= 40 add line clear !***Green**!
+x = 50 y = -290 add x -= 35 add line (lw=5, fg=red) clear
+x = -430 y = -290 add x -= 60 add line clear !***Green**!
+x = 130 y = -290 add x -= 60 add line (lw=5, fg=red) clear
+x = -490 y = -290 add y =-250 add line clear !***Left Side Green**!
+x = 130 y = -290 add  y= -250 add line (lw=5, fg=red) clear
+x = -215 y = -470 add  y += 60 add line (lw=5, fg=red) clear  !**************Diode Line***********!
+x = -200 y = -470 add  y += 60 add line (lw=5, fg=red) clear   !**************Diode Line***********!
+x = -150 y = -470 add  y += 60 add line (lw=5, fg=red) clear   !**************Diode Line***********!
+x = -135 y = -470 add  y += 60 add line (lw=5, fg=red) clear   !**************Diode Line***********!
+
+	!************ 102 KK  BORDER *****************!
+
+
+	x = -420 y = -355 add y += 50 add line (fg=yellow) clear  !******Left Line*****!
+	x = -300 y = -355 add y += 65 add line (fg=yellow) clear  !*******Top Line*****!
+	x = -420 y = -355 add x += 120 add line (fg=yellow) clear  !*****Right Line****!
+	x = -420 y = -355 add y += 15 add line (fg=black) clear  
+	x = -420 y = -325 add y += 15 add line (fg=blue) clear  
+	x = -410 y = -355 add x += 15 add line (fg=black) clear 
+	x = -385 y = -355 add x += 15 add line (fg=blue) clear 
+	x = -360 y = -355 add x += 15 add line (fg=black) clear 
+	x = -335 y = -355 add x += 15 add line (fg=blue) clear
+	x = -310 y = -355 add x += 10 add line (fg=blue) clear  
+	x = -300 y = -355 add y += 15 add line (fg=black) clear  
+	x = -300 y = -325 add y += 15 add line (fg=blue) clear  
+
+	!************ 202 KK  BORDER *****************!
+
+
+	x = -60 y = -355 add y += 65 add line (fg=yellow) clear  !******Left Line*****!
+	x = 60 y = -355 add y += 55 add line (fg=yellow) clear  !*******Top Line*****!
+	x = -60 y = -355 add x += 120 add line (fg=yellow) clear  !*****Right Line****!
+	x = -60 y = -355 add y += 15 add line (fg=black) clear  
+	x = -60 y = -325 add y += 15 add line (fg=blue) clear  
+	x = -50 y = -355 add x += 15 add line (fg=black) clear 
+	x = -25 y = -355 add x += 15 add line (fg=blue) clear 
+	x = 0 y = -355 add x += 15 add line (fg=black) clear 
+	x = 25 y = -355 add x += 15 add line (fg=blue) clear
+	x = 50 y = -355 add x += 10 add line (fg=blue) clear  
+	x = 60 y = -355 add y += 15 add line (fg=black) clear  
+	x = 60 y = -325 add y += 15 add line (fg=blue) clear  
+
+	!************ GS 101  BORDER *****************!
+
+
+	x = -200 y = -240 add y += 52 add line (fg=yellow) clear  !******Vert Line*****!
+	x = -280 y = -190 add x += 80 add line (fg=yellow) clear  !******Horz Line*****!
+	x = -200 y = -230 add y += 15 add line (fg=black) clear  
+	x = -200 y = -210 add y += 15 add line (fg=black) clear  
+	x = -255 y = -190 add x += 15 add line (fg=black) clear  
+	x = -230 y = -190 add x += 15 add line (fg=black) clear 
+	x = -210 y = -190 add x += 10 add line (fg=black) clear 
+	x = -275 y = -190 add x += 15 add line (fg=black) clear 
+	x = -280 y = -220 add y += 30 add line (fg=yellow) clear  !******Vert Line*****!
+	x = -280 y = -210 add y += 15 add line (fg=black) clear 
+	x =-305 y = -183 add x += 20 add line clear   !******Earth Tag******!
+	x =-303 y = -177 add x += 15 add line clear   !******Earth Tag******!
+	x =-300 y = -170 add x += 10 add line clear   !******Earth Tag******!
+
+	!************ GS 202  BORDER *****************!
+
+
+	x = -160 y = -240 add y += 52 add line (fg=yellow) clear  !******Vert Line*****!
+	x = -160 y = -190 add x += 80 add line (fg=yellow) clear  !******Horz Line*****!
+	x = -160 y = -230 add y += 15 add line (fg=black) clear  
+	x = -160 y = -210 add y += 15 add line (fg=black) clear  
+	x = -155 y = -190 add x += 15 add line (fg=black) clear  
+	x = -130 y = -190 add x += 15 add line (fg=black) clear 
+	x = -105 y = -190 add x += 15 add line (fg=black) clear 
+	x = -80 y = -220 add y += 30 add line (fg=yellow) clear  !******Vert Line*****!
+	x = -80 y = -210 add y += 15 add line (fg=black) clear  
+	x =-75 y = -183 add x += 20 add line (fg=red) clear  !******Earth Tag******!
+	x =-73 y = -177 add x += 15 add line (fg=red) clear   !******Earth Tag******!
+	x =-70 y = -170 add x += 10 add line (fg=red) clear   !******Earth Tag******!
+
+
+	!************ North Light Maint.  Border *****************!
+
+	x =380 y = -120 add  x += 290 add line (fg=gold3) clear  !******Top Line*****!
+	x =380 y = 120 add  x += 290 add line (fg=gold3) clear  !******Bottom Line*****!
+	x =380 y = -120 add  y += 243 add line (fg=gold3) clear  !******Left Line*****!
+	x =670 y = -120 add  y += 243 add line (fg=gold3) clear  !******Right Line*****!
+
+	!************ South Light Maint.  Border *****************!
+
+	x =380 y = 135 add  x += 290 add line (fg=gold3) clear  !******Top Line*****!
+	x =380 y = 210 add  x += 290 add line (fg=gold3) clear  !******Bottom Line*****!
+	x =380 y = 135 add  y += 75 add line (fg=gold3) clear  !******Left Line*****!
+	x =670 y = 135 add  y += 75 add line (fg=gold3) clear  !******Right Line*****!
+
+
+	!************ South Heavy Maint.  Border *****************!
+
+	x =490 y = 225 add  x += 180 add line (fg=gold3) clear  !******Top Line*****!
+	x =490 y = 320 add  x += 180 add line (fg=gold3) clear  !******Bottom Line*****!
+	x =490 y = 225 add  y += 97 add line (fg=gold3) clear  !******Left Line*****!
+	x =670 y = 225 add  y += 97 add line (fg=gold3) clear  !******Rightt Line*****!
+
+	!************ MGSS1  Border *****************!
+
+	x =390 y = 340 add  x += 80 add line (fg=gold3) clear  !******Top Line*****!
+	x =390 y = 500 add  x += 80 add line (fg=gold3) clear  !******Bottom Line*****!
+	x =390 y = 340 add  y += 160 add line (fg=gold3) clear  !******Left Line*****!
+	x =470 y = 340 add  y += 160 add line (fg=gold3) clear  !******Rightt Line*****!
+
+	!************ MGSS2  Border *****************!
+
+	x =480 y = 340 add  x += 90 add line (fg=gold3) clear  !******Top Line*****!
+	x =480 y = 500 add  x += 90 add line (fg=gold3) clear  !******Bottom Line*****!
+	x =480 y = 340 add  y += 160 add line (fg=gold3) clear  !******Left Line*****!
+	x =570 y = 340 add  y += 160 add line (fg=gold3) clear  !******Rightt Line*****!
+	
+	!************ MGSC1  Border *****************!
+
+	x =580 y = 340 add  x += 90 add line (fg=gold3) clear  !******Top Line*****!
+	x =580 y = 500 add  x += 90 add line (fg=gold3) clear  !******Bottom Line*****!
+	x =580 y = 340 add  y += 160 add line (fg=gold3) clear  !******Left Line*****!
+	x =670 y = 340 add  y += 160 add line (fg=gold3) clear  !******Rightt Line*****!
+
+
+
+!**********************Text info**********************************!
+
+scale = 260
+tfg=black ch=12
+just=centrecentre
+
+!******Left Hand side text*****!
+x = -360 y = -270 text("400A")
+x = -470 y = -240 text("TO STINGER SN 1, 2 & 3 IN")
+x = -460 y = -225 text("NORTH MAINTENANCE AREA")
+
+!**********Right Hand Side Text**********!
+
+x = 0 y = -270 text("600A")
+x = 150 y = -240 text("TO STINGER SS 1 IN")
+x = 150 y = -225 text("SOUTH MAINTENANCE AREA")
+
+x = -107 y = -90 add  x-= 50 add line (lw=2, fg=black) clear
+x = -100 y = -110 text("+ve, -ve")
+x = -100 y = -100 text("& Earth")
+
+!**********North Guideway  Text**********!
+tfg=blue ch=12
+x = -180 y = -135 text("750V DC")
+x = -180 y = -120 text("between")
+x = -180 y = -105 text("375V DC")
+x = -180 y = -90 text("to Earth")
+tfg=black ch=10
+x = -180 y = -15 text("NORTH")
+x = -180 y = 0 text("GUIDEWAY")
+x = -180 y = 260 text("SOUTH")
+x = -180 y = 280 text("GUIDEWAY")
+
+!*****************Text********************!
+tfg=blue ch=12
+x =590 y = -90 text("NORTH LIGHT")
+x =590 y = -70 text("MAINTENANCE")
+x =550 y = 150 text("SOUTH LIGHT MAINTENANCE")
+x =555 y = 245 text("SOUTH HEAVY")
+x =555 y = 260 text("MAINTENANCE")
+
+!*****************KEY Info**********************!
+tfg=black ch=12
+x =450 y = -450 text("KEY")
+x =435 y = -440 add x += 30 add line (lw=2,fg=black) clear  
+x =510 y = -420 text("KK  -- KEY INTERLOCK")
+x =535 y = -400 text("EI   --  ELECTRICAL INTERTRIP")
+x =515 y = -380 text("GCnn  --  Gap Contactor nn")
+x =515 y = -360 text("GSnn  --  Ground Switch nn")
+x =540 y = -340 text("MGSnn  --  Maint. Ground Switch nn")
+x =430 y = -315 add x += 30 add line (lw=2,fg=red) clear  
+x =460 y = -325 add y += 20 add line (lw=2,fg=red) clear  
+x =465 y = -325 add y += 20 add line (lw=2,fg=red) clear  
+x =465 y = -315 add x += 30 add line (lw=2,fg=red) clear 
+x =550 y = -315 text("Track  Section")
+x =550 y = -300 text("Isolation Gap")
+x =450 y = -270 text("Notes:-")
+x =520 y = -250 text("Switchgear  shown  in normal")
+x =500 y = -230 text("operating  configuration")
+
+tfg=black ch=12
+x =440 y = 490 text("MGSS1")
+x =540 y = 490 text("MGSS2")
+x =640 y = 490 text("MGCS1")
+tfg=blue ch=10
+x =445 y = 380 text("OPEN")
+x =545 y = 380 text("OPEN")
+x =645 y = 380 text("OPEN")
+x =95 y = 390 text("OPEN")
+x =150 y = 390 text("OPEN")
+x =30 y = 390 text("CLOSED")
+x =225 y = 390 text("CLOSED")
+x =45 y = 185 text("OPEN")
+x =40 y = 140 text("CLOSED")
+x =100 y = -60 text("OPEN")
+x =30 y = -60 text("CLOSED")
+x =150 y = -60 text("OPEN")
+x =225 y = -60 text("CLOSED")
+x =-130 y = -180 text("EI")
+x =-230 y = -180 text("EI")
+x =-350 y = -365 text("KK")
+x = 0 y = -365 text("KK")
+x =-460 y = -60 text("CLOSED")
+x =-390 y = -60 text("OPEN")
+x =-340 y = -60 text("OPEN")
+x =-270 y = -60 text("CLOSED")
+x =-280 y = 140 text("CLOSED")
+x =-280 y = 185 text("OPEN")
+x =-460 y = 390 text("CLOSED")
+x =-390 y = 390 text("OPEN")
+x =-340 y = 390 text("OPEN")
+x =-270 y = 390 text("CLOSED")
+
+tfg=black ch=14
+x =430 y = -80 text("GC 22A")
+x =600 y = 70 text("MGSN1")
+x =240 y = 160 text("GC21T")
+x =70 y = 420 text("GS213")
+x =180 y = 420 text("GS214")
+x =130 y = 505 text("GC21S")
+x =155 y = 160 text("GS215")
+x =30 y = 255 text("GC215S")
+x =30 y = 70 text("GC215N")
+x =70 y = -95 text("GS212")
+x =180 y = -95 text("GS211")
+x =130 y = -180 text("GC21N")
+x =-115 y = 410 text("GC13A")
+x =-115 y = 230 text("GSMS")
+x =-115 y = 80 text("GSMN")
+x =-115 y = -75 text("GC12A")
+x =-30 y = -215 text("GS201")
+x =-120 y = -270 text("201")
+x =0 y = -320 text("202")
+x =-120 y = -370 text("302")
+x =-180 y = -275 text("303")
+x =-245 y = -350 text("301")
+x =-245 y = -250 text("101")
+x =-330 y = -215 text("GS101")
+x =-360 y = -320 text("102")
+x =-380 y = -170 text("GC11N")
+x =-420 y = -95 text("GS112")
+x =-310 y = -95 text("GS111")
+x =-185 y = 70 text("GC115N")
+x =-185 y = 190 text("GC115S")
+x =-400 y = 170 text("GS115")
+x =-420 y = 420 text("GS113")
+x =-320 y = 420 text("GS114")
+x =-360 y = 505 text("GC11S")
+x =-490 y = 120 text("GC11T")
+ch=12
+x =-545 y = 80 text("GSAN")
+x =-545 y = 230 text("GSAS")
+x =315 y = 90 text("GSCN")
+x =315 y = 235 text("GSCS")
+
+end
+
+!****************************Heading*******************************!
+
+object Symbol_T5_TTS
+
+Begin
+w = 500 h = 60 x = -100 y =-510 RECT (fg=decoroff)
+x = 150 y = -495 text(tfg=BLUE,ch=25,"T5 TRACK TRANSIT SYSTEM",just=centrecentre) clear
+x = 150 y = -465 text(tfg=BLUE,ch=25,"Power Distribution System",just=centrecentre) clear
+x = 400 y = -510 add x -= 500 add y += 60 add line (fg=white) clear
+x = 400 y = -510 add y += 60 add x -= 500 add line (fg=grey40) clear
+
+
+End
+
+
+!***************Cross Links****************!
+
+object ttslink1(angle)
+begin
+scale=256
+fg=red 
+lw=3
+
+x = -488 y =300 add x += 80 add line clear   !***Track****!
+y = 285 x = -410 add y += 30 add line (lw=2, fg=red) clear
+y = 285 x = -400 add y += 30 add line (lw=2, fg=red) clear
+x = -400 y = 300 add x += 140 add line clear    !***Track****!
+y = 285 x = -260 add y += 30 add line (lw=2, fg=red) clear
+y = 285 x = -250 add y += 30 add line (lw=2, fg=red) clear
+x = -250 y = 300 add x += 75 add line clear    !***Track****!
+
+end
+
+object ttslink2(angle)
+begin
+scale=256
+fg=red 
+lw=3
+
+x = 510 y = 178 add y += 108 add line clear
+x = 500 y = 285 add x += 20 add line clear    
+x = 500 y = 295 add x += 20 add line clear   
+x = 510 y = 295 add y += 52 add line clear
+
+end
+
+object ttsdiodebox1
+begin
+
+scale=256
+fg=red
+lw=3
+
+!*********Draw Box****************!
+
+rect(w=65,h=40,fg=black)
+
+x = 8 y = 20 add x += 15 add line clear 
+x = 23 y = 8 add y += 25 add line clear
+x = 40 y = 8 add y += 25 add line clear
+x = 10 y = 20 add x += 15 add line clear 
+
+end
+
+object ttsdiode1
+begin
+
+scale=256
+fg=red
+lw=3
+
+x=-10 y=-12 add
+  x=10 y=0 add
+  line(lw=3)
+
+x=-10 y=12 add
+  x=10 y=0 add
+  line(lw=3)
+
+end
+
+object ttsdiodebox2
+begin
+
+scale=256
+fg=red
+lw=3
+
+!*********Draw Box****************!
+
+rect(w=65,h=40,fg=black)
+
+x = -15 y = 20 add x += 5 add line clear 
+x = 20 y = 8 add y += 25 add line clear
+x = 42 y = 8 add y += 25 add line clear
+x = 5 y = 20 add x += 15 add line clear 
+x = 43 y = 20 add x += 15 add line clear 
+end
+
+object ttsdiode2
+begin
+
+scale=256
+fg=red
+lw=3
+
+x=-10 y=-12 add
+  x=10 y=0 add
+  line(lw=3)
+
+x=-10 y=12 add
+  x=10 y=0 add
+  line(lw=3)
+
+end
+
+
+!**********************Main Object*************************************!
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+clear
+
+x = -50 y = 50 busbar_tts
+
+x = 5 y = 350 ttslink1(angle=60)        !****************Left Cross*************!
+x = -320 y = 650 ttslink1(angle=120)  !****************Left Cross*************!
+x = 500 y = 350 ttslink1(angle=60)     !****************Right Cross*************!
+x = 170 y = 650 ttslink1(angle=120)    !****************Right Cross*************!
+x =267 y = -258 ttslink2(angle=45)     !****************Angled line at SLM*************!
+
+x = -290 y = -385 ttsdiodebox1
+x = -257 y = -365 ttsdiode1
+x = -220 y = -385 ttsdiodebox2
+x = -190 y = -365 ttsdiode2
+
+x = -25 y = 50 Symbol_t5_tts
+
+
+scale=256
+
+
+!X=-500 Y=-400 main_sub_call(grey80,160,25,"T5 11KV OVERVIEW","",blue4,14,no,"t5_11kv_overview",heathrow,int,"string",int)!
+
+
+x = -570 y = 600 browser(1836,heathro2,1140)
+
+end
+
+
+mimic = main_object w=1400,h=1350,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+
+
+
+

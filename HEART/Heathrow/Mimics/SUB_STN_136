@@ -1,0 +1,105 @@
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+
+Load hv_lib
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object earth_symbol(fg)
+begin
+	just=topleft
+	lw=2
+	x = 0 y = 0 add x +=30 add line clear
+	x-= 25 y += 5 add x +=20 add line clear
+	x-= 15 y += 5 add x +=10 add line clear
+end
+
+object busbar_136
+var helpstr = help string(30)
+var y_default=int
+var x_default=int
+var line_col=colour
+begin
+   	scale=256
+   	just=centrecentre
+   	x=20 y=20  w=600 h=500
+
+	line_col=magenta3
+	just=centrecentre
+	lw=2
+	x = 200 y = 20 add text (tfg=black,"136",ch = 30) clear
+	x = -210 y = 0 add x += 425 add line(lw=4,fg=line_col) clear
+	x = -160 y = 0 add y -= 55 add line (fg=line_col) clear
+	x += 50 y = 0 add y += 55 add line (fg=line_col) clear
+	x += 50  y = 0 add y += 55 add line (fg=line_col) clear
+	x += 10
+	x += 50
+	x += 10  
+	x += 50 y = 0 add y += 55 add line (fg=line_col) clear
+	x += 50 y = 0 add y += 55 add line (fg=line_col) clear
+	x += 50 y = 0 add y -= 55 add line (fg=line_col) clear
+
+! *** Scaling for objects *** !
+	scale=320
+! *** Circuit Breaker objects *** !
+
+	x = -160 y = -25 hv_lib_breaker("eclipse",16000,16340,1310,1920,int,HEATHROW,1,"TOP",int)
+	x += 50 y = 25 hv_lib_breaker("eclipse",16000,16360,1311,1921,int,HEATHROW,2,"BTM",INT)
+	x += 50 y = 25 hv_lib_breaker("eclipse",16000,16380,1312,1922,int,HEATHROW,3,"BTM",INT)
+	x += 10
+	x += 50 y = 0 hv_lib_breaker("eclipse",16000,16400,1313,1923,int,HEATHROW,4,"SECT",int)
+	x += 10
+	x += 50 y = 25 hv_lib_breaker("eclipse",16000,16420,1314,1924,int,HEATHROW,5,"BTM",INT)
+	x += 50 y = 25 hv_lib_breaker("eclipse",16000,16440,1315,1925,int,HEATHROW,6,"BTM",INT)
+	x += 50 y = -25 hv_lib_breaker("eclipse",16000,16460,1316,1926,int,HEATHROW,7,"TOP",int)
+
+
+! *** Scaling for objects *** !
+	scale=256
+! *** Transformer objects *** !
+	x = -110 y = 75  add transformer_lib("Tx 1","")
+	x += 50 y = 75  add transformer_lib("LT","")
+	x += 70
+	x += 50
+	x += 50 y = 75 add transformer_lib("Tx 2","")
+
+! *** Labels *** !
+	scale=256
+	tfg=black ch=12
+	!**panel 1**!
+	x = -160 y = -80 text("SS 121")
+	y = -65 text("P1")
+
+	!**panel 2**!
+	x += 50 y = 110 text("MSCP")
+	y = 125 text("1A")
+	
+	ch=10
+	!**panel 3**!
+	x += 60 y = 110 text  ("D'Albiac Hse")
+	y = 120 text("West Car Park")
+	y = 130 text ("Tx. 3")
+
+	ch=12
+	!**panel 5**!
+	x += 115 y = 65 text("Spare")
+	y = 125 text("")
+
+	!**panel 6**!
+	x += 50 y = 110 text("MSCP")
+	y = 125 text("1A")
+
+	ch=10
+	!**panel 7**!
+	x += 50 y = -90 text("S/S 143  P7")
+	y = -75 text("(Cable has")
+	y = -60 text ("been Diverted)")
+
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=0 Y=-20 busbar_136
+end
+mimic = main_object w=500,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

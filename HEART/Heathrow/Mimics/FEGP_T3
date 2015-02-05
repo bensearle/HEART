@@ -1,0 +1,318 @@
+! HEATHROW CMS - FEGP T3
+
+loaded by: HIERARCHY
+!
+Load BROWSER
+load mimic_libutil
+load heathrow_fegp_libutil
+
+
+object page
+var tmp = onoff
+begin
+
+!*****GENERATOR TO FEEDERS*****!
+Clear
+W=127 H=230 X=-420 Y=-375  BOX(fg=black)!SET 2!
+W=127 H=230 X=-270 BOX(fg=black)!SET 4!
+W=127 H=230 X=-120 BOX(fg=black)!SET 4!
+W=127 H=230 X=75   BOX(fg=black)!SET 1!
+W=127 H=230 X=225  BOX(fg=black)!SET 3!
+W=127 H=230 X=375  BOX(fg=black)!SET 5!
+W=1050 H=170 X=-520 Y=-135  BOX(fg=black)
+
+
+!*****FEEDERS TO CUBICLES*****!
+FG = green4
+lw=2
+X=-370 Y=-120 ADD
+Y=300 ADD
+x= 270 add
+y= -120 add LINE CLEAR
+
+X=-305 Y=-120 ADD
+Y=260 ADD
+x= 205 add 
+y = -120 add LINE CLEAR
+
+X=-245 Y=-120 ADD
+Y=220 ADD
+x= 145 add 
+y = -120 add LINE CLEAR
+
+X=-180 Y=-120 ADD
+Y=180 ADD
+x= 80 add
+y= -120 add LINE CLEAR
+
+X=-120 Y=-120 ADD
+Y=140 ADD
+x= 20 add
+y= -120 add LINE CLEAR
+
+X=-430 Y=0 ADD
+Y=0 ADD line clear
+x= 330 y = -120 add
+y = 340 add
+x = 400 add
+y = 40 add
+x = 330 add
+line clear
+
+X= 400 Y= 40  Add 
+X= 470  Add 
+X=470 Y=130  Add line clear
+
+
+X=415 Y=220  Add 
+X=455 Y=220  Add LINE clear
+
+X=-290 Y=340  Add 
+X=-185  Add 
+X=-145 Y=300  Add line clear
+
+X=283 Y=325  Add 
+Y=130  Add LINE clear
+
+X=-355 Y=-380  Add 
+X=-355 Y=-120  Add LINE clear
+
+
+X=-205 Y=-380  Add 
+X=-205 Y=-120  Add LINE clear
+
+X=-60 Y=-380  Add 
+X=-60 Y=-120  Add LINE clear
+
+X=135 Y=-380  Add 
+X=135 Y=-120  Add LINE clear
+X=285 Y=-380  Add 
+X=285 Y=-120  Add LINE clear
+X=435 Y=-380  Add 
+X=435 Y=-120  Add LINE clear
+
+X=-430 Y=-120  Add 
+X=-430 Y=60  Add LINE clear
+
+X=415 Y=220  Add 
+X=455 Y=220  Add LINE clear
+
+
+LW=4
+X=-460 Y=-120  Add 
+X=490 Y=-120  Add LINE clear
+
+scale=128
+y=-297
+x=-355 start_contactor
+x=-205 start_contactor
+x=-60 start_contactor
+x=135 start_contactor
+x=285 start_contactor
+x=435 start_contactor
+
+
+!********************************MOTOR - GENERATORS*************************!
+scale = 200
+x = -355 y = -250 fegp_mot_gen(13000,13680,656,heathrow)
+x = -205  fegp_mot_gen(13000,13620,652,heathrow)
+x = -60  fegp_mot_gen(13000,13650,654,heathrow)
+x = 135    fegp_mot_gen(13000,13635,653,heathrow)
+x = 285   fegp_mot_gen(13000,13665,655,heathrow)
+x = 435  fegp_mot_gen(13000,13695,657,heathrow)
+
+!************************************FEEDERS********************************!
+scale = 200
+Y=-60
+x = -245 tmp=fegp_fcb(13000,13710,658,heathrow,1)
+x = -180 tmp=fegp_fcb(13000,13720,659,heathrow,2)
+x = -120 tmp=fegp_fcb(13000,13730,660,heathrow,3)
+x =   20 tmp=fegp_fcb(13000,13740,661,heathrow,4)
+x =   80 tmp=fegp_fcb(13000,13750,662,heathrow,5)
+x =  145 tmp=fegp_fcb(13000,13760,663,heathrow,6)
+x = -305 tmp=fegp_fcb(13000,13770,664,heathrow,7)
+x =  205 tmp=fegp_fcb(13000,13780,665,heathrow,8)
+x = -370 tmp=fegp_fcb(13000,13790,666,heathrow,9)
+x =  270 tmp=fegp_fcb(13000,13800,667,heathrow,10)
+x = -430 tmp=fegp_fcb(13000,13810,668,heathrow,11)
+x =  330 tmp=fegp_fcb(13000,13820,669,heathrow,12)
+SCALE=175
+Y= -344
+x = -355 tmp=fegp_fcb(13000,13885,675,heathrow,5)
+x = -205 tmp=fegp_fcb(13000,13865,671,heathrow,1)
+x = -60  tmp=fegp_fcb(13000,13875,673,heathrow,3)
+x = 135  tmp=fegp_fcb(13000,13870,672,heathrow,2)
+x = 285  tmp=fegp_fcb(13000,13880,674,heathrow,4)
+x = 435  tmp=fegp_fcb(13000,13890,676,heathrow,6)
+
+y = -185
+x = -355 tmp=fegp_fcb(13000,13915,695,heathrow,5)
+x = -205 tmp=fegp_fcb(13000,13895,677,heathrow,1)
+x = -60  tmp=fegp_fcb(13000,13905,679,heathrow,3)
+x = 135  tmp=fegp_fcb(13000,13900,678,heathrow,2)
+x = 285  tmp=fegp_fcb(13000,13910,694,heathrow,4)
+x = 435  tmp=fegp_fcb(13000,13920,696,heathrow,6)
+
+!*******************************CUBICLES************************************!
+scale = 140
+x = 470
+y = 100 fegp_cubicle(13000,13490,639,heathrow,"M31")
+y = 140 fegp_cubicle(13000,13500,640,heathrow,"M33")
+y = 180 fegp_cubicle(13000,13510,641,heathrow,"M35")
+x = 330 
+y = 60  fegp_cubicle(13000,13520,642,heathrow,"N74")
+y = 100 fegp_cubicle(13000,13530,643,heathrow,"N76")
+y = 140 fegp_cubicle(13000,13540,644,heathrow,"N78")
+y = 180 fegp_cubicle(13000,13550,645,heathrow,"N80")
+y = 220 fegp_cubicle(13000,13560,646,heathrow,"N82")
+y = 260 fegp_cubicle(13000,13570,647,heathrow,"N84")
+y = 300 fegp_cubicle(13000,13580,648,heathrow,"N86")
+x = 400
+y = 300 fegp_cubicle(13000,13590,649,heathrow,"N88")
+y = 260 fegp_cubicle(13000,13600,650,heathrow,"N90")
+y = 220 fegp_cubicle(13000,13830,670,heathrow,"N92")
+x = 470
+y = 220 fegp_cubicle(13000,13610,651,heathrow,"N92L")
+x = 270
+y = 60 fegp_cubicle(13000,13460,636,heathrow,"L33")
+y = 100 fegp_cubicle(13000,13470,637,heathrow,"L35")
+y = 140 fegp_cubicle(13000,13480,638,heathrow,"L37")
+x = 280
+y = 340 fegp_cubicle(13000,13220,612,heathrow,"R40")
+x = 205 
+y = 60 fegp_cubicle(13000,13410,631,heathrow,"L23")
+y = 100 fegp_cubicle(13000,13420,632,heathrow,"L25")
+y = 140 fegp_cubicle(13000,13430,633,heathrow,"L27")
+y = 180 fegp_cubicle(13000,13440,634,heathrow,"L29")
+x = 145
+y = 60 fegp_cubicle(13000,13170,607,heathrow,"H5")
+y = 100 fegp_cubicle(13000,13160,606,heathrow,"H7")
+y = 140 fegp_cubicle(13000,13150,605,heathrow,"H9")
+x = 80 y = 60 fegp_cubicle(13000,13280,618,heathrow,"K21")
+y = 100 fegp_cubicle(13000,13290,619,heathrow,"K23")
+y = 140 fegp_cubicle(13000,13300,620,heathrow,"K25")
+x = 80 y = 180 fegp_cubicle(13000,13270,617,heathrow,"L26")
+x = 20
+y = 60 fegp_cubicle(13000,13400,630,heathrow,"K19")
+y = 100 fegp_cubicle(13000,13390,629,heathrow,"K17")
+y = 140 fegp_cubicle(13000,13380,628,heathrow,"K16")
+x = -120 
+y = 60 fegp_cubicle(13000,13350,625,heathrow,"J 13")
+y = 100 fegp_cubicle(13000,13360,626,heathrow,"J 15")
+x = -180
+y = 60 fegp_cubicle(13000,13230,613,heathrow,"L18")
+y = 100 fegp_cubicle(13000,13240,614,heathrow,"L20")
+y = 140 fegp_cubicle(13000,13250,615,heathrow,"L22")
+x = -245
+y = 60 fegp_cubicle(13000,13100,600,heathrow,"J 2")
+y = 100 fegp_cubicle(13000,13110,601,heathrow,"J 4")
+y =140 fegp_cubicle(13000,13120,602,heathrow,"J 6")
+y =180 fegp_cubicle(13000,13130,603,heathrow,"J 8")
+x = -305
+y = 60 fegp_cubicle(13000,13310,621,heathrow,"M24")
+y = 100 fegp_cubicle(13000,13320,622,heathrow,"M26")
+y = 140 fegp_cubicle(13000,13330,623,heathrow,"M28")
+x = -370
+y =  60 fegp_cubicle(13000,13340,624,heathrow,"M30")
+y = 100 fegp_cubicle(13000,13180,608,heathrow,"R32")
+y = 140 fegp_cubicle(13000,13190,609,heathrow,"R34")
+x = -120
+y = 140 fegp_cubicle(13000,13370,627,heathrow,"K14") 
+y = 180 fegp_cubicle(13000,13260,616,heathrow,"L24")
+y = 220 fegp_cubicle(13000,13140,604,heathrow,"J 10")
+y = 260 fegp_cubicle(13000,13450,635,heathrow,"L31")
+y = 300 fegp_cubicle(13000,13200,610,heathrow,"R36")
+X = -305
+y = 340 fegp_cubicle(13000,13210,611,heathrow,"R38")
+
+!***********************MONITOR**************************************!
+scale = 150
+X=-50 Y=-250
+!monitor!
+clear
+
+!*************************temp sensor********************************!
+scale = 260
+
+x = -495 y = -385 temp_sensor(13007,heathrow)
+
+!******************************TEXT**********************************!
+JUST = centrecentre
+SCALE = 260
+CH = 15
+TFG = black
+X = -395 Y = -363 ADD TEXT ("SET 5")
+X = -245 ADD TEXT ("SET 1")
+X = -95 ADD TEXT ("SET 3")
+X =  100 ADD TEXT ("SET 2")
+X =  250 ADD TEXT ("SET 4")
+X =  400 ADD TEXT ("SET 6")
+X =  -430 Y = -105 ADD TEXT ("FDR11")
+X =  -371 ADD TEXT ("FDR9")
+X =  -305 ADD TEXT ("FDR7")
+X =  -245 ADD TEXT ("FDR1")
+X =  -180 ADD TEXT ("FDR2")
+X =  -120 ADD TEXT ("FDR3")
+X =   20 ADD TEXT ("FDR4")
+X =   80 ADD TEXT ("FDR5")
+X =  145 ADD TEXT ("FDR6")
+X =  205 ADD TEXT ("FDR8")
+X =  270 ADD TEXT ("FDR10")
+X =  330 ADD TEXT ("FDR12")
+
+X = -50
+Y = -70 ADD TEXT ("400Hz")
+Y = -55 ADD TEXT ("DISTRIBUTION")
+Y = -40 ADD TEXT ("CUBICLE")
+x = -185 y = 190 add text ("PIER 7A")
+x = -181 y = 202 add text ("FEEDER 2")
+x = -215 y = 230 add text ("PIER 6 - FEEDER 1")
+
+x = -250 y = 270 add text ("PIER 5 - INNER FEEDER 7")
+x = -280 y = 310 add text ("PIER 5 - OUTER FEEDER 9")
+x = 14 y = 190 add text ("PIER 7A ")
+x = 16 y = 202 add text ("FEEDER 5")
+x = 45 y = 230 add text ("PIER 6 - FEEDER 6")
+x = 70 y = 270 add text ("PIER 5 - INNER FEEDER  8")
+x = 72 y = 310 add text ("PIER 5 - OUTER FEEDER 10")
+
+
+SCALE=160
+
+!***********************ISOLATORS************************************!
+x=-55 y=140
+isolator(fg=white,b14038,heathrow)
+x=-55 y=180
+isolator(fg=white,b14039,heathrow)
+x=-55 y=220
+isolator(fg=white,b14039,heathrow)
+x=-55 y=260
+isolator(fg=white,b14039,heathrow)
+x=-55 y=300
+isolator(fg=white,b14039,heathrow)
+SCALE=160
+y=-1
+x=-432 oil_switch(fg=white,13840,682,2065,heathrow,"o")
+x=-370 oil_switch(fg=white,13842,683,2066,heathrow,"o")
+x=-305 oil_switch(fg=white,13844,684,2067,heathrow,"o")
+x=-245 oil_switch(fg=white,13846,685,2068,heathrow,"o")
+x=-180 oil_switch(fg=white,13848,686,2069,heathrow,"o")
+x=-120 oil_switch(fg=white,13850,687,2070,heathrow,"o")
+x=20 oil_switch(fg=white,13852,688,2071,heathrow,"o")
+x=80 oil_switch(fg=white,13854,689,2072,heathrow,"o")
+x=145 oil_switch(fg=white,13856,690,2073,heathrow,"o")
+x=205 oil_switch(fg=white,13858,691,2074,heathrow,"o")
+x=270 oil_switch(fg=white,13860,692,2075,heathrow,"o")
+x=330 oil_switch(fg=white,13862,693,2076,heathrow,"o")
+
+end
+
+object main_object(bg,fg,w,h,tbg,tfg)
+begin
+scale = 256
+x = 0 y = 0 clear
+y = -30 page
+x = -570 y = 340 browser(1053,heathrow,1140)
+end
+
+mimic = main_object w=1140,h=860,just=centrecentre,fg=white,bg=aquamarine3,resizable

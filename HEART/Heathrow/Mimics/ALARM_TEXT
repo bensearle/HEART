@@ -1,0 +1,68 @@
+! HEATHROW CMS - alarm_text
+
+loaded by: HV INTAKES
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+
+
+! 
+**************************************************************
+* ALARM POINT OBJECT                                      *
+* this object is called by the Top Level variable (mimic)    *
+**************************************************************
+!
+
+object alarm_point(offset=int,src=source,ident=string)
+
+var alarm_db = input  alarm_row_type
+var sensor_bg = loopback  colour
+var box_width = loopback  int
+var box_text = loopback  string
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source alarm_db then 
+   begin
+
+   set source alarm_db = src
+   set filter alarm_db.db_addr = lim_eq
+   set limit alarm_db.db_addr = db_address(int(b1) + offset - 1)
+   set persist alarm_db 
+   request alarm_db
+
+   end
+
+
+! SELECT BG COLOUR !
+
+if alarm_db.alarm_status == w_note then
+   
+   sensor_bg = flashYELLOW
+
+else if alarm_db.alarm_status == w_clr then
+
+   sensor_bg = red
+
+else sensor_bg = decoroff
+
+x = 0 y = 0 text (tfg=sensor_bg,ch=17,ident)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=200
+alarm_point(1009,heathrow,"INT")
+y +=30
+alarm_point(1011,heathrow,"CO2")
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

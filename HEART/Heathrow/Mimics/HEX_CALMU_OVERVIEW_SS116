@@ -1,0 +1,34 @@
+load hex_calmu_meter
+load hex_calmu_config_ss116
+Load HEX_CALMU_OVERVIEW_SS116_HELP
+Load BROWSER
+
+object main_object(w,h,fg,bg)
+begin
+
+X=-400 Y=-280  CALMU_METER(heathrow,200,2600,E2642,31700,31732,1,116,3503,100,-100)
+X=-108 Y=-280  CALMU_METER(heathrow,200,2650,E2692,31701,31733,2,116,3503,100,-100)
+X=194 Y=-280 CALMU_METER(heathrow,200,2700,E2742,31702,31734,3,116,3503,100,-100)
+
+X=-400 Y=-80  CALMU_METER(heathrow,200,2750,E2792,31703,31735,4,116,3503,100,-100)
+X=-108 Y=-80  CALMU_METER(heathrow,200,2800,E2842,31704,31736,5,116,3503,100,-100)
+X=194 Y=-80  CALMU_METER(heathrow,200,2850,E2892,31705,31737,6,116,3503,100,-100)
+
+X=-400 Y=130  CALMU_METER(heathrow,200,2900,E2942,31706,31738,7,116,3503,100,-100)
+
+
+Y = -290
+x = -300 text ("TRANSFORMER 1",just=bottomcentre)
+x =  0 text ("VENT FAN 1 NORTH",just=bottomcentre)
+x = 300 text ("VENT FAN 3 SOUTH",just=bottomcentre)
+Y = -90
+x = -300 text ("VENT FAN 2 SOUTH",just=bottomcentre)
+x =    0 text ("VENT FAN 2 NORTH",just=bottomcentre)
+x =  300 text ("VENT FAN 1 SOUTH",just=bottomcentre)
+Y = 120 x =  -300 text ("TRANSFORMER 2",just=bottomcentre)
+clear
+x = -570 y = 310 browser(1058,heathrow,1140)
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

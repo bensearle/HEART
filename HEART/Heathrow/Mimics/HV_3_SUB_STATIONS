@@ -1,0 +1,66 @@
+load mimic_libutil
+load ocb_alarm_test
+load sub_stn_73
+
+
+!*************** SUB 73 *****************!
+
+object sub_symbol_73
+
+var call_var = popup  sub_stn_73
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+
+begin
+return_1 = sub_alarm(3000,3560,heathrow)
+return_2 = sub_alarm(3000,3520,heathrow)
+return_3 = sub_alarm(3000,3530,heathrow)
+return_4 = sub_alarm(3000,3540,heathrow)
+return_5 = sub_alarm(3000,3550,heathrow)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 then
+   begin
+     W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+   end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 then
+     begin
+       W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+     end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 then
+     begin
+       W=100 H=25 X=-25 Y=25 RECT(fg=red)
+     end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 73"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 73",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+sub_symbol_73
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

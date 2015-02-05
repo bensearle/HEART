@@ -1,0 +1,220 @@
+LOAD mimic_libutil
+LOAD ARCS_COMMS_HELP
+LOAD arcs_plc_status_file
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+
+TYPE b_bool_type 	= db_elements(b_value)
+
+TYPE alarm_row_type 	= db_elements(old,alarm_status)
+
+TYPE duty_options 	= enum(set_a_duty="A - Duty / B - Standby",set_b_duty = "A - Standby / B - Duty")
+
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  OUTSTATION SYMBOL                                                          !
+!-----------------------------------------------------------------------------!
+
+
+OBJECT arcs_symbol(os_offset=INT,plc_offset=INT,src=Source,header_text=STRING)
+
+VAR plc_window = popup	plc_popup
+VAR helpstr = help string(30)
+
+VAR os_comms = input b_bool_type[2]
+VAR plc_comms = input b_bool_type[2]
+
+VAR a_foreground		= 	colour
+VAR b_foreground		= 	colour
+VAR a_text_foreground		= 	colour
+VAR b_text_foreground		= 	colour
+
+VAR a_status_text		= string(15)
+VAR b_status_text		= string(15)
+
+BEGIN
+
+   set source os_comms = src
+   set filter os_comms.db_addr = lim_ge
+   set limit os_comms.db_addr = db_address(int(b1) + os_offset-1)
+   set priority os_comms.db_addr = 15
+   set persist os_comms
+   set mayexist os_comms
+   request os_comms
+
+   set source plc_comms = src
+   set filter plc_comms.db_addr = lim_ge
+   set limit plc_comms.db_addr = db_address(int(b1) + plc_offset+69)
+   set priority plc_comms.db_addr = 15
+   set persist plc_comms
+   set mayexist plc_comms
+   request plc_comms
+
+!-----------------------------------------------------------------------------!
+!  STATUS INDICATION                                                          !
+!-----------------------------------------------------------------------------!
+
+IF os_comms[1].b_value AND os_comms[2].b_value THEN
+BEGIN
+  a_foreground = MAGENTA
+  a_status_text = "FAILED"
+  a_text_foreground = FLASHRED
+END
+ELSE IF plc_comms[1].b_value THEN
+BEGIN
+  a_foreground = RED
+  a_status_text = "FAILED"
+  a_text_foreground = FLASHRED
+END
+ELSE
+BEGIN
+  a_foreground = GREEN
+  a_status_text = "HEALTHY"
+  a_text_foreground = BLACK
+END
+
+IF os_comms[1].b_value AND os_comms[2].b_value THEN
+BEGIN
+  b_foreground = MAGENTA
+  b_status_text = "FAILED"
+  b_text_foreground = FLASHRED
+END
+ELSE IF plc_comms[2].b_value THEN
+BEGIN
+  b_foreground = RED
+  b_status_text = "FAILED"
+  b_text_foreground = FLASHRED
+END
+ELSE
+BEGIN
+  b_foreground = GREEN
+  b_status_text = "HEALTHY"
+  b_text_foreground = BLACK
+END
+
+!-----------------------------------------------------------------------------!
+!  DRAW MAIN SYMBOL                                                           !
+!-----------------------------------------------------------------------------!
+
+JUST=CENTRECENTRE
+FG = decoroff
+
+H=150 W=250
+RECT
+
+CLEAR
+x += 125 y -= 75 add
+y += 150 add
+x -= 250 add line(fg=grey40) clear
+y -= 1 add
+y -= 149 add
+x += 250 add line (fg = white) clear
+
+X = -105 Y = 60 ADD
+X += 100 ADD
+Y -= 25 ADD
+LINE(FG=WHITE) CLEAR
+ADD
+X -= 100 ADD
+Y += 25 ADD
+LINE(FG=grey40) CLEAR
+
+X = 5 Y = 60 ADD
+X += 100 ADD
+Y -= 25 ADD
+LINE(FG=WHITE) CLEAR
+ADD
+X -= 100 ADD
+Y += 25 ADD
+LINE(FG=grey40) CLEAR
+
+TFG = BLACK
+
+x = -55 y = 0 ADD RECT(FG=a_foreground,H=60,W=100)
+ADD TEXT(CH=17,"PLC A") CLEAR
+Y += 47
+ADD TEXT(CH=17,TFG=a_text_foreground,a_status_text) CLEAR
+
+x = 55 y = 0 ADD RECT(FG=b_foreground,H=60,W=100) 
+ADD TEXT(CH=17,"PLC B") CLEAR
+Y += 47
+ADD TEXT(CH=17,TFG=b_text_foreground,b_status_text) CLEAR
+
+X = 5 Y = 30 ADD
+X += 100 ADD
+Y -= 60 ADD
+LINE(FG=grey40) CLEAR
+ADD
+X -= 100 ADD
+Y += 60 ADD
+LINE(FG=WHITE) CLEAR
+
+X = -105 Y = 30 ADD
+X += 100 ADD
+Y -= 60 ADD
+LINE(FG=grey40) CLEAR
+ADD
+X -= 100 ADD
+Y += 60 ADD
+LINE(FG=WHITE) CLEAR
+
+X = -115 Y = -40 ADD
+X += 230 ADD
+LINE(FG=WHITE) CLEAR
+
+X = -115 Y = -39 ADD
+X += 230 ADD
+LINE(FG=grey40) CLEAR
+
+X = 0 Y = -55 TEXT(CH=17,TFG=BLACK,header_text) CLEAR
+
+SET TITLE plc_window = " "
+
+X = -55 Y = 0
+H = 60 W = 100
+IF SELB THEN 
+  request plc_window(os_offset,plc_offset,"A","PLC A",SRC)
+
+X = 55 Y = 0
+H = 60 W = 100
+IF SELB THEN 
+  request plc_window(os_offset,plc_offset,"B","PLC B",SRC)
+
+
+X=0 Y=0 W=250 H=150
+SET TEXT helpstr = "ARCS_COMMS_HELP"
+
+END
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 210
+arcs_symbol(1,700,heathrow,"OS31 : ARCS NORTH INTAKE")
+
+CLEAR
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=black,resizable

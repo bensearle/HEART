@@ -1,0 +1,508 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!**********Hv Ring 5************!
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load ocb_hand_dressed_2
+load hex_ocb
+load hv_menu_bar
+load nse_ocb_4
+load hex_hv_5_sub_stations
+load hv_5b_sub_stations
+load hv_hierarchy
+
+!************* SUB 62 ***************!
+
+object hv_5_sub_62
+
+var call_var = toplevel  string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "sub_stn_62"
+
+w=450 h=25 x=-25 y=25 rect(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 175 y = 38 text(tfg=white,ch=25,"Sub 62",just=centrecentre) clear
+x = 425 y = 25 add x -= 450 add y += 25 add line (fg=white) clear
+x = 425 y = 25 add y += 25 add x -= 450 add line (fg=grey40) clear
+
+lw=2
+x = 0 y = 25 add y -= 50 add line(fg=blue) clear
+x = 50 y = 25 add y -= 50 add line(fg=blue) clear
+x = 100 y = 25 add y -= 50 add line(fg=blue) clear
+x = 150 y = 25 add y -= 50 add line(fg=blue) clear
+x = 200 y = 25 add y -= 50 add line(fg=blue) clear
+x = 250 y = 25 add y -= 50 add line(fg=blue) clear
+x = 300 y = 25 add y -= 50 add line(fg=blue) clear
+x = 350 y = 25 add y -= 50 add line(fg=blue) clear
+x = 400 y = 25 add y -= 50 add line(fg=blue) clear
+
+
+scale = 120
+x = 0 y = 0 ocb(6000,6100,300,575,heathrow,1,"top")
+x = 50 y = 0 ocb(6000,6120,301,576,heathrow,2,"top")
+x = 100 y = 0 ocb_mont(6000,6160,303,578,heathrow,5,"top")
+x = 150 y = 0 ocb_mont(6000,6180,304,579,heathrow,6,"top")
+x = 200 y = 0 ocb_mont(6000,6200,305,580,heathrow,7,"top")
+x = 250 y = 0 ocb(6000,6220,306,581,heathrow,8,"top")
+x = 300 y = 0 ocb(6000,6260,313,588,heathrow,15,"top")
+!x = 300 y = 0 ocb(6000,6300,315,590,heathrow,18,"top")
+!x = 350 y = 0 ocb(6000,6340,322,597,heathrow,25,"top")
+x = 400 y = 0 ocb_mont(6000,6360,323,598,heathrow,26,"top")
+
+end
+
+
+!************* SUB 85 ***************!
+
+object sub_85
+
+begin
+
+sub_symbol_85
+
+lw=2
+x = 0 y = 25 add y -= 50 add line(fg=blue) clear
+x = 50 y = 25 add y -= 50 add line(fg=blue) clear
+x = 100 y = 25 add y -= 50 add line(fg=blue) clear
+
+scale = 120
+
+x = 0   y = 0 ocb_mont(2000,2290,75,144,heathro2,1,"top")
+x = 50  y = 0 ocb_mont(2000,2310,77,146,heathro2,3,"top")
+x = 100 y = 0 ocb_mont(2000,2330,79,148,heathro2,5,"top")
+
+
+end
+
+
+!************* SUB 60 ***************!
+
+object sub_60
+
+begin
+
+sub_symbol_60
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=blue) clear
+x = 50 y = 25 add y -= 50 add line (fg=blue) clear
+x = 100 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+
+x = 0   y = 0 ocb_mont(2000,2150,61,130,heathro2,2,"top")
+x = 50  y = 0 ocb_mont(2000,2160,62,131,heathro2,3,"top")
+x = 100 y = 0 ocb_mont(2000,2180,64,133,heathro2,5,"top")
+
+end
+
+
+!************* SUB 61 ***************!
+
+object sub_61
+
+begin
+
+sub_symbol_61
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=blue) clear
+x = 50 y = 25 add y -= 50 add line (fg=blue) clear
+x = 100 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+
+x = 0   y = 0 ocb_mont(2500,2750,99,190,heathro2,3,"top")
+x = 50  y = 0 ocb_mont(2500,2760,100,191,heathro2,4,"top")
+x = 100 y = 0 ocb_mont(1500,1730,103,88,heathro2,7,"top")
+
+end
+
+
+!************* SUB 90 ***************!
+
+object sub_90
+
+begin
+
+sub_symbol_90
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25108,274,1386,heathrow,"c")
+scale = 256
+x = 10 y = -5 add text(ch=12,tfg=black,"1")
+
+end
+
+
+!************* SUB 91 ***************!
+
+object sub_91
+
+begin
+
+sub_symbol_91
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(2000,9500,650,330,heathro2,1,"top")
+!x = 0 y = 0 oil_switch(25112,278,1390,heathrow,"c")!
+
+end
+
+
+!************* SUB 93 ***************!
+
+object sub_93
+
+begin
+
+x = -25 sub_symbol_93
+
+lw=2
+x = -25 y = 25 add y -= 50 add line (fg=blue) clear
+x = 25 y = 25 add y -= 50 add line (fg=blue) clear
+x = 75 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = -25 y = 0 oil_switch(25128,281,1410,heathrow,"c")
+x = 25 y = 0 oil_switch(25132,298,1414,heathrow,"c")
+x = 75 y = 0 oil_switch(25133,324,1415,heathrow,"o")
+scale = 256
+x = -15 y = -5 add text(ch=12,tfg=black,"1")
+x = 35 y = -5 add text(ch=12,tfg=black,"7")
+x = 85 y = -5 add text(ch=12,tfg=black,"9")
+
+end
+
+
+!************* SUB 104 ***************!
+
+object sub_104
+
+begin
+
+sub_symbol_104
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=blue) clear
+x = 50 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb_hand(26011,604,2011,heathrow,heathro2,1,"top")
+x = 50 y = 0 ocb_hand(26015,608,2015,heathrow,heathro2,7,"top")
+
+end
+
+
+
+!************* SUB 109 ***************!
+
+object sub_109
+
+begin
+
+sub_symbol_109
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=blue) clear
+x = 50 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(3000,9000,306,258,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(3000,9020,308,260,heathro2,3,"top")
+
+end
+
+!************* SUB 116 ***************!
+
+object sub_116
+
+begin
+
+sub_symbol_116
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=blue) clear
+x = 50 y = 25 add y -= 50 add line (fg=blue) clear
+x = 100 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+
+x = 0   y = 0 hex_ocb(31005,31300,31035,521,2422,heathrow,2,"top","vcb_2")
+x = 50  y = 0 hex_ocb(31005,31540,31035,529,2430,heathrow,10,"top","vcb_10")
+x = 100 y = 0 hex_ocb(31005,31570,31035,530,2431,heathrow,11,"top","vcb_11")
+end
+
+
+!************* SOUTH INTAKE ***************!
+
+object hv_5_south_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathro2
+set selfreplace call_var
+set mimic call_var = "south_intake_2"
+
+
+w=200 h=25 x=-25 y=25 rect(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 75 y = 38 text(tfg=white,ch=25,"South Intake",just=centrecentre) clear
+x = 175 y = 25 add x -= 200 add y += 25 add line (fg=white) clear
+x = 175 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear
+
+lw=2
+!x = 0 y = 25 add y = -75 add line(fg=lightblue3) clear
+x = 50 y = 25 add y = -55 add x -= 50 add line(fg=lightblue3) clear
+x = 100 y = 25 add y = -75 add line(fg=lightblue3) clear
+x = 150 y = 25 add y = -55 add x -= 50 add line(fg=lightblue3) clear
+x = 200 y = 25 add y = -75 add line(fg=lightblue3) clear
+x = 250 y = 25 add y = -55 add x -= 50 add line(fg=lightblue3) clear
+x = 300 y = 25 add y = -75 add line(fg=lightblue3) clear
+x = 350 y = 25 add y = -55 add x -= 50 add line(fg=lightblue3) clear!
+
+scale = 120
+X = 0 Y = 0 NSE_OCB_4(21000,21150,707,1709,1700,HEATHRO2,7,"TOP",112)
+X = 50 Y = 0 NSE_OCB_4(21000,21170,708,1710,1700,HEATHRO2,8,"TOP",114)
+X = 100 Y = 0 NSE_OCB_4(21000,21370,718,1720,1700,HEATHRO2,18,"TOP",136)
+X = 150 Y = 0 NSE_OCB_4(21000,21390,719,1721,1700,HEATHRO2,19,"TOP",138)
+
+end
+
+
+
+!************* WEST INTAKE ***************!
+
+object hv_5_west_intake
+
+var call_var = toplevel  string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "west_intake"
+
+w=200 h=25 x=-25 y=25 rect(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 75 y = 38 text(tfg=white,ch=25,"West Intake",just=centrecentre) clear
+x = 175 y = 25 add x -= 200 add y += 25 add line (fg=white) clear
+x = 175 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear
+
+lw=2
+x = 0 y = 25 add y -= 50 add line(fg=blue) clear
+x = 50 y = 25 add y -= 50 add line(fg=blue) clear
+x = 150 y = 25 add y -= 50 add line(fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb(3000,3100,150,275,heathrow,1,"top")
+x = 50 y = 0 ocb(3000,3200,156,281,heathrow,7,"top")
+x = 150 y = 0 ocb(3000,3460,170,295,heathrow,21,"top")
+
+end
+
+
+object hv_5_object
+begin
+
+goto_menu
+x = 500 y = 270 command_button(224,heathrow)
+clear
+
+
+lw=2
+
+! WI-1 TO SS62-15 !
+x = -350 y = -275 add 
+y -= 45 add
+x += 650 add
+y += 45 add
+line(fg=blue) clear
+
+! WI-7 TO SS116-10 !
+x = -300 y = -275 add 
+y -= 30 add
+x += 235 add
+y += 135 add 
+x += 35 add
+y += 45 add 
+line(fg=blue) clear
+
+! SS62-2 TO SS116-11 !
+x = 50 y = -275 add 
+y -= 30 add
+x -= 100 add
+y += 120 add 
+x += 70 add
+y += 60 add 
+line(fg=blue) clear
+
+! WI-21 TO SS62-18 !
+x = -200 y = -275 add 
+y -= 15 add 
+x += 300 add
+y += 15 add
+line(fg=blue) clear
+
+!SS 109P1 TO SI TX1!
+x = 0 y = 275 add
+y -= 85 add
+x += 550 add
+y -= 540 add
+x -= 200 add
+y += 75 add
+line(fg=blue) clear
+
+! SS62-1 TO SI-19 !
+x = 0 y = -275 add
+y -= 60 add
+x -= 475 add
+y += 510 add
+x += 625 add
+y += 100 add
+line(fg=blue) clear
+
+! SS62-6 TO SS93-1 !
+x = 150 y = -275 add
+y -= 75 add
+x -= 300 add
+y += 375 add
+line(fg=blue) clear
+
+! SS62-7 TO SS91-1 !
+x = 200 y = -275 add
+y += -60 add
+x += 325 add
+y += 345 add
+x -= 250 add
+y += 15 add
+line(fg=blue) clear
+
+! SS62-8 TO SS60-2 !
+x = 250 y = -275 add
+y += -30 add
+x += 225 add
+y += 120 add
+x -= 365 add
+y += 60 add
+line(fg=blue) clear
+
+! SS62-26 TO SS104-5 !
+x = 400 y = -275 add
+y -= 45 add
+x += 100 add
+y += 315 add
+x -= 375 add
+y += 30 add
+line(fg=blue) clear
+
+! SS104-1 TO SS93-5 !
+x = 75 y = 25 add
+y -= 30 add
+x -= 175 add
+y += 30 add
+line(fg=blue) clear
+
+!SS60-3 TO SS61-4!
+X = 160 Y = -125 ADD
+Y-=45 ADD
+X+=185 ADD
+Y+=45 ADD
+LINE(FG=BLUE) CLEAR
+
+!SS60-5 TO SS85-5!
+X = 210 Y = -125 ADD
+Y-=15 ADD
+X-=460 ADD
+Y+=15 ADD
+LINE(FG=BLUE) CLEAR
+
+!SS61-7 TO SI-18!
+X=395 Y=-125 ADD
+Y-=15 ADD
+X+=35 ADD
+Y+=300 ADD
+X-=330 ADD
+Y+=125 ADD
+LINE(FG=BLUE) CLEAR
+
+!SS85-1 TO SI-P8!
+X = -350 Y = -125 ADD
+Y -= 15 ADD
+X -= 50 ADD
+Y += 300 ADD
+X+=450 ADD
+Y+=125 ADD
+LINE(FG=BLUE) CLEAR
+
+!SS85-3 TO SS90-1!
+X=-300 Y =-125 ADD
+Y-=30 ADD
+X-=125 ADD
+Y+=175 ADD
+X+=100 ADD
+Y+=15 ADD
+LINE(FG=BLUE) CLEAR
+
+!SS116-2 TO SS85-3!
+X=-80 Y = -125 MOVE
+Y-=30 ADD
+X+=375 ADD
+Y+=30 ADD
+LINE(FG=BLUE) CLEAR
+
+
+X = 0 Y = -250 HV_5_SUB_62
+
+X = -350 Y = -100 SUB_85
+X = -80 Y = -100 SUB_116
+X = 110 Y = -100 SUB_60
+X = 295 Y = -100 SUB_61
+X = 275 Y = 50 SUB_91
+X = 75 Y = 50 SUB_104
+X = -125 Y = 50 SUB_93
+X = -325 Y = 50 SUB_90
+!X = -350 Y = 250 SUB_109!
+X = -350 Y = -250 HV_5_WEST_INTAKE
+X = 0 Y = 250 HV_5_SOUTH_INTAKE
+
+
+END
+OBJECT MAIN_OBJECT (BG,FG,W,H,TBG,TFG)
+BEGIN
+Y = -25 HV_5_OBJECT
+X = 0 Y = 322 MENU_BAR
+END
+MIMIC = MAIN_OBJECT
+W=1140,H=800,JUST=CENTRECENTRE,FG=LIGHTBLUE3,BG=AQUAMARINE3,RESIZABLE

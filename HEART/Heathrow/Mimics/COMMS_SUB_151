@@ -1,0 +1,181 @@
+!**	HEATHROW\COMMS_SUB_151	**!
+!** 	Modified by ULTRA - 29 Nov 2007	**!
+!** 	Updated panel labels		**!
+!** 					**!
+!** 	Modified by ULTRA - 04 Apr 2007	**!
+!** 	Updated panel designations		**!
+
+Load COMMS_SUB_151_HELP
+load fp_generic_server_request
+load browser
+load modbus_lib
+load lv_breaker
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var helpstr	= help string(30)
+Begin
+   	scale = 256
+   	just = centrecentre
+   	x = 20 y = 20 w =1140 h = 800
+   	set text helpstr = "comms_sub_151_help"
+
+	Clear
+	X=161 Y=-327 Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE
+			!plc_module(plc_off,b_off,	dty_sty,	plc_res,	c_off,	src,	title=string,no_slots=int,slot_config=string,res2=int,res1=int)!
+	X=-521 Y=-340	plc_module(45300,	46321,	45310,	45378,	2674,	heathrow,	"A",4,"9900",int,int)
+	X=-121 Y=-340	plc_module(45300,	46326,	45311,	45381,	2675,	heathrow,	"B",4,"9900",int,int)
+
+! 	not used X=30 Y=-135 Add X=-202 Add line(fg=green4, lw=4) clear
+	X=-30 Y=-110 	node(45300,	43182,	1680,	heathrow,	"42 (RHS)",	yes,angle=0)
+!
+	
+
+			!d_switch(plc_off,	b_off,	c_offset,	src,	text_id,	text_pos,	res3,res2,res1)!
+! 	not used X=-220 Y=-135 	d_switch(45300,	43216,	1692,	heathrow,"sw.5",	2,	int,int,int) clear
+
+
+	X=30 Y=-60 Add X=-202 Add line(fg=green4, lw=4) clear
+!
+			!node(plc_offset	b_offset,	c_offset,	src,	title,	config=yesno,angle)!
+!	not used X=-30 Y=-35	node(45300,	43189,	1679,	heathrow,	"41 (LHS)",	yes,angle=0)
+
+
+	X=-220 Y=-60	d_switch(45300,43214,1691,heathrow,"sw.4",2,int,int,int)
+!
+
+	X=540 Y=15 Add X=-202 Add line(fg=green4, lw=4) clear
+	X=-30 Y=40	node(45300,46309,2659,heathrow,"29",no,angle=0)
+	X=30		node(45300,46310,2660,heathrow,"30",no,angle=0)
+	X=90		node(45300,46311,2661,heathrow,"31",no,angle=0)
+	X=150		node(45300,46312,2662,heathrow,"32",no,angle=0)
+	X=210		node(45300,46313,2663,heathrow,"33",no,angle=0)
+	X=270		node(45300,46314,2664,heathrow,"34",no,angle=0)
+	X=330		!	node(45300,46315,2665,heathrow,"35",no,angle=0)		!
+	X=390		!	node(45300,46316,2666,heathrow,"36",no,angle=0)		!
+	X=450		!	node(45300,46317,2667,heathrow,"37",no,angle=0)		!
+
+	X=-220 Y=15	d_switch(45300,46338,2673,heathrow,"sw.3",2,int,int,int)
+
+
+	X=540 Y=90 Add X=-202 Add line(fg=green4, lw=4) clear
+
+	X=-30 Y=115	node(45300,46299,2649,heathrow,"19",no,angle=0)
+	X=30		node(45300,46300,2650,heathrow,"20",no,angle=0)
+	X=90 		node(45300,46301,2651,heathrow,"21",no,angle=0)
+	X=150 		node(45300,46302,2652,heathrow,"22",no,angle=0)
+	X=210 		node(45300,46303,2653,heathrow,"23",no,angle=0)
+	X=270 		node(45300,46304,2654,heathrow,"24",no,angle=0)
+	X=330 		node(45300,46305,2655,heathrow,"25",no,angle=0)
+	X=390 		node(45300,46306,2656,heathrow,"26",no,angle=0)
+	X=450 		node(45300,46307,2657,heathrow,"27",no,angle=0)
+	X=510 		node(45300,46308,2658,heathrow,"28",no,angle=0)
+
+	X=-220 Y=90 	d_switch(45300,46336,2672,heathrow,"sw.2",2,int,int,int)
+
+	X=540 Y=165 Add X=-202 Add line(fg=green4, lw=4) clear
+
+	X=-30 Y=190 	node(45300,46290,2640,heathrow,"10",no,angle=0)
+	X=30 		node(45300,46291,2641,heathrow,"11",no,angle=0)
+	X=90 		node(45300,46292,2642,heathrow,"12",no,angle=0)
+	X=150 		node(45300,46293,2643,heathrow,"13",no,angle=0)
+	X=210 		node(45300,46294,2644,heathrow,"14",no,angle=0)
+	X=270 		node(45300,46295,2645,heathrow,"15",no,angle=0)
+	X=330 		node(45300,46296,2646,heathrow,"16",no,angle=0)
+	X=390 		node(45300,46297,2647,heathrow,"17",no,angle=0)
+	X=450 		node(45300,46298,2648,heathrow,"18",no,angle=0)
+
+	X=-220 Y=165	d_switch(45300,46334,2671,heathrow,"sw.1",2,int,int,int)
+
+
+	X=540 Y=240 Add X=-202 Add line(fg=green4, lw=4) clear
+
+	X=-30 Y=265 	!	node(45300,46281,2631,source,"1",no,angle=0)		!
+	X=30 		!	node(45300,46282,2632,source,"2",no,angle=0)		!
+	X=90 		!	node(45300,46283,2633,source,"3",no,angle=0)		!
+	X=150 		node(45300,46284,2634,source,"4",no,angle=0)
+	X=210 		node(45300,46285,2635,source,"5",no,angle=0)
+	X=270 		node(45300,46286,2636,source,"6",no,angle=0)
+	X=330 		node(45300,46287,2637,source,"7",no,angle=0)
+	X=390 		node(45300,46288,2638,source,"8",no,angle=0)
+	X=450 		node(45300,46289,2639,source,"9",no,angle=0)
+	!X=510 		node(45300,46290,2640,source,"10",no,angle=0)!
+	
+	X=-220 Y=240 	d_switch(45300,46332,2670,heathrow,"sw.0",2,int,int,int)
+
+
+	just = centrecentre ch=12 tfg=white
+	! * p1 * ! 	x=-30 y=290	!	text("FUTURE")	!
+	! * p2 * ! 	x= 30 y=290	!	text("FUTURE")	!
+	! * p3* ! 	x= 90 y=290	!	text("FUTURE")	!
+	! * p4 * ! 	x=150 y=290	text("SUB 187") Y+=12 TEXT("PANEL2")
+	! * p5 * ! 	x=210 y=290	text("SUB 159") Y+=12 TEXT("PANEL5")
+	! * p6 * ! 	x=270 y=290	text("SUB 189") Y+=12 TEXT("PANEL5")
+	! * p7 * ! 	x=330 y=290	text("LOCAL") Y+=12 TEXT("TX1")
+	! * p8 * ! 	x=390 y=290	text("SUB 168") Y+=12 TEXT("TX9")
+	! * p9 * ! 	x=450 y=290	text("EWC1") Y+=12 TEXT("TX 23")
+	
+	! * p10 * ! 	x=-30 y=215	text("SUB 169") Y+=12 TEXT("TX12")
+	! * p11 * ! 	x= 30 y=215	text("SUB 167") Y+=12 TEXT("TX6")
+	! * p12 * ! 	x= 90 y=215	text("SUB166") Y+=12 TEXT("TX3")
+	! * p13* ! 	x=150  y=215	text("INCOMER") Y+=12 TEXT("1")
+	! * p14 * ! 	x=210 y=215	text("SUB170") Y+=12 TEXT("TX13")
+	! * p15 * ! 	x=270 y=215	text("SUB 171") Y+=12 TEXT("TX16")
+	! * p16 * ! 	x=330 y=215	text("SUB 172") Y+=12 TEXT("PANEL1")
+	! * p17 * ! 	x=390 y=215	text("SUB 155") Y+=12 TEXT("FDR1")
+	! * p18 * ! 	x=450 y=215	text("LHS") Y+=12 TEXT("BUS")
+	
+	! * p19 * ! 	x=-30 y=140	text("RHS") Y+=12 TEXT("BUS")
+	! * p20 * ! 	x= 30 y=140	text("SUB 162") Y+=12 TEXT("PANEL10")
+	! * p21 * ! 	x= 90 y=140	text("SUB 166") Y+=12 TEXT("PANEL1")
+	! * p22* ! 	x=150 y=140	text("SUB175") Y+=12 TEXT("TX36")
+	! * p23 * ! 	x=210 y=140	text("INCOMER") Y+=12 TEXT("2")
+	! * p24 * ! 	x=270 y=140	text("SUB190") Y+=12 TEXT("TX4")
+	! * p25 * ! 	x=330 y=140	text("SUB 155") Y+=12 TEXT("FDR2")
+	! * p26 * ! 	x=390 y=140	text("SUB 170") Y+=12 TEXT("PANEL1")
+	! * p27 * ! 	x=450 y=140	text("SUB 174") Y+=12 TEXT("TX33")
+	! * p28 * ! 	x=510 y=140	text("EWC2") Y+=12 TEXT("TX25")
+
+	! * p29 * ! 	x=-30 y=65	text("SUB 164") Y+=12 TEXT("PANEL12")
+	! * p30 * ! 	x= 30 y=65	text("SUB 173") Y+=12 TEXT("TX28")
+	! * p31 * ! 	x= 90 y=65	text("SUB 172") Y+=12 TEXT("TX21")
+	! * p32* ! 	x=150 y=65	text("SUB 159") Y+=12 TEXT("PANEL7")
+	! * p33 * ! 	x=210 y=65	text("LOCAL") Y+=12 TEXT("TX2")
+	! * p34 * ! 	x=270 y=65	text("FUTURE")
+	! * p35 * ! 	x=330 y=65	!	text("FUTURE")	!
+	! * p36 * ! 	x=390 y=65	!	text("FUTURE")	!
+	! * p37 * ! 	x=450 y=65	!	text("FUTURE")	!
+	
+
+
+	x = -570 y = 310 browser(2680,heathrow,1140) clear
+
+	X=-66 Y=-305 Add X-=5 Add y+=30 add x-=388 add Y=153 Add X=-238 Add line(lw=3,fg=yellow4) clear
+	X=-66 Y=-340 Add X-=10 Add y+=60 add x-=388 add Y=228 Add X=-238 Add line(lw=3,fg=yellow4) clear
+	X=-26 Y=-340 Add X-=10 Add y+=80 add x-=388 add Y=77 Add X=-238 Add line(lw=3,fg=yellow4) clear
+	X=-26 Y=-305 Add X-=5 Add y+=50 add x-=388 add Y=2 Add X=-238 Add line(lw=3,fg=yellow4) clear
+	!X=14 Y=-340 Add X-=10 Add y+=100 add x-=388 add Y=-72 Add X=-238 Add line(lw=3,fg=yellow4) clear
+	X=14 Y=-305 Add X-=5 Add y+=70 add x-=388 add Y=-147 Add X=-238 Add line(lw=3,fg=yellow4) clear!
+
+	X=-466 Y=-305 Add X-=5 Add Y=177 Add X=-238 Add line(lw=3,fg=green4) clear
+	X=-466 Y=-340 Add X-=10 Add Y=253 Add X=-238 Add line(lw=3,fg=green4) clear
+	X=-426 Y=-340 Add X-=10 Add Y=102 Add X=-238 Add line(lw=3,fg=green4) clear
+	X=-426 Y=-305 Add X-=5 Add Y=27 Add X=-238 Add line(lw=3,fg=green4) clear
+	!X=-386 Y=-340 Add X-=10 Add Y=-47 Add X=-238 Add line(lw=3,fg=green4) clear
+	X=-386 Y=-305 Add X-=5 Add Y=-122 Add X=-238 Add line(lw=3,fg=green4) clear!
+	
+	x=418 y=-383 main_title(300,30,"Modbus Communications - Outstation 95",black)
+	X=418 Y=-351 main_sub_call(grey80,300,30,"SUB 151","",blue4,18,yes,"sub_stn_151",heathrow,int,"string",int)
+
+
+
+	ch=14 tfg=black
+	X=-80 Y=270 text("(LHS)")
+	X=-80 Y=195 text("(LHS)")
+
+	X=-80 Y=120 text("(RHS)")
+	X=-80 Y=45 text("(RHS)")
+
+X=273 Y=-20 CH=14 text("Note: Node Numbers correspond to Circuit Breaker Panels")
+end
+mimic = MAIN_OBJECT W=1140, H=800, JUST=CENTRECENTRE, FG=WHITE, bg=lightgrey, RESIZABLE

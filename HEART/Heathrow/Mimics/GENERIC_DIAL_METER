@@ -1,0 +1,480 @@
+
+load fp_generic_server_request
+
+
+type e_test_row =  db_alarm_config(db_addr,config_number,test_value)
+type e_test_table =  e_test_row[6]
+
+
+!**** CIRCLE OBJECT ****!
+
+object pointer_circle
+begin
+	fg=black
+	just=centrecentre
+	x = 0 y = 0 disk(w=15,h=15) clear
+	x = 0 y = 0 circle(w=11,h=11,fg=white) clear
+end
+
+!**** POINTER OBJECT ****!
+
+object pointer (fg,angle)
+begin  
+clear
+X = 0 Y = 0 add
+x+=10 y = 0 add
+x = 0 y+=90 add
+x=-10 y = 0 add fill line clear
+fg=decorlight lw=2
+x=4 y = 0 add
+x=0 y+=75 add line clear 
+end
+
+
+!**** DANGER AREA OBJECT ****!
+
+object danger_area(fg,danger_angle=int,danger_angle2=int)
+begin
+	just=centrecentre
+	x = 0 y = 0 pie(sa=danger_angle,aa=danger_angle2,w=200,h=200) clear
+end
+
+!**** BOX OUTLINE OBJECT ****!
+
+object outline(ident=string,b_width=int,b_height=int,mask_width=int,orient=string,object_in_use=yesno)
+var ident_tfg=colour
+begin
+	if object_in_use==yes then 
+		ident_tfg=black 
+	else ident_tfg=grey60
+
+	just=centrecentre
+	if orient=="top" then
+	begin
+		x = 0 y = 0 box(w=b_width,h=b_height,fg=decorshadow,lw=1) clear
+		x = 1 y = 1 box(w=b_width,h=b_height,fg=decorlight,lw=1) clear
+		x = 0 y = -b_height/2 rect(w=mask_width,h=10,fg=decoroff) clear
+		x = 1 y = -b_height/2+1 text(font=font_bold,ch=18!12!,tfg=decorlight,ident) clear
+		x = 0 y = -b_height/2 text(font=font_bold,ch=18,tfg=ident_tfg,ident) clear
+	end
+	else
+	begin
+		x = 0 y = 0 box(w=b_width,h=b_height,fg=decorshadow,lw=1) clear
+		x = 1 y = 1 box(w=b_width,h=b_height,fg=decorlight,lw=1) clear
+		x = 0 y = b_height/2 rect(w=mask_width,h=10,fg=decoroff) clear
+		x = 1 y = b_height/2+1 text(font=font_bold,ch=18!12!,tfg=decorlight,ident) clear
+		x = 0 y = b_height/2 text(font=font_bold,ch=18!12!,tfg=ident_tfg,ident) clear
+	end
+end
+
+
+!**** DIAL METER OBJECT ****!
+
+object dial_meter(meter_address1=int,meter_address2=int,src=source,range_lo=int,range_hi=int,danger_lo=int,danger_hi=int,metname=string,units_str=string,dial_in_use=yesno,dial_type=int)
+var met_units_alarm = input alarm_row_type
+var met_units_ip = input e_db_row_type
+var met_units_alarm2 = input alarm_row_type
+var met_units_ip2 = input e_db_row_type
+
+var input_setpoint = input e_test_table
+var output_setpoint = output e_test_table
+var high_setpoint_panel = panel int
+var low_setpoint_panel = panel int
+var input_setpoint2 = input e_test_table
+var output_setpoint2 = output e_test_table
+var hi_setpoint_panel2 = panel int
+var lo_setpoint_panel2 = panel int
+
+
+var main_menu = menu string(30)
+var items_added = loopback int
+var temp_sps = loopback string
+var temp_sps2 = loopback string
+
+var meter_fg = loopback colour
+var meter_fg2 = loopback colour
+var meter_bg = loopback colour
+var text_tfg =colour
+var rect_fg=colour
+var point_a = loopback string
+var point_b = loopback string
+var point_c = loopback string
+var point_d = loopback string
+var point_e = loopback string
+var point_i = loopback int
+
+var scaler = real
+var digital_reading = real
+var pointer_angle = int
+var scaler2 = real
+var digital_reading2 = real
+var pointer_angle2 = int
+var danger_angle = int
+var danger_angle2 = int
+var range = real
+begin
+
+!**** REQUEST ENGINEERINGS FROM SCOPE ****!
+
+if invalid get source met_units_alarm then 
+
+   begin
+	set source met_units_alarm = src
+	set filter met_units_alarm.db_addr = lim_eq
+	set limit met_units_alarm.db_addr = db_address(int(e1) + meter_address1 - 1)
+	set persist met_units_alarm 
+	request met_units_alarm
+
+	set source met_units_ip = src
+	set filter met_units_ip.db_addr = lim_eq
+	set limit met_units_ip.db_addr = db_address(int(e1) + meter_address1 - 1)
+	set persist met_units_ip 
+	request met_units_ip
+
+	set source input_setpoint = src
+	set filter input_setpoint.db_addr = lim_eq
+	set limit input_setpoint.db_addr = db_address(int(e1) + meter_address1 - 1)
+	set mayexist  input_setpoint
+	set mustexist input_setpoint.db_addr
+	set mustexist input_setpoint.config_number
+	set persist input_setpoint
+	request input_setpoint
+
+	if meter_address2<>int and meter_address2<>0 then
+	begin
+	set source met_units_alarm2 = src
+	set filter met_units_alarm2.db_addr = lim_eq
+	set limit met_units_alarm2.db_addr = db_address(int(e1) + meter_address2 - 1)
+	set persist met_units_alarm2 
+	request met_units_alarm2
+
+	set source met_units_ip2 = src
+	set filter met_units_ip2.db_addr = lim_eq
+	set limit met_units_ip2.db_addr = db_address(int(e1) + meter_address2 - 1)
+	set persist met_units_ip2 
+	request met_units_ip2
+
+	set source input_setpoint2 = src
+	set filter input_setpoint2.db_addr = lim_eq
+	set limit input_setpoint2.db_addr = db_address(int(e1) + meter_address2 - 1)
+	set mayexist  input_setpoint2
+	set mustexist input_setpoint2.db_addr
+	set mustexist input_setpoint2.config_number
+	set persist input_setpoint2
+	request input_setpoint2
+	end
+   end
+
+
+!**** MAIN MENU ****!
+		just = centrecentre
+		w=250 h=250 
+	if meter_address1<>int and meter_address1<>0 and dial_in_use==yes and dial_type<>2then
+	begin
+		set rect main_menu
+		set title main_menu="Meter Menu"
+	end
+
+!**** CONTROL MENU ****!
+if valid main_menu then
+   begin
+
+   case main_menu of
+        "Alter High Alarm Level","Alter Hi Alarm Level (Orange)"
+            begin
+            set title high_setpoint_panel = "Alter High Alarm Level"
+            set unpinned high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter Low Alarm Level","Alter Low Alarm Level (Orange)"
+            begin
+            set title low_setpoint_panel = "Alter Low Alarm Level (Orange)"
+            set unpinned low_setpoint_panel
+            request low_setpoint_panel
+            end
+
+        "Alter High Alarm Level (Pink)"
+            begin
+            	set title hi_setpoint_panel2 = "Alter High Alarm Level (Pink)"
+            	set unpinned hi_setpoint_panel2
+            	request hi_setpoint_panel2
+            end
+
+        "Alter Low Alarm Level (Pink)"
+            begin
+            set title lo_setpoint_panel2 = "Alter Low Alarm Level (Pink)"
+            set unpinned lo_setpoint_panel2
+            request lo_setpoint_panel2
+            end
+       
+        default
+            begin
+            end
+
+   set invalid main_menu
+   end
+
+
+!**** CONFIGURE MENU ****!
+
+	if invalid items_added then
+	begin
+	  if meter_address2<>int and meter_address2<>0 then
+		begin
+			set add main_menu   =  "Alter Hi Alarm Level (Orange)"
+			set add main_menu   =  "Alter Low Alarm Level (Orange)"
+
+	  		set add main_menu   =  "Alter High Alarm Level (Pink)"
+	  		set add main_menu   = "Alter Low Alarm Level (Pink)"
+		end
+	  else
+		begin
+		  	set add main_menu   =  "Alter High Alarm Level"
+		  	set add main_menu   = "Alter Low Alarm Level"
+		end
+	  items_added = 1
+	end
+
+
+!**** WRITE INPUT TO SERVER ****!
+
+if valid high_setpoint_panel and high_setpoint_panel > input_setpoint[2].test_value then
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[1].test_value = high_setpoint_panel
+   request output_setpoint
+   set invalid high_setpoint_panel
+   end
+
+if valid low_setpoint_panel and low_setpoint_panel < input_setpoint[1].test_value then 
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[2].test_value = low_setpoint_panel
+   request output_setpoint
+   set invalid low_setpoint_panel
+   end
+if valid hi_setpoint_panel2 and hi_setpoint_panel2 > input_setpoint2[2].test_value then
+   begin
+   set source output_setpoint2 = src
+   set old_value output_setpoint2 = input_setpoint2
+   set value output_setpoint2 = input_setpoint2
+   set value output_setpoint2[1].test_value = hi_setpoint_panel2
+   request output_setpoint2
+   set invalid hi_setpoint_panel2
+   end
+
+if valid lo_setpoint_panel2 and lo_setpoint_panel2 < input_setpoint2[1].test_value then 
+   begin
+   set source output_setpoint2 = src
+   set old_value output_setpoint2 = input_setpoint2
+   set value output_setpoint2 = input_setpoint2
+   set value output_setpoint2[2].test_value = lo_setpoint_panel2
+   request output_setpoint2
+   set invalid lo_setpoint_panel2
+   end
+
+!**** SELECT BAR COLOUR ****!
+	if dial_in_use==no then
+	 	meter_fg = decoroff
+	else if met_units_alarm.alarm_status == w_note then
+		meter_fg = flashred    
+	else if met_units_alarm.alarm_status == w_clr then
+		meter_fg = flashred
+	else meter_fg = orange
+
+	if dial_in_use==no then
+	 	meter_fg2 = decoroff
+	else if met_units_alarm2.alarm_status == w_note then
+		meter_fg2 = flashred    
+	else if met_units_alarm2.alarm_status == w_clr then
+		meter_fg2 = flashred
+	else meter_fg2 = pink
+
+!**** SELECT METER BG ****!
+	if dial_in_use==no then
+	 	meter_bg = decoroff
+	else if met_units_alarm.alarm_status == w_note or met_units_alarm2.alarm_status == w_note then
+		meter_bg = flashred    
+	else if met_units_alarm.alarm_status == w_clr or met_units_alarm2.alarm_status == w_clr then
+		meter_bg = red
+	else 	meter_bg = black
+
+
+!**** METER SIZE/TYPE ****!
+	realf=fixed0
+	point_a = string(real(range_lo))
+	point_b = string(real(0.25*(range_hi-range_lo)+range_lo))
+	point_c = string(real(0.5*(range_hi-range_lo)+range_lo))
+	point_d = string(real(0.75*(range_hi-range_lo)+range_lo))
+	point_e = string(real(range_hi))
+
+	range = real(range_hi - range_lo)
+
+	if invalid range or range==0 then 
+		begin
+			point_a = 0
+			point_b = 25
+			point_c = 50
+			point_d = 75
+			point_e = 100
+			range =100 
+		end
+
+	realf=fixed3
+	if danger_hi>danger_lo and danger_hi<>int  and danger_hi<>0 and danger_lo<>int then
+	begin
+		danger_angle=int (( 260/range)*danger_lo) -220
+		danger_angle2=int (( 260/range)*danger_hi) - int(( 260/range)*danger_lo)
+	end
+
+!**** POINTER ANGLE POSTION AND SCALING ****!
+
+	digital_reading = (met_units_ip.e_value)
+	if meter_address2<>0 and meter_address2<>int then
+		digital_reading2 = (met_units_ip2.e_value)
+
+!**** USED TO WORK OUT DEGREES ****!
+	scaler= int((260/range) *digital_reading)
+	pointer_angle =50+  int(scaler)
+	if pointer_angle > 315 then pointer_angle = 315
+	if pointer_angle < 45 then  pointer_angle = 45
+
+	if meter_address2<>0 and meter_address2<>int then
+	begin
+		scaler2= int((260/range) *digital_reading2)
+		pointer_angle2 =50+  int(scaler2)
+		if pointer_angle2 > 315 then pointer_angle2 = 315
+		if pointer_angle2 < 45 then  pointer_angle2 = 45
+	end
+
+!**** DRAW METER ****!
+	if dial_in_use==no then
+	begin
+	 	fg=black
+		x=0 y=0 rect(fg=decoroff,h=250,w=250)
+		add disk (fg=lightgrey,w=200,h=200)
+	end
+	else	
+	begin
+		fg=white
+		x=0 y=0 rect(fg=black,h=250,w=250)
+		add disk (w=200,h=200)
+	end
+	
+	x = 0 y = 0 
+	if dial_in_use==yes then
+		danger_area(fg=red,danger_angle,danger_angle2)
+	else
+		danger_area(fg=grey60,danger_angle,danger_angle2)	
+	lw=3
+	add circle (w=220,h=220)
+	fg=decorshadow
+	x=100 y=100 add circle (w=18,h=18)
+	x=-100 y=100 add circle (w=18,h=18)
+	x=100 y=-100 add circle (w=18,h=18)
+	x=-100 y=-100 add circle (w=18,h=18)
+	fg= meter_bg
+	x=100 y=100 add disk (w=8,h=8)
+	x=-100 y=100 add disk (w=8,h=8)
+	x=100 y=-100 add disk (w=8,h=8)
+	x=-100 y=-100 add disk (w=8,h=8)
+	clear fg=decorshadow
+	x= -120 y=120 add
+	x+=240 add
+	y-=240 add line clear
+
+	if dial_in_use==no then
+	 	fg=decoroff
+	else	fg=decorlight
+	
+	x= -120 y=120 add
+	y-=240 add 
+	x+=240 add
+	line clear
+
+!**** CLOCK GRATICULES (10'S) ****!
+	fg = black lw = 4
+	x = -80 y = 65 add
+	x = -65 y = 55 add line clear
+	x = -95 y = -42 add
+	x = -80 y = -35 add line clear
+	x = 0 y = -100 add
+	y = -90 add line clear
+	x = 95 y = -42 add
+	x = 80 y = -35 add line clear
+	x = 80 y = 65 add
+	x = 65 y = 55 add line clear
+
+!**** CLOCK GRATICULES (5'S) ****!
+	lw = 2
+	x = -100 y = 16 add
+	x = -90 y = 14 add line clear
+	x = -60 y = -88 add
+	x = -50 y = -78 add line clear
+	x = 60 y = -88 add
+	x = 50 y = -78 add line clear
+	x = 100 y = 16 add
+	x = 90 y=14 add line clear
+
+!**** METER FIGURES ****!
+	font=font_bold
+	x = -50 y = 45 text (tfg=red4,ch=20,point_a)
+	x = -64 y = -28 text (tfg=red4,ch=20,point_b)
+	x = 0 y = -80 text (tfg=red4,ch=20,point_c)
+	x = 64 y = -28 text (tfg=red4,ch=20,point_d)
+	x = 50 y = 45 text (tfg=red4,ch=20,point_e)
+	x = 25 y = -100 add  
+
+	if dial_in_use==no then
+	 	text_tfg=grey40
+	else	text_tfg=black
+
+
+	y = -60 x = 0 text(tfg=text_tfg,font=font_bold,ch=22,metname) clear
+	fg = decorlight
+	y = -50 x = -55 add x+=110 add line(fg=grey40) clear
+
+	x=0 y=0 
+		pointer(fg=meter_fg,angle=pointer_angle)
+
+	if meter_address2<>0 and meter_address2<>int then
+		pointer(fg=meter_fg2,angle=pointer_angle2)
+
+	fg=black
+	add disk (w=28,h=28)
+	if dial_in_use==no then
+	 	fg=decoroff
+	else	fg=white 
+	lw=2
+	add circle (w=20,h=20)
+
+!**** DISPLAY PANEL FOR UNITS ****!
+	clear 
+	just=centrecentre
+	x=0 y=70 rect(fg=meter_fg,h=20,w=120)
+	fg=decoroff
+	text(realf=Fixed1,tfg=text_tfg,font=font_bold,ch=25,digital_reading+" "+units_str)
+
+	if meter_address2<>0 and meter_address2<>int then
+	begin
+		clear 
+		just=centrecentre
+		x=0 y=26 rect(fg=meter_fg2,h=20,w=120)
+		fg=decoroff
+ 		text(realf=Fixed1,tfg=text_tfg,font=font_bold,ch=25,digital_reading2+" "+units_str)
+	end
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+dial_meter(INT,INT,SOURCE,0,80,70,80,"Future","kV",no,INT)
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

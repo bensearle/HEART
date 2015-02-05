@@ -1,0 +1,94 @@
+Load COMMS_SUB_150_HELP
+load modbus_lib
+load browser
+load lv_breaker
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var helpstr	= help string(30)
+Begin
+   	scale = 256
+   	just = centrecentre
+   	x = 20 y = 20 w =1140 h = 800
+   	set text helpstr = "comms_sub_150_help"
+
+	clear
+	x=161 y=-327 add
+	fg=black ls=solid lw=1 cs=capround line
+			!plc_module(plc_off,b_off,	dty_sty,	plc_res,	c_off,	src,	title=string,no_slots=int,slot_config=string,res2=int,res1=int)!
+	x=-521 y=-340	plc_module(44450,	45050,	44460,	44508,	2485,	heathrow,	"A",4,"9000",int,int)
+	x=-121 y=-340	plc_module(44450,	45054,	44461,	44511,	2486,	heathrow,	"B",4,"9000",int,int)
+
+	x=-66 y=-305 add x-=5 add y+=30 add x-=388 add y=153 add x=-298 add line(lw=3,fg=yellow4) clear
+	x=-66 y=-340 add x-=10 add y+=60 add x-=388 add y=228 add x=-298 add line(lw=3,fg=yellow4) clear
+
+	x=-466 y=-305 add x-=5 add y=177 add x=-270 add line(lw=3,fg=green4) clear
+	x=-466 y=-340 add x-=10 add y=253 add x=-270 add line(lw=3,fg=green4) clear
+	
+
+			!node(plc_offset	b_offset,	c_offset,	src,	title,	enable_config=yesno,angle)!
+
+	x=540 y=165 add x=-260 add line(fg=green4, lw=4) clear
+
+	x=-90 y=190 	node(44450,45030,2460,heathrow,"11",no,angle=0)
+	x+=60		node(44450,45031,2461,heathrow,"12",no,angle=0)
+	x+=60		node(44450,45032,2462,heathrow,"13",no,angle=0)
+	x+=60		!node(44450,int,int,heathrow,"14",no,angle=0)!
+	x+=60		node(44450,45034,2463,heathrow,"15",no,angle=0)
+	x+=60		node(44450,45035,2464,heathrow,"16",no,angle=0)
+	x+=60		!node(44450,int,int,heathrow,"17",no,angle=0)!
+	x+=60		node(44450,45037,2465,heathrow,"18",no,angle=0)
+	x+=60		node(44450,45038,2466,heathrow,"19",no,angle=0)
+	x+=60		node(44450,45039,2467,heathrow,"20",no,angle=0)
+	x+=60		node(44450,45040,2468,heathrow,"21",no,angle=0)
+	x=-280 y=165	d_switch(44450,45071,2478,heathrow,"sw.1",2,int,int,int)
+
+
+	x=540 y=240 add x=-260 add line(fg=green4, lw=4) clear
+	x=-90 y=265 	node(44450,45020,2452,heathrow,"1",no,angle=0)
+	x+=60		node(44450,45021,2453,heathrow,"2",no,angle=0)
+	x+=60		node(44450,45022,2454,heathrow,"3",no,angle=0)
+	x+=60		!node(44450,int,int,heathrow,"4",no,angle=0)!
+	x+=60		node(44450,45024,2455,heathrow,"5",no,angle=0)
+	x+=60		node(44450,45025,2456,heathrow,"6",no,angle=0)
+	x+=60		!node(44450,int,int,heathrow,"7",no,angle=0)!
+	x+=60		node(44450,45027,2457,heathrow,"8",no,angle=0)
+	x+=60		node(44450,45028,2458,heathrow,"9",no,angle=0)
+	x+=60		node(44450,45029,2459,heathrow,"10",no,angle=0)
+	
+	x=-280 y=240 	d_switch(44450,45069,2477,heathrow,"sw.0",2,int,int,int)
+	
+
+	just = centrecentre ch=12
+	! * p1 * ! 		x=-90 y=290 	text("Future")
+	! * p2 * ! 		x=-30 y=290 	text("Future")
+	! * p3 * ! 		x=30 y=290 	text("WI") y+=12 text("TXFR1")
+	! * p5 * ! 		x=150 y=290 	text("123") y+=12 text("FDR1")
+	! * p6 * ! 		x=210 y=290 	text("151") y+=12 text("TXFR1")
+	! * p8 * ! 		x=330 y=290 	text("152") y+=12 text("TXFR1")
+	! * p9 * ! 		x=390 y=290 	text("BUS") y+=12 text("1-2")
+	! * p10 * ! 	x=450 y=290 	text("LHS")
+
+	! * p11 * ! 	x=-90 y=215 	text("RHS")
+	! * p12 * ! 	x=-30 y=215 	text("BUS") y+=12 text("3-4")
+	! * p13 * ! 	x=30 y=215 	text("123") y+=12 text("FDR2")
+	! * p15 * ! 	x=150 y=215 	text("WI") y+=12 text("TXFR2")
+	! * p16 * ! 	x=210 y=215 	text("152") y+=12 text("TXFR2")
+	! * p18 * ! 	x=330 y=215 	text("151") y+=12 text("TXFR2")
+	! * p19 * ! 	x=390 y=215 	text("123") y+=12 text("FDR3")
+	! * p20 * !		x=450 y=215 	text("Future")
+	! * p21 * !		x=510 y=215 	text("Future")
+
+	x = -570 y = 310 browser(2491,heathrow,1140) clear
+
+	x=418 y=-383 main_title(300,30,"Modbus Communications - Outstation 98",black)
+	X=418 Y=-351 main_sub_call(grey80,300,30,"SUB 150","",blue4,18,yes,"sub_stn_150",heathrow,int,"string",int)
+
+	clear
+	font = font_italic
+X=210 Y=140 CH=14 text("Note: Node Numbers correspond to Circuit Breaker Panels")
+X=-240 Y=166 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Right Hand Side")
+X=-240 Y=243 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Left Hand Side")
+end
+mimic = main_object w=1140, h=800, just=centrecentre, fg=white, bg=lightgrey, resizable
+
+

@@ -1,0 +1,32 @@
+helptext sub_stn_151_help =
+ "
+ **** SUB STATION 151 POPUP MIMIC ****
+ ------------------------------------------------- -------------------------------------------------
+T5 North Main Substation 151 
+ ------------------------------------------------- -------------------------------------------------
+The T5 North Main Substation 151 is located at the Northwest corner of the T5 Campus. The substation is supplied from BSP Substation 150 and will provide supplies to T5 Concourse-A building, 
+the secondary substation 155, the Energy Centre and the Multi-Storey Car Park Area.
+
+HV Mimic
+
+The Circuit Breakers are Control and Monitoring. 
+
+The Analogue meters display high and low alarms together with under/over/invalid ranges.
+Low and High alarms may be set by the operator. The meter can also be tagged.
+
+Maximum Demand meters are also shown (display only)
+
+
+
+References:
+------------------
+Operation and Maintenance Manual 	- 
+
+Keypages from the Mimic Menu Object -  for information on mimic objects used (HV Area)
+ ------------------
+
+ "
+
+
+
+

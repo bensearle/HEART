@@ -1,0 +1,58 @@
+load mimic_libutil
+
+type sub_number=int!string(20)!
+
+object test_panel
+
+var sub_search = panel sub_number
+var done = int 
+
+begin
+
+x=0 y=0 w=200 h=20 rect(fg=decoroff)
+
+set title sub_search = "Search for Substation"
+set label sub_search = "Number : "
+
+X=0 Y=0  COMMAND_BUTTON ("Substation Search","",200,"",ch=20)
+
+if selb then
+begin
+  request sub_search
+  done = 1
+end
+
+x = 0 y = 30 w = 198 h = 20 rect(fg=decoroff)  
+
+x = 10 y = 32
+if done == 1 and valid sub_search then
+begin
+  if sub_search == 56 or 
+     sub_search == 57 or 
+     sub_search == 87 or 
+     sub_search == 36 or 
+     sub_search == 37 or 
+     sub_search == 71 or 
+     sub_search == 1 or 
+     sub_search == 30 or 
+     sub_search == 31 or 
+     sub_search == 47 then
+  begin
+     text ("Displaying Substation")
+  end
+else
+  text ("Failed to find Substation") 
+
+end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+X = 50 Y = 10 test_panel
+
+end
+
+mimic = main_object w=800,h=500,just=centrecentre,fg=white,bg=black,resizable
+

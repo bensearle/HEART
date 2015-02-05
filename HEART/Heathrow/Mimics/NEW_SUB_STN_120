@@ -1,0 +1,21 @@
+load mimic_libutil
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+
+X=100 Y=100
+TEXT ("Bill Armstrong",tfg=blue,FONT=FONT_BOLD)
+TEXT (Y=125,"FASL",tfg=white, font=font_bold)
+TEXT (Y=150, "MANCHESTER",tfg=red, font=font_bold)
+
+x=0 y=-185 Add y=240 Add LINE(lw=6,fg=white) clear
+x=0 y=-185 Add x=-260 Add LINE(lw=6,fg=white) clear
+x=-260 y=-185 Add y=240 Add LINE(lw=6,fg=white) clear
+x=-260 y=-185 Add x=-240 Add LINE(lw=2,fg=white) clear
+w=100 h=100 
+x=0 y=80
+disk
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=lightgrey,resizable

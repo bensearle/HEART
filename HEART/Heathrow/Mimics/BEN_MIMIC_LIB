@@ -1,0 +1,241 @@
+Load BEN_MIMIC_HELP
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+type panel_1_item = table (str=string)
+
+object msg (tag_mess=string,bg,just)
+begin
+text (tag_mess)
+end
+
+mimic msg_box = msg bg=decoroff,just=centrecentre,w=300,h=50
+
+Object get_e_value(db_addr=db_address, src=source) = real
+	var ip = input db_elements(db_addr, e_value)
+Begin
+	set source ip = src   
+	set filter ip.db_addr = lim_eq   
+	set limit ip.db_addr = db_addr   
+	set persist ip    
+	request ip   
+	get_e_value = ip.e_value   
+End
+
+Object set_e_value(db_addr=db_address, src=source, dbValue = real)
+	var dbOP = output db_elements(db_addr, e_value)
+Begin
+	set source dbOP = src
+	set default dbOP 
+	set old_default dbOP 
+	set value dbOP.db_addr = db_addr
+	set old_value dbOP.db_addr = db_addr
+	set value dbOP.e_value = dbValue
+	set old_off dbOP.e_value  
+	request dbOP
+End
+
+Object get_c_value(db_addr=db_address, src=source) = string
+	var ip = input db_elements(db_addr, c_value)
+Begin
+	set source ip = src   
+	set filter ip.db_addr = lim_eq   
+	set limit ip.db_addr = db_addr   
+	set persist ip    
+	request ip   
+	get_c_value = ip.c_value   
+End
+
+Object set_c_value(db_addr=db_address, src=source, dbValue = string)
+	var dbOP = output db_elements(db_addr, c_value)
+Begin
+	set source dbOP = src
+	set default dbOP 
+	set old_default dbOP 
+	set value dbOP.db_addr = db_addr
+	set old_value dbOP.db_addr = db_addr
+	set value dbOP.c_value = dbValue
+	set old_off dbOP.c_value  
+	request dbOP
+End
+
+Object get_b_value(db_addr=db_address, src=source) = onoff
+	var ip = input db_elements(db_addr, b_value)
+Begin
+	set source ip = src   
+	set filter ip.db_addr = lim_eq   
+	set limit ip.db_addr = db_addr   
+	set persist ip    
+	request ip   
+	get_b_value = ip.b_value   
+End
+
+Object set_b_value(db_addr=db_address, src=source, dbValue = onoff)
+	var dbOP = output db_elements(db_addr, b_value)
+Begin
+	set source dbOP = src
+	set default dbOP 
+	set old_default dbOP 
+	set value dbOP.db_addr = db_addr
+	set old_value dbOP.db_addr = db_addr
+	set value dbOP.b_value = dbValue
+	set old_off dbOP.b_value  
+	request dbOP
+End
+
+Object valve (openedStatus = db_address, closedStatus = db_address, commonFault = db_address, tagMessage = db_address, percentOpen = db_address, handDressedState = db_address, polygonCol = colour, circleCol = colour, angle)
+	var message_box = popup msg_box
+	var messagePopup = string
+	var my_menu = menu string
+	var tag_message_panel = panel panel_1_item
+	
+Begin
+	
+	if valid tag_message_panel then
+	begin
+		set_c_value(tagMessage, heathrow, tag_message_panel.str)
+		set invalid tag_message_panel
+	end
+
+	if valid my_menu then
+	begin
+		case my_menu of
+		"Dress valve opened" 
+		begin
+			set_e_value(handDressedState, heathrow, 1)
+		end
+		"Dress valve closed" 
+		begin
+			set_e_value(handDressedState, heathrow, 2)
+		end
+		"Undress valve" 
+		begin
+			set_e_value(handDressedState, heathrow, 0)
+		end
+		"Edit tag message"
+		begin
+			set title tag_message_panel = "Modify Tagged Message"     
+			set label tag_message_panel.str = "Tag Message :"
+			set unpinned tag_message_panel         	
+			request tag_message_panel		
+		end
+		"Clear tag message"
+		begin
+		set_c_value(tagMessage, heathrow, "")
+		end
+		default
+		begin
+		end
+	set invalid my_menu 
+	end
+	
+	set remove my_menu = "Dress valve opened"
+	set remove my_menu = "Dress valve closed"
+	set remove my_menu = "Undress valve"
+	set remove my_menu = "Edit tag message"
+	set remove my_menu = "Clear tag message"
+	
+	set add my_menu = "Dress valve opened"
+	set add my_menu = "Dress valve closed"
+	set add my_menu = "Undress valve"
+	set add my_menu = "Edit tag message"
+	set add my_menu = "Clear tag message"
+	
+	messagePopup = get_c_value(tagMessage, heathrow)
+	just = centrecentre
+	if messagePopup <> "" then
+		begin
+		x=0 y=0 h=80 w=100
+		fg=yellow
+		rotrect
+		if rotselb then
+			begin
+			set title message_box = "Ben's Message Box"
+			request message_box(string(messagePopup))
+			end
+		end
+	!else
+		begin
+		end!
+	x=-40 y=-25 move
+	y+=50 add
+	x+=80 y-=50 add
+	y+=50 add
+	lw=2
+
+	fg = polygonCol
+	fill
+	fg = black
+	polygon
+	
+	h=30 w=30
+	sa=-10 aa=370
+	x=0 y=0
+	fg = circleCol
+	pie
+	fg = black
+	arc
+	set rect my_menu
+	
+End
+
+
+Object createValve(openedStatus = db_address, closedStatus = db_address, commonFault = db_address, tagMessage = db_address, percentOpen = db_address, handDressedState = db_address, w,h,fg,bg,angle)
+
+	
+	var dbInputOpen = onoff
+	var dbInputClosed = onoff
+	var HDSInput = real
+	var alarmCommonFault = input db_elements(db_addr, alarm_status)
+	var angleOpen = real
+	
+	var valveAngle = int
+	var polygonCol = colour
+	var circleCol = colour
+	
+	Begin
+
+	dbInputOpen = get_b_value(openedStatus, heathrow)
+	dbInputClosed = get_b_value(closedStatus, heathrow)
+	HDSInput = get_e_value (handDressedState, heathrow)
+
+	!set up alarm!
+	set source alarmCommonFault = heathrow
+	set filter alarmCommonFault.db_addr = lim_eq
+	set limit alarmCommonFault.db_addr = commonFault
+	request alarmCommonFault
+	angleOpen = (get_e_value(percentOpen, heathrow))*0.9+90
+
+	if HDSInput == 1 then
+		begin
+		valveAngle=0 polygonCol=green circleCol=blue
+		end
+	else if HDSInput == 2 then
+		begin
+		valveAngle=90 polygonCol=white circleCol=blue
+		end
+	else if dbInputOpen then
+		begin
+		valveAngle=int(angleOpen) polygonCol=green circleCol=grey
+		end
+	else if dbInputClosed then
+		begin
+		valveAngle=int(angleOpen) polygonCol=white circleCol=grey
+		end
+	else
+		begin
+		valveAngle=int(angleOpen) polygonCol=grey circleCol=grey
+		end	
+
+	if alarmCommonFault.alarm_status == w_note then
+		begin
+		valveAngle=int(angleOpen) polygonCol=flashred circleCol=flashred
+		end
+	else if alarmCommonFault.alarm_status == w_clr then
+		begin
+		valveAngle=int(angleOpen) polygonCol=red circleCol=red
+		end
+	
+	x=0 y=0 angle=valveAngle valve (openedStatus, closedStatus, commonFault, tagMessage, percentOpen, handDressedState, polygonCol, circleCol)
+End

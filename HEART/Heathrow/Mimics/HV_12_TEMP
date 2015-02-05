@@ -1,0 +1,224 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!*********Hv Ring 12************!
+
+
+load mimic_libutil
+load ocb
+load hv_12_sub_stations
+load hv_cable_ident
+Load BROWSER
+
+!************* SUB 44 **************!
+
+object sub_44
+
+begin
+
+sub_symbol_44
+
+lw = 2
+x =-30 y = -25 add y += 50 add line (fg=blue) clear
+x = 20 y = -25 add y += 50 add line (fg=blue) clear
+x = 120 y = -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+
+x = -30   y = 0 ocb_mont(3000,3190,118,234,heathro2,1,"top")
+x = 20  y = 0 ocb_mont(3000,3200,119,235,heathro2,2,"top")
+x = 120 y = 0 ocb_mont(3000,3080,0,265,heathro2,8,"top")
+x = 75 y = 54 add text ("/5",ch = 30) clear
+
+end
+
+
+!************* SUB 74 **************!
+
+object sub_74
+
+begin
+
+sub_symbol_74
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=blue) clear
+x = 50 y = -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(3000,3600,180,305,heathrow,4,"top")
+x = 50 y = 0 ocb_mont(3000,3610,181,306,heathrow,5,"top")
+
+end
+
+
+!************* SUB 49 **************!
+
+object sub_49
+
+begin
+
+sub_symbol_49
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=blue) clear
+x = 50 y =  -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(2500,2690,93,184,heathro2,6,"top")
+x = 50 y = 0 ocb_mont(2500,2700,94,185,heathro2,7,"top")
+
+scale = 200
+
+x = 25 y = 65 add text(just=centrecentre,ch=16,tfg=black,"Sub 49 Busbars still live") 
+x = 25 y = 80 add text(just=centrecentre,ch=16,tfg=black,"Now fed from BA Sub-system")
+
+end
+
+
+!*********** SUB 72 *************!
+
+object sub_72
+
+begin
+
+sub_symbol_72
+
+lw=2
+x = 40 y = -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+x = 40 y = 0 oil_switch(25042,131,1321,heathrow,"c")
+
+
+scale = 256 just = centrecentre
+tfg = black ch = 12
+x = 55 y = 0 text("2")
+
+end
+
+
+!************* SUB 83 ***************!
+!
+object sub_83
+
+begin
+
+sub_symbol_83
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25050,135,1325,heathrow,"c")
+
+scale = 256 just = centrecentre
+tfg = black ch = 12
+x = 15 y = 0 text("1")
+
+end
+!
+
+!****************** WEST INTAKE *******************!
+
+object hv_12_west_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "west_intake"
+
+W=200 H=25 X=-50 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"West Intake New",just=centrecentre) clear
+
+x = 150 y = 25 add x -= 200 add y += 25 add line (fg=white) clear
+x = 150 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear
+
+lw=2
+x = 0  y = 25 add y = -25 add line (fg=blue) clear
+x = 50  y = 25 add y = -25 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb(3000,3240,158,283,heathrow,3,"top")
+x = 50 y = 0 ocb(3000,3320,162,287,heathrow,20,"top")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+clear
+
+
+lw = 2
+just=centrecentre
+
+! SS72-4 TO SS83-1 !
+!x = -10 y = -275 add
+y -= 15 add
+x -= 340 add
+y += 15 add
+line(fg=blue) clear
+x = -210 y = -290 cable_ident("blue","maggot","4.1") clear!
+
+! SS74-4 TO SS44-8 !
+x = 300 y =- 20 add
+y -= 120 add
+x += 160 add
+y -= 165 add
+x -= 40 add
+y += 30 add
+line(fg=blue) clear 
+x = 380 y = -140 cable_ident("blue","maggot","4.1") clear
+
+! SS44-2 TO SS72-2 !
+x = 320 y = -275 add
+y -= 30 add
+x -= 355 add
+y += 30 add
+line(fg=blue) clear
+x = 180 y = -305 cable_ident("blue","maggot","6.3") clear
+
+! SS44-1 TO WI-13 !
+x = 270 y = -275 add
+y -= 15 add
+x -= 70 add
+y += 385 add
+x -= 200 add
+y += 30 add
+line(fg=blue) clear
+x = 100 y = 95 cable_ident("blue","maggot","6.3") clear
+
+!WI-9  TO SS74-5!
+x = -50 y = 125 add
+y -= 225 add
+x += 400 add
+y += 50 add
+line(fg=blue) clear
+x = 150 y = -100 cable_ident("blue","maggot","6.3") clear
+
+!x = -350 y = -250 sub_83!
+x = -75 y = -250 sub_72
+x = 300 y = -250 sub_44
+x = -350 y = -50 sub_49
+x = 300 y = -50 sub_74
+
+x = -50 y = 150 hv_12_west_intake
+
+x = -570 y = 310 browser(1072,heathrow,1140)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+ 

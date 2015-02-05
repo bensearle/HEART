@@ -1,0 +1,46 @@
+load mimic_libutil
+
+object hal_logo(bg,fg,w,h,tbg,tfg)
+begin
+
+just = centrecentre
+
+rect(w =300 , h=125 , fg = white)
+fg = grey
+Clear
+tfg = grey
+x -= 10 ch = 50 add text ("Heathrow")
+x = 50
+y -= 35
+ch = 25 add text ("B A A") clear
+
+x = 32 y = -35 add
+x += 4 y +=3 add
+x += 3 y -= 7 add 
+fill clear             !draw first plane!
+x=57 y = -35 add
+x += 4 y +=3 add
+x += 3 y -= 7 add 
+fill clear             !draw second plane!
+x=98 y = -46 add
+x += 4 y +=3 add
+x += 3 y -= 7 add 
+fill(fg=green3) clear  !draw green plane!
+
+x=92 y=-35
+rect(w=15,h=17,fg=green3)
+x=99 
+y=-43 add
+x -=17 y +=18 add
+x +=9 add
+fill(fg=white)         !draw flight symbol!
+
+end
+
+object main_object(fg,bg,h,w,tbg,tfg)
+
+begin
+X=0 Y=-52 W=0 H=0  hal_logo
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

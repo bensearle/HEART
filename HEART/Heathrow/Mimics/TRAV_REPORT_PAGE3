@@ -1,0 +1,279 @@
+load report_tllib
+Load REPLIB
+load archive2_std_libutil
+load debug_libutil
+
+CONST column_width = 60 
+
+
+TYPE KEYED_TWO_A_VALUES = TABLE (
+	! 1RW !    ID = ID,
+	!  R  !       STREAM = STREAM,
+	!  R  !          STREAM_NAME = STREAM_NAME,
+	!  R  !       KEYNUMBER = KEYNUMBER,
+	! 2RW !    TIME = CS_TIME,
+	!  RW !    KEYED_TWO_A_VALUES_1 = REAL,
+	!  RW !    KEYED_TWO_A_VALUES_2 = REAL )
+
+type stats_display_type = enum( percent_time_true = "Percentage true",
+				ft_transitions = "False-true transitions")
+
+! ------------------------------------------------------------------------------------------------------------------- !
+! This object will return boolean statistics for single element !
+! The choice is :                                                                 !
+! percent_time_true      : The percentage of the period for which the element was true is displayed ! 
+! ft_transitions : The number of fasle-true transitions for the period is displayed !
+! The object also returns the percentage time true !
+! ------------------------------------------------------------------------------------------------------------------- !
+
+object return_boolean_stats(ch,just,realf,
+			server_name = source,
+			address = db_address,
+			report_period = report_period_type,
+			stats_display = stats_display_type,
+			var_busy = loopback yesno)=string
+! INPUT !
+var boolean_data = input keyed_two_a_values[40]
+
+! TEMPORARY !
+var i = int
+var time_true = real
+var total_transitions = real
+var percent_true = real
+var final_text = string
+var temp_time1 = int
+var temp_time2 = int
+var temp_time = time
+var num_days_over = int
+var availability_value = real
+var total_availability_period = real
+
+var requested_data = loopback yesno
+begin
+
+! set time period for report - num_days_over = number of  !
+! back from current time !
+! ------------------------------------------------------------------------- !
+
+   num_days_over = 8
+   temp_time = time(int(current_time) - (num_days_over * 86400))
+
+! request the boolean stats data for last month !
+! -------------------------------------------------------------------- !
+if invalid requested_data then
+   begin
+   requested_data = yes
+   set source boolean_data = arhsource(server_name)
+
+   set filter boolean_data.time = lim_ge_lt2
+
+   timef = local_dmy_hms
+   set limit boolean_data.time = time (temp_time)
+
+   timef = local_dmy_hms
+   set limit2 boolean_data.time = time (current_time)
+
+
+   set filter boolean_data.stream_name = lim_eq
+   set limit boolean_data.stream_name = server_name + " B_STATS"
+   
+   set filter boolean_data.keynumber = lim_eq
+   set limit boolean_data.keynumber = convert_db_address_to_keynumber(address)
+   
+   request boolean_data   
+   end
+
+! calculate the total time true in seconds !
+! ----------------------------------------------------------- !
+debug("BUSY :"+get busy boolean_data+" VALID :"+valid boolean_data+" LASTROW :"+lastrow boolean_data)
+if valid boolean_data then
+   begin
+   if lastrow boolean_data > 0 then
+      begin   
+      time_true = 0
+      for i from 1 to lastrow boolean_data do
+         begin
+         time_true += boolean_data[i].keyed_two_a_values_2
+         end
+
+      ! calculate avialability over the specified time period !
+      ! ------------------------------------------------------------------------ !
+
+      availability_value = int(time_true-(270*(num_days_over-1)))
+      total_availability_period = int((1440*(num_days_over-1)) - (270*(num_days_over-1)))
+
+      percent_true = (availability_value*100)/total_availability_period
+
+      ! calculate the total number of false to true transitions in the month ! 
+      ! ------------------------------------------------------------------------------------------------- !
+      total_transitions = 0
+      for i from 1 to lastrow boolean_data do
+         total_transitions += boolean_data[i].keyed_two_a_values_1
+      end 
+   else
+      begin
+      percent_true = 0 
+      end
+   end
+! display the text required !
+! -------------------------------------- !
+case stats_display of
+   percent_time_true    final_text = percent_true
+   ft_transitions               final_text = total_transitions
+   default                      begin end
+
+! prevent printing until the data has been obtained !
+! ------------------------------------------------------------------------- !
+if get busy boolean_data then
+   begin
+   var_busy = yes
+   end
+else
+   begin 
+   return_boolean_stats = final_text
+   end
+end
+
+			
+! ***************************************************************************************** !
+!----------------- COMMUNICATIONS STATUS REPORT ------------------------!
+
+object TRAVSTAT_REPORT(w,h,fg,bg,report_period=report_period_type,report_date=string,just)=yesno
+
+var i =int
+var fld_1 = string
+var fld_2 = string
+var fld_3 = string
+var fld_4 = string
+
+var getting_data = loopback yesno
+var temp_time = time
+var num_days_over = int
+
+VAR text_file = FILEWRITE string
+
+Begin
+getting_data = no
+FONT=FONT_BOLD
+
+     SET RESET text_file
+     SET FILE text_file = "trav-report-week-ending-" +  getchars(1,11,current_time) + ".htm"
+     SET NOAPPEND text_file
+     text_file = ""
+     text_file += ""
+     request text_file
+     SET APPEND text_file
+     text_file= "<html><head><link rel=stylesheet href=css/text.css type=text/css></head><body text=#FFFFFF bgcolor=#004080>"
+     request text_file
+     text_file= "<font face=Verdana, Arial, Helvetica, sans-serif size=2 color=#FFFFFF>" 
+     request text_file
+     text_file= "<center>" 
+     request text_file
+     text_file= "<font size=4><b>Travelator Availability Report</b></font><br><br>For Week Ending: " + getchars(1,11,current_time) + "<br><br>" 
+     request text_file
+     text_file= "<table width=600 border=1>"
+     request text_file
+     text_file= "<tr><td class=headertext width=120>Travelator</td><td class=headertext width=120>Times Stopped</td><td class=headertext width=120>No. of K/S Off</td><td class=headertext width=120>No. of E/Stops</td><td class=headertext width=120>Availability</td></tr>"
+     request text_file
+
+     fld_1 = return_boolean_stats (heathro4,b1014,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro4,b1008,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro4,b1013,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro4,b1371,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>1A</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro4,b1034,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro4,b1028,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro4,b1033,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro4,b1372,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>1B</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro4,b1054,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro4,b1048,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro4,b1053,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro4,b1373,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>2C</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro4,b1074,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro4,b1068,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro4,b1073,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro4,b1374,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>2D</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro4,b1094,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro4,b1088,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro4,b1093,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro4,b1375,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>3E</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro4,b1114,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro4,b1108,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro4,b1113,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro4,b1376,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>3F</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro4,b1134,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro4,b1128,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro4,b1133,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro4,b1377,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>3G</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro4,b1154,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro4,b1148,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro4,b1153,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro4,b1378,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>3H</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro4,b1174,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro4,b1168,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro4,b1173,report_period,ft_transitions, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro4,b1379,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>3J</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 + "</td></tr>"
+          request text_file
+     end
+
+     text_file = "</table><br><br><a href=trav-report-home.htm target=_self>Back to Reports List</a></body></html>"
+     request text_file
+     SET RESET text_file
+
+
+FG=BLACK
+REALF=FIXED3
+FONT=FONT_NORMAL
+travstat_report=getting_data
+end
+

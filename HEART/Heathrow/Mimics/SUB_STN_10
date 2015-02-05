@@ -1,0 +1,103 @@
+load mimic_libutil
+load hv_lib
+load generic_meter_library
+load sub_stn_10_help
+
+
+!*********** BUSBAR 10 *************!
+
+object busbar_10
+var helpstr = help string(30)
+begin
+	clear
+   	scale=256
+   	just=centrecentre
+   	x=20 y=20  w=350 h=510
+   	set text helpstr = "sub_stn_10_help"
+	
+
+	!** sub label **!
+	tfg = black x = 95 y = -55 add text ("10",ch = 25) clear
+
+!***  connecting lines  ***!
+
+	!** standby set **!
+	scale = 256
+	lw=2
+	x = 95 y = 122  add y = 130  add line (fg=red) clear
+
+	x = 100 y = 155  add y = 240 add line (fg=red) clear
+	x = 129 y = 155 add y = 240  add line (fg=red) clear
+	x = 80 y = 240  add x = 150  add line (fg=red,lw=4) clear
+
+	!** busbar **!
+	x = -125 y = -25 add x += 240 add line(lw=4,fg=red) clear
+
+	!** circuit breakers **!
+	lw = 2
+	x = -105 y = -25 add y += 50 add line (fg=red) clear
+	x = -55 y = -25 add y -= 55	add line (fg=red) clear
+	x = -5 y = -25 add y =  0	add line (fg=red) clear
+	x = 45 y = -25 add y -= 55	add line (fg=red) clear
+	x = 95 y = -25 add y += 50	add line (fg=red) clear
+
+
+
+	!***  circuit breaker objects  ***!
+
+	scale = 310
+	x = -105 y = 0	hv_lib_breaker("eclipse",39500,39610,1240,5500,int,HEATHROW,1,"BTM",int)
+	x = -55 y = -50	hv_lib_breaker("eclipse",39500,39630,1241,5501,int,HEATHROW,2,"TOP",int)
+
+
+	x = -5 y = 0	hv_lib_breaker("BUS_EARTH",39500,39650,1242,5502,int,HEATHROW,3,string,int)
+
+	x = 45 y = -50	hv_lib_breaker("eclipse",39500,39670,1243,5503,int,HEATHROW,4,"TOP",int)
+	x = 95 y = 0	hv_lib_breaker("eclipse",39500,39690,1244,5504,int,HEATHROW,5,"BTM",int)
+
+
+
+	!***  standby set objects  ***!
+
+	scale = 256
+	x = 135 y = 150	hv_lib_lv_gen_offset(39500,39720,1249,0,heathrow)
+	scale = 256
+	x =  95 y = 150	hv_lib_transformer("LT 1","LOCAL") 
+	scale = 270
+	x = 114 y = 205	hv_lib_lv_contactor_offset(39500,39710,1250,heathrow)
+
+
+	!***  analogue meter objects  ***!
+
+	scale = 165
+	x = -105 y = 80	generic_bar_meter_lib(39500,1245,5512,39578,39579,heathrow,"A","PANEL 1",0,100,0,yellow,0,int,string)
+	x = -55 y = -120	generic_bar_meter_lib(39500,1246,5513,39582,39583,heathrow,"A","PANEL 2",0,400,0,yellow,0,int,string)
+	x = 45 y = -120	generic_bar_meter_lib(39500,1247,5514,39586,39587,heathrow,"A","PANEL 4",0,400,0,yellow,0,int,string)
+	x = 95 y = 80	generic_bar_meter_lib(39500,1248,5515,39590,39591,heathrow,"A","PANEL 5",0,100,0,yellow,0,int,string)
+
+	scale=256
+	just=centrecentre tfg=black ch=12
+	x = -105 y = 135 text("SS 150")
+	x = -105 y = 150 text("Local Tx 1")
+	y += 12 text("")
+
+	x = -55 y = -197 text("Sub 9")
+	y += 12 text("P2")
+
+	x = -5 y = 48 text("Bus")
+	y += 12 text("Earth")
+
+	x = 45 y = -197 text("Sub 20")
+	y += 12 text("P1")
+
+	x = 115 y = 250 text("Local Tx")
+	y += 12 text("")
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	x = 0 y = -30 busbar_10
+end
+
+mimic = main_object w=350,h=510,just=centrecentre,fg=white,bg=aquamarine3,resizable

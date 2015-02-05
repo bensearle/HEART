@@ -1,0 +1,11 @@
+Load RAYTESTBMP_HELP
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+Object main_object(w,h,fg,bg)
+Begin
+End
+
+mimic = main_object w=700,h=500,resizable

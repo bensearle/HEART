@@ -1,0 +1,160 @@
+!**	HEATHROW\SUB_STN_56A		**!
+!** 	Created by ULTRA - 07 April 2009		**!
+
+
+load mimic_libutil
+load ocb_monitored
+load transformer
+load lv_generator
+load lv_contactor
+load generic_meter_library
+load circuit_breakers
+load lv_breaker
+load transformer_types
+
+object lv_56A_status(plc_offset=int,src=source,txt_id=string,res2=string,res1=int)
+var plc_inputs = input b_bool_type[2]
+var alarm1_col = colour
+var alarm2_col = colour
+var alarm3_col = colour
+var alarm4_col = colour
+begin
+	alarm1_col = lv_alarm_test(1725,2,heathro4)		!* LV Contactor *!
+	alarm2_col =lv_alarm_test(1729,12,heathro4)		!* LV Generator *!
+	alarm3_col =lv_alarm_test(1745,5,heathro4)		!* LV Incomer ACB *!
+	alarm4_col =lv_alarm_test(1750,1,heathro4)		!* Local Transformer 1 *!
+		
+	if alarm1_col == flashred or
+	alarm2_col == flashred or
+	alarm3_col == flashred or
+	alarm4_col == flashred then
+		fg = flashred
+	else if alarm1_col ==red or
+	alarm2_col ==red or
+	alarm3_col ==red or
+	alarm4_col ==red then
+		fg = red
+	else
+		fg = grey80
+
+	   if invalid get source plc_inputs then 
+	   begin
+		! GET PLC INPUTS !
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+	  end
+
+
+	X=0 Y=0 W=50 H=50 ANGLE=0 JUST=centrecentre FS=FILLSOLID rotrect
+	
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on
+	then
+		tfg=magenta
+	else
+		tfg=white
+	lw=1
+	X=-25 Y=25 Add Y=-25 Add X=25 Y=-25 Add line(fg=white) clear
+	X=-25 Y=25 Add X=25 Add Y=-25 Add line(fg=black) clear
+
+	ch=18 font=font_bold just=centrecentre
+	X=0 Y=16  text(txt_id) clear
+
+	X=-20 Y=-20 W=20 H=20 just=topleft fg=green4 ls=solid lw=3 sa=0 circle
+	X=0 Y=-20 W=20 H=20 circle clear
+end
+
+
+
+!************ BUSBAR 56A *************!
+
+object busbar_56A
+var helpstr = help string(30)
+begin
+	clear
+   	scale=256
+   	just=centrecentre
+   	x=20 y=20  w=350 h=510
+   	set text helpstr = "sub_stn_56A_help"
+	
+
+	!** sub label **!
+	tfg = black x = 115 y = -55 add text ("56A",ch = 25) clear
+
+	lw = 2
+
+	! ** Main Bus bar ** !
+	x = -135 y = -25 add x = 140 add line(lw=4,fg=red) clear
+	! ** Incomer from SS108 ** !
+	x = -110 y = -25 add y -= 50 add line (fg=red) clear
+	! ** Incomer from SS87 ** !
+	x = -35  y = -25 add y -= 50 add line (fg=red) clear
+	! ** Local Tx Feeder ** !
+	x = 40   y = -25 add y += 230 add line (fg=red) clear
+	! ** Busbar Earth Switch ** !
+	x =115   y = -25 add y += 50 add line (fg=red) clear
+	! ** Standby Generator ** !
+	x = 69 y = 205 add y -= 100 add line(fg=red) clear
+	! ** LV Switchboard ** !
+	x = 25 y = 205 add x += 60 add line(fg=red,lw=4) clear
+
+	! ** Circuit Breaker Objects ** !
+	scale = 120
+!	x = -110 y = -50 breaker("eclipse",1600,1655,160,550,int,HEATHRO4,1,"TOP",int)
+	x = -35 y = -50 breaker("eclipse",1600,1675,161,551,int,HEATHRO4,2,"TOP",int)
+	x = 40 y = 0 breaker("eclipse",1600,1695,162,552,int,HEATHRO4,3,"BTM",int)
+!
+	x = -110 y = -50 breaker("type3",1600,1655,160,550,int,HEATHRO4,1,"TOP",int)
+	x = -35 y = -50 breaker("type3",1600,1675,161,551,int,HEATHRO4,2,"TOP",int)
+	x = 40 y = 0 breaker("type3",1600,1695,162,552,int,HEATHRO4,3,"BTM",int)
+
+	x = 115 y = 0 breaker("BUS_EARTH",1600,1715,163,553,int,HEATHRO4,4,string,int)
+
+	! ** Local Tx Object ** !
+	scale = 200
+	x = 40 y = 45 lv_56A_status(1600,heathro4,"LT",string,int)
+
+	! ** LV Breaker Object ** !
+	x=40 y=115 lv_breaker("",1600,1745,169,554,heathro4,"  ","top",int,int,int)
+
+	! ** LV Generator and Changeover Switch Objects ** !
+	scale = 140
+	x =80 y = 115 lv_gen_auto(1600,1729,167,0,heathro4)
+	scale = 120
+	x = 55 y = 165 lv_changeover(1600,1725,168,heathro4)
+	
+	!***  analogue meter objects  ***!
+
+	!object  generic_bar_meter_lib(plc_comms=int,c_offset=int,e_offset=int,b_over=int,b_under=int,src=source,units=string,metname=string,range_lo=real,range_hi=real,	dec_places=int,bar_colour=colour,range_dec_places=int,res_int1=int,res_str1=string)!
+
+	scale = 165
+	x = -110 y = -120	generic_bar_meter_lib(1600,164,557,1640,1641,heathro4,"A","PANEL 1",0,400,0,yellow,0,int,string)
+	x = -35 y = -120	generic_bar_meter_lib(1600,165,558,1644,1645,heathro4,"A","PANEL 2",0,400,0,yellow,0,int,string)
+	x = -10 y = 40	generic_bar_meter_lib(1600,166,559,1648,1649,heathro4,"A","PANEL 3",0,100,0,yellow,0,int,string)
+
+	scale=256
+	just=centrecentre tfg=black ch=12
+
+	x = -110 y = -197 text("SS56")
+	y += 12 text("P4")
+
+	x = -35 y = -197 text("SS87")
+	y += 12 text("P3")
+
+	x = 115 y = 48 text("Bus")
+	y += 12 text("Earth")
+
+	x=-25 y=115 text("Incomer ACB")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	y = 0 busbar_56A
+
+end
+
+mimic = MAIN_OBJECT W=380, H=460, FG=WHITE, BG=AQUAMARINE3, JUST=CENTRECENTRE, x=100, y=450

@@ -1,0 +1,29 @@
+load mimic_libutil
+load transformer
+
+object busbar_old_tfp
+begin
+lw=2
+x = 0 y = -50 add y += 50 add line(lw=2,fg=red) clear
+
+scale = 100
+X =  0  Y = 20 add transformer("LT 1","LOCAL")
+
+just = centrecentre
+
+scale=256
+tfg=black ch=12
+x = 0 y = 50 text("Old TFP")
+x = 0 y = -60 text("SS47 P1")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+busbar_old_tfp
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=aquamarine3,resizable

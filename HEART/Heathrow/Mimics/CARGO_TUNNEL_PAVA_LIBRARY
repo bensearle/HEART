@@ -1,0 +1,3936 @@
+!===============================================================================!
+!===============================================================================!
+!===	Cargo Tunnel PAVA Library							             ===!
+!===										             ===!
+!===	Designed By: Tom Adams (P Ducker Systems Ltd)				             ===!
+!===	Designed On: 01/05/2013							             ===!
+!===										             ===!
+!===	Modifications:								             ===!
+!===	None									             ===!
+!===============================================================================!
+!===============================================================================!
+
+!=================================================!
+!=== LOAD LIBRARIES===!
+!=================================================!
+
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+load FP_GENERIC_SERVER_REQUEST
+
+Object border_object(width=int,height=int,title=string,size=int,text_col=colour,overlay=yesno)
+begin
+	just=bottomleft
+ 	x=0 y=0 W=width H=height fg=grey80 fs=fillsolid angle=0 rotrect 
+	x=0 y=0 Add 
+	x+=9 y-=8 Add 
+	y-=height-16 Add
+	x+=width-19 Add
+	x+=10 y-=9 Add
+	x-=width Add
+	fg=decorlight fs=fillsolid fill Clear
+
+	x=width y=-height Add
+	x-=10 y+=9 Add
+	y+=height-16 Add
+	x-=width-19 Add
+	x-=9 y+=8 Add
+	x+=width Add
+	fg=grey40 fs=fillsolid fill clear
+
+	ch=size
+	tfg=text_col
+	x=width/2 y=-(height/2)
+	just=centrecentre
+	if overlay==yes then
+	   begin
+		x+=2 y+=2 text(tfg=decorshadow,title)
+		x-=2 y-=2
+	   end
+		text(title)
+end
+
+!=================================================!
+!=== MAIN TITLE OBJECT===!
+!=================================================!
+
+Object titling_object(width=int,height=int,title=string,size=int,text_col=colour,overlay=yesno)
+begin
+	just=bottomleft
+ 	x=0 y=0 W=width H=height fg=grey80 fs=fillsolid angle=0 rotrect 
+	x=0 y=0 Add 
+	x+=9 y-=8 Add 
+	y-=height-16 Add
+	x+=width-19 Add
+	x+=10 y-=9 Add
+	x-=width Add
+	fg=blue fs=fillsolid fill Clear
+
+	x=width y=-height Add
+	x-=10 y+=9 Add
+	y+=height-16 Add
+	x-=width-19 Add
+	x-=9 y+=8 Add
+	x+=width Add
+	fg=grey40 fs=fillsolid fill clear
+
+	ch=size
+	tfg=text_col
+	x=width/2 y=-(height/2)
+	just=centrecentre
+	if overlay==yes then
+		begin
+			x+=2 y+=2 text(tfg=decorshadow,title)
+			x-=2 y-=2
+	  	end
+	text(title)
+end
+
+object titling_object_lib(width=int,height=int,title=string,size=int,text_col=colour,overlay=yesno)
+begin
+   	clear
+   	if width == int then 
+   		begin
+			x=0 y=10 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT("TITLE")
+			x=0 y=20 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT("DISPLAY")
+			scale=100
+ 			x=-17 y=0  titling_object(80,40,"TITLE",20,red,yes)
+   		end
+   	else 
+		begin
+			scale = 256
+   			x=0 y=0  titling_object(width,height,title,size,text_col,overlay)
+	   	end
+end
+
+!===============================================================================!
+
+!=================================================!
+!=== READ B VALUE===!
+!=================================================!
+
+object read_b_value(db_add=db_address, src=source) = onoff
+
+var ip=input db_elements(db_addr, b_value)
+begin
+	set source ip = src
+	set filter ip.db_addr = LIM_EQ
+	set limit ip.db_addr = db_add
+	set persist ip
+	request ip
+	if valid ip then
+		begin
+			read_b_value = ip.b_value
+		end
+end
+
+!===============================================================================!
+
+object pava_zone_labels_cargo
+begin
+x=0y=-1add x=300 y=-1add fg=darkgrey lw=1 line
+clear
+x=0 y=84 add x=300 y=84 add fg=darkgrey lw=1 line
+clear
+x=50 y=2 add x=250 y=2 add fg=orange4 lw=4 line
+clear
+x=50 y=82 add x=250 y=82 add fg=orange4 lw=4 line
+clear
+x=50 y=0 add x=50 y=84 add fg=darkgrey lw=1 line
+clear
+x=250 y=0 add x=250 y=84 add fg=darkgrey lw=1 line
+clear
+end
+
+!===============================================================================!
+
+!=================================================!
+!=== SPEAKER LEFT===!
+!=================================================!
+
+!=============================================!
+!=== Database Structure: 				===!
+!=== 						===!
+!=== PLC_INPUTS					===!
+!=== plc_inputs[1] = plca_comms_ip		 	===!
+!=== plc_inputs[2] = plcb_comms_ip			===!
+!===						===!
+!=== B_INPUTS					===!
+!=== b_inputs[1] = Speaker_Fault			===!
+!===						===!
+!=== ALARMS					===!
+!=== b_alarms[1] = Speaker_Fault_Alarn		===!
+!===						===!
+!=== C_INPUTS					===!
+!=== c_inputs[1] = Tagged Message			===!
+!===						===!
+!=============================================!
+
+Object Speakerleft ( plc_offset1 = int,
+		plc_offset2 = int,
+		b_offset = int,
+		alm_offset = int,
+		c_offset = int,
+		speaker_number = string (3),
+		src = source)
+		 
+!=== Define variables linked to DB points ===!
+var plc_north 		= input b_db_row_type[1]
+var plc_south 		= input b_db_row_type[1]
+var b_inputs 		= input  b_db_row_type[1]
+var b_alarms 		= input alarm_row_type[1]
+var c_inputs 		= input c_db_row_type[1]
+
+!=== Define panel variables ===!
+var tag_message_panel = panel  panel_item_row
+
+var main_menu = menu  string(30)
+var availability_offset = int
+var dressed = int
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	
+
+!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+	   	
+!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms then
+	
+		begin	
+			set source b_alarms = src
+		  	set filter b_alarms.db_addr = lim_ge
+		   	set limit b_alarms.db_addr = db_address("b" + (b_offset+1))
+		   	set priority b_alarms.db_addr = 15
+		   	set persist b_alarms
+		   	set mayexist b_alarms
+		   	request b_alarms
+		end
+
+!=== If a valid c_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source c_inputs then
+      	
+		begin	
+			set source c_inputs = src
+			set filter c_inputs.db_addr = lim_ge
+			set limit  c_inputs.db_addr = db_address("c" + c_offset)
+			set persist c_inputs 
+			set mayexist c_inputs 
+			request c_inputs 	
+		end
+
+!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_north then
+      	
+		begin	
+			set source plc_north = src
+			set filter plc_north.db_addr = lim_ge
+			set limit  plc_north.db_addr = db_address("b" + plc_offset1)
+			set persist plc_north  
+			set mayexist plc_north 
+			request plc_north 	
+		end	
+
+!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_south then
+      	
+		begin	
+			set source plc_south  = src
+			set filter plc_south.db_addr = lim_ge
+			set limit  plc_south.db_addr = db_address("b" + plc_offset2)
+			set persist plc_south  
+			set mayexist plc_south 
+			request plc_south 	
+		end	
+
+	!=== Test for tagged message ===!
+
+	if c_inputs.c_value <> "" then
+		begin
+			x=15 y=5 w=5 h=5 lw=6 fg=yellow box
+			x=15 y=5 add x=0 y=0 add  x=0 y=15 add x=15 y=10 add  fg=yellow lw=6 line clear
+		end
+
+!=== DRAW SPEAKER ===!
+
+		x=15 y=5 w=5 h=5 lw=1 fg=black box
+		x=15 y=5 add x=0 y=0 add  x=0 y=15 add x=15 y=10 add  fg=black lw=1 line clear
+
+
+	!=== Test for fault ===!
+
+				if b_alarms.alarm_status == w_note then
+					begin
+      						x=1 y=1 add x=15 y=6 add
+      						x=19 y=6 add x=19 y=9 add
+      						x=15 y=9 add x=1 y=14 add
+						x=1 y=1 add fg=flashred fs=fillsolid fill clear
+						x=15 y=5 w=5 h=5 lw=1 fg=black box
+						x=15 y=5 add x=0 y=0 add  x=0 y=15 add x=15 y=10 add  fg=black lw=1 line clear
+      					end
+
+				else if b_alarms.alarm_status == w_clr then
+					begin
+      						x=1 y=1 add x=15 y=6 add
+      						x=19 y=6 add x=19 y=9 add
+      						x=15 y=9 add x=1 y=14 add
+						x=1 y=1 add fg=red fs=fillsolid fill clear
+						x=15 y=5 w=5 h=5 lw=1 fg=black box
+						x=15 y=5 add x=0 y=0 add  x=0 y=15 add x=15 y=10 add  fg=black lw=1 line clear
+      					end
+				
+				else
+   					begin
+   						x=1 y=1 add x=15 y=6 add
+   						x=19 y=6 add x=19 y=9 add
+   						x=15 y=9 add x=1 y=14 add
+   						x=1 y=1 add fg=grey fs=fillsolid fill clear
+						x=15 y=5 w=5 h=5 lw=1 fg=black box
+						x=15 y=5 add x=0 y=0 add  x=0 y=15 add x=15 y=10 add  fg=black lw=1 line clear
+   					end
+
+	if (plc_north.b_value) and (plc_south.b_value) == on then
+		begin
+			x=15 y=5 w=5 h=5 lw=1 fg=magenta box
+			x=15 y=5 add x=0 y=0 add  x=0 y=15 add x=15 y=10 add  fg=magenta lw=1 line clear
+			x=1 y=1 add x=15 y=6 add x=19 y=6 add x=19 y=9 add x=15 y=9 add x=1 y=14 add x=1 y=1 add fg=magenta fs=fillsolid fill
+		end
+		
+
+!=== Add Label ===!
+
+	x =10 y=26
+	just=centrecentre
+	ch=10 font=font_normal fontname="arial" tfg=black text(speaker_number)
+	Clear
+
+!=== TAG MESSAGE PANEL ===!
+
+   	if valid tag_message_panel then
+      		begin
+   			set_c_value( db_address("c" + c_offset),src,tag_message_panel.str)
+   			set invalid tag_message_panel
+      		end
+
+!=== MAIN MENU ===!
+
+	x=0 y=0 w=30 h=30
+
+	set rect main_menu
+	set title main_menu  = "Speaker Menu"
+
+  	set remove main_menu = "Alter Tagged Message"
+   	set remove main_menu = "Clear Tagged Message"
+   	set add main_menu="Alter Tagged Message"
+   	set add main_menu="Clear Tagged Message"
+   
+!=== CONTROL MENU ===!
+
+   	if valid main_menu then
+      		begin
+         			case main_menu of
+      			"Alter Tagged Message"
+            	   			begin
+         					set title tag_message_panel = "Modify Tagged Message"
+         					set label tag_message_panel.str = "Tag Message :"
+         					set unpinned tag_message_panel
+         					request tag_message_panel
+            	   			end
+
+      			"Clear Tagged Message"
+            	   			begin
+         					set_c_value(db_address("c" + c_offset), src, "")
+         	   			end
+      		
+         			default
+         	   			begin
+         	   			end
+         			set invalid main_menu
+		end
+
+
+!=== TAG MESSAGE BOX ===!
+
+	x = 0 w = 40 h = 50
+	if selb and c_inputs.c_value <> "" then
+	   begin
+   		message_text_box(c_inputs.c_value)
+   	   end
+
+end
+
+!===============================================================================!
+
+!=================================================!
+!=== SPEAKER RIGHT===!
+!=================================================!
+
+!=============================================!
+!=== Database Structure: 				===!
+!=== 						===!
+!=== PLC_INPUTS					===!
+!=== plc_inputs[1] = plca_comms_ip		 	===!
+!=== plc_inputs[2] = plcb_comms_ip			===!
+!===						===!
+!=== B_INPUTS					===!
+!=== b_inputs[1] = Speaker_Fault			===!
+!===						===!
+!=== ALARMS					===!
+!=== b_alarms[1] = Speaker_Fault_Alarn		===!
+!===						===!
+!=== C_INPUTS					===!
+!=== c_inputs[1] = Tagged Message			===!
+!===						===!
+!=============================================!
+
+Object Speakerright ( plc_offset1 = int,
+		plc_offset2 = int,
+		b_offset = int,
+		alm_offset = int,
+		c_offset = int,
+		speaker_number = string (3),
+		src = source)
+		 
+!=== Define variables linked to DB points ===!
+var plc_north 		= input b_db_row_type[1]
+var plc_south 		= input b_db_row_type[1]
+var b_inputs 		= input  b_db_row_type[1]
+var b_alarms 		= input alarm_row_type[1]
+var c_inputs 		= input c_db_row_type[1]
+
+!=== Define local variables for inputs ===!
+var speaker_fault			= onoff
+var speaker_nocomms		= onoff
+
+var speaker_fault_alm		= alarm_status
+
+
+!=== Define panel variables ===!
+var tag_message_panel = panel  panel_item_row
+
+var main_menu = menu  string(30)
+var availability_offset = int
+var dressed = int
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+	   	
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms then
+	
+		begin	
+			set source b_alarms = src
+		  	set filter b_alarms.db_addr = lim_ge
+		   	set limit b_alarms.db_addr = db_address("b" + (b_offset+18))
+		   	set priority b_alarms.db_addr = 15
+		   	set persist b_alarms
+		   	set mayexist b_alarms
+		   	request b_alarms
+		end
+
+	!=== If a valid c_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source c_inputs then
+      	
+		begin	
+			set source c_inputs = src
+			set filter c_inputs.db_addr = lim_ge
+			set limit  c_inputs.db_addr = db_address("c" + c_offset)
+			set persist c_inputs 
+			set mayexist c_inputs 
+			request c_inputs 	
+		end
+
+
+
+!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_north then
+      	
+		begin	
+			set source plc_north = src
+			set filter plc_north.db_addr = lim_ge
+			set limit  plc_north.db_addr = db_address("b" + plc_offset1)
+			set persist plc_north  
+			set mayexist plc_north 
+			request plc_north 	
+		end	
+
+!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_south then
+      	
+		begin	
+			set source plc_south  = src
+			set filter plc_south.db_addr = lim_ge
+			set limit  plc_south.db_addr = db_address("b" + plc_offset2)
+			set persist plc_south  
+			set mayexist plc_south 
+			request plc_south 	
+		end
+
+!=== POPULATE LOCAL VARIABLES FOR USE IN CODE ===!
+
+		speaker_fault_alm			= b_alarms.alarm_status
+		
+!=== Check for invalid alarm states ===!
+
+		if invalid speaker_fault_alm then
+		begin
+			speaker_fault_alm = alarm_clear
+		end
+
+	!=== Test for tagged message ===!
+
+	if c_inputs.c_value <> "" then
+		begin
+			x=0 y=5 w=5 h=5 lw=6 fg=yellow box
+			x=5 y=5 add x=20 y=0 add  x=20 y=15 add x=5 y=10 add  fg=yellow lw=6 line clear
+		end
+
+!=== DRAW SPEAKER ===!
+
+		x=0 y=5 w=5 h=5 lw=1 fg=black box
+		x=5 y=5 add x=20 y=0 add  x=20 y=15 add x=5 y=10 add  fg=black lw=1 line clear
+
+
+		!=== Test for fault ===!
+
+   				if b_alarms.alarm_status == w_note then
+     					begin
+      						x=1 y=6 add x=5 y=6 add
+      						x=19 y=1 add x=19 y=14 add
+      						x=5 y=9 add x=1 y=9 add
+						x=1 y=6 add fg=flashred fs=fillsolid fill
+						clear
+						x=0 y=5 w=5 h=5 lw=1 fg=black box
+						x=5 y=5 add x=20 y=0 add  x=20 y=15 add x=5 y=10 add  fg=black lw=1 line clear
+					end
+
+   				else if b_alarms.alarm_status == w_clr then
+     					begin
+      						x=1 y=6 add x=5 y=6 add
+      						x=19 y=1 add x=19 y=14 add
+      						x=5 y=9 add x=1 y=9 add
+						x=1 y=6 add fg=red fs=fillsolid fill
+						clear
+						x=0 y=5 w=5 h=5 lw=1 fg=black box
+						x=5 y=5 add x=20 y=0 add  x=20 y=15 add x=5 y=10 add  fg=black lw=1 line clear
+					end
+
+				else
+  					begin
+   						x=1 y=6 add x=5 y=6 add
+      						x=19 y=1 add x=19 y=14 add
+      						x=5 y=9 add x=1 y=9 add
+						x=1 y=6 add fg=grey fs=fillsolid fill
+						clear
+						x=0 y=5 w=5 h=5 lw=1 fg=black box
+						x=5 y=5 add x=20 y=0 add  x=20 y=15 add x=5 y=10 add  fg=black lw=1 line clear
+   					end
+			
+
+	if (plc_north.b_value) and (plc_south.b_value) == on then
+			begin
+				x=0 y=5 w=5 h=5 lw=1 fg=magenta box
+				x=5 y=5 add x=20 y=0 add  x=20 y=15 add x=5 y=10 add  fg=magenta lw=1 line clear
+      				x=1 y=6 add x=5 y=6 add x=19 y=1 add x=19 y=14 add x=5 y=9 add x=1 y=9 add x=1 y=6 add fg=magenta fs=fillsolid fill
+				clear
+			end
+
+!=== Add label ===!
+
+	x=10 y=-12
+	just=centrecentre
+	ch=10 font=font_normal fontname="arial" tfg=black text(speaker_number)
+	clear
+
+!=== TAG MESSAGE PANEL ===!
+
+   	if valid tag_message_panel then
+      		begin
+   			set_c_value( db_address("c" + c_offset),src,tag_message_panel.str)
+   			set invalid tag_message_panel
+      		end
+
+!=== MAIN MENU ===!
+
+	x=0 y=0 w=30 h=30
+
+	set rect main_menu
+	set title main_menu  = "Speaker Menu"
+
+  	set remove main_menu = "Alter Tagged Message"
+   	set remove main_menu = "Clear Tagged Message"
+   	set add main_menu="Alter Tagged Message"
+   	set add main_menu="Clear Tagged Message"
+   
+!=== CONTROL MENU ===!
+
+   	if valid main_menu then
+      		begin
+         			case main_menu of
+      			"Alter Tagged Message"
+            	   			begin
+         					set title tag_message_panel = "Modify Tagged Message"
+         					set label tag_message_panel.str = "Tag Message :"
+         					set unpinned tag_message_panel
+         					request tag_message_panel
+            	   			end
+
+      			"Clear Tagged Message"
+            	   			begin
+         					set_c_value(db_address("c" + c_offset), src, "")
+         	   			end
+      		
+         			default
+         	   			begin
+         	   			end
+         			set invalid main_menu
+		end
+
+
+!=== TAG MESSAGE BOX ===!
+
+	x = 0 w = 40 h = 50
+	if selb and c_inputs.c_value <> "" then
+	   begin
+   		message_text_box(c_inputs.c_value)
+   	   end
+
+end
+
+!===============================================================================!
+
+!=================================================!
+!=== AMPLIFIER===!
+!=================================================!
+
+!=============================================!
+!=== Database Structure: 				===!
+!=== 						===!
+!=== PLC_INPUTS					===!
+!=== plc_inputs[1] = plca_comms_ip		 	===!
+!=== plc_inputs[2] = plcb_comms_ip			===!
+!===						===!
+!=== B_INPUTS					===!
+!=== b_inputs[1] = Amplifier_Fault			===!
+!===						===!
+!=== ALARMS					===!
+!=== b_alarms[1] = Amplifier_Fault_Alarm		===!
+!===						===!
+!=== C_INPUTS					===!
+!=== c_inputs[1] = Tagged Message			===!
+!===						===!
+!=============================================!
+
+Object Amplifier ( plc_offset1 = int,
+		plc_offset2 = int,
+		b_offset = int,
+		alm_offset = int,
+		c_offset = int,
+		label = string (12),
+		src = source)
+		 
+!=== Define variables linked to DB points ===!
+var plc_north 		= input b_db_row_type[1]
+var plc_south 		= input b_db_row_type[1]
+var b_inputs 		= input  b_db_row_type[1]
+var b_alarms 		= input alarm_row_type[1]
+var c_inputs 		= input c_db_row_type[1]
+
+!=== Define panel variables===!
+var tag_message_panel = panel  panel_item_row
+
+
+!=== Define loopbacks ===!
+
+var main_menu = menu  string(30)
+var availability_offset = int
+var dressed = int
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+	   	
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms then
+	
+		begin	
+			set source b_alarms = src
+		  	set filter b_alarms.db_addr = lim_ge
+		   	set limit b_alarms.db_addr = db_address("b" + (b_offset+18))
+		   	set priority b_alarms.db_addr = 15
+		   	set persist b_alarms
+		   	set mayexist b_alarms
+		   	request b_alarms
+		end
+
+	!=== If a valid c_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source c_inputs then
+      	
+		begin	
+			set source c_inputs = src
+			set filter c_inputs.db_addr = lim_ge
+			set limit  c_inputs.db_addr = db_address("c" + c_offset)
+			set persist c_inputs 
+			set mayexist c_inputs 
+			request c_inputs 	
+		end
+
+!=== If a valid plc_offset1 then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_north then
+      	
+		begin	
+			set source plc_north = src
+			set filter plc_north.db_addr = lim_ge
+			set limit  plc_north.db_addr = db_address("b" + plc_offset1)
+			set persist plc_north  
+			set mayexist plc_north 
+			request plc_north 	
+		end	
+
+!=== If a valid plc_offset2 then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_south then
+      	
+		begin	
+			set source plc_south  = src
+			set filter plc_south.db_addr = lim_ge
+			set limit  plc_south.db_addr = db_address("b" + plc_offset2)
+			set persist plc_south  
+			set mayexist plc_south 
+			request plc_south 	
+		end	
+
+	if c_inputs.c_value <> "" then
+		begin
+			x=0 y=0 w=90 h=20 fg=yellow lw=6 box
+		end
+
+
+!=== DRAW AMPLIFIER ===!
+
+		x=0 y=0 w=90 h=20 fg=black lw=1 box
+
+		!===Test for fault===!
+
+				if b_alarms.alarm_status == w_note then
+					begin
+						x=1 y=1 w=88 h=18 fg=flashred rect
+						x=0 y=0 w=90 h=20 fg=black lw=1 box
+      					end
+
+				else if b_alarms.alarm_status == w_clr then
+					begin
+						x=1 y=1 w=88 h=18 fg=red rect
+						x=0 y=0 w=90 h=20 fg=black lw=1 box
+      					end
+
+				else
+   					begin
+						x=1 y=1 w=88 h=18 fg=grey rect
+						x=0 y=0 w=90 h=20 fg=black lw=1 box			
+   					end
+			
+!===Test for no comms===!
+
+		if (plc_north.b_value) and (plc_south.b_value) == on then
+			begin
+				x=0 y=0 w=90 h=20 fg=magenta lw=1 box
+				x=1 y=1 w=88 h=18 fg=magenta rect
+			end
+
+!===Add label===!
+
+	x =45 y=28
+	just=centrecentre
+	ch=10 font=font_normal fontname="arial" tfg=black text(label)
+	Clear
+
+!=== TAG MESSAGE PANEL ===!
+   	if valid tag_message_panel then
+      		begin
+   			set_c_value( db_address("c" + c_offset),src,tag_message_panel.str)
+   			set invalid tag_message_panel
+      		end
+
+!=== MAIN MENU ===!
+
+	x=0 y=0 w=88 h=18
+
+	set rect main_menu
+	set title main_menu  = "Amplifier Menu"
+
+  	set remove main_menu = "Alter Tagged Message"
+   	set remove main_menu = "Clear Tagged Message"
+   	set add main_menu="Alter Tagged Message"
+   	set add main_menu="Clear Tagged Message"
+   
+!=== CONTROL MENU ===!
+
+   	if valid main_menu then
+      		begin
+         			case main_menu of
+      			"Alter Tagged Message"
+            	   			begin
+         					set title tag_message_panel = "Modify Tagged Message"
+         					set label tag_message_panel.str = "Tag Message :"
+         					set unpinned tag_message_panel
+         					request tag_message_panel
+            	   			end
+
+      			"Clear Tagged Message"
+            	   			begin
+         					set_c_value(db_address("c" + c_offset), src, "")
+         	   			end
+      		
+         			default
+         	   			begin
+         	   			end
+         			set invalid main_menu
+		end
+
+!=== TAG MESSAGE BOX ===!
+
+	x = 0 w = 40 h = 50
+	if selb and c_inputs.c_value <> "" then
+	   begin
+   		message_text_box(c_inputs.c_value)
+   	   end
+
+end
+
+!===============================================================================!
+
+!=================================================!
+!=== SWITCH===!
+!=================================================!
+
+!=============================================!
+!=== Database Structure: 				===!
+!=== 						===!
+!=== PLC_INPUTS					===!
+!=== plc_inputs[1] = plca_comms_ip		 	===!
+!=== plc_inputs[2] = plcb_comms_ip			===!
+!===						===!
+!=== B_INPUTS					===!
+!=== b_inputs[1] = Switch_Fault			===!
+!===						===!
+!=== ALARMS					===!
+!=== b_alarms[1] = Switch_Fault_Alarm		===!
+!===						===!
+!=== C_INPUTS					===!
+!=== c_inputs[1] = Tagged Message			===!
+!===						===!
+!=============================================!
+
+Object Switch ( plc_offset = int,
+		b_offset = int,
+		alm_offset = int,
+		c_offset = int,
+		label = string (12),
+		src = source)
+		 
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var b_inputs 		= input  b_db_row_type[1]
+var b_alarms 		= input alarm_row_type[1]
+var c_inputs 		= input c_db_row_type[1]
+
+!=== Define local variables for inputs ===!
+var switch_fault			= onoff
+var switch_nocomms		= onoff
+
+var switch_fault_alm		= alarm_status
+
+
+!=== Define panel variables ===!
+var tag_message_panel = panel  panel_item_row
+
+
+var main_menu = menu  string(30)
+var availability_offset = int
+var dressed = int
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+	   	
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms then
+	
+		begin	
+			set source b_alarms = src
+		  	set filter b_alarms.db_addr = lim_ge
+		   	set limit b_alarms.db_addr = db_address("b" + (b_offset+18))
+		   	set priority b_alarms.db_addr = 15
+		   	set persist b_alarms
+		   	set mayexist b_alarms
+		   	request b_alarms
+		end
+
+	!=== If a valid c_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source c_inputs then
+      	
+		begin	
+			set source c_inputs = src
+			set filter c_inputs.db_addr = lim_ge
+			set limit  c_inputs.db_addr = db_address("c" + c_offset)
+			set persist c_inputs 
+			set mayexist c_inputs 
+			request c_inputs 	
+		end
+
+	if c_inputs.c_value <> "" then
+		begin
+			x=0 y=0 w=90 h=20 fg=yellow lw=6 box
+		end
+
+!=== DRAW SWITCH ===!
+
+		x=0 y=0 w=90 h=20 fg=black lw=1 box
+		x=5 y=5 w=7 h=10 fg=black box
+		x=12 y=5 w=7 h=10 fg=black box
+		x=19 y=5 w=7 h=10 fg=black box
+		x=26 y=5 w=7 h=10 fg=black box
+		x=37 y=5 w=7 h=10 fg=black box
+		x=44 y=5 w=7 h=10 fg=black box
+		x=51 y=5 w=7 h=10 fg=black box
+		x=58 y=5 w=7 h=10 fg=black box
+		x=69 y=5 w=7 h=10 fg=black box
+		x=76 y=5 w=7 h=10 fg=black boX
+
+		!=== Test for fault ==!
+
+				if b_alarms.alarm_status == w_note then
+					begin
+						x=1 y=1 w=88 h=18 fg=flashred rect
+						x=6 y=6 w=26 h=8 fg=grey rect
+						x=38 y=6 w=26 h=8 fg=grey rect
+						x=70 y=6 w=12 h=8 fg=grey rect
+						x=5 y=5 w=7 h=10 fg=black lw=1 box
+						x=12 y=5 w=7 h=10 fg=black box
+						x=19 y=5 w=7 h=10 fg=black box
+						x=26 y=5 w=7 h=10 fg=black box
+						x=37 y=5 w=7 h=10 fg=black box
+						x=44 y=5 w=7 h=10 fg=black box
+						x=51 y=5 w=7 h=10 fg=black box
+						x=58 y=5 w=7 h=10 fg=black box
+						x=69 y=5 w=7 h=10 fg=black box
+						x=76 y=5 w=7 h=10 fg=black box
+						x=0 y=0 w=90 h=20 fg=black lw=1 box
+						clear
+      					end
+
+				else if b_alarms.alarm_status == w_clr then
+					begin
+						x=1 y=1 w=88 h=18 fg=red rect
+						x=6 y=6 w=26 h=8 fg=grey rect
+						x=38 y=6 w=26 h=8 fg=grey rect
+						x=70 y=6 w=12 h=8 fg=grey rect
+						x=5 y=5 w=7 h=10 fg=black lw=1 box
+						x=12 y=5 w=7 h=10 fg=black box
+						x=19 y=5 w=7 h=10 fg=black box
+						x=26 y=5 w=7 h=10 fg=black box
+						x=37 y=5 w=7 h=10 fg=black box
+						x=44 y=5 w=7 h=10 fg=black box
+						x=51 y=5 w=7 h=10 fg=black box
+						x=58 y=5 w=7 h=10 fg=black box
+						x=69 y=5 w=7 h=10 fg=black box
+						x=76 y=5 w=7 h=10 fg=black box
+						x=0 y=0 w=90 h=20 fg=black lw=1 box
+						clear
+      					end
+
+				else
+   					begin
+						x=1 y=1 w=88 h=18 fg=grey rect
+						x=6 y=6 w=26 h=8 fg=grey rect
+						x=38 y=6 w=26 h=8 fg=grey rect
+						x=70 y=6 w=12 h=8 fg=grey rect
+						x=5 y=5 w=7 h=10 fg=black lw=1 box
+						x=12 y=5 w=7 h=10 fg=black box
+						x=19 y=5 w=7 h=10 fg=black box
+						x=26 y=5 w=7 h=10 fg=black box
+						x=37 y=5 w=7 h=10 fg=black box
+						x=44 y=5 w=7 h=10 fg=black box
+						x=51 y=5 w=7 h=10 fg=black box
+						x=58 y=5 w=7 h=10 fg=black box
+						x=69 y=5 w=7 h=10 fg=black box
+						x=76 y=5 w=7 h=10 fg=black box
+						x=0 y=0 w=90 h=20 fg=black lw=1 box
+						clear
+					end
+
+!=== Test for no comms ===!
+
+		if plc_inputs[1].b_value == on then
+			begin
+				x=1 y=1 w=88 h=18 fg=magenta rect
+				x=0 y=0 w=90 h=20 fg=magenta lw=1 box
+			end
+			
+
+!=== Add label ===!
+
+	x =45 y=28
+	just=centrecentre
+	ch=10 font=font_normal fontname="arial" tfg=black text(label)
+	Clear
+
+!=== TAG MESSAGE PANEL ===!
+
+   	if valid tag_message_panel then
+      		begin
+   			set_c_value( db_address("c" + c_offset),src,tag_message_panel.str)
+   			set invalid tag_message_panel
+      		end
+
+!=== MAIN MENU ===!
+
+	x=0 y=0 w=88 h=18
+
+	set rect main_menu
+	set title main_menu  = "Switch Menu"
+
+  	set remove main_menu = "Alter Tagged Message"
+   	set remove main_menu = "Clear Tagged Message"
+   	set add main_menu="Alter Tagged Message"
+   	set add main_menu="Clear Tagged Message"
+   
+!=== CONTROL MENU ===!
+
+   	if valid main_menu then
+      		begin
+         			case main_menu of
+      			"Alter Tagged Message"
+            	   			begin
+         					set title tag_message_panel = "Modify Tagged Message"
+         					set label tag_message_panel.str = "Tag Message :"
+         					set unpinned tag_message_panel
+         					request tag_message_panel
+            	   			end
+
+      			"Clear Tagged Message"
+            	   			begin
+         					set_c_value(db_address("c" + c_offset), src, "")
+         	   			end
+      		
+         			default
+         	   			begin
+         	   			end
+         			set invalid main_menu
+		end
+
+
+!=== TAG MESSAGE BOX ===!
+
+	x = 0 w = 40 h = 50
+	if selb and c_inputs.c_value <> "" then
+	   begin
+   		message_text_box(c_inputs.c_value)
+   	   end
+
+end
+
+!===============================================================================!
+
+!=================================================!
+!=== PSU===!
+!=================================================!
+
+!=============================================!
+!=== Database Structure: 				===!
+!=== 						===!
+!=== PLC_INPUTS					===!
+!=== plc_inputs[1] = plca_comms_ip		 	===!
+!=== plc_inputs[2] = plcb_comms_ip			===!
+!===						===!
+!=== B_INPUTS					===!
+!=== b_inputs[1] = Psu_Fault			===!
+!===						===!
+!=== ALARMS					===!
+!=== b_alarms[1] = Psu_Fault_Alarm			===!
+!===						===!
+!=== C_INPUTS					===!
+!=== c_inputs[1] = Tagged Message			===!
+!===						===!
+!=============================================!
+
+Object PSU ( plc_offset = int,
+		b_offset = int,
+		alm_offset = int,
+		c_offset = int,
+		label = string (12),
+		src = source)
+		 
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var b_inputs 		= input  b_db_row_type[1]
+var b_alarms 		= input alarm_row_type[1]
+var c_inputs 		= input c_db_row_type[1]
+
+!=== Define local variables for inputs ===!
+var psu_fault			= onoff
+var psu_nocomms		= onoff
+
+var psu_fault_alm		= alarm_status
+
+
+!=== Define panel variables ===!
+var tag_message_panel = panel  panel_item_row
+
+
+!=== Define loopbacks ===!
+
+var main_menu = menu  string(30)
+var availability_offset = int
+var dressed = int
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+	   	
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms then
+	
+		begin	
+			set source b_alarms = src
+		  	set filter b_alarms.db_addr = lim_ge
+		   	set limit b_alarms.db_addr = db_address("b" + (b_offset+18))
+		   	set priority b_alarms.db_addr = 15
+		   	set persist b_alarms
+		   	set mayexist b_alarms
+		   	request b_alarms
+		end
+
+	!=== If a valid c_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source c_inputs then
+      	
+		begin	
+			set source c_inputs = src
+			set filter c_inputs.db_addr = lim_ge
+			set limit  c_inputs.db_addr = db_address("c" + c_offset)
+			set persist c_inputs 
+			set mayexist c_inputs 
+			request c_inputs 	
+		end
+
+
+	if c_inputs.c_value <> "" then
+		begin
+			x=0 y=0 w=60 h=30 fg=yellow lw=6 box
+		end
+
+!=== DRAW PSU ===!
+
+		x=0 y=0 w=60 h=30 fg=black box
+
+		!=== Test for fault ===!
+
+				If b_alarms.alarm_status == w_note then
+					Begin
+						x=1 y=1 w=58 h=28 fg=flashred rect
+						x=0 y=0 w=60 h=30 fg=black box
+      					End
+
+				else If b_alarms.alarm_status == w_clr then
+					Begin
+						x=1 y=1 w=58 h=28 fg=red rect
+						x=0 y=0 w=60 h=30 fg=black box
+      					End
+
+				Else
+   					Begin
+						x=1 y=1 w=58 h=28 fg=grey rect
+						x=0 y=0 w=60 h=30 fg=black box
+   					End
+		
+!=== Test for no comms ===!
+
+		If plc_inputs[1].b_value == on then
+			Begin
+				x=1 y=1 w=58 h=28 fg=magenta rect
+				x=0 y=0 w=60 h=30 fg=magenta box
+			End
+
+!=== Add label ===!
+
+	x =30 y=38
+	just=centrecentre
+	ch=10 font=font_normal fontname="arial" tfg=black text(label)
+	Clear
+
+!=== TAG MESSAGE PANEL ===!
+
+   	if valid tag_message_panel then
+      		begin
+   			set_c_value( db_address("c" + c_offset),src,tag_message_panel.str)
+   			set invalid tag_message_panel
+      		end
+
+!=== MAIN MENU ===!
+
+	x=0 y=0 w=88 h=18
+
+	set rect main_menu
+	set title main_menu  = "Psu Menu"
+
+  	set remove main_menu = "Alter Tagged Message"
+   	set remove main_menu = "Clear Tagged Message"
+   	set add main_menu="Alter Tagged Message"
+   	set add main_menu="Clear Tagged Message"
+   
+!=== CONTROL MENU ===!
+
+   	if valid main_menu then
+      		begin
+         			case main_menu of
+      			"Alter Tagged Message"
+            	   			begin
+         					set title tag_message_panel = "Modify Tagged Message"
+         					set label tag_message_panel.str = "Tag Message :"
+         					set unpinned tag_message_panel
+         					request tag_message_panel
+            	   			end
+
+      			"Clear Tagged Message"
+            	   			begin
+         					set_c_value(db_address("c" + c_offset), src, "")
+         	   			end
+      		
+         			default
+         	   			begin
+         	   			end
+         			set invalid main_menu
+		end
+
+
+!=== TAG MESSAGE BOX ===!
+
+	x = 0 w = 40 h = 50
+	if selb and c_inputs.c_value <> "" then
+	   begin
+   		message_text_box(c_inputs.c_value)
+   	   end
+
+end
+
+!===============================================================================!
+
+
+
+!=================================================!
+!=== CARGO ZONES SELECT ===!
+!=================================================!
+
+!=================!
+!=== Cargo Zone 1 ===!
+!=================!
+
+Object cargo_zone1 = onoff
+
+var pressed = int
+var local = loopback onoff
+
+!=== BEGIN OBJECT ===!
+
+begin
+	pressed=0
+	x=250 y=0 w=45 h=84 fg=grey60 rect
+	pressed=selb
+	if INVALID local then 
+		local = off
+
+!=== Turn local on===!
+
+	if (pressed) and ( local == off) then
+   		begin
+   			local = on
+ 		end
+
+!=== Turn local off===!
+
+	else if (pressed) and (local ==on) then
+   		begin
+   			local = off
+   		end
+
+!=== Animate zone green ===!
+
+	if local == on then
+  		begin
+   			x=250 y=0 w=45 h=84 fg=green rect
+  		end
+	cargo_zone1=local
+end
+
+!=================================================!
+
+!=================!
+!=== Cargo Zone 2 ===!
+!=================!
+
+
+Object cargo_zone2= onoff
+var pressed = int
+var local = loopback onoff
+begin
+	pressed=0
+	x=50 y=0 w=200 h=84 fg=grey60 rect
+	pressed=selb
+	if INVALID local then 
+		local = off
+
+!=== Turn local on===!
+
+	if (pressed) and ( local == off) then
+   		begin
+   			local = on
+ 		end
+
+!=== Turn local off===!
+
+	else if (pressed) and (local ==on) then
+   		begin
+  			 local = off
+   		end
+
+!=== Animate zone green ===!
+
+	if local == on then
+  		begin
+  			 x=50 y=0 w=200 h=84 fg=green rect
+   		end
+	cargo_zone2=local
+end
+
+!=================================================!
+
+!=================!
+!=== Cargo Zone 3 ===!
+!=================!
+
+Object cargo_zone3 = onoff
+var pressed = int
+var local = loopback onoff
+begin
+	pressed=0
+	x=5 y=0 w=45 h=84 fg=grey60 rect
+	pressed=selb
+	if INVALID local then 
+		local = off
+
+!=== Turn local on===!
+
+	if (pressed) and ( local == off) then
+   		begin
+  			local = on
+		end
+
+!=== Turn local off===!
+
+	else if (pressed) and (local ==on) then
+   		begin
+  			 local = off
+   		end
+
+!=== Animate zone green ===!
+
+	if local == on then
+   		begin
+   			x=5y=0 w=45 h=84 fg=green rect
+  		 end
+	cargo_zone3=local
+end
+
+!=================================================!
+
+!=================!
+!=== Cargo Loop ===!
+!=================!
+
+Object cargo_loop = onoff
+var pressed = int
+var local = loopback onoff
+begin
+	pressed=0
+   	x=140 y=-23 w=15 h=15 fg=grey60 rect
+	pressed=selb
+	if INVALID local then 
+		local = off
+
+!=== Turn local on===!
+
+	if (pressed) and ( local == off) then
+   		begin
+   			local = on
+ 		end
+
+!=== Turn local off===!
+
+	else if (pressed) and (local ==on) then
+   		begin
+   			local = off
+   		end
+
+!=== Animate zone green ===!
+
+	if local == on then
+   		begin
+   			x=140 y=-23 w=15 h=15 fg=green rect
+   		end
+	cargo_loop=local
+
+!=== Animation outline ===!
+
+	x=140 y=-23w=15 h=15 fg=black lw=2 box
+end
+
+!=================================================!
+
+!Object clear_zones(label = string(20), cargo_zone1, cargo_zone2, cargo_zone3, cargo_loop)
+
+var pressed = int
+var button_width = int
+
+begin
+
+
+	pressed=0
+	just=topleft
+	fg=decoroff
+	if button_width then
+   		w = button_width
+	else if label <> "" then
+   		w = length (label) + 10
+	else
+   		w = length ("Do it") + 10
+		h = ch + ch/3
+
+
+    	pressed = selb
+    	tfg=blue
+    	if (pressed) then
+       		begin
+			
+    		end
+
+	if pressed then
+   		begin
+   			fg = decoron rect 
+   			fg = decorshadow
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorlight
+   			move
+   			x = w add
+  			y = 0 add
+   			line
+   			end
+	else
+		begin  
+   			rect 
+   			fg = decorlight
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorshadow
+   			move
+  			x = w add
+   			y = 0 add
+   			line
+   			end
+
+	x = w/2 y = h/2
+	just = centrecentre
+	if label <> "" then
+   		text (label)
+	else
+   		text ("Do it")
+
+end!
+
+!===============================================================================!
+
+
+!==========================================!
+!=== ZONE 1 MAINT===!
+!==========================================!
+
+Object maint_zone1= onoff
+
+var pressed = int
+var local = loopback onoff
+begin
+	x=250 y=0 w=45 h=84 fg=grey60 rect
+end
+
+!===== ZONE2 MAINT =======!
+
+
+Object maint_zone2= onoff
+var pressed = int
+var local = loopback onoff
+begin
+	pressed=0
+	x=50 y=0 w=200 h=84 fg=grey60 rect
+	pressed=selb
+	if INVALID local then 
+		local = off
+
+	if (pressed) and ( local == off) then
+   		begin
+   			local = on
+ 		end
+
+	else if (pressed) and (local ==on) then
+   		begin
+   			local = off
+   		end
+
+	if local == on then
+   		begin
+   			x=60 y=55 ch=20 tfg=blue font=font_bold fontname="arial" text("M")
+   		end
+
+	else
+		begin
+			x=60 y=55 ch=20 font=font_bold fontname="arial" tfg=grey40 text("M")
+   		end
+
+	maint_zone2=local
+end
+
+!===== ZONE3 MAINT =======!
+
+Object maint_zone3 = onoff
+var pressed = int
+var local = loopback onoff
+begin
+
+	x=5 y=0 w=45 h=84 fg=grey60 rect
+
+end
+
+!===============================================================================!
+
+!======================================================================!
+!=== Database Structure                         		===!
+!===                                                      		===!
+!=== PLC_INPUTS                                  		===!
+!=== plc_inputs[1] = plca_comms_ip        		===!
+!=== plc_inputs[2] = plcb_comms_ip        		===!
+!===                                                      		===!
+!=== B_INPUTS                                      		===!
+!=== b_inputs[1] = zone1	                  		===!
+!=== b_inputs[2] = zone2				===!
+!=== b_inputs[3] = zone3	                  		===!
+!=== b_inputs[4] = zone4				===!
+!===                                                       		===!
+!======================================================================!
+
+!=================================================!
+!=== CARGO ZONES CONFIRM===!
+!=================================================!
+
+Object PAVA_Cargo_zones ( plc_offset = int,
+	b_offset = int,
+	b3_offset = int,
+	src = source)
+		 
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var b_inputs 		= input  b_db_row_type[3]
+var b3_inputs		= input b_db_row_type[3]
+
+!=== Define local variables for inputs ===!
+
+
+
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b3_inputs then
+      	
+		begin	
+			set source b3_inputs = src
+			set filter b3_inputs.db_addr = lim_ge
+			set limit  b3_inputs.db_addr = db_address("b" + b3_offset)
+			set persist b3_inputs 
+			set mayexist b3_inputs 
+			request b3_inputs 	
+		end
+	   	
+
+!=== POPULATE LOCAL VARIABLES FOR USE IN CODE ===!
+
+	
+
+
+
+	if b_inputs[1].b_value == on then
+   		begin
+   			x=250 y=0 w=45 h=84 fg=green rect
+   		end
+	else
+   		begin
+   			x=250 y=0 w=45 h=84 fg=grey60 rect
+   		end
+
+	if b3_inputs[1].b_value then
+   		begin
+			x=260 y=0 ch=20 font=font_bold fontname="arial" tfg=blue text("M")
+  		 end
+
+	if b_inputs[2].b_value == on then
+   		begin
+   			x=50 y=0 w=200 h=84 fg=green rect
+   		end
+
+	else
+   		begin
+   			x=50 y=0 w=199 h=84 fg=grey60 rect
+   		end
+
+	if b3_inputs[2].b_value then
+   		begin
+			x=60 y=55 ch=20 font=font_bold fontname="arial" tfg=blue text("M")
+   		end
+
+	if b_inputs[3].b_value == on then
+   		begin
+   			x=5 y=0 w=45 h=84 fg=green rect
+   		end
+
+	else
+   		begin
+   			x=5 y=0 w=45 h=84 fg=grey60 rect
+   		end
+
+	if b3_inputs[3].b_value then
+   		begin
+			x=20 y=0 ch=20 font=font_bold fontname="arial" tfg=blue text("M")
+		end
+	
+
+	clear
+	x=0 y=0 add x=300 y=0 add fg=darkgrey lw=1 line
+	clear
+	x=0 y=84 add x=300 y=84 add fg=darkgrey lw=1 line
+	clear
+	x=50 y=2 add x=251 y=2 add fg=orange4 lw=4 line
+	clear
+	x=50 y=82 add x=251 y=82 add fg=orange4 lw=4 line
+	clear
+	x=50 y=0 add x=50 y=84 add fg=darkgrey lw=1 line
+	clear
+	x=251 y=0 add x=251 y=84 add fg=darkgrey lw=1 line
+	clear
+
+	x=26 y=35 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("South")
+	clear
+	x=26 y=49 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("Portal")
+	clear
+	x=150 y=42 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("Cargo Tunnel")
+	clear
+	x=272 y=35 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("North")
+	clear
+	x=272 y=49 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("Portal")
+	clear
+
+
+end
+
+!===============================================================================!
+
+!======================================================================!
+!=== Database Structure                         		===!
+!===                                                      		===!
+!=== PLC_INPUTS                                  		===!
+!=== plc_inputs[1] = plca_comms_ip        		===!
+!=== plc_inputs[2] = plcb_comms_ip        		===!
+!===                                                      		===!
+!=== B_INPUTS                                      		===!
+!=== b_inputs[1] = zone1	                  		===!
+!===                                                       		===!
+!======================================================================!
+
+!==========================================!
+!=== LOOPING===!
+!==========================================!
+
+Object looping ( plc_offset = int,
+	b_offset = int,
+	src = source)
+
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var b_inputs 		= input  b_db_row_type[1]
+
+!=== Define local variables for inputs ===!
+var looping		= onoff
+var pressed		= int
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+	   	
+
+!=== POPULATE LOCAL VARIABLES FOR USE IN CODE ===!
+
+
+	pressed=0
+	just=topright
+	x=-10 y=0 ch=14 tfg=black font=font_bold fontname="arial" text("Looping")
+	clear
+	just=topleft
+
+
+	if b_inputs.b_value == on then
+   		begin
+   			x=0 y=0 w=15 h=15 fg=green rect
+   		end
+
+	else
+   		begin
+   			x=0 y=0 w=15 h=15 fg=grey60 rect
+   		end
+
+	clear
+	x=0 y=0 w=15 h=15 fg=black lw=2 box
+	clear
+
+end
+
+
+!===============================================================================!
+
+
+Object pava_message ( plc_offset = int,e_offset = int,src = source)
+
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var e_inputs 		= input e_db_row_type[1]
+
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source e_inputs then
+      	
+		begin	
+			set source e_inputs = src
+			set filter e_inputs.db_addr = lim_ge
+			set limit  e_inputs.db_addr = db_address("e" + e_offset)
+			set persist e_inputs 
+			set mayexist e_inputs 
+			request e_inputs 	
+		end
+
+	x=0 y=0 h=20 w=622 fg=white rect
+	x=0 y=0 h=20 w=622 fg=black lw=1 box
+
+		if e_inputs.e_value < 1 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("")
+  			 end
+
+		else if e_inputs.e_value == 1 then
+  			 begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Fire In Tunnel (Leave Vehicle)")
+   			end
+
+		else if e_inputs.e_value== 2 then
+   			begin
+  				 X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Incident Ahead (Wait In Vehicle)")  
+   			end
+
+		else if e_inputs.e_value== 3 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Emergency In Tunnel (Leave Vehicle)")  
+   			end
+
+		else if e_inputs.e_value== 4 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Test Message")
+   			end  
+
+		else if e_inputs.e_value== 5 then
+  			 begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Test Message")
+   			end 
+
+		else if e_inputs.e_value== 6 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Test Message")
+   			end  
+
+		else if e_inputs.e_value== 7 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Test Message")
+  			end 
+
+		else if e_inputs.e_value== 8 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Test Message")
+   			end  
+
+		else if e_inputs.e_value== 9 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Test Message")
+   			end 
+
+		else if e_inputs.e_value== 10 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Test Message")
+   			end
+
+		else if e_inputs.e_value== 11 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Test Message")
+   			end
+
+		else if e_inputs.e_value== 12 then
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Test Message")
+   			end 
+
+		else
+   			begin
+   				X=2 y=2 ch=18 tfg=black font=font_bold fontname="arial" text("Unknown")
+   			end
+end
+
+!===============================================================================!
+
+Object message_button(ch, font, label=string_40, button_width = int, state = int, button_number =int) = int
+
+Begin
+
+	just=topleft
+	fg=decoroff
+	if button_width then
+   		w = button_width
+	else if label <> "" then
+   		w = length (label) + 10
+	else
+   		w = length ("Do it") + 10
+		h = ch + ch/3
+
+	if state == button_number then
+   		begin
+  			fg = orange rect 
+   			fg = decorshadow
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorlight
+   			move
+   			x = w add
+   			y = 0 add
+  			line
+   		end
+
+	else
+   		begin  
+  	 		rect 
+   			fg = decorlight
+   			x = w move
+  	 		x = 0 add
+  	 		y = h add
+   			line
+			fg = decorshadow
+   			move
+   			x = w add
+   			y = 0 add
+   			line
+   		end
+
+	x = w/2 y = h/2
+	just = centrecentre
+	if label <> "" then
+   		text(label)
+	else
+		text ("Do it")
+
+	message_button = selb
+  
+End
+
+!=======================================================================================================!
+
+!===PLAY BUTTON CARGO===!
+
+Object play_button_cargo(b_offset=int, e_offset=int, src=source, ch, font, label=string_40, button_width = int, z1=onoff, z2=onoff, z3=onoff, loop=onoff, message_req = int)
+
+var pressed = int
+var local_address = string
+
+Begin
+	pressed=0
+	just=topleft
+	fg=decoroff
+	if button_width then
+   		w = button_width
+	else if label <> "" then
+   		w = length (label) + 10
+	else
+		w = length ("Do it") + 10
+		h = ch + ch/3
+
+	if message_number <> 0 then
+		begin
+			if (z1==on) or (z2==on) or (z3==on)  then
+				begin
+					pressed=selb
+        					tfg=green4
+					if (pressed) then
+						begin
+							local_address = ""
+							local_address = "B" + string(b_offset+10)
+							set_b_value(db_address(local_address), src, z3)
+							local_address = ""
+							local_address = "B" + string(b_offset+11)
+							set_b_value(db_address(local_address), src, z2)
+							local_address = ""
+							local_address = "B" + string(b_offset+12)
+							set_b_value(db_address(local_address), src, z1)
+							local_address = ""
+							local_address = "B" + string(b_offset+13)
+							set_b_value(db_address(local_address), src, loop)
+							local_address = ""
+							local_address = "E" + string(e_offset)
+							set_e_value(db_address(local_address), src, message_req)      
+						end
+				end
+	else tfg=grey 
+		end 
+	else tfg=grey
+
+
+
+	if pressed then
+		begin
+			fg = decoron rect 
+   			fg = decorshadow
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorlight
+   			move
+   			x = w add
+   			y = 0 add
+   			line
+   			exit
+   		end
+
+	else
+		begin  
+   			rect 
+   			fg = decorlight
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorshadow
+  			move
+  			x = w add
+   			y = 0 add
+   			line
+   		end
+
+
+
+	x = w/2 y = h/2
+	just = centrecentre
+	if label <> "" then
+		text(label)
+	else
+		text ("Do it")
+
+end
+
+!================================================================================!
+
+!=======================================================================================================!
+!=================================================!
+!=== APPLY BUTTON MAINT ===!
+!=================================================!
+
+Object apply_button_maint (b2_offset=int, src=source, tfg, ch, font, label=string_40, button_width = int, z1=onoff, z2=onoff, z3=onoff)
+
+!=== Define local variables for inputs ===!
+var pressed = int
+var local_address = string
+
+!=== BEGIN OBJECT ===!
+
+Begin
+	pressed=0
+	just=topleft
+	fg=decoroff
+
+	if button_width then
+   	w = button_width
+
+	else if label <> "" then
+   	w = length (label) + 10
+
+	else
+   	w = length ("Do it") + 10
+	h = ch + ch/3
+
+!=== Test for zones selected ===!
+
+
+	pressed=selb
+
+	!=== Test for mouse click ===!
+
+		if (pressed) then
+         			begin
+			
+			!=== Zone 1 set and reset ===!			
+	
+					
+
+			!=== Zone 2 set and reset ===!
+
+				if z2 == on then
+					begin
+						local_address = ""
+						local_address = "B" + string(b2_offset+4)
+          						set_b_value(db_address(local_address), src, on)
+						local_address = ""
+						local_address = "B" + string(b2_offset+1)
+          						set_b_value(db_address(local_address), src, off)
+					end
+
+				else
+					begin
+						local_address = ""
+						local_address = "B" + string(b2_offset+4)
+          						set_b_value(db_address(local_address), src, off)
+						local_address = ""
+						local_address = "B" + string(b2_offset+1)
+          						set_b_value(db_address(local_address), src, on)
+					end
+
+			!=== Zone 3 set and reset ===!
+
+					
+         		
+      	end
+
+
+!=== DRAW BUTTON===!
+
+	if pressed then
+		begin
+			fg = decoron rect 
+			fg = decorshadow
+			x = w move
+			x = 0 add
+			y = h add
+			line
+			fg = decorlight
+			move
+			x = w add
+			y = 0 add
+			line
+			end
+	else
+		begin  
+			rect 
+			fg = decorlight
+			x = w move
+			x = 0 add
+			y = h add
+			line
+			fg = decorshadow
+			move
+			x = w add
+			y = 0 add
+			line
+		end
+
+!=== Add label ===!
+
+	x = w/2 y = h/2
+	just = centrecentre
+	if label <> "" then
+   		text(label)
+	else
+  		 text ("Do it")
+end
+
+!================================================================================!
+
+
+Object abandon_button(ch, font,tfg, label=string_40, button_width = int)
+
+var pressed = int
+
+Begin
+	pressed=0
+	just=topleft
+	if button_width then
+   		w = button_width
+	else if label <> "" then
+   		w = length (label) + 10
+	else
+   		w = length ("Do it") + 10
+		h = ch + ch/3
+	pressed=selb
+	if pressed then
+   		begin
+   			fg = decoron rect 
+  			fg = decorshadow
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorlight
+   			move
+  			x = w add
+   			y = 0 add
+  			line
+   			exit
+   		end
+	else
+   		begin  
+   			rect 
+   			fg = decorlight
+   			x = w move
+  			x = 0 add
+   			y = h add
+  			line
+   			fg = decorshadow
+   			move
+   			x = w add
+   			y = 0 add
+   			line
+   			end
+
+	x = w/2 y = h/2
+	just = centrecentre
+	if label <> "" then
+   		text(label)
+	else
+   		text ("Do it")
+ 
+end
+
+!=============================================================================================!
+
+
+Object stop_message_button_cargo(ch, font, label=string_40, button_width = int,plc_offset = int, b_offset = int, src=source)
+
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var b_inputs 		= input  b_db_row_type[10]
+
+!=== Define local variables for inputs ===!
+var pressed			= int
+var local_address			=string
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+
+
+	pressed=0
+	just=topleft
+	fg=decoroff
+	if button_width then
+   		w = button_width
+	else if label <> "" then
+   		w = length (label) + 10
+	else
+   		w = length ("Do it") + 10
+		h = ch + ch/3
+
+!===If a message is playing enable the stop button===!
+	if b_inputs[1].b_value == on then
+  		begin
+    			pressed = selb
+    			tfg=red
+    			if (pressed) then
+       				begin
+					local_address = "B"+ string(b_offset+9)
+					set_b_value(db_address(local_address), src, on)
+      				end
+    		end
+	else tfg=grey
+
+	if pressed then
+   		begin
+   			fg = decoron rect 
+   			fg = decorshadow
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorlight
+   			move
+   			x = w add
+  			y = 0 add
+   			line
+   			end
+	else
+		begin  
+   			rect 
+   			fg = decorlight
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorshadow
+   			move
+  			x = w add
+   			y = 0 add
+   			line
+   			end
+
+	x = w/2 y = h/2
+	just = centrecentre
+	if label <> "" then
+   		text (label)
+	else
+   		text ("Do it")
+
+end
+
+
+!===============================================================================!
+
+!===PAVA POPUP CONTROL PANEL CARGO===!
+
+object pava_panel_cargo( b_offset=int, e_offset=int, src=source )
+
+var button =  int
+var button1 =  int
+var click1 = int
+var click2 = int
+var click3 = int
+var click4 = int
+var click5 = int
+var click6 = int
+var click7 = int
+var click8 = int
+var click9 = int
+var click10 = int
+var click11 = int
+var click12 = int
+
+var message_number_local = int
+
+var cargo_1 = onoff
+var cargo_2 = onoff
+var cargo_3 = onoff
+var loop = onoff
+
+Begin
+
+	x=0 y=590
+	just=centrecentre
+	border_object(400,590,"",14,grey,no)
+	just=topleft
+
+
+
+	x=20 y=20 ch=14 font=font_bold fontname="arial" tfg=blue text("1. Select a PAVA message:")
+	x=20 y=355 ch=14 font=font_bold fontname="arial" tfg=blue text("2. Click to select PAVA zones")
+	x=20 y=485 ch=14 font=font_bold fontname="arial" tfg=blue text("3. Click to loop message")
+	x=20 y=350 add x=380 y=350 add lw=2 fg=grey line
+	clear
+	x=20 y=480 add x=380 y=480 add lw=2 fg=grey line
+	clear
+	x=50 y=50
+	click1 = message_button(ch=14, font=font_bold, "Fire In Tunnel (Leave Vehicle)", 300, message_number_local, 1)
+	clear
+
+	x=50 y=y+30
+	click2 = message_button(ch=14, font=font_bold, "Incident Ahead (Wait In Vehicle)", 300, message_number_local, 2)
+	clear
+
+	x=50 y=y+30
+	click3 = message_button(ch=14, font=font_bold, "Emergency In Tunnel (Leave Vehicle)", 300, message_number_local, 3)
+	clear
+
+	x=50 y=y+30
+	click4 =message_button(ch=14, font=font_bold, "Test Message", 300, message_number_local, 4)
+	clear
+
+	x=50 y=y+30
+		click5 =message_button(ch=14, font=font_bold, "Test Message", 300, message_number_local, 5) 
+	clear
+
+	x=50 y=y+30
+		click6 =message_button(ch=14, font=font_bold, "Test Message", 300, message_number_local, 6) 
+	clear
+
+	x=50 y=y+30
+		click7 =message_button(ch=14, font=font_bold, "Test Message", 300, message_number_local, 7) 
+	clear
+
+	x=50 y=y+30
+		click8 =message_button(ch=14, font=font_bold, "Test Message", 300, message_number_local, 8) 
+	clear
+
+	x=50 y=y+30
+		click9 =message_button(ch=14, font=font_bold, "Test Message", 300, message_number_local, 9) 
+	clear
+
+	x=50 y=y+30
+		click10 =message_button(ch=14, font=font_bold, "Test Message", 300, message_number_local, 10) 
+	clear
+
+	x=250 y=540
+	play_button_cargo(b_offset, e_offset, src, ch=15, font=font_bold,"PLAY", 100, cargo_3, cargo_2, cargo_1, loop, message_number_local)
+
+	x=50 y=540
+	stop_message_button_cargo(ch=15, font=font_bold, "STOP", 100, 0, b_offset, src )
+
+	clear
+	x=50 y=380
+	cargo_3 = cargo_zone3
+	x=50 y=380
+	cargo_2 = cargo_zone2
+	x=50 y=380
+	cargo_1 = cargo_zone1
+	x=50 y=535
+	loop = cargo_loop
+
+	x=77 y=413 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("South")
+	clear
+	x=77 y=427 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("Portal")
+	clear
+	x=200 y=420 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("Cargo Tunnel")
+	clear
+	x=322 y=413 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("North")
+	clear
+	x=322 y=427 ch=14 tfg=black font=font_bold just=centrecentre fontname="arial" text("Portal")
+	x=50 y=380
+	pava_zone_labels_cargo
+	x=130 y=519 ch=14 font=font_bold fontname="arial" tfg=black text("Loop Message")
+	
+
+
+!=== Message button click control ===!
+
+	if click1 then
+		begin
+   			if message_number_local == 1 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 1
+		end
+
+	else if  click2 then
+		begin
+  			 if message_number_local == 2 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 2
+		end
+
+	else if click3 then
+		begin
+   			if message_number_local == 3 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 3
+		end
+
+	else if click4 then
+		begin
+   			if message_number_local == 4 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 4
+		end
+
+	else if click5 then
+		begin
+  			if message_number_local == 5 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 5
+		end
+
+	else if click6 then
+		begin
+  			if message_number_local == 6 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 6
+		end
+
+	else if click7 then
+		begin
+   			if message_number_local == 7 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 7
+		end
+
+	else if click8 then
+		begin
+  			if message_number_local == 8 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 8
+		end
+
+	else if click9 then
+		begin
+   			if message_number_local == 9 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 9
+		end
+
+	else if click10 then
+		begin
+   			if message_number_local == 10 then 
+				message_number_local = 0 
+
+			else 
+				message_number_local = 10
+		end
+
+
+
+end
+
+mimic PAVA_PANEL_CARGO = PAVA_PANEL_CARGO W=400, H=590, resizable
+
+!===========================================================================================!
+
+!===============================================================================!
+
+!===PAVA POPUP MAINTPANEL CARGO===!
+
+object pava_panel_maint( b_offset=int, src=source )
+
+var button =  int
+var button1 =  int
+
+
+var message_number_local = int
+
+var maint_1 = onoff
+var maint_2 = onoff
+var maint_3 = onoff
+
+
+Begin
+
+	x=0 y=190
+	just=centrecentre
+	border_object(400,190,"",14,grey,no)
+	just=topleft
+	x=20 y=20 ch=14 font=font_bold fontname="arial" tfg=blue text("1. Click to select maintenance zones")
+
+	x=150 y=150
+	apply_button_maint(b_offset, src,tfg=blue, ch=15, font=font_bold,"APPLY", 100, maint_3, maint_2, maint_1)
+
+	clear
+	x=50 y=55
+	maint_3 = maint_zone3
+	x=50 y=55
+	maint_2 = maint_zone2
+	x=50 y=55
+	maint_1 = maint_zone1
+
+	x=50y=54add x=350 y=54 add fg=darkgrey lw=1 line
+	clear
+	x=50 y=139 add x=350 y=139 add fg=darkgrey lw=1 line
+	clear
+	x=100 y=57 add x=300 y=57 add fg=orange4 lw=4 line
+	clear
+	x=100 y=137 add x=300 y=137 add fg=orange4 lw=4 line
+	clear
+	x=100 y=55 add x=100 y=139 add fg=darkgrey lw=1 line
+	clear
+	x=300 y=55 add x=300 y=139 add fg=darkgrey lw=1 line
+
+	clear
+	x=77 y=88 ch=14 tfg=black font=font_bold just=centrecentre  fontname="arial" text("South")
+	clear
+	x=77 y=102 ch=14 tfg=black font=font_bold just=centrecentre    fontname="arial" text("Portal")
+	clear
+	x=200 y=95 ch=14 tfg=black font=font_bold just=centrecentre   fontname="arial" text("Cargo Tunnel")
+	clear
+	x=322 y=88 ch=14 tfg=black font=font_bold just=centrecentre   fontname="arial" text("North")
+	clear
+	x=322 y=102 ch=14 tfg=black font=font_bold just=centrecentre   fontname="arial" text("Portal")
+
+end
+mimic PAVA_PANEL_MAINT = PAVA_PANEL_MAINT W=400, H=190, resizable
+
+!===========================================================================================!
+
+
+!======================================================================!
+!=== Database Structure                         		===!
+!===                                                      		===!
+!=== PLC_INPUTS                                  		===!
+!=== plc_inputs[1] = plca_comms_ip        		===!
+!=== plc_inputs[2] = plcb_comms_ip        		===!
+!===                                                      		===!
+!=== B_INPUTS                                      		===!
+!=== b_inputs[1] = Master/Standby	                  	===!
+!=== b_inputs[2] = Comms Fault	                  	===!
+!=== b_inputs[3] = Wav Player Fault	                  	===!
+!===                                                       		===!
+!=== E_INPUTS                                       		===!
+!=== e_inputs[1] = Availablity		              ===!
+!===						===!
+!=== ALARMS                                         		===!
+!=== b_alarms[1] = Comms Fault Alarm	              ===!
+!=== b_alarms[2] = Wav Player Fault Alarm	              ===!
+!===                                                       		===!
+!======================================================================!
+
+object Pa_Controller_Panel( master = int,	
+			serial = int,
+			cobranet = int,
+			ethernet = int,
+			e_offset = int,
+			title = string (20),
+			src=source)
+
+!=== Define variables linked to DB points ===!
+var b_alarms 		= input alarm_row_type[1]
+var b_alarms2 		= input alarm_row_type[1]
+var b_alarms3 		= input alarm_row_type[1]
+var e_inputs 		= input e_db_row_type[1]
+
+var avaliability = int
+
+!=== Define panel variables ===!
+var tag_message_panel = panel  panel_item_row
+
+
+!=== Define loopbacks ===!
+var main_menu = menu  string(30)
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+	   	
+	!=== If a valid c_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source e_inputs then
+      	
+		begin	
+			set source e_inputs = src
+			set filter e_inputs.db_addr = lim_ge
+			set limit  e_inputs.db_addr = db_address("e" + e_offset)
+			set persist e_inputs 
+			set mayexist e_inputs 
+			request e_inputs 	
+		end
+
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms then
+	
+		begin	
+			set source b_alarms = src
+		  	set filter b_alarms.db_addr = lim_ge
+		   	set limit b_alarms.db_addr = db_address("b" + serial)
+		   	set priority b_alarms.db_addr = 15
+		   	set persist b_alarms
+		   	set mayexist b_alarms
+		   	request b_alarms
+		end
+
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms2 then
+	
+		begin	
+			set source b_alarms2 = src
+		  	set filter b_alarms2.db_addr = lim_ge
+		   	set limit b_alarms2.db_addr = db_address("b" + cobranet)
+		   	set priority b_alarms2.db_addr = 15
+		   	set persist b_alarms2
+		   	set mayexist b_alarms2
+		   	request b_alarms
+		end
+
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms3 then
+	
+		begin	
+			set source b_alarms3 = src
+		  	set filter b_alarms3.db_addr = lim_ge
+		   	set limit b_alarms3.db_addr = db_address("b" + ethernet)
+		   	set priority b_alarms3.db_addr = 15
+		   	set persist b_alarms3
+		   	set mayexist b_alarms3
+		   	request b_alarms3
+		end
+
+
+	x=0 y=180
+	just=centrecentre
+	border_object(220,180,"",14,grey,no)
+	just=topleft
+	
+	avaliability  =  INT(e_inputs.e_value)		
+	x=20 y=50 ch=14 font=font_bold fontname="arial" tfg=black text("Avaliablity")
+	x=180 y=50 ch=14 font=font_bold fontname="arial" tfg=black text(avaliability)
+
+	x=20 y=80 ch=14 font=font_bold fontname="arial" tfg=black text("Serial Comms Flt")
+	x=20 y=110 ch=14 font=font_bold fontname="arial" tfg=black text("Cobranet Comms Flt")
+	x=20 y=140 ch=14 font=font_bold fontname="arial" tfg=black text("Ethernet Comms Flt")
+
+
+
+	if (read_b_value(db_address(string("B"+master)),src)) == 1 then
+		begin
+			X=104 y=30 just=centrecentre ch=20 font=font_bold fontname="arial" tfg=blue text("MASTER")
+		end
+	else
+		begin
+			X=104 y=30 just=centrecentre ch=20 font=font_bold fontname="arial" tfg=GREY60 text("STANDBY")
+
+		end
+
+	if (b_alarms.alarm_status == w_note) then
+		begin
+			x=180 y=80 h=15 w=15 just=topleft fg=flashred rect
+			x=180 y=80 h=15 w=15 just=topleft fg=black box	
+		end
+
+	if (b_alarms.alarm_status == w_clr) then
+		begin
+			x=180 y=80 h=15 w=15 just=topleft fg=red rect
+			x=180 y=80 h=15 w=15 just=topleft fg=black box	
+		end
+	else
+		begin
+			x=180 y=80 h=15 w=15 just=topleft fg=grey rect
+			x=180 y=80 h=15 w=15 just=topleft fg=black box	
+		end	
+
+	if (b_alarms2.alarm_status == w_note) then
+		begin
+			x=180 y=110 h=15 w=15 just=topleft fg=flashred rect
+			x=180 y=110 h=15 w=15 just=topleft fg=black box	
+		end
+
+	if (b_alarms2.alarm_status == w_clr) then
+		begin
+			x=180 y=110 h=15 w=15 just=topleft fg=red rect
+			x=180 y=110 h=15 w=15 just=topleft fg=black box	
+		end
+	else
+		begin
+			x=180 y=110 h=15 w=15 just=topleft fg=grey rect
+			x=180 y=110 h=15 w=15 just=topleft fg=black box	
+		end	
+
+	if (b_alarms3.alarm_status == w_note) then
+		begin
+			x=180 y=140 h=15 w=15 just=topleft fg=flashred rect
+			x=180 y=140 h=15 w=15 just=topleft fg=black box	
+		end
+
+	if (b_alarms3.alarm_status == w_clr) then
+		begin
+			x=180 y=140 h=15 w=15 just=topleft fg=red rect
+			x=180 y=140 h=15 w=15 just=topleft fg=black box	
+		end
+	else
+		begin
+			x=180 y=140 h=15 w=15 just=topleft fg=grey rect
+			x=180 y=140 h=15 w=15 just=topleft fg=black box	
+		end	
+
+end
+
+mimic Pa_Controller_Panel = Pa_Controller_Panel W= 220, H=180, resizable
+
+!===============================================================================!
+
+object Microphone_Panel (	active = int,
+			enabled = int,
+			hardware =int,
+			software = int,
+			title = string (20),
+			src=source)
+
+!=== Define variables linked to DB points ===!
+var b_inputs 		= input  b_db_row_type[3]
+var b_alarms 		= input alarm_row_type[1]
+var b_alarms2 		= input alarm_row_type[1]
+var e_inputs 		= input e_db_row_type[1]
+var avaliability = int
+
+!=== Define panel variables ===!
+var tag_message_panel = panel  panel_item_row
+
+!=== Define loopbacks ===!
+var main_menu = menu  string(30)
+
+!=== BEGIN OBJECT ===!
+
+begin
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms then
+	
+		begin	
+			set source b_alarms = src
+		  	set filter b_alarms.db_addr = lim_ge
+		   	set limit b_alarms.db_addr = db_address("b" + hardware)
+		   	set priority b_alarms.db_addr = 15
+		   	set persist b_alarms
+		   	set mayexist b_alarms
+		   	request b_alarms
+		end
+
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms2 then
+	
+		begin	
+			set source b_alarms2 = src
+		  	set filter b_alarms2.db_addr = lim_ge
+		   	set limit b_alarms2.db_addr = db_address("b" + software)
+		   	set priority b_alarms2.db_addr = 15
+		   	set persist b_alarms2
+		   	set mayexist b_alarms2
+		   	request b_alarms
+		end
+
+
+
+	x=0 y=120
+	just=centrecentre
+	border_object(170,120,"",14,grey,no)
+	just=topleft
+
+	x=20 y=50 ch=14 font=font_bold fontname="arial" tfg=black text("Hardware Flt")
+	x=20 y=80 ch=14 font=font_bold fontname="arial" tfg=black text("Software Flt")
+
+
+	if ((read_b_value(db_address(string("B"+active)),src))== 1) and ((read_b_value(db_address(string("B"+active)),src))== 1) then
+		
+		begin
+			X=82 y=30 just=centrecentre ch=20 font=font_bold fontname="arial" tfg=black text("ACTIVE")
+		end
+
+	else if (read_b_value(db_address(string("B"+enabled)),src))== 1 then
+		
+		begin
+			X=82 y=30 just=centrecentre ch=20 font=font_bold fontname="arial" tfg=black text("ENABLED")
+		end
+
+	else
+
+		begin
+			X=82 y=30 just=centrecentre ch=20 font=font_bold fontname="arial" tfg=GREY60 text("IN ACTIVE")
+
+		end
+
+	if (b_alarms.alarm_status == w_note) then
+		begin
+			x=130 y=50 h=15 w=15 just=topleft fg=flashred rect
+			x=130 y=50 h=15 w=15 just=topleft fg=black box	
+		end
+
+	else if (b_alarms.alarm_status == w_clr) then
+		begin
+			x=130 y=50 h=15 w=15 just=topleft fg=red rect
+			x=130 y=50 h=15 w=15 just=topleft fg=black box	
+		end
+	else
+		begin
+			x=130 y=50 h=15 w=15 just=topleft fg=grey rect
+			x=130 y=50 h=15 w=15 just=topleft fg=black box	
+		end	
+
+	if (b_alarms.alarm_status == w_note) then
+		begin
+			x=130 y=80 h=15 w=15 just=topleft fg=flashred rect
+			x=130 y=80 h=15 w=15 just=topleft fg=black box	
+		end
+
+	else if (b_alarms.alarm_status == w_clr)then
+		begin
+			x=130 y=80 h=15 w=15 just=topleft fg=red rect
+			x=130 y=80 h=15 w=15 just=topleft fg=black box	
+		end
+	else
+		begin
+			x=130 y=80 h=15 w=15 just=topleft fg=grey rect
+			x=130 y=80 h=15 w=15 just=topleft fg=black box	
+		end	
+
+end
+
+mimic Microphone_Panel = Microphone_Panel W= 170, H=120, resizable
+
+
+
+
+
+!===============================================================================!
+
+
+
+!======================================================================!
+!=== Database Structure                         		===!
+!===                                                      		===!
+!=== PLC_INPUTS                                  		===!
+!=== plc_inputs[1] = plca_comms_ip        		===!
+!=== plc_inputs[2] = plcb_comms_ip        		===!
+!===                                                      		===!
+!=== B_INPUTS                                      		===!
+!=== b_inputs[1] = Speaker_Fault	                  	===!
+!===						===!
+!=== C_INPUTS                                      		===!
+!=== c_inputs[1] = Tagged Message         		===!
+!===                                                       		===!
+!======================================================================!
+
+object PAVA_CARGO_CONTROL_PAN_BUTTON ( plc_offset=int, b_offset=int, e_offset=int, ch, font, label=string (40), button_width = int, src=source)
+
+
+
+
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var b_inputs 		= input  b_db_row_type[16]
+
+
+var pressed = int
+VAR pop_pava = popup pava_panel_cargo
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end
+
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+	   	
+
+	pressed=0
+	just=topleft
+	fg=decoroff
+
+	if button_width then
+   		w = button_width
+	else if label <> "" then
+   		w = length (label) + 10
+	else
+   		w = length ("Do it") + 10
+		h = ch + ch/3
+
+		If (b_inputs[15].b_value == 1) and ((plc_inputs[1].b_value == 0) or (plc_inputs[2].b_value == 0))  then
+			begin
+				pressed = selb
+				tfg=blue
+				if (pressed) then
+   					begin
+   						set title pop_pava = "CARGO TUNNEL PAVA CONTROL PANEL"
+   						request pop_pava( b_offset, e_offset, src )
+   					end
+			end
+	else tfg=grey
+
+	if valid pop_pava then
+   		begin
+   			set invalid pop_pava
+   		end
+
+
+
+	if pressed then
+   		begin
+   			fg = decoron rect 
+   			fg = decorshadow
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorlight
+   			move
+   			x = w add
+   			y = 0 add
+   			line
+   		end
+	else
+		begin  
+   			rect 
+   			fg = decorlight
+   			x = w move
+   			x = 0 add
+   			y = h add
+   			line
+   			fg = decorshadow
+   			move
+   			x = w add
+   			y = 0 add
+   			line
+   		end
+
+	x = w/2 y = h/2
+	just = centrecentre
+	if label <> "" then
+   		text(label)
+	else
+   		text ("Do it")
+
+End
+
+
+
+!===============================================================================!
+
+object PAVA_CARGO_MAINT_PAN_BUTTON ( plc_offset=int, b2_offset=int, e_offset=int, ch, font, label=string (40), button_width = int, src=source)
+
+
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var b2_inputs 		= input  b_db_row_type[6]
+
+
+var pressed = int
+VAR pop_pava = popup pava_panel_maint
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b2_inputs then
+      	
+		begin	
+			set source b2_inputs = src
+			set filter b2_inputs.db_addr = lim_ge
+			set limit  b2_inputs.db_addr = db_address("b" + b2_offset)
+			set persist b2_inputs 
+			set mayexist b2_inputs 
+			request b2_inputs 	
+		end
+	   	
+
+	pressed=0
+	just=topleft
+	fg=decoroff
+
+	if button_width then
+   		w = button_width
+	else if label <> "" then
+  		w = length (label) + 10
+	else
+   		w = length ("Do it") + 10
+		h = ch + ch/3
+		
+		if (plc_inputs[1].b_value == 0) and (plc_inputs[2].b_value == 0) then
+			begin
+				pressed = selb
+				tfg=blue
+				if (pressed) then
+   					begin
+   						set title pop_pava = "CARGO TUNNEL PAVA MAINTENANCE PANEL"
+   						request pop_pava( b2_offset, src )
+   					end
+			end
+		else tfg=grey
+
+	if valid pop_pava then
+   		begin
+   			set invalid pop_pava
+   		end
+
+
+
+	if pressed then
+   		begin
+   			fg = decoron rect 
+  			fg = decorshadow
+   			x = w move
+   			x = 0 add
+   			y = h add
+  			line
+  			fg = decorlight
+  		 	move
+   			x = w add
+   			y = 0 add
+   			line
+   		end
+	else
+		begin  
+   			rect 
+   			fg = decorlight
+   			x = w move
+   			x = 0 add
+   			y = h add
+  			line
+   			fg = decorshadow
+   			move
+   			x = w add
+   			y = 0 add
+   			line
+   		end
+
+	x = w/2 y = h/2
+	just = centrecentre
+	if label <> "" then
+   		text(label)
+	else
+   		text ("Do it")
+
+End
+
+
+
+!===============================================================================!
+
+
+!======================================================================!
+!=== Database Structure                         		===!
+!===                                                      		===!
+!=== PLC_INPUTS                                  		===!
+!=== plc_inputs[1] = plca_comms_ip        		===!
+!=== plc_inputs[2] = plcb_comms_ip        		===!
+!===                                                      		===!
+!=== B_INPUTS                                      		===!
+!=== b_inputs[1] = Controller_Fault	                  	===!
+!===                                                       		===!
+!=== ALARMS                                         		===!
+!=== b_alarms[1] = Controller_Fault_Alm	              ===!
+!===						===!
+!=== C_INPUTS                                      		===!
+!=== c_inputs[1] = Tagged Message         		===!
+!===                                                       		===!
+!======================================================================!
+
+!==========================================!
+!=== PA CONTROLLER ===!
+!==========================================!
+
+
+Object Controller ( plc_offset = int,
+		master = int,
+		serial = int,
+		cobranet = int,
+		ethernet = int,
+		alm_offset = int,
+		c_offset = int,
+		e_offset = int,
+		label = string (12),
+		title = string (30),
+		src = source)
+		 
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var b_alarms 		= input alarm_row_type[1]
+var e_inputs		= input e_db_row_type[1]
+var c_inputs 		= input c_db_row_type[1]
+
+!=== Define local variables for inputs ===!
+var master_standby		= onoff
+var comms_fault			= onoff
+var wavplayer_fault			= onoff
+var comms_fault_alarm		= alarm_status
+var wavplayer_fault_alarn		= alarm_status
+var local_address = string
+
+!=== Define panel variables ===!
+var tag_message_panel = panel  panel_item_row
+
+!=== Define popup variables ===!
+var status_popup = popup pa_controller_panel
+
+
+!=== Define loopbacks ===!
+var db_struct = loopback yesno
+var main_menu = menu  string(30)
+
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+	   	
+
+	!=== If a valid c_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source c_inputs then
+      	
+		begin	
+			set source c_inputs = src
+			set filter c_inputs.db_addr = lim_ge
+			set limit  c_inputs.db_addr = db_address("c" + c_offset)
+			set persist c_inputs 
+			set mayexist c_inputs 
+			request c_inputs 	
+		end
+
+	!=== If a valid e_offset then collect all data from offset as described above in 'Database Structure' ===!
+   	if invalid get source e_inputs then
+      	
+		begin	
+			set source e_inputs = src
+			set filter e_inputs.db_addr = lim_ge
+			set limit  e_inputs.db_addr = db_address("e" + e_offset)
+			set persist e_inputs 
+			set mayexist e_inputs 
+			request e_inputs 	
+		end
+
+	if c_inputs.c_value <> "" then
+		begin
+			x=0 y=0 w=80 h=20 fg=yellow lw=6 box
+		end
+	
+!=== DRAW CONTROLLER ===!
+			
+x=0 y=0 w=80 h=20 fg=black lw=1 box
+x=3 y=3 w=24 h=7 fg=black lw=1 box
+x=3 y=10 w=24 h=7 fg=black lw=1 box
+x=30 y=2 w=46 h=15 fg=white rect
+x=54 y=3 add x=56 y=17 add fg=black lw=3 line clear
+
+
+
+	If (read_b_value(db_address("B" +string(cobranet)), src) == on) or (read_b_value(db_address("B" +string(ethernet)), src) == on) or (read_b_value(db_address("B" +string(serial)), src) == on) then
+	Begin
+		x=1 y=1 w=78 h=18 fg=red rect
+		x=3 y=3 w=24 h=14 fg=grey rect
+		x=3 y=3 w=24 h=7 fg=black lw=1 box
+		x=3 y=10 w=24 h=7 fg=black lw=1 box
+		x=30 y=3 w=46 h=14 fg=white rect
+		x=30 y=3 w=46 h=14 fg=black lw=1 box
+		x=54 y=3 add x=54 y=18 add fg=black lw=3 line clear
+		x=0 y=0 w=80 h=20 fg=black lw=1 box clear
+	
+      	End
+
+	Else
+   	Begin
+		x=1 y=1 w=78 h=18 fg=grey rect
+		x=3 y=3 w=24 h=14 fg=grey rect
+		x=3 y=3 w=24 h=7 fg=black lw=1 box
+		x=3 y=10 w=24 h=7 fg=black lw=1 box
+		x=30 y=3 w=46 h=14 fg=white rect
+		x=54 y=3 add x=54 y=18 add fg=black lw=3 line clear
+		x=0 y=0 w=80 h=20 fg=black lw=1 box clear
+
+   	End
+
+	if (read_b_value(db_address("B" +string(master)), src) == on)  then
+		begin
+			x=58 y=2 ch=14 font=font_bold tfg=blue text("M")
+		end
+	else	
+		begin
+			x=61 y=2 ch=14 font=font_bold tfg=grey text("S")
+		end
+
+	If plc_inputs[1].b_value == on then
+		Begin
+			x=0 y=0 w=80 h=20 fg=magenta lw=1 box
+			x=0 y=0 w=80h=20 fg=magenta rect
+			clear
+		End
+
+x =40 y=28
+just=centrecentre
+ch=10 font=font_normal fontname="arial" tfg=black text(label)
+Clear
+
+!=== TAG MESSAGE PANEL ===!
+   	if valid tag_message_panel then
+      		begin
+   			set_c_value( db_address("c" + c_offset),src,tag_message_panel.str)
+   			set invalid tag_message_panel
+      		end
+
+!=== MAIN MENU ===!
+	just=topleft
+	x=0 y=0 w=88 h=18
+
+	set rect main_menu
+	set title main_menu  = "Controller Menu"
+
+	set remove main_menu = "Status Panel"
+  	set remove main_menu = "Alter Tagged Message"
+   	set remove main_menu = "Clear Tagged Message"
+
+	set add main_menu = "Status Panel"
+   	set add main_menu="Alter Tagged Message"
+   	set add main_menu="Clear Tagged Message"
+   
+!=== CONTROL MENU ===!
+   	if valid main_menu then
+      		begin
+         			case main_menu of
+      			"Alter Tagged Message"
+            	   			begin
+         					set title tag_message_panel = "Modify Tagged Message"
+         					set label tag_message_panel.str = "Tag Message :"
+         					set unpinned tag_message_panel
+         					request tag_message_panel
+            	   			end
+      			"Clear Tagged Message"
+            	   			begin
+         					set_c_value(db_address("c" + c_offset), src, "")
+         	   			end
+      		
+
+      			"Status Panel"
+            	   			begin
+					set title status_popup = title
+         					request status_popup ( master, serial, cobranet, ethernet, e_offset, title, source)
+            	   			end
+      		
+         			default
+         	   			begin
+         	   			end
+         			set invalid main_menu
+		end
+
+!=== TAG MESSAGE BOX ===!
+
+	x = 0 w = 40 h = 50
+	if selb and c_inputs.c_value <> "" then
+	   begin
+   		message_text_box(c_inputs.c_value)
+   	   end
+
+end
+
+
+!===============================================================================!
+
+!=================================================!
+!=== Microphone===!
+!=================================================!
+
+!=============================================!
+!=== Database Structure: 				===!
+!=== 						===!
+!=== PLC_INPUTS					===!
+!=== plc_inputs[1] = plca_comms_ip		 	===!
+!=== plc_inputs[2] = plcb_comms_ip			===!
+!===						===!
+!=== B_INPUTS					===!
+!=== b_inputs[1] = Psu_Fault			===!
+!===						===!
+!=== ALARMS					===!
+!=== b_alarms[1] = Psu_Fault_Alarm			===!
+!===						===!
+!=== C_INPUTS					===!
+!=== c_inputs[1] = Tagged Message			===!
+!===						===!
+!=============================================!
+
+object Microphone( plc_offset = int,
+		b_offset = int,
+		active = int,
+		enabled = int,
+		hardware = int,
+		software = int,
+		alm_offset = int,
+		c_offset = int,
+		label = string (12),
+		title = string (40),
+		src = source)
+
+!=== Define variables linked to DB points===!
+var plc_inputs 		= input b_db_row_type[2]
+var b_inputs 		= input  b_db_row_type[1]
+var b_alarms 		= input alarm_row_type[1]
+var c_inputs 		= input c_db_row_type[1]
+
+
+!=== Define panel variables ===!
+var tag_message_panel = panel  panel_item_row
+
+
+!=== Define loopbacks ===!
+
+var main_menu = menu  string(30)
+
+!=== Define popup variables ===!
+var status_popup = popup microphone_panel
+
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+	   	
+	!=== If a valid alm_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_alarms then
+	
+		begin	
+			set source b_alarms = src
+		  	set filter b_alarms.db_addr = lim_ge
+		   	set limit b_alarms.db_addr = db_address("b" + (b_offset+18))
+		   	set priority b_alarms.db_addr = 15
+		   	set persist b_alarms
+		   	set mayexist b_alarms
+		   	request b_alarms
+		end
+
+	!=== If a valid c_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source c_inputs then
+      	
+		begin	
+			set source c_inputs = src
+			set filter c_inputs.db_addr = lim_ge
+			set limit  c_inputs.db_addr = db_address("c" + c_offset)
+			set persist c_inputs 
+			set mayexist c_inputs 
+			request c_inputs 	
+		end
+
+	if c_inputs.c_value <> "" then
+		begin
+			x=10 y=30 w=30 h=10 fg=yellow lw=6 box
+		end
+
+
+
+!=== DRAW MICROPHONE ===!
+
+		x=25 y=30 add x=25 y=15 add lw=4 fg=black line
+		x=25 y=15 add x=30 y=10 add lw=4 fg=black line
+		x=27 y=08 h=7 w=7 fg=black disk
+		clear
+
+			if ((read_b_value(db_address(string("B"+hardware)),src)) == 1) or ((read_b_value(db_address(string("B"+software)),src)) == 1) then
+
+				
+			begin
+				x=10 y=30 h=10 w=30 fg=red rect
+				x=10 y=30 h=10 w=30 lw=1 fg=black box
+			end
+		else 
+			begin
+				x=10 y=30 h=10 w=30 fg=grey rect
+				x=10 y=30 h=10 w=30 lw=1 fg=black box
+			end
+
+!=== Test for no comms ===!
+
+		If plc_inputs[1].b_value == on then
+			Begin
+				x=10 y=30 h=10 w=30 fg=magenta rect
+				x=10 y=30 h=10 w=30 lw=1 fg=magenta box
+			End	
+
+
+	just=centrecentre
+	x=25 y=46 ch=10 font=font_normal fontname="arial" fg=black text(label)
+
+!=== TAG MESSAGE PANEL ===!
+   	if valid tag_message_panel then
+      		begin
+   			set_c_value( db_address("c" + c_offset),src,tag_message_panel.str)
+   			set invalid tag_message_panel
+      		end
+
+!=== MAIN MENU ===!
+
+just=topleft
+
+	x=10 y=30 w=30 h=20
+
+	set rect main_menu
+	set title main_menu  = "Microphone Menu"
+
+	set remove main_menu = "Status Panel"
+  	set remove main_menu = "Alter Tagged Message"
+   	set remove main_menu = "Clear Tagged Message"
+	set add main_menu = "Status Panel"
+   	set add main_menu="Alter Tagged Message"
+   	set add main_menu="Clear Tagged Message"
+
+   
+!=== CONTROL MENU ===!
+
+   	if valid main_menu then
+      		begin
+         			case main_menu of
+      			"Alter Tagged Message"
+            	   			begin
+         					set title tag_message_panel = "Modify Tagged Message"
+         					set label tag_message_panel.str = "Tag Message :"
+         					set unpinned tag_message_panel
+         					request tag_message_panel
+            	   			end
+      			"Clear Tagged Message"
+            	   			begin
+         					set_c_value(db_address("c" + c_offset), src, "")
+         	   			end
+
+			"Status Panel"
+            	   			begin
+					set title status_popup = title
+         					request status_popup ( active, enabled, hardware, software, title, source)
+            	   			end
+      		
+         			default
+         	   			begin
+         	   			end
+         			set invalid main_menu
+		end
+
+
+!=== TAG MESSAGE BOX ===!
+
+	x = 0 w = 40 h = 50
+	if selb and c_inputs.c_value <> "" then
+	   begin
+   		message_text_box(c_inputs.c_value)
+   	   end
+
+end
+
+
+!===============================================================================!
+
+
+
+
+
+!==========================================!
+!=== Control Panel ===!
+!==========================================!
+
+object pava_control_box_cargo(plc_offset = int, b_offset = int, b2_offset = int, b3_offset = int, mic_offset=int, e_offset=int, src=source)
+
+
+!=== Define variables linked to DB points ===!
+var plc_inputs 		= input b_db_row_type[2]
+var b_inputs 		= input b_db_row_type[9]
+var b2_inputs 		= input b_db_row_type[6]
+var b3_inputs 		= input b_db_row_type[6]
+var mic_inputs		= input b_db_row_type[4]
+!=== BEGIN OBJECT ===!
+
+begin
+
+!=== REQUEST DATA FROM SERVER ===!
+
+	!=== If a valid plc_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source plc_inputs then
+      	
+		begin	
+			set source plc_inputs = src
+			set filter plc_inputs.db_addr = lim_ge
+			set limit  plc_inputs.db_addr = db_address("b" + plc_offset)
+			set persist plc_inputs 
+			set mayexist plc_inputs 
+			request plc_inputs 	
+		end	
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b_inputs then
+      	
+		begin	
+			set source b_inputs = src
+			set filter b_inputs.db_addr = lim_ge
+			set limit  b_inputs.db_addr = db_address("b" + b_offset)
+			set persist b_inputs 
+			set mayexist b_inputs 
+			request b_inputs 	
+		end
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b2_inputs then
+      	
+		begin	
+			set source b2_inputs = src
+			set filter b2_inputs.db_addr = lim_ge
+			set limit  b2_inputs.db_addr = db_address("b" + b2_offset)
+			set persist b2_inputs 
+			set mayexist b2_inputs 
+			request b2_inputs 	
+		end
+
+	!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source b3_inputs then
+      	
+		begin	
+			set source b3_inputs = src
+			set filter b3_inputs.db_addr = lim_ge
+			set limit  b3_inputs.db_addr = db_address("b" + b3_offset)
+			set persist b3_inputs 
+			set mayexist b3_inputs 
+			request b3_inputs 	
+		end
+
+!=== If a valid b_offset then collect all data from offset as described above in Database Structure ===!
+   	if invalid get source mic_inputs then
+      	
+		begin	
+			set source mic_inputs = src
+			set filter mic_inputs.db_addr = lim_ge
+			set limit  mic_inputs.db_addr = db_address("b" + mic_offset)
+			set persist mic_inputs 
+			set mayexist mic_inputs
+			request mic_inputs	
+		end
+
+
+!===Draw the panel frame===!
+
+x=0 y=0 w=740 h=160 fg=grey40 rect
+x=0 y=0 w=740 h=160 fg=black box 
+x=5 y=5 w=730 h=150 fg=grey80 rect
+clear
+
+!===Zones Selected===!
+
+x=420 y=55
+pava_cargo_zones(plc_offset, b_offset+6,b3_offset, heathrow)
+
+
+!===North Mic Active===!
+
+!x=20 y=55 tfg=black ch=14 font=font_bold fontname="arial" text("North Mic")!
+
+!if b_inputs[5].b_value == 1 then!
+	!begin!
+		!x=150 y=55 w=15 h=15 fg=green rect!
+		!x=150 y=55 w=15 h=15 fg=black lw=1 box!
+	!end!
+!else!
+	!begin!
+		!x=150 y=55 w=15 h=15 fg=grey rect!
+		!x=150 y=55 w=15 h=15 fg=black lw=1 box!
+	!end!
+
+
+
+!===North Mic Active And Enabled ===!
+
+
+
+	if (mic_inputs[1].b_value == 1)  and  (mic_inputs[3].b_value == 1) then 
+
+		begin
+			x=101 y=55 w=61 h=15 fg=green rect
+			x=101 y=55 w=61 h=15 fg=black lw=1 box
+			x=110 y=55 tfg=black ch=14 font=font_bold fontname="arial" text("Active")
+		end
+
+
+
+	else if (mic_inputs[1].b_value == 1)  and  (mic_inputs[3].b_value == off) then 
+
+		begin
+			x=101 y=55 w=61 h=15 fg=green rect
+			x=101 y=55 w=61 h=15 fg=black lw=1 box
+			x=102 y=55 tfg=black ch=14 font=font_bold fontname="arial" text("Enabled")
+		end
+
+	else 
+		begin
+			x=101 y=55 w=61 h=15 fg=grey rect
+			x=101 y=55 w=61 h=15 fg=black lw=1 box
+		end
+
+	x=20 y=55 tfg=black ch=14 font=font_bold fontname="arial" text("North Mic")
+
+
+
+
+
+
+!===South Mic Active===!
+
+!x=20 y=80 tfg=black ch=14 font=font_bold fontname="arial" text("South Mic Active")!
+
+!if b_inputs[4].b_value == 1 then!
+	!begin!
+		!x=150 y=80 w=15 h=15 fg=green rect!
+		!x=150 y=80 w=15 h=15 fg=black lw=1 box!
+	!end!
+!else!
+	!begin!
+		!x=150 y=80 w=15 h=15 fg=grey rect!
+		!x=150 y=80 w=15 h=15 fg=black lw=1 box!
+	!end!
+
+
+
+
+!===South Mic Active And Enabled ===!
+
+
+	if (mic_inputs[2].b_value == 1)  and  (mic_inputs[4].b_value == 1) then 
+
+		begin
+			x=101 y=80 w=61 h=15 fg=green rect
+			x=101 y=80 w=61 h=15 fg=black lw=1 box
+			x=110 y=80 tfg=black ch=14 font=font_bold fontname="arial" text("Active")
+		end
+
+	else if (mic_inputs[2].b_value == 1)  and  (mic_inputs[4].b_value == off) then 
+
+		begin
+			x=101 y=80 w=61 h=15 fg=green rect
+			x=101 y=80 w=61 h=15 fg=black lw=1 box
+			x=102 y=80 tfg=black ch=14 font=font_bold fontname="arial" text("Enabled")
+		end
+	else
+		begin
+			x=101 y=80 w=61 h=15 fg=grey rect
+			x=101 y=80 w=61 h=15 fg=black lw=1 box
+		end
+
+	x=19 y=80 tfg=black ch=14 font=font_bold fontname="arial" text("South Mic")
+
+
+
+!===Message Playing===!
+
+x=200 y=55 tfg=black ch=14 font=font_bold fontname="arial" text("Message Playing")
+
+if b_inputs[1].b_value == 1 then
+	begin
+		x=340 y=55 w=15 h=15 fg=green rect
+		x=340 y=55 w=15 h=15 fg=black lw=1 box
+	end
+else
+	begin
+		x=340 y=55 w=15 h=15 fg=grey rect
+		x=340 y=55 w=15 h=15 fg=black lw=1 box
+	end
+
+
+!===Message Looping===!
+
+x=200 y=80 tfg=black ch=14 font=font_bold fontname="arial" text("Message Looping")
+
+if b_inputs[2].b_value == 1 then
+	begin
+		x=340 y=80 w=15 h=15 fg=green rect
+		x=340 y=80 w=15 h=15 fg=black lw=1 box
+	end
+else
+	begin
+		x=340 y=80 w=15 h=15 fg=grey rect
+		x=340 y=80 w=15 h=15 fg=black lw=1 box
+	end
+
+!===Curent Message Display===!
+
+x=20 y=20 tfg=black ch=14 font=font_bold fontname="arial" text("Message:")
+clear
+x=95 y=18
+pava_message(plc_offset, e_offset, heathrow)
+clear
+
+!===Stop Message Button===!
+
+!x=150 y=115
+stop_message_button_cargo(ch=18, font=font_bold, "STOP", 120, plc_offset, b_offset, src )!
+
+end
+
+
+
+
+
+
+

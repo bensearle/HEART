@@ -1,0 +1,1230 @@
+!**	HEATHROW\T5_11KV_OVERVIEW		**!
+!** 	Modified by ULTRA - 17 Jul 2007		**!
+!** 	Addition of T5B Subs and removal group alarms  **!
+!**						**!
+!** 	Modified by ULTRA - 04 Apr 2007		**!
+!** 	Updated panel designations			**!
+!**						**!
+!** 	Modified by ULTRA - 21 Nov 2006		**!
+!** 	Inclusion of Sub 183 & Sub 184		**!
+!** 	Inclusion of OS24 MSCP Sub 162		**!
+
+
+!********* SUBSTATION ********!
+!********* 				********!
+load hv_lib
+load browser
+load generic_meter_library
+load dual_bus_objects
+load transformer_types
+
+
+object main_sub_call(box_bg=colour,width=int,height=int,txt_top=string,txt_btm=string,txt_col=colour,txt_size=int,popup_mimic=yesno,mimic_title=string,src=source,res3=int,res2=string,res1=int,fg)
+var mm = toplevel  string_50
+var btn_bg = colour
+begin
+	if fg==magenta then btn_bg=magenta
+	else if fg==flashred then btn_bg=flashred
+	else if fg==red then btn_bg=red
+	else if fg==aquamarine3 then btn_bg=aquamarine3
+	else btn_bg=grey80
+
+	X=0 Y=0 W=width H=height ANGLE=0 JUST=centrecentre FS=FILLSOLID ROTRECT(fg=btn_bg)
+	if anyb then
+	  begin
+		if popup_mimic==yes then
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+			set existing mm
+      	  		request mm
+		end
+		else
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+      	 	 	set selfreplace mm
+      	  		request mm
+		end
+	  end
+
+	Clear
+	X=-(width/2) Y=(height/2) Add
+	Y=-(height/2) Add
+	X=(width/2) Y=-(height/2) Add
+	FG=white LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-(width/2) Y=(height/2) Add	
+	X=(width/2) Add
+	Y=-(height/2) Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	CH=txt_size FONT=FONT_NORMAL FONTNAME="Arial" TFG=txt_col JUST=centrecentre
+
+	if txt_btm=="" or txt_btm==string then
+	begin
+		X=0 Y=0  TEXT(txt_top)
+	end
+	else
+	begin
+		X=0 Y=-10 TEXT(txt_top)
+		X=0 Y=10 TEXT(txt_btm)
+	end
+end
+
+
+object blank(cb_type=string,plc_int=int,cb_int=int,c_int=int,e_int=int,code=int,src=source,num=int,pos=string,act_code=int,angle)
+begin
+clear
+	lw=1
+	X=0 Y=0 W=30 H=38 FG=GREY80 JUST=centrecentre FS=FILLSOLID ANGLE=0 ROTRECT Clear
+	FG=grey
+	X=-16 Y=19 Add X=16 Y=19 Add X=16 Y=-19 Add line clear
+	
+	FG=white 
+	X=-16 Y=18 Add X=-16 Y=-20 Add X=15 Y=-20 Add line clear
+
+	fg=green4 lw=2
+	X=0 Y=-20 Add X=0 Y=-10 Add line clear
+	X=0 Y=20 Add X=0 Y=10 Add line clear
+	X=-5 Y=10 Add X=5 Y=10 Add line clear
+	X=-5 Y=-10 Add X=5 Y=-10 Add line clear
+
+	x=23 y=0 text(ch=12,tfg=black,num)
+end
+
+object sub_call(width=int,height=int,txt_top=string,txt_btm=string,txt_col=colour,txt_size=int,popup_mimic=yesno,mimic_title=string,src=source,res3=int,res2=string,res1=int,fg)
+var mm = toplevel  string_50
+var box_bg = colour
+begin
+	if fg==magenta then box_bg=magenta
+	else if fg==flashred then box_bg=flashred
+	else if fg==red then box_bg=red
+	else box_bg=grey80
+ 
+	X=0 Y=0 W=width H=height ANGLE=0 fg=box_bg JUST=centrecentre FS=FILLSOLID ROTRECT
+	if anyb then
+	  begin
+		if popup_mimic==yes then
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+			set existing mm
+      	  		request mm
+		end
+		else
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+      	 	 	set selfreplace mm
+      	  		request mm
+		end
+	  end
+
+	Clear
+	X=-(width/2) Y=(height/2) Add
+	Y=-(height/2) Add
+	X=(width/2) Y=-(height/2) Add
+	FG=white LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-(width/2) Y=(height/2) Add	
+	X=(width/2) Add
+	Y=-(height/2) Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	CH=txt_size FONT=FONT_NORMAL FONTNAME="Arial" TFG=txt_col JUST=centrecentre
+
+	if txt_btm=="" or txt_btm==string then
+	begin
+		X=0 Y=0  TEXT(txt_top)
+	end
+	else
+	begin
+		X=0 Y=-10 TEXT(txt_top)
+		X=0 Y=10 TEXT(txt_btm)
+	end
+end
+
+object multiple_alarm_test(plc_offset=int,b_offset=int,num_alarms=int,src=source) = colour
+var plc_inputs = input b_bool_type[2]		! * comms inputs * !
+var equip_alarms = input alarm_row_type[1000]
+var alarm_box=yesno
+var n = int
+var alarm_clear_count = int
+begin
+         		if invalid get source plc_inputs then 	! * get database values * !
+         		begin
+	   		set source plc_inputs = src
+	   		set filter plc_inputs.db_addr = lim_ge
+	   		set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   		set priority plc_inputs.db_addr = 15
+	   		set persist plc_inputs
+	   		set mayexist plc_inputs
+	   		request plc_inputs
+		end
+
+		if plc_inputs[1].b_value==1 and plc_inputs[2].b_value==1 then
+		   begin
+			 multiple_alarm_test = magenta
+		   end
+		else if invalid num_alarms or num_alarms==int then 
+		   begin
+			multiple_alarm_test = grey80
+		   end
+		else 
+		   begin
+		      if invalid get source equip_alarms then
+		         begin
+		   	set source equip_alarms = src
+		   	set max_rows equip_alarms  = num_alarms 
+		   	set filter equip_alarms.db_addr = lim_ge	
+		   	set limit equip_alarms.db_addr = db_address(int(b1) + b_offset-1)
+		   	set priority equip_alarms.db_addr = 15
+		   	set persist equip_alarms 
+		   	set mayexist equip_alarms
+		   	request equip_alarms
+		         end
+
+			if invalid equip_alarms[1].alarm_status then
+			begin
+				multiple_alarm_test = grey80
+			end
+			else
+			begin
+				alarm_clear_count = 0
+				n=1
+				while n <= num_alarms DO
+				begin
+					if equip_alarms[n].alarm_status==w_note or equip_alarms[n].alarm_status==w_clr then
+					   begin
+						n=num_alarms+1
+					   end	
+					else
+					   begin
+						alarm_clear_count = alarm_clear_count + 1
+						n++
+					   end
+				end
+
+				if alarm_clear_count <> num_alarms then
+				   multiple_alarm_test = red
+				else
+				   multiple_alarm_test = grey80
+			end
+		   end
+
+			! * debug to display the number of dbase points found before (if any) either w_note or w_clr * !
+			!	text(ch=40,alarm_clear_count )	!
+end
+
+
+
+
+
+!
+***	Substation 151 -  North Main	 - Fed from BSP Sub 150				*** 
+*** 	Supplies T5 Area A ,secondary substations 155 and 191, the Energy Centre & 	***
+***	Multi-Storey Car Park Area.							***
+!
+object sub151
+var alarm_col= colour
+var alarm_col1= colour
+var alarm_col2= colour
+begin
+	clear
+	lw=4
+	X=-135 Y=-220 Add y-=55 Add X+=50 Add Y+=55 Add line(fg=white) clear 		! * p18 -19 link* !
+
+	lw=4
+	X=-210 Y=-247	Add y+=40 add line(fg=white) clear
+	X=-10 Y=-247	Add y+=40 add line(fg=white) clear
+
+	! * labels * !
+	just=centrecentre
+	X=-210 Y=-287	text("SS150-P6") y+=12  text("INCOMER TX1") 
+	X=-10 Y=-287 	text("SS150-P18") y+=12  text("INCOMER TX2") 
+
+	! ** LHS ** !
+	scale = 120
+	X=-235 Y=-174	modbus_cb(45300,46283,45440,2553,6853,6980,heathrow,3,"btm",30,int,string,int,int)
+	X=-210 Y=-247	modbus_cb(45300,46293,45640,2563,6863,6980,heathrow,13,"top",130,int,string,int,int)
+	X=-185 Y=-174	modbus_cb(45300,46297,45720,2567,6867,6980,heathrow,17,"btm",170,int,string,int,int)
+	X=-135 Y=-247	modbus_cb(45300,46298,45740,2568,6868,6980,heathrow,18,"top",180,int,string,int,int)
+
+	! ** RHS ** !
+	X=-85 Y=-247	modbus_cb(45300,46299,45760,2569,6869,6980,heathrow,19,"top",190,int,string,int,int)
+	X=-35 Y=-174	modbus_cb(45300,46300,45780,2570,6870,6980,heathrow,20,"btm",200,int,string,int,int)
+	X=-10 Y=-247		modbus_cb(45300,46303,45840,2573,6873,6980,heathrow,23,"top",230,int,string,int,int)
+	X=15 Y=-174		modbus_cb(45300,46305,45880,2575,6875,6980,heathrow,25,"btm",250,int,string,int,int)
+	X=65 Y=-174		modbus_cb(45300,46309,45960,2579,6879,6980,heathrow,29,"btm",290,int,string,int,int)
+	X=115 Y=-174	modbus_cb(45300,46315,46080,2585,6885,6980,heathrow,35,"btm",350,int,string,int,int)
+
+	scale = 256
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	LHS	 !
+	alarm_col1=multiple_alarm_test(45300,45400,360,heathrow)
+
+	!	RHS	 !
+	alarm_col2=multiple_alarm_test(45300,45760,379,heathrow)
+
+	if alarm_col1 == magenta then 
+		alarm_col = magenta
+	else if alarm_col1 == red or  alarm_col2 == red then 
+		alarm_col = red
+	else
+		alarm_col = grey80
+
+	X=-185 Y=-211	main_sub_call(grey80,140,20,"SUB 151","",white,20,no,"sub_stn_151",heathrow,int,"string",int,fg=alarm_col)
+	X=15 Y=-211	main_sub_call(grey80,240,20,"SUB 151","",white,20,no,"sub_stn_151",heathrow,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***	Substation 152 -  South Main - Fed from BSP Sub 150				*** 
+*** 	Supplies T5 Area A ,secondary substations 156 and 182, the Energy Centre & 	***
+***	Multi-Storey Car Park Area.							***
+!
+object sub152
+var alarm_col= colour
+var alarm_col1= colour
+var alarm_col2= colour
+begin
+	Clear
+	X=-250 Y=255 Add Y=200 Add X=-200 Add Y=255 Add
+	FG=white LS=SOLID LW=4 CS=CAPROUND LINE clear
+	
+	X=-400 Y=260 Add y-=40 add line(fg=white) clear
+	X=-100 Y=260 Add y-=40 add line(fg=white) clear
+
+	! * labels * !
+	just=centrecentre
+	X=-400 Y=190 text("SS150-P8") y+=12  text("INCOMER TX1") 
+	X=-100 Y=190 text("SS150-P16") y+=12  text("INCOMER TX2") 
+
+	scale = 120
+	! * LHS * !
+	X=-500 Y=302	modbus_cb(42100,43154,42280,1555,6301,6445,heathrow,5,"btm",50,int,string,int,int)
+	X=-450 Y=302	modbus_cb(42100,43155,42300,1556,6302,6445,heathrow,6,"btm",60,int,string,int,int)
+	X=-400 Y=230	modbus_cb(42100,43161,42420,1562,6308,6445,heathrow,12,"top",120,int,string,int,int)
+	X=-350 Y=302	modbus_cb(42100,43164,42480,1565,6311,6445,heathrow,15,"btm",150,int,string,int,int)
+	X=-300 Y=302	modbus_cb(42100,43166,42520,1567,6313,6445,heathrow,17,"btm",170,int,string,int,int)
+	X=-250 Y=230	modbus_cb(42100,43168,42560,1569,6315,6445,heathrow,19,"top",190,int,string,int,int)
+	
+	! * RHS * !
+	X=-200 Y=230	modbus_cb(42100,43169,42580,1570,6316,6445,heathrow,20,"top",200,int,string,int,int)
+	X=-100 Y=230	modbus_cb(42100,43173,42660,1574,6320,6445,heathrow,24,"top",240,int,string,int,int)
+	X=-50 Y=302	modbus_cb(42100,43178,42760,1579,6325,6445,heathrow,29,"btm",290,int,string,int,int)
+	X=0 Y=302	modbus_cb(42100,43180,42800,1581,6327,6445,heathrow,31,"btm",310,int,string,int,int)
+
+	scale = 256
+
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	LHS	 !
+	alarm_col1=multiple_alarm_test(42100,42200,380,heathrow)
+
+	!	RHS	 !
+	alarm_col2=multiple_alarm_test(42100,42580,399,heathrow)
+
+	if alarm_col1 == magenta then 
+		alarm_col = magenta
+	else if alarm_col1 == red or  alarm_col2 == red then 
+		alarm_col = red
+	else
+		alarm_col = grey80
+
+	X=-384 Y=265 main_sub_call(grey80,300,20,"SUB 152","",white,20,no,"sub_stn_152",heathrow,int,"string",int,fg=alarm_col)
+	X=-106 Y=265  main_sub_call(grey80,240,20,"SUB 152","",white,20,no,"sub_stn_152",heathrow,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	Substation 155 -  								***
+*** 										***
+!
+object sub155
+var alarm_col= colour
+var alarm_col1= colour
+var alarm_col2= colour
+begin
+	Clear lw=4
+	X=115 Y=-85 Add y-=50 Add X+=50 Add Y+=50 Add line(fg=white) clear
+	scale=120
+	X=15 Y=-110 modbus_cb(28200,28767,28440,1478,20128,20206,heathro2,8,"TOP",80,int,string,int,int)
+	X=65 Y=-110 modbus_cb(28200,28769,28480,1480,20130,20206,heathro2,10,"TOP",100,int,string,int,int)
+	X=115 Y=-110 modbus_cb(28200,28770,28500,1481,20131,20206,heathro2,11,"TOP",110,int,string,int,int)
+
+	X=165 Y=-110 modbus_cb(28200,28771,28525,1482,20132,20206,heathro2,12,"TOP",120,int,string,int,int)
+	X=215 Y=-110 modbus_cb(28200,28774,28590,1485,20135,20206,heathro2,15,"TOP",150,int,string,int,int)
+	X=265 Y=-110 modbus_cb(28200,28778,28670,1489,20139,20206,heathro2,19,"TOP",190,int,string,int,int)
+	
+	scale=256
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	LHS	 !
+	alarm_col1=multiple_alarm_test(28200,28300,225,heathro2)
+
+	!	RHS	 !
+	alarm_col2=multiple_alarm_test(28200,28525,235,heathro2)
+
+	if alarm_col1 == magenta then 
+		alarm_col = magenta
+	else if alarm_col1 == red or  alarm_col2 == red then 
+		alarm_col = red
+	else
+		alarm_col = grey80
+
+	X=65 Y=-75 main_sub_call(grey80,140,20,"SUB 155","",white,20,yes,"sub_stn_155",heathro2,int,"string",int,fg=alarm_col)
+	X=215 Y=-75 main_sub_call(grey80,140,20,"SUB 155","",white,20,yes,"sub_stn_155",heathro2,int,"string",int,fg=alarm_col)
+
+end
+
+
+!
+***										*** 
+*** 	Substation 162 -  located Landside on the western side of the MSCP.		***
+*** 	Fed from substations 152 and 151. Supplies Rail Vent Fans.			***
+!
+object sub162
+var alarm_col= colour
+begin
+	Clear
+	X=-475 Y=-60 Add Y=-110 Add X=-425 Add Y=-60 Add
+	FG=white LS=SOLID LW=4 CS=CAPROUND LINE clear
+
+	scale = 120
+	X=-525 Y=-83	modbus_cb(10300,10694,10470,1870,6185,6242,heathro2,5,"top",50,int,string,int,int)
+	X=-475 Y=-83	modbus_cb(10300,10696,10510,1872,6187,6242,heathro2,7,"top",70,int,string,int,int)
+	X=-425 Y=-83	modbus_cb(10300,10697,10530,1873,6188,6242,heathro2,8,"top",80,int,string,int,int)
+	X=-375 Y=-83	modbus_cb(10300,10699,10570,1875,6190,6242,heathro2,10,"top",100,int,string,int,int)
+
+	scale = 256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	alarm_col=multiple_alarm_test(10300,10390,280,heathro2)
+
+	X=-500 Y=-47  main_sub_call(grey80,92,20,"SUB 162","",white,20,yes,"sub_stn_162",heathro2,int,"string",int,fg=alarm_col)
+	X=-400 Y=-47  main_sub_call(grey80,92,20,"SUB 162","",white,20,yes,"sub_stn_162",heathro2,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***	Substation 164 - located Landside within the Energy Centre, south of T5 Concourse A	*** 
+*** 	Fed from substations 152 and 151. Supplies Energy Centre Chillers			***
+*** 										***
+!
+object sub164
+var alarm_col= colour
+begin
+	Clear
+	X=-475 Y=-60 Add Y=-110 Add X=-425 Add Y=-60 Add
+	FG=white LS=SOLID LW=4 CS=CAPROUND LINE clear
+
+	scale = 120
+	X=-525 Y=-83	modbus_cb(27300,27744,27480,1345,20005,20057,heathro2,5,"top",50,int,"Siemens",int,int)
+	X=-475 Y=-83	modbus_cb(27300,27747,27540,1348,20008,20057,heathro2,8,"top",80,int,"Siemens",int,int)
+	X=-425 Y=-83	modbus_cb(27300,27748,27565,1349,20009,20057,heathro2,9,"top",90,int,"Siemens",int,int)
+	X=-375 Y=-83	modbus_cb(27300,27751,27630,1352,20012,20057,heathro2,12,"top",120,int,"Siemens",int,int)
+
+	scale = 256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	alarm_col=multiple_alarm_test(27300,27400,338,heathro2)
+
+	X=-500 Y=-47  main_sub_call(grey80,92,20,"SUB 164","",white,20,yes,"sub_stn_164",heathro2,int,"string",int,fg=alarm_col)
+	X=-400 Y=-47  main_sub_call(grey80,92,20,"SUB 164","",white,20,yes,"sub_stn_164",heathro2,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	Substation 182 -  	Supply ART and T5 Area C					***
+*** 										***
+!
+object sub182
+var alarm_col= colour
+begin
+	Clear lw=4
+	X=145 Y=-85 Add y-=55 Add X+=220 Add Y+=55 Add line(fg=white) clear
+	X=-5 Y=-85 Add y-=40 add line(fg=white) clear
+	X=265 Y=-85 Add y-=40 add line(fg=white) clear
+
+	scale = 340
+	X=-5 Y=-110	hv_lib_breaker("type3",2000,2160,1434,4504,4600,HEATHROW,4,"top",40,angle=0)
+	X=45 Y=-110 	hv_lib_breaker("type3",2000,2180,1435,4505,4600,HEATHROW,5,"top",50,angle=0)
+	X=95 Y=-110	hv_lib_breaker("type3",2000,2200,1436,4506,4600,HEATHROW,6,"TOP",60,angle=0)
+	X=145 Y=-110	hv_lib_breaker("type3",2000,2260,1439,4509,4600,HEATHROW,9,"top",90,angle=0)
+
+	X=215 Y=-110	hv_lib_breaker("type3",2000,2340,1443,4513,4600,HEATHROW,13,"TOP",130,angle=0)
+	X=265 Y=-110	hv_lib_breaker("type3",2000,2360,1444,4514,4600,HEATHROW,14,"top",140,angle=0)
+	X=315 Y=-110	hv_lib_breaker("type3",2000,2380,1445,4515,4600,HEATHROW,15,"top",150,angle=0)
+	X=365 Y=-110	hv_lib_breaker("type3",2000,2400,1446,4516,4600,HEATHROW,16,"top",160,angle=0)
+
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	ALL	!
+	alarm_col=multiple_alarm_test(2000,2100,539,heathrow)
+
+	scale = 256
+	X=70 Y=-75  main_sub_call(grey80,200,20,"SUB 182","",white,20,yes,"sub_stn_182",heathrow,int,"string",int,fg=alarm_col)
+	X=295 Y=-75  main_sub_call(grey80,200,20,"SUB 182","",white,20,yes,"sub_stn_182",heathrow,int,"string",int,fg=alarm_col)
+end	
+
+
+!
+***										*** 
+*** 	Substation 183 - T5C LUL Vent						***
+*** 										***
+!
+object sub183
+var alarm_col = colour
+var alarm_col1 = colour
+var alarm_col2 = colour
+begin
+	Clear lw=4
+	X=420 Y=-165 Add y-=55 Add X+=50 Add Y+=55 Add line(fg=white) clear
+	X=520 Y=-165 line(fg=white) clear
+
+	scale = 120
+	X=370 Y=-193	modbus_cb(11300,11602,11430,2103,2603,2650,heathro2,3,"top",30,int,string,int,int)
+	X=420 Y=-193	modbus_cb(11300,11604,11470,2105,2605,2650,heathro2,5,"top",50,int,string,int,int)
+	X=470 Y=-193	modbus_cb(11300,11605,11490,2106,2606,2650,heathro2,6,"top",60,int,string,int,int)
+	X=520 Y=-193	modbus_cb(11300,11607,11530,2108,2608,2650,heathro2,8,"top",80,int,string,int,int)
+
+	scale = 256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	alarm_col1=multiple_alarm_test(11300,11390,210,heathro2)
+	alarm_col2=multiple_alarm_test(11300,11630,25,heathro2)
+
+	if alarm_col1 == magenta then 
+		alarm_col = magenta
+	else if alarm_col1 == red or  alarm_col2 == red then 
+		alarm_col = red
+	else
+		alarm_col = grey80
+
+	X=395 Y=-158  main_sub_call(grey80,92,20,"SUB 183","",white,20,yes,"sub_stn_183",heathro2,int,"string",int,fg=alarm_col)
+	X=495 Y=-158  main_sub_call(grey80,92,20,"SUB 183","",white,20,yes,"sub_stn_183",heathro2,int,"string",int,fg=alarm_col)
+
+end
+
+
+!
+***										*** 
+*** 	Substation 184 - T5D HEX Vent 						***
+*** 										***
+!
+object sub184
+var alarm_col = colour
+var alarm_col1 = colour
+var alarm_col2 = colour
+begin
+	Clear lw=4
+	X=420 Y=-165 Add y-=55 Add X+=50 Add Y+=55 Add line(fg=white) clear
+	X=520 Y=-165 line(fg=white) clear
+
+	scale = 120
+	X=370 Y=-193	modbus_cb(11800,12151,11950,2164,2684,2736,heathro2,4,"top",40,int,"Siemens",int,int)
+	X=420 Y=-193	modbus_cb(11800,12153,11990,2166,2686,2736,heathro2,6,"top",60,5,"Siemens",int,int)
+	X=470 Y=-193	modbus_cb(11800,12154,12015,2167,2687,2736,heathro2,7,"top",70,5,"Siemens",int,int)
+	X=520 Y=-193	modbus_cb(11800,12156,12060,2169,2689,2736,heathro2,9,"top",90,int,"Siemens",int,int)
+	
+	scale = 256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	alarm_col1=multiple_alarm_test(11800,11890,250,heathro2)
+	alarm_col2=multiple_alarm_test(11800,12180,35,heathro2)
+
+	if alarm_col1 == magenta then 
+		alarm_col = magenta
+	else if alarm_col1 == red or  alarm_col2 == red then 
+		alarm_col = red
+	else
+		alarm_col = grey80
+
+	X=395 Y=-158  main_sub_call(grey80,92,20,"SUB 184","",white,20,yes,"sub_stn_184",heathro2,int,"string",int,fg=alarm_col)
+	X=495 Y=-158  main_sub_call(grey80,92,20,"SUB 184","",white,20,yes,"sub_stn_184",heathro2,int,"string",int,fg=alarm_col)
+
+end
+
+
+!
+***										*** 
+*** 	Substation 156 -  Southern Airside Road - Supplies T5 Area B			***
+*** 										***
+!
+object sub156
+var alarm_col= colour
+begin
+	Clear lw=4
+	X=420 Y=-165 Add y-=55 Add X+=50 Add Y+=55 Add line(fg=white) clear
+
+	scale=120
+	X=370 Y=-193	modbus_cb(43600,44318,43860,1759,6459,6533,heathrow,9,"TOP",90,int,string,int,int)
+	X=420 Y=-193	modbus_cb(43600,44320,43900,1761,6461,6533,heathrow,11,"TOP",110,int,string,int,int)
+	X=470 Y=-193	modbus_cb(43600,44321,43920,1762,6462,6533,heathrow,12,"TOP",120,int,string,int,int)
+	X=520 Y=-193	modbus_cb(43600,44323,43960,1764,6464,6533,heathrow,14,"TOP",140,int,string,int,int)
+			
+	scale=256  
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	ALL	!
+	alarm_col=multiple_alarm_test(43600,43700,419,heathrow)
+
+	X=395 Y=-158	main_sub_call(grey80,86,20,"SUB 156","",white,20,yes,"sub_stn_156",heathrow,int,"string",int,fg=alarm_col)
+	X=495 Y=-158	main_sub_call(grey80,86,20,"SUB 156","",white,20,yes,"sub_stn_156",heathrow,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	Substation 191 - Northern Airside Road East					***
+*** 										***
+!
+object sub191
+var alarm_col = colour
+var alarm_col1 = colour
+var alarm_col2 = colour
+begin
+	Clear lw=4
+	X=420 Y=-165 Add y-=55 Add X+=50 Add Y+=55 Add line(fg=white) clear
+	X=520 Y=-165 line(fg=white) clear
+
+	scale = 120
+	!** OLD BREAKERS **!
+	!	X=370 Y=-193	modbus_cb(4100,4564,4280,2655,1305,1376,heathro3,5,"TOP",50,int,string,int,int)
+	X=420 Y=-193	modbus_cb(4100,4568,4360,2659,1309,1376,heathro3,9,"TOP",90,int,string,int,int)
+	X=470 Y=-193	modbus_cb(4100,4569,4380,2660,1310,1376,heathro3,10,"TOP",100,int,string,int,int)
+	X=520 Y=-193	modbus_cb(4100,4573,4460,2664,1314,1376,heathro3,14,"TOP",140,int,string,int,int)    !
+
+	!** NEW BREAKERS - AM 15/11/10 **!
+	X=370 Y=-193 	modbus_cb(33400,	34693,33539,3139,	8078,8320,heathro3,5,"TOP",50,int,string,int,int)
+	X=420 Y=-193 	modbus_cb(33400,	34717,33619,3143,	8098,8320,heathro3,9,"TOP",90,int,string,int,int)
+	X=470 Y=-193 	modbus_cb(33400,	34723,33639,3144,	8103,8320,heathro3,10,"TOP",100,int,string,int,int)
+	X=520 Y=-193 	modbus_cb(33400,	34747,33719,3148,	8123,8320,heathro3,14,"TOP",140,int,string,int,int)
+
+	scale = 256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	alarm_col1=multiple_alarm_test(4100,4200,180,heathro3)
+	alarm_col2=multiple_alarm_test(4100,4380,180,heathro3)
+
+	if alarm_col1 == magenta then 
+		alarm_col = magenta
+	else if alarm_col1 == red or  alarm_col2 == red then 
+		alarm_col = red
+	else
+		alarm_col = grey80
+
+	X=395 Y=-158  main_sub_call(grey80,92,20,"SUB 191","",white,20,yes,"sub_stn_191",heathro2,int,"string",int,fg=alarm_col)
+	X=495 Y=-158  main_sub_call(grey80,92,20,"SUB 191","",white,20,yes,"sub_stn_191",heathro2,int,"string",int,fg=alarm_col)
+
+end
+
+
+
+!
+***										*** 
+*** 	Airside Road Tunnel - Associated Substations					***
+*** 										***
+!
+!
+***										*** 
+*** 	Substation 153 - ART								***
+*** 										***
+!
+object sub153
+var alarm_col = colour
+begin 
+	alarm_col = grey80
+	scale=300
+	X=300 Y=-23 hv_lib_breaker(	"eclipse",	21015,	21440,	1455,	3323,	3680,	HEATHRO3,	1,	"TOP",	10)!LH1!
+	X=350 Y=-23 hv_lib_breaker(	"eclipse",	21015,	21472,	1457,	3333,	3680,	HEATHRO3,	2,	"TOP",	20)!RH2!
+	X=420 Y=-23 hv_lib_breaker(	"eclipse",	21015,	21456,	1456,	3328,	3680,	HEATHRO3,	4,	"TOP",	40)!LH4!
+	X=470 Y=-23 hv_lib_breaker(	"eclipse",	21015,	21488,	1458,	3338,	3680,	HEATHRO3,	5,	"TOP",	50)!RH5!
+
+	scale=256
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	ALL	!
+	alarm_col=multiple_alarm_test(21015,21440,99,heathro3)
+
+	X=324 Y=9 main_sub_call(grey80,100,20,"SUB 153","",white,20,yes,"sub_station_153",heathro3,int,"string",int,fg=alarm_col)
+	X=444 Y=9 main_sub_call(grey80,100,20,"SUB 153","",white,20,yes,"sub_station_153",heathro3,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	Substation 154 - ART							***
+*** 										***
+!
+object sub154
+var alarm_col = colour
+begin 
+	alarm_col = grey80
+
+	scale=300
+	X=300 Y=-23	hv_lib_breaker(	"eclipse",	25315,	26020,	1959,	5564,	5949,	HEATHRO3,	1,	"TOP",	10)!LH1!
+	X=350 Y=-23	hv_lib_breaker(	"eclipse",	25315,	26052,	1961,	5574,	5949,	HEATHRO3,	2,	"TOP",	20)!RH2!	
+	X=420 Y=-23	hv_lib_breaker(	"eclipse",	25315,	26036,	1960,	5569,	5949,	HEATHRO3,	4,	"TOP",	40)!LH4!
+	X=470 Y=-23	hv_lib_breaker(	"eclipse",	25315,	26068,	1962,	5579,	5949,	HEATHRO3,	5,	"TOP",	50)!RH5!
+
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	ALL	!
+	alarm_col=multiple_alarm_test(25315,26020,67,heathro3)
+
+	X=324 Y=9 main_sub_call(grey80,100,20,"SUB 154","",white,20,yes,"sub_station_154",heathro3,int,"string",int,fg=alarm_col)
+	X=444 Y=9 main_sub_call(grey80,100,20,"SUB 154","",white,20,yes,"sub_station_154",heathro3,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	Substation 185 - ART								***
+*** 										***
+!
+object sub185
+var alarm_col = colour
+begin 
+	alarm_col = grey80
+
+	scale=300
+	X=300 Y=-23	hv_lib_breaker(	"eclipse",	22265,	22686,	1631,	4006,	4304,	HEATHRO3,	1,	"TOP",	10)!LH1!
+	X=350 Y=-23	hv_lib_breaker(	"eclipse",	22265,	22718,	1633,	4016,	4304,	HEATHRO3,	2,	"TOP",	20)!RH2!	
+	X=420 Y=-23	hv_lib_breaker(	"eclipse",	22265,	22702,	1632,	4011,	4304,	HEATHRO3,	4,	"TOP",	40)!LH4!
+	X=470 Y=-23	hv_lib_breaker(	"eclipse",	22265,	22734,	1634,	4021,	4304,	HEATHRO3,	5,	"TOP",	50)!RH5!
+
+	scale=256
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	ALL	!
+	alarm_col=multiple_alarm_test(22265,22686,67,heathro3)
+
+	X=324 Y=9 main_sub_call(grey80,100,20,"SUB 185","",white,20,yes,"sub_station_185",heathro3,int,"string",int,fg=alarm_col)
+	X=444 Y=9 main_sub_call(grey80,100,20,"SUB 185","",white,20,yes,"sub_station_185",heathro3,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	Substation 186 - ART								***
+*** 										***
+!
+object sub186
+var alarm_col = colour
+begin 
+	alarm_col = grey80
+
+	scale=300
+	X=300 Y=-23	hv_lib_breaker(	"eclipse",	23765,	24236,	1763,	4733,	5103,	HEATHRO3,	1,	"TOP",	10)!LH1!
+	X=350 Y=-23	hv_lib_breaker(	"eclipse",	23765,	24278,	1765,	4735,	5103,	HEATHRO3,	2,	"TOP",	20)!RH2!	
+	X=420 Y=-23	hv_lib_breaker(	"eclipse",	23765,	24257,	1764,	4734,	5103,	HEATHRO3,	4,	"TOP",	40)!LH4!
+	X=470 Y=-23	hv_lib_breaker(	"eclipse",	23765,	24299,	1766,	4736,	5103,	HEATHRO3,	5,	"TOP",	50)!RH5!
+
+	scale=256
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	ALL	!
+	alarm_col=multiple_alarm_test(23765,24236,82,heathro3)
+
+	X=324 Y=9 main_sub_call(grey80,100,20,"SUB 186","",white,20,yes,"sub_station_186",heathro3,int,"string",int,fg=alarm_col)
+	X=444 Y=9 main_sub_call(grey80,100,20,"SUB 186","",white,20,yes,"sub_station_186",heathro3,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	Substation 137 - ART Feeds							***
+*** 										***
+!
+object sub137
+var alarm_col = colour
+begin 
+	alarm_col = grey80
+
+	X=338 y=10 add x+=100 add line(lw=3,fg=white)	
+
+	scale=300
+	X=325 Y=-23 hv_lib_breaker(	"eclipse",	12015,	12160,	392,	1918,	1926,	HEATHRO3,	2,	"top",	20)
+	X=388 Y=10 hv_lib_breaker(	"eclipse",	12015,	12210,	394,	1920,	1926,	HEATHRO3,	4,	"SECT",	30)
+	X=455 Y=-23hv_lib_breaker(	"eclipse",	12015,	12285,	397,	1923,	1926,	HEATHRO3,	7,	"top",	50)
+
+	scale=256
+
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	ALL	!
+	alarm_col=multiple_alarm_test(12015,12140,189,heathro3)
+
+	X=324 Y=9  main_sub_call(grey80,70,20,"SUB","",white,20,yes,"sub_station_137",heathro3,int,"string",int,fg=alarm_col)
+	X=454 Y=9 main_sub_call(grey80,70,20,"137","",white,20,yes,"sub_station_137",heathro3,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	T5 AREA BUTTONS							***
+*** 										***
+!
+!
+***										*** 
+*** 	T5 Building area A (Main)							***
+*** 										***
+!
+object t5_a
+var alarm_col = colour
+begin
+	alarm_col = grey80
+	X=6 Y=9 main_sub_call(grey80,110,50,"T5 A","(Main Bld)",white,20,no,"T5_HV_CONCOURSE_A",heathro2,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	T5 Building area B (Satellite)							***
+*** 										***
+!
+object t5_b
+var alarm_col = colour
+begin
+	alarm_col = grey80
+	X=192 Y=9 main_sub_call(grey80,110,50,"T5 B","(Satellite)",white,20,no,"T5_HV_CONCOURSE_B",heathro2,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	T5 Building area C								***
+*** 										***
+!
+object t5_c
+var alarm_col = colour
+begin 
+	alarm_col = grey80 
+	X=-109 Y=9 main_sub_call(grey80,110,50,"T5 C","",white,20,no,"T5_HV_CONCOURSE_C",heathro2,int,"string",int,fg=alarm_col)
+end
+
+
+!
+***										*** 
+*** 	T5 Other areas -All other Substations on T5 						***
+*** 										***
+!
+object t5_other
+var alarm_col = colour
+begin
+	alarm_col = grey80
+	X=-224 Y=9 main_sub_call(grey80,110,50,"T5","Other Areas",white,20,no,"T5_HV_OTHER_AREAS",heathrow,int,"string",int,fg=alarm_col)
+
+end
+
+
+!
+***										*** 
+*** 	T5 Airside Road Tunnel		 						***
+***
+!
+object t5_ART
+var alarm_col = colour
+begin 
+	alarm_col = grey80
+	X=-339 Y=9 main_sub_call(grey80,110,50,"T5 ART","",white,20,no,"ART_11KV_NETWORK",heathro3,int,"string",int,fg=alarm_col)
+
+end
+
+
+!
+***										*** 
+*** 	Main Object  - contains browser, connecting lines, labels and substation object calls	***
+*** 										***
+!
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+clear
+! * ART background * !
+!X=-570 Y=226 W=1139 H=84 FG=LIGHTGREEN3 JUST=TOPLEFT FS=FILLSOLID ANGLE=0 ROTRECT!
+
+clear
+
+! *** Substation Connecting Lines *** !
+	scale = 256
+
+	! ** SUB151 AND SUB152 TO T5 A Main Building ** !
+
+	! ** line 152 t5a** !
+	X=-95 Y=-330 Add
+	X=-10 Y=-330 Add
+	FG=BLACK LS=SOLID cs=capbutt LW=4 LINE Clear
+
+	! ** arrow 152 t5a ** !
+	X=2 Y=-330 Add
+	X=-10 Y=-335 Add
+	X=-10 Y=-325 Add
+	lw=3 FG=BLACK FS=FILLSOLID FILL Clear
+
+	! ** line 151 t5a** !
+	X=210 Y=-330 Add
+	X=117 Y=-330 Add
+	FG=BLACK LS=SOLID cs=capbutt LW=4 LINE clear
+
+	! ** arrow 151 t5a** !
+	X=115 Y=-330 Add
+	X=127 Y=-335 Add
+	X=127 Y=-325 Add
+	FG=BLACK FS=FILLSOLID FILL clear
+
+	! ** line 152 others** !
+	X=-55 Y=-330 Add
+	X=-55 Y=-270 Add
+	X=0 Y=-270 Add
+	FG=BLACK LS=SOLID cs=capbutt LW=4 LINE clear
+
+	! ** arrow 152 others** !
+	X=2 Y=-270 Add
+	X=-10Y=-275 Add
+	X=-10Y=-265 Add
+	lw=3 FG=BLACK FS=FILLSOLID FILL Clear
+
+	! ** line 151 others** !
+	X=168 Y=-330 Add
+	X=168 Y=-270 Add
+	X=114 Y=-270 Add
+	FG=BLACK LS=SOLID cs=capbutt LW=4 LINE clear
+
+	! ** arrow 151 others** !
+	X=115 Y=-270 Add
+	X=127 Y=-275 Add
+	X=127 Y=-265 Add
+	FG=BLACK FS=FILLSOLID FILL clear
+
+	! ** line 156 t5b **!
+	X=-230 Y=-30 Add
+	X=0 Y=-30 Add
+	FG=BLACK LS=SOLID cs=capbutt LW=4 LINE clear
+
+	! ** arrow 156 t5b ** !
+	X=2 Y=-30 Add
+	X=-10Y=-35 Add
+	X=-10Y=-25 Add
+	FG=BLACK FS=FILLSOLID FILL clear
+	
+	! ** line 182 t5c **!
+	X=-150 Y=188 Add
+	X=2 Y=188 Add
+	FG=BLACK LS=SOLID cs=capbutt LW=4 LINE clear
+
+	! ** arrow 182 t5c ** !
+	X=2 Y=188 Add
+	X=-10Y=193 Add
+	X=-10Y=183 Add
+	FG=BLACK FS=FILLSOLID FILL clear
+
+	! ** line 182 ART** !
+	X=-55 Y=188 Add
+	X=-55 Y=248 Add
+	X=0 Y=248 Add
+	FG=BLACK LS=SOLID cs=capbutt LW=4 LINE clear
+
+	! ** arrow 182 ART** !
+	X=2 Y=248 Add
+	X=-10Y=253 Add
+	X=-10Y=243 Add
+	lw=3 FG=BLACK FS=FILLSOLID FILL Clear
+
+	! ** line 155 t5b **!
+	X=250 Y=-30 Add
+	X=117 Y=-30 Add
+	FG=BLACK LS=SOLID cs=capbutt LW=4 LINE clear
+
+	! ** arrow 155 t5b ** !
+	X=115 Y=-30 Add
+	X=127 Y=-35 Add
+	X=127 Y=-25 Add
+	FG=BLACK FS=FILLSOLID FILL clear
+
+	! ** line 191 t5c **!
+	X=250 Y=188 Add
+	X=117 Y=188 Add
+	FG=BLACK LS=SOLID cs=capbutt LW=4 LINE clear
+
+	! ** arrow 191 t5c ** !
+	X=115 Y=188 Add
+	X=127 Y=193 Add
+	X=127 Y=183 Add
+	FG=BLACK FS=FILLSOLID FILL clear
+
+	! ** SUB162-P10 TO SUB151-P20 ** !
+	X=117 Y=-178 Add
+	X=117 Y=-235 Add
+	X=396 Y=-235 Add
+	X=396 Y=-319 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB162-P5 TO SUB152-P15 ** !	
+	X=-6 Y=-178 Add
+	X=-6 Y=-235 Add
+	X=-402 Y=-235 Add
+	X=-402 Y=-318 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB164-P5 TO SUB152-P17 ** !	
+	X=-7 Y=-88 Add
+	X=-7 Y=-147 Add
+	X=-361 Y=-147 Add
+	X=-361 Y=-321 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB164-P12 TO SUB151-P29 ** !
+	X=118 Y=-88 Add
+	X=118 Y=-147 Add
+	X=478 Y=-147 Add
+	X=478 Y=-321 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB156-P14 TO SUB152-P31 ** !
+	X=-253 Y=-38 Add
+	X=-253 Y=-95 Add
+	X=-115 Y=-95 Add
+	X=-115 Y=-321 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB156-P14 TO SUB152-P6 ** !
+	X=-376 Y=-38 Add
+	X=-376 Y=-110 Add
+	X=-484 Y=-110 Add
+	X=-484 Y=-321 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB155-P8 TO SUB151-P17 ** !
+	X=274 Y=-40 Add
+	X=274 Y=-319 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+	
+	! ** SUB155-P15 TO SUB151-P25 ** !
+	X=438 Y=-42 Add
+	X=438 Y=-319 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB182-P6 TO SUB152-P5 ** !
+	X=-403 Y=182 Add
+	X=-403 Y=55 Add
+	X=-524 Y=55 Add
+	X=-524 Y=-322 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB182-P13 TO SUB152-P29 ** !
+	X=-304 Y=182 Add
+	X=-304 Y=55 Add
+	X=-156 Y=55 Add
+	X=-156 Y=-321 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB183-P3 TO SUB155-P19 ** !
+	X=-7 Y=152 Add
+	X=-7 Y=85 Add
+	X=508 Y=85 Add
+	X=508 Y=-94 Add
+	X=479 Y=-94 Add
+	X=479 Y=-42 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB183-P8 TO SUB182-P5 ** !
+	X=116 Y=152 Add
+	X=116 Y=100 Add
+	X=-444 Y=100 Add
+	X=-444 Y=182 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB184-P9 TO SUB155-P10 ** !
+	X=116 Y=53 Add
+	X=116 Y=8 Add
+	X=200 Y=8 Add
+	X=200 Y=-94 Add
+	X=314 Y=-94 Add
+	X=314 Y=-42 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB184-P4 TO SUB182-P15 ** !	
+	X=-8 Y=53 Add
+	X=-8 Y=8 Add
+	X=-130 Y=8 Add
+	X=-130 Y=77 Add
+	X=-222 Y=77 Add
+	X=-222 Y=182 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB191-P5 TO SUB151-P3 ** !
+	X=275 Y=178 Add
+	X=275 Y=135 Add
+	X=231 Y=135 Add
+	X=231 Y=-319 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! ** SUB191-P14 TO SUB151-P35 ** !
+	X=400 Y=178 Add
+	X=400 Y=135 Add
+	X=519 Y=135 Add
+	X=519 Y=-319 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	! *** Airside Road Tunnel Substations *** !
+
+	! ** ART SUB182-P4 TO SUB153-P1 ** !
+!
+	X=-485 Y=178 Add
+	X=-485 Y=131 Add
+	X=-530 Y=131 Add
+	X=-530 Y=240 Add
+	X=-490 Y=240 Add
+	X=-490 Y=288 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+!
+	! ** ART SUB182-P14 TO SUB153-P4 ** !
+!
+	X=-263 Y=179 Add
+	X=-263 Y=120 Add
+	X=-140 Y=120 Add
+	X=-140 Y=210 Add
+	X=-392 Y=210 Add
+	X=-392 Y=288 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+!
+	! ** ART SUB153-P2 TO SUB185-P1 ** !
+!
+	X=-449 Y=289 Add
+	X=-449 Y=242 Add
+	X=-272 Y=242 Add
+	X=-272 Y=289 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+!
+	! ** ART SUB153-P5 TO SUB185-P4 ** !
+
+!	X=-352 Y=289 Add
+	X=-352 Y=230 Add
+	X=-172 Y=230 Add
+	X=-172 Y=289 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+!
+
+	! ** ART SUB185-P2 TO SUB186-P1 ** !
+!
+	X=-230 Y=289 Add
+	X=-230 Y=242 Add
+	X=-53 Y=242 Add
+	X=-53 Y=289 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+!
+	! ** ART SUB185-P5 TO SUB186-P4 ** !
+!
+	X=-133 Y=289 Add
+	X=-133 Y=230 Add
+	X=46 Y=230 Add
+	X=46 Y=289 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+!
+	! ** ART SUB186-P2 TO SUB154-P1 ** !
+!
+	X=-11 Y=289 Add
+	X=-11 Y=242 Add
+	X=165 Y=242 Add
+	X=165 Y=288 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+!
+	! ** ART SUB186-P5 TO SUB154-P4 ** !
+!
+	X=86 Y=289 Add
+	X=86 Y=230 Add
+	X=264 Y=230 Add
+	X=264 Y=289 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE Clear
+!
+	! ** ART SUB154-P2 TO SUB137-P2 ** !
+!
+	X=205 Y=289 Add
+	X=205 Y=236 Add
+	X=430 Y=236 Add
+	X=430 Y=290 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+!
+	! ** ART SUB154-P5 TO SUB137-P7 ** !
+!
+	X=304 Y=289 Add
+	X=304 Y=242 Add
+	X=537 Y=242 Add
+	X=537 Y=290 Add
+	FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+!
+
+!*** Substations ***!
+	scale=210
+	X=425 Y=-155 sub151
+	X=-115 Y=-547 sub152
+	X=-679 Y=99 sub156
+	X=-481 Y=248 sub182
+	X=425 Y=-42 sub164
+	X=262 Y=28 sub155
+	X=424 Y=-131 sub162
+	X=-311 Y=190 sub184
+	X=-311 Y=289 sub183
+	X=-29 Y=316 sub191
+Clear
+
+scale=256
+
+X=282 Y=-282 t5_other
+X=168 Y=189 t5_c
+X=53 Y=-344 t5_a
+X=-134 Y=-45 t5_b	
+X=397 Y=251 t5_ART
+
+! ** airside road tunnel ** !
+	! ** label** !
+	tfg=black
+!
+	X=-534 Y=260 CH=12 text(just=centrecentre,"Airside")
+	X=-534 Y=275 CH=12 text(just=centrecentre,"Road")
+	X=-534 Y=290 CH=12 text(just=centrecentre,"Tunnel")
+!
+	scale=210
+
+!
+	X=-737 Y=288 sub153
+	X=-518 Y=288 sub185
+	X=-299 Y=288 sub186
+	X=-81 Y=288 sub154
+	X=164 Y=285 sub137
+!	clear
+
+	scale=256
+
+	! ** labels for Rail Vent and Energy Centre - future subs ** !
+	!
+	X=33 Y=-234 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RAIL VENT")
+	X=17 Y=-144 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("ENERGY CENTER")
+	!
+
+	! ** browser ** !
+	x = -570 y = 310 browser(1340,heathro2,1140)
+ch=22
+!X=-142 Y=269 TEXT("Airside Road Tunnel to be added here")!
+end
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

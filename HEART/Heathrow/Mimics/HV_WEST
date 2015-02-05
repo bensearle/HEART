@@ -1,0 +1,389 @@
+! HEATHROW CMS - HV WEST
+
+loaded by: HV_OVERVIEW 
+!
+
+load paul_lib
+load airfield_lighting_ring
+
+object west_intake_substations (fg,bg)
+
+begin
+
+fg=blue
+X=-297 Y=-190 os("10") !10!
+X=-249 os("20") !20!
+X=-201 os("11") !11!
+X=-129 os("26") !26!
+X=-68 os("14") !14!
+X=-129 Y=-168 os("R") !r!
+X=-386 Y=-186 os("82") !82!
+X=-450 Y=-170 os("73") !73!
+X=-284 Y=-108 os("51") !51!
+X=-356 Y=-91 os("43") !43!
+X=-340 Y=-38 os("72") !72!
+X=-284 os("38") !38!
+X=-315 Y=-24 os("44") !44!
+X=-340 Y=-13 os("83") !83!
+X=-320 y=13 os("74") !74!
+X=-284 Y=36 os("52") !52!
+X=-356 Y=65 os("42") !42!
+X=-284 Y=90 os("29") !29!
+X=-368 Y=127 os("49") !49!
+X=-322 os("50") !50!
+X=-284 Y=140 os("39") !39!
+X=-348 Y=153 os("41") !41!
+X=-321 Y=167 os("66") !66!
+X=-396 Y=184 os("9") !9!
+X=53 Y=-146 os("3") !3!
+X=53 Y=-58 os("5") !5!
+X=53 Y=30 os("4") !4!
+X=19 Y=96 os("65") !65!
+X=53 os("1/14") !m1/14!
+Y=153 os("1/10") !m1/10!
+X=-287 Y=200 os("45") !45!
+X=-235 os("8") !8!
+X=-80 os("6") !6!
+X=22 os("7") !7!
+X=-365 Y=222 os("61") !61!
+X=-306 os("60") !60!
+
+end
+
+object west_intake_lines (fg,bg)
+
+begin
+
+!**************************blue lines lw = 2*******************!
+lw=3
+fg=lightblue3
+ 
+X=-452 Y=-142  ADD
+X=-452 Y=26  ADD
+line
+clear
+
+X=-452 Y=36  ADD
+Y=215  ADD
+line
+clear
+
+X=-239 Y=-82  ADD
+Y=-22  ADD
+line
+clear
+
+X=-239 Y=-12  ADD
+Y=44  ADD
+line
+clear
+
+X=-458 Y=-213  ADD
+X=-417 ADD
+line
+clear
+
+X=-406 Y=-213  ADD
+X=-374 ADD
+line
+clear
+
+X=-412 Y=313  ADD
+X=-362 ADD
+line
+clear
+
+X=-350 Y=313  ADD
+X=-295 ADD
+line
+clear
+
+X=-282 Y=313  ADD
+X=-264 ADD
+line
+clear
+
+X=-210 Y=309  ADD
+X=-2 ADD
+line
+clear
+
+X=10 Y=309  ADD
+X=271 ADD
+line
+clear
+
+!************************blue lines lw = 1************************!
+lw=2
+
+!bar 62 to south rear!
+X=-271 Y=312  ADD
+Y=290  ADD
+line
+clear
+X=-271 Y=278  ADD
+Y=263  ADD
+X=-206 aDD
+Y=307  ADD
+line 
+clear
+X=-75 Y=308  ADD
+X=-75 Y=302  ADD
+line
+clear
+X=148 Y=307  ADD
+X=148 Y=302  ADD
+line
+clear
+X=-450 Y=-135  ADD
+X=-430 ADD
+Y=-164 ADD
+X=-438 ADD
+line
+clear
+X=-462 Y=-165  ADD
+X=-472 ADD
+line
+clear
+X=-380 Y=313  ADD
+Y=263  ADD
+X=-412 ADD
+Y=-130 ADD
+X=-452 ADD
+line
+clear
+
+
+
+fg = yellow
+X=-407 Y=189  ADD
+X=-451 ADD
+line
+clear
+
+
+X=-451 Y=-103  ADD
+X=-295 ADD
+line
+clear
+X=-284 Y=-97  ADD
+Y=-39  ADD
+line
+clear
+X=-284 Y=-27  ADD
+Y=36  ADD
+line
+clear
+X=-284 Y=47  ADD
+Y=90  ADD
+line
+clear
+X=-284 Y=100  ADD
+Y=140  ADD
+line
+clear
+X=-296 Y=145  ADD
+X=-451 ADD
+line
+clear
+X=160
+
+X=-451 Y=-112  ADD
+X=-440 ADD
+line
+clear
+
+X=-451 Y=-86  ADD
+X=-367 ADD
+line
+clear
+X=-356 Y=-80  ADD
+Y=65  ADD
+line
+clear
+X=-356 Y=76  ADD
+Y=105  ADD
+X=-348 ADD
+Y=152  ADD
+line
+clear
+X=-360 Y=159  ADD
+X=-451 ADD
+line
+clear
+X=-338 Y=162  ADD
+X=-331 Y=169  ADD
+line
+clear
+
+
+
+
+
+X=42 Y=101  ADD
+X=31 ADD
+line
+clear
+
+
+X=-452 Y=-70  ADD
+X=-315 ADD
+Y=-24  ADD
+line
+clear
+X=-315 Y=-13  ADD
+Y=0  ADD
+X=-320 ADD
+Y=13  ADD
+line
+clear
+X=-320 Y=24  ADD
+Y=127  ADD
+line
+clear
+X=-333 Y=133  ADD
+X=-356 ADD
+line
+clear
+X=-379 Y=133  ADD
+X=-451 ADD
+line
+clear
+
+X=-324 Y=-22  ADD
+X=-330 Y=-30  ADD
+line
+clear
+X=-340 Y=-27  ADD
+Y=-13  ADD
+line
+clear
+
+X=-452 Y=-59  ADD
+X=-239 ADD
+line
+clear
+
+!transformers to west intake!
+X=-461 Y=-82  ADD
+X=-452 ADD
+line
+clear
+X=-460 Y=151  ADD
+X=-452 ADD
+line
+clear
+
+
+
+!west intake to 53 bar!
+X=-451 Y=120  ADD
+X=-257 ADD
+Y=25 ADD
+X=-239 ADD
+line
+clear
+
+
+!53 bar to 23 bar!
+X=-238 Y=-71  ADD
+X=-198 ADD
+Y=-113 ADD
+X=-100 ADD
+line
+clear
+
+
+!53 bar to 32 bar!
+X=-238 Y=0  ADD
+X=-194 ADD
+Y=-42 ADD
+X=-181 ADD
+line
+clear
+
+!west intake to bar 62!
+X=-450 Y=208  ADD
+X=-430 ADD
+Y=342  ADD
+X=-340 ADD
+Y=314  ADD
+line
+clear
+
+!west intake to bar 54 via 82!
+X=-451 Y=176  ADD
+X=-386 ADD
+Y=-175  ADD
+line
+clear
+X=-386 Y=-187  ADD
+Y=-213  ADD
+line
+clear
+
+!bar 62 to ss60!
+X=-307 Y=313  ADD
+Y=233  ADD
+line
+clear
+
+!ring from bar 62 to south intake ss61,60!
+X=-398 Y=313  ADD
+Y=227  ADD
+X=-376 ADD
+line
+clear
+X=-354 Y=227  ADD
+X=-317 ADD
+line
+clear
+X=-294 Y=227  ADD
+X=-168 ADD
+Y=267 ADD
+line
+clear
+X=-168 Y=278  ADD
+Y=308  ADD
+line
+clear
+
+
+!bar 62 to south intake front!
+X=-366 Y=233  ADD
+Y=247  ADD
+X=-13 ADD
+Y=268  ADD
+line
+clear
+X=-13 Y=278  ADD
+Y=308  ADD
+line
+clear
+
+!t1 west intake!
+X=-451 Y=166  ADD
+X=-440 ADD
+line
+clear
+
+
+
+!west intake to south intake rear!
+X=-451 Y=-95  ADD
+X=-425 ADD
+Y=255 ADD
+X=199 ADD
+Y=309 ADD
+line
+clear
+
+end
+
+object west_intake
+begin
+west_intake_lines
+air_lights(322,3442)
+west_intake_substations
+
+end

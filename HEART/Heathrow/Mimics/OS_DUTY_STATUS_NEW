@@ -1,0 +1,669 @@
+! HEATHROW CMS - OS DUTY STATUS
+
+loaded by: HIERARCHY 
+!
+
+load mimic_libutil
+
+load os_duty_status_help
+
+load main_hierarchy
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(alarm_status)
+
+type duty_options = enum(adbs = "A - Duty / B - Standby",asbd = "A - Standby / B - Duty")
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output b_db_row_type
+
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+*************************************************************
+* BARCIS OUTSTATION OBJECT                                  *
+* this object is called from the Top Level variable (mimic) *
+*************************************************************
+!
+
+object barcis_outstation (src=source,just)
+
+var barcis = input  b_db_row_type
+
+var barcis_text = string(20)
+
+begin 
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source barcis then 
+
+   begin
+
+   set source barcis = src
+   set filter barcis.db_addr = lim_eq
+   set limit barcis.db_addr = db_address(int(b1) + 24224 -1) ! RTL HARDCODED !
+   set persist barcis 
+   request barcis
+
+   end
+
+
+
+! DRAW OUTSTAION !
+scale=256
+just=centrecentre
+fg = decoroff
+w=150 h=100
+x=0 y=-15
+rect (h=75,w=160) CLEAR
+x = -80 y = 23 add x += 160 add y -= 75 add line(fg=decorshadow) clear
+x = -80 y = 23 add y -= 75 add x += 160 add line(fg=decorlight) clear
+! SELECT STATUS !
+
+if barcis.b_value then
+   begin
+   barcis_text = "FAILED"
+   fg=red
+   end
+else
+   begin
+   barcis_text = "HEALTHY"
+   fg=green
+   end
+
+x = 0 y = -14 add rect(h=40,w=46) clear
+x = -23 y = 5 add x += 46 add y -= 39 add line(fg=decorshadow) clear
+x = -23 y = 5 add y -= 39 add x += 46 add line(fg=decorlight) clear
+x = 0 y = -14 add text ("BARCIS") clear
+
+tfg = black
+x = 0 y = 15 add text (barcis_text)
+
+x = 0 y = -42 add text ("BARCIS STATUS")
+end
+
+
+!
+*************************************************************
+* OUTSTATION OBJECT                                         *
+* this object is called from the Top Level variable (mimic) *
+*************************************************************
+!
+
+object outstation (src=source,ident = string(20),plc_offset=int,offset=int,inter_offset=int,fail_offset=int,just)
+
+var plc_a = input  b_db_row_type
+var plc_b = input  b_db_row_type 
+var plc_a_watchdog_failure = input  b_db_row_type
+var plc_b_watchdog_failure = input  b_db_row_type
+var set_plc_a = input  b_db_row_type
+var set_plc_b = input  b_db_row_type
+var inter_plc_comms_fail = input  alarm_row_type 
+var plc_a_call_failure = input  b_db_row_type
+var plc_b_call_failure = input  b_db_row_type
+var a_foreground = loopback colour
+var b_foreground = loopback colour
+var plc_a_text = string(20)
+var plc_b_text = string(20)
+
+var alter_ds_panel = menu  duty_options
+
+begin 
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source plc_a then 
+
+   begin
+
+   set source set_plc_a = src
+   set filter set_plc_a.db_addr = lim_eq
+   set limit set_plc_a.db_addr = db_address(int(b1) + offset -1)
+   set persist set_plc_a 
+   request set_plc_a
+
+   set source set_plc_b = src
+   set filter set_plc_b.db_addr = lim_eq
+   set limit set_plc_b.db_addr = db_address(int(b1) + offset)
+   set persist set_plc_b 
+   request set_plc_b
+
+   set source plc_a = src
+   set filter plc_a.db_addr = lim_eq
+   set limit plc_a.db_addr = db_address(int(b1) + offset +1)
+   set persist plc_a 
+   request plc_a
+
+   set source plc_b = src
+   set filter plc_b.db_addr = lim_eq
+   set limit plc_b.db_addr = db_address(int(b1) + offset +2)
+   set persist plc_b 
+   request plc_b
+
+   set source plc_a_watchdog_failure = src
+   set filter plc_a_watchdog_failure.db_addr = lim_eq
+   set limit plc_a_watchdog_failure.db_addr = db_address(int(b1) + plc_offset - 1)
+   set persist plc_a_watchdog_failure 
+   request plc_a_watchdog_failure
+
+   set source plc_b_watchdog_failure = src
+   set filter plc_b_watchdog_failure.db_addr = lim_eq
+   set limit plc_b_watchdog_failure.db_addr = db_address(int(b1) + plc_offset)
+   set persist plc_b_watchdog_failure 
+   request plc_b_watchdog_failure
+
+   set source inter_plc_comms_fail = src
+   set filter inter_plc_comms_fail.db_addr = lim_eq
+   set limit inter_plc_comms_fail.db_addr=db_address(int(b1)+ inter_offset -1)
+   set persist inter_plc_comms_fail 
+   request inter_plc_comms_fail
+
+   set source plc_a_call_failure = src
+   set filter plc_a_call_failure.db_addr = lim_eq
+   set limit plc_a_call_failure.db_addr=db_address(int(b1)+ fail_offset -1)
+   set persist plc_a_call_failure 
+   request plc_a_call_failure
+
+   set source plc_b_call_failure = src
+   set filter plc_b_call_failure.db_addr = lim_eq
+   set limit plc_b_call_failure.db_addr=db_address(int(b1)+ fail_offset )
+   set persist plc_b_call_failure 
+   request plc_b_call_failure
+
+   end
+
+
+! CONTROL MENU !
+
+if valid alter_ds_panel then
+   begin
+   case alter_ds_panel of
+
+   adbs
+      begin
+      set_b_value(db_address(int(b1) + offset), src, off)
+      set_b_value(db_address(int(b1) + offset - 1), src, on)
+      end
+   asbd   
+      begin
+      set_b_value(db_address(int(b1) + offset - 1), src, off)
+      set_b_value(db_address(int(b1) + offset), src, on)
+      end
+   default 
+      begin
+      end
+   set invalid alter_ds_panel  
+end
+
+
+! SELECT STATUS !
+
+if plc_a_watchdog_failure.b_value then
+   plc_a_text = "FAILED"
+else
+if plc_a.b_value then
+   plc_a_text = "DUTY"
+else
+   plc_a_text = "STANDBY"
+
+
+if plc_b_watchdog_failure.b_value then
+   plc_b_text = "FAILED"
+else
+if plc_b.b_value then
+   plc_b_text = "DUTY"
+else
+   plc_b_text = "STANDBY"
+
+if plc_b_call_failure.b_value then
+   b_foreground = magenta
+else if plc_b_watchdog_failure.b_value then
+   b_foreground = red 
+
+else if plc_b.b_value then
+   b_foreground = green 
+else
+   b_foreground = yellow
+
+if plc_a_call_failure.b_value then
+   a_foreground = magenta
+else if plc_a_watchdog_failure.b_value then
+   a_foreground = red
+
+
+else if plc_a.b_value then
+   a_foreground = green 
+else
+   a_foreground = Yellow
+
+! DRAW OUTSTAION !
+
+TFG = BLACK
+
+x = -55 y = 0 ADD RECT(FG=a_foreground,H=60,W=100)
+ADD TEXT(CH=17,"PLC A") CLEAR
+Y += 47
+ADD TEXT(CH=17,TFG=a_text_foreground,a_status_text) CLEAR
+
+x = 55 y = 0 ADD RECT(FG=b_foreground,H=60,W=100) 
+ADD TEXT(CH=17,"PLC B") CLEAR
+Y += 47
+ADD TEXT(CH=17,TFG=b_text_foreground,b_status_text) CLEAR
+
+X = 5 Y = 30 ADD
+X += 100 ADD
+Y -= 60 ADD
+LINE(FG=grey40) CLEAR
+ADD
+X -= 100 ADD
+Y += 60 ADD
+LINE(FG=WHITE) CLEAR
+
+X = -105 Y = 30 ADD
+X += 100 ADD
+Y -= 60 ADD
+LINE(FG=grey40) CLEAR
+ADD
+X -= 100 ADD
+Y += 60 ADD
+LINE(FG=WHITE) CLEAR
+
+X = -115 Y = -40 ADD
+X += 230 ADD
+LINE(FG=WHITE) CLEAR
+
+X = -115 Y = -39 ADD
+X += 230 ADD
+LINE(FG=grey40) CLEAR
+
+X = 0 Y = -55 TEXT(CH=17,TFG=BLACK,header_text) CLEAR
+
+!
+scale=256
+just=centrecentre
+fg = decoroff
+w=150 h=100
+x=0 y=0
+set rect alter_ds_panel 
+rect (h=100,w=160) CLEAR
+x += 80 y -= 50 add
+y += 100 add
+x -= 160 add line(fg=decorshadow) clear
+y -= 1 add
+y -= 99 add
+x += 160 add line (fg = decorlight) clear
+tfg = black
+x = 0 y = -35 add text (ident)
+x = -40 y = 30 add text (plc_a_text)
+x = 40 add text (plc_b_text) clear
+
+
+x = -40 y = 0 add rect(h=40,w=46)
+add text ("PLC A") clear
+
+
+x = 40 y = 0 add rect(h=40,w=46) 
+add text ("PLC B") clear
+
+if plc_a_watchdog_failure.b_value or plc_a.b_value then
+   begin
+   x = -17 y -= 20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorshadow) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorlight) clear
+   end
+else
+   begin
+   x = -17 y -= 20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorlight) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorshadow) clear
+   end
+
+
+if plc_b_watchdog_failure.b_value or plc_b.b_value then
+   begin
+   x = 63 y = -20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorshadow) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorlight) CLEAR
+   end
+else
+   begin
+   x = 63 y = -20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorlight) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorshadow) CLEAR
+   end
+!
+if inter_plc_comms_fail.alarm_status == w_note then
+   begin
+   x = 0 y = 42 text(tfg=flashred,ch=12,"Inter-PLC comms Failure")
+   end
+else if inter_plc_comms_fail.alarm_status == w_clr then
+   begin
+   x = 0 y = 42 text(tfg=red,ch=12,"Inter-PLC comms Failure")
+   end
+
+end
+
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+var wd_aa = loopback  db_address
+var wd_ab = loopback  db_address
+var wd_ac = loopback  db_address
+var wd_ad = loopback  db_address
+var wd_ae = loopback  db_address
+var wd_af = loopback  db_address
+var wd_ag = loopback  db_address
+var wd_ah = loopback  db_address
+var wd_ai = loopback  db_address
+var wd_aj = loopback  db_address
+var wd_ak = loopback  db_address
+var wd_al = loopback  db_address
+var wd_am = loopback  db_address
+var wd_an = loopback  db_address
+var wd_ao = loopback  db_address
+var wd_ap = loopback  db_address
+var bc_aa = loopback  db_address
+var bc_ab = loopback  db_address
+var wda = input  b_db_row_type
+var wdb = input  b_db_row_type
+var wdc = input  b_db_row_type
+var wdd = input  b_db_row_type
+var wde = input  b_db_row_type
+var wdf = input  b_db_row_type
+var wdg = input  b_db_row_type
+var wdh = input  b_db_row_type
+var wdi = input  b_db_row_type
+var wdj = input  b_db_row_type
+var wdk = input  b_db_row_type
+var wdl = input  b_db_row_type
+var wdm = input  b_db_row_type
+var wdn = input  b_db_row_type
+var wdo = input  b_db_row_type
+var wdp = input  b_db_row_type
+var bca = input  b_db_row_type
+var bcb = input  b_db_row_type
+var src = loopback  source
+var helpstr = HELP string (30)
+
+begin
+goto_menu
+x = 470 y = 360 command_button(235,heathrow)
+x = 0 y = 0 clear
+
+
+just = centrecentre
+
+X=-569 Y=-399 W=2278 H=1600
+
+set text helpstr = "DUTY_STATUS_HELP"
+
+
+scale = 333
+x = -345 y =-300  outstation (heathrow,"OS 1 : NORTH INTAKE",1,42,54,62)
+!y = -150   outstation (heathrow,"OS 2 : SOUTH INTAKE",1000,1036,1050,1057)!
+y = 0        outstation (heathrow,"OS 3 : EAST INTAKE",2000,2032,2046,2058)
+y = 150     outstation (heathrow,"OS 4 : WEST INTAKE",3000,3041,3058,3067)
+y = 300     barcis_outstation (heathrow)
+x = -115 y = -300 outstation (heathrow,"OS 5 : S/S 23",4000,4017,4028,4035)
+y = -150     outstation (heathrow,"OS 6 : S/S 32",5000,5018,5030,5031)
+y = 0         outstation (heathrow,"OS 7 : S/S 62",6000,6024,6035,6036)
+y = 150       outstation (heathrow,"OS 8 : A1 CENTRE",7000,7083,7088,7090)
+x=115 y=-300 outstation(heathrow,"OS 9 : MAIN TUNNEL",9000,9024,9051,9086)
+y = -150 outstation (heathrow,"OS 10 : CARGO TUNNEL",10000,10041,10067,10078)
+y = 0   outstation (heathrow,"OS 11 : POT WATER (E)",11000,11032,11047,11059)
+y = 150 outstation (heathrow,"OS 12 : POT WATER (W)",12000,12044,12065,12066)
+x=345 y=-300 outstation (heathrow,"OS 13 : FEGP T3",13000,13011,13021,13022)
+y = -150    outstation (heathrow,"OS 14 : FEGP T4",14000,14014,14027,14028)
+y = 0       outstation (heathrow,"OS 15 : FIRE MAIN",15000,15056,15723,15900)
+y = 150      outstation (heathrow,"OS 16 : BLD 139",16000,16024,16047,16050)
+
+wd_aa=b41
+wd_ab=b1040
+wd_ac=b2036
+wd_ad=b3045
+wd_ae=b4021
+wd_af=b5022
+wd_ag=b6028
+wd_ah=b7087
+wd_ai=b9028
+wd_aj=b10045
+wd_ak=b11036
+wd_al=b12048
+wd_am=b13015
+wd_an=b14018
+wd_ao=b15060
+wd_ap=b16028
+bc_aa=b60
+bc_ab=b61
+
+src = heathrow
+
+   set source  wda = src
+   set filter  wda.db_addr = lim_eq
+   set limit   wda.db_addr = wd_aa
+   set persist wda 
+   request     wda
+
+   set source  wdb = src
+   set filter  wdb.db_addr = lim_eq
+   set limit   wdb.db_addr = wd_ab
+   set persist wdb
+   request     wdb
+
+   set source  wdc = src
+   set filter  wdc.db_addr = lim_eq
+   set limit   wdc.db_addr = wd_ac
+   set persist wdc 
+   request     wdc
+
+   set source  wdd = src
+   set filter  wdd.db_addr = lim_eq
+   set limit   wdd.db_addr = wd_ad
+   set persist wdd 
+   request     wdd
+
+   set source  wde = src
+   set filter  wde.db_addr = lim_eq
+   set limit   wde.db_addr = wd_ae
+   set persist wde 
+   request     wde
+
+   set source  wdf = src
+   set filter  wdf.db_addr = lim_eq
+   set limit   wdf.db_addr = wd_af
+   set persist wdf 
+   request     wdf
+
+   set source  wdg = src
+   set filter  wdg.db_addr = lim_eq
+   set limit   wdg.db_addr = wd_ag
+   set persist wdg 
+   request     wdg
+
+   set source  wdh = src
+   set filter  wdh.db_addr = lim_eq
+   set limit   wdh.db_addr = wd_ah
+   set persist wdh 
+   request     wdh
+
+   set source  wdi = src
+   set filter  wdi.db_addr = lim_eq
+   set limit   wdi.db_addr = wd_ai
+   set persist wdi 
+   request     wdi
+
+   set source  wdk = src
+   set filter  wdk.db_addr = lim_eq
+   set limit   wdk.db_addr = wd_ak
+   set persist wdk 
+   request     wdk
+
+   set source  wdj = src
+   set filter  wdj.db_addr = lim_eq
+   set limit   wdj.db_addr = wd_aj
+   set persist wdj 
+   request     wdj
+
+   set source  wdl = src
+   set filter  wdl.db_addr = lim_eq
+   set limit   wdl.db_addr = wd_al
+   set persist wdl
+   request     wdl
+
+   set source  wdm = src
+   set filter  wdm.db_addr = lim_eq
+   set limit   wdm.db_addr = wd_am
+   set persist wdm 
+   request     wdm
+
+   set source  wdn = src
+   set filter  wdn.db_addr = lim_eq
+   set limit   wdn.db_addr = wd_an
+   set persist wdn 
+   request     wdn
+
+   set source  wdo = src
+   set filter  wdo.db_addr = lim_eq
+   set limit   wdo.db_addr = wd_ao
+   set persist wdo 
+   request     wdo
+
+   set source  wdp = src
+   set filter  wdp.db_addr = lim_eq
+   set limit   wdp.db_addr = wd_ap
+   set persist wdp 
+   request     wdp
+    
+   set source  bca = src
+   set filter  bca.db_addr = lim_eq
+   set limit   bca.db_addr = bc_aa
+   set persist bca 
+   request     bca
+
+   set source  bcb = src
+   set filter  bcb.db_addr = lim_eq
+   set limit   bcb.db_addr = bc_ab
+   set persist bcb 
+   request     bcb
+
+tfg=white
+
+
+CH=10
+
+x=-345 y=-300
+
+if wda.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+!y=-150
+if wdb.b_value then tfg=red
+else tfg=green4
+text("WDOG")!
+y=0
+if wdc.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=150
+if wdd.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+x=-115 y=-300
+if wde.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=-150
+if wdf.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=0
+if wdg.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=150
+if wdh.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+x=115 y=-300
+if wdi.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=-150
+if wdj.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=0
+if wdk.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=150
+if wdl.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+x=345 y=-300
+if wdm.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=-150
+if wdn.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=0
+if wdo.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+y=150
+if wdp.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+if bca.b_value ==1 then fg=flashred
+else fg=green4
+x=-430 y=-300 add x=-460 add y=150 add x=-430 add LINE (lw=3)
+clear
+if bcb.b_value ==1 then fg=flashred
+else fg=green4
+x=-260 y=-300 add x=-230 add y=150 add x=-260 add LINE (lw=3)
+clear
+y+=ch+5
+
+CH = 40 x = 0 y = 370 ADD TEXT ("Phase 1 Outstation PLC Status",tfg=green)
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

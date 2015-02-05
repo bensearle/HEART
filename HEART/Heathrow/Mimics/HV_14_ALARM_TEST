@@ -1,0 +1,41 @@
+load mimic_libutil
+load ocb_alarm_test
+
+object hv_14_alarm_status = int
+begin
+if sub_barcis_alarm(22490,heathrow) > 0 
+or sub_barcis_alarm(22510,heathrow) > 0 
+or sub_barcis_alarm(22530,heathrow) > 0 
+or sub_barcis_alarm(22550,heathrow) > 0 
+or sub_barcis_alarm(22570,heathrow) > 0 
+or sub_barcis_alarm(22590,heathrow) > 0
+or sub_barcis_alarm(8440,heathrow) > 0 
+or sub_barcis_alarm(22710,heathrow) > 0 
+or sub_barcis_alarm(22750,heathrow) > 0 
+or sub_barcis_alarm(8450,heathrow) > 0 
+or sub_barcis_alarm(22770,heathrow) > 0 
+or sub_barcis_alarm(8460,heathrow) > 0 
+or sub_barcis_alarm(22790,heathrow) > 0 
+or sub_barcis_alarm(22810,heathrow) > 0 
+or sub_barcis_alarm(22830,heathrow) > 0 
+or sub_barcis_alarm(22870,heathrow) > 0 
+or sub_barcis_alarm(22850,heathrow) > 0 
+or sub_barcis_alarm(22890,heathrow) > 0
+or sub_barcis_alarm(22990,heathrow) > 0 
+or sub_barcis_alarm(22970,heathrow) > 0 
+or sub_barcis_alarm(22910,heathrow) > 0 
+or sub_barcis_alarm(22930,heathrow) > 0 
+or sub_barcis_alarm(22950,heathrow) > 0
+then
+  hv_14_alarm_status = 1
+else
+  hv_14_alarm_status = 0
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

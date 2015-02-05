@@ -1,0 +1,53 @@
+LOAD mimic_libutil
+
+TYPE db_samples_arh = TABLE db_samples(stream_name=STRING(30),
+                                                                   db_addr=DB_ADDRESS,e_value=REAL,
+                                                                   time=TIME("centiseconds"))
+
+TYPE db_samples_row = db_samples_arh(db_addr,e_value)[40]
+
+
+OBJECT log_trend(e_offset=INT,src=SOURCE)
+
+VAR ip = INPUT db_samples_row
+VAR j = INT
+
+BEGIN
+
+!***** REQUEST VALUE FROM SERVER *****!
+
+IF INVALID GET SOURCE ip THEN
+
+	BEGIN
+
+	SET SOURCE ip = arhsource(SOURCE(src))
+	SET FILTER ip.stream_name = LIM_EQ
+	SET LIMIT ip.stream_name = src + " VALUE"
+	SET PRIORITY ip.time = 9
+	SET FILTER ip.time = LIM_LE
+	SET LIMIT ip.time = MAX TIME
+	SET PRIORITY ip.db_addr = 11
+	SET FILTER ip.db_addr = LIM_EQ
+	SET LIMIT ip.db_addr = db_address("E" + e_offset)
+	SET DIR_DEC ip
+	SET PERSIST ip
+	REQUEST ip
+
+	END
+
+FOR j FROM 1 TO 40 DO
+	BEGIN
+	Y = -INT(LOG(ip[j].e_value))
+	END
+
+END
+
+OBJECT main_object (BG,FG,W,H,TBG,TFG)
+BEGIN
+
+Y = 100 log_trend(2301,heathrow)
+
+END
+
+MIMIC = main_object W=500,H=300,JUST=CENTRECENTRE,FG=WHITE,
+BG=DECOROFF,RESIZABLE

@@ -1,0 +1,482 @@
+! HEATHROW CMS - KEY 4
+
+loaded by: HIERARCHY
+!
+
+load mimic_libutil
+
+load main_hierarchy
+
+type fan_state_type = enum(fan_stopped_local="Stopped in PLC Control",
+                           fan_running_local="Running in PLC Control",
+                           fan_stopped_remote="Stopped in Remote OR Manual Control",
+                           fan_running_remote="Running in Remote OR Manual Control")
+
+type plc_state_type = enum(duty_plc="DUTY",
+                           standby_plc="STANDBY",
+                           failed_plc="FAILED",
+                           comms_failed_plc="FAILED")
+
+
+
+!
+************************************************************
+* FAN 2 SPEED DISPLAY ONLY OBJECT                          *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object fan_2_spd_display(fan_state=fan_state_type)
+
+var fan_bg = loopback colour
+var fan_fg = loopback colour
+var fan_text = loopback string
+
+begin
+  clear
+  just=centrecentre
+  if fan_state==fan_running_remote or fan_state==fan_stopped_remote then
+    fan_bg=lightblue
+  else
+    fan_bg=decoroff
+
+  if fan_state==fan_running_local or fan_state==fan_running_remote then
+    begin
+    fan_fg=green4
+    fan_text="Low Speed"
+    end
+  else
+    begin
+    fan_fg=white
+    fan_text="Stopped"
+    end
+
+  rect(h=70,w=70,fg=fan_bg)
+  x -= 35 y += 35 add
+  y -= 70 add
+  x += 70 add line(fg=decorlight) clear
+  x = 35 add
+  y += 70 add
+  x -= 70 add line(fg=decorshadow) clear
+  x= -10 y = 0 add
+  circle(h=10,w=20,fg=fan_fg,lw=2)
+  x= 10 y = 0 add
+  circle(h=10,w=20,fg=fan_fg,lw=2)
+  x=0 y=-10
+  circle(h=20,w=10,fg=fan_fg,lw=2)
+  y=10
+  circle(h=20,w=10,fg=fan_fg,lw=2)
+  ch = 10
+  x = 0 y = -27 add
+  text ("Fan")
+  ch = 10
+  y += 54 add text (fan_text) 
+  y=0
+  clear
+end
+
+
+!
+************************************************************
+* FAN 3 SPEED DISPLAY ONLY OBJECT                          *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object fan_3_spd_display(fan_state=fan_state_type)
+
+var fan_bg = loopback colour
+var fan_fg = loopback colour
+var fan_text = loopback string
+
+begin
+  clear
+  just=centrecentre
+  if fan_state==fan_running_remote or fan_state==fan_stopped_remote then
+    fan_bg=lightblue
+  else
+    fan_bg=decoroff
+
+  if fan_state==fan_running_local or fan_state==fan_running_remote then
+    begin
+    fan_fg=green4
+    fan_text="Medium Speed"
+    end
+  else
+    begin
+    fan_fg=white
+    fan_text="Stopped"
+    end
+
+  rect(h=70,w=70,fg=fan_bg)
+  x -= 35 y += 35 add
+  y -= 70 add
+  x += 70 add line(fg=decorlight) clear
+  x = 35 add
+  y += 70 add
+  x -= 70 add line(fg=decorshadow) clear
+  x= -10 y = 0 add
+  circle(h=10,w=20,fg=fan_fg,lw=2)
+  x= 10 y = 0 add
+  circle(h=10,w=20,fg=fan_fg,lw=2)
+  x=0 y=-10
+  circle(h=20,w=10,fg=fan_fg,lw=2)
+  y=10
+  circle(h=20,w=10,fg=fan_fg,lw=2)
+  ch = 10
+  x = 0 y = -27 add
+  text ("Fan")
+  ch = 10
+  y += 54 add text (fan_text) 
+  y=0
+  clear
+
+end
+
+
+!
+************************************************************
+* OUTSTATION DISPLAY ONLY OBJECT                           *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object outstation_display(plc_a_state=plc_state_type,plc_b_state=plc_state_type)
+
+var plc_a_indent = loopback yesno
+var plc_b_indent = loopback yesno
+var wdog_fg = loopback  colour
+
+begin
+  clear
+  just=centrecentre
+  fg = decoroff
+  x=0 y=0
+  rect (h=100,w=160) CLEAR
+  x += 80 y -= 50 add
+  y += 100 add
+  x -= 160 add line(fg=decorshadow) clear
+  add
+  y -= 100 add
+  x += 160 add line (fg = decorlight) clear
+  tfg = black
+  x = 0 y = -35 text ("Outstation")
+  x = -40 y = 30 text (plc_a_state)
+  x = 40 text (plc_b_state) clear
+
+if plc_a_state==failed_plc and plc_b_state==failed_plc then
+  wdog_fg=red
+else
+  wdog_fg=green4
+
+  x = 0 y = 0 text(ch=10,tfg=wdog_fg,"WDOG")
+
+case plc_a_state of 
+
+  comms_failed_plc
+  begin
+  plc_a_indent=no
+  fg = magenta
+  end
+
+  failed_plc
+  begin
+  plc_a_indent=no
+  fg = red
+  end
+
+  duty_plc
+  begin
+  plc_a_indent=no
+  fg = green
+  end
+
+  standby_plc
+  begin
+  plc_a_indent=yes
+  fg = Yellow
+  end
+
+default begin end
+
+x = -40 y = 0 add rect(h=40,w=46)
+add text ("PLC A") clear
+
+case plc_b_state of 
+
+  comms_failed_plc
+  begin
+  plc_b_indent=no
+  fg = magenta
+  end
+
+  failed_plc
+  begin
+  plc_b_indent=no
+  fg = red
+  end
+
+  duty_plc
+  begin
+  plc_b_indent=no
+  fg = green
+  end
+
+  standby_plc
+  begin
+  plc_b_indent=yes
+  fg = Yellow
+  end
+
+default begin end
+
+x = 40 y = 0 add rect(h=40,w=46) 
+add text ("PLC B") clear
+
+if plc_a_indent then
+   begin
+   x = -17 y -= 20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorshadow) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorlight) clear
+   end
+else
+   begin
+   x = -17 y -= 20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorlight) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorshadow) clear
+   end
+
+
+if plc_b_indent then
+   begin
+   x = 63 y = -20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorshadow) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorlight) CLEAR
+   end
+else
+   begin
+   x = 63 y = -20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorlight) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorshadow) CLEAR
+   end
+
+if plc_a_state==failed_plc or plc_b_state==failed_plc then
+  begin
+  x = 0 
+  y = 42 
+  text(tfg=flashred,ch=12,"Inter-PLC comms Failure")
+  end
+end
+
+
+!
+************************************************************
+* CARGO SUMP PUMP DISPLAY ONLY OBJECT                      *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object cargo_sump_pump_display(pump_state=fan_state_type)
+
+var pump_fg = loopback  colour
+var pump_bg = loopback  colour
+
+begin 
+clear
+just = centrecentre
+case pump_state of
+
+   fan_stopped_local
+   begin
+   pump_fg=white
+   pump_bg=decoroff
+   end
+
+   fan_running_local
+   begin
+   pump_fg=green4
+   pump_bg=decoroff
+   end
+
+   fan_stopped_remote
+   begin
+   pump_fg=white
+   pump_bg=lightblue
+   end
+
+   fan_running_remote
+   begin
+   pump_fg=green4
+   pump_bg=lightblue
+   end
+
+   default
+   begin
+   end   
+
+rect (w=60,h=60,fg=pump_bg)
+x = -30 
+y = 30 add
+y-=60 add
+x+=60 add
+line(lw=1,fg=decorlight) 
+clear
+add
+y+=60 add
+x-=60 add
+line(lw=1,fg=decorshadow)
+
+fg=pump_fg  
+x=0 y=0    
+lw = 5
+circle (h=45,w=45)
+
+Clear
+X=-9 Y=21  Add 
+Y=-16 Add 
+X=20 Y=1  Add 
+X=-9 Y=17  Add 
+LINE
+clear
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+goto_menu
+x = 400
+y = 350
+command_button(272,heathrow)
+clear
+scale = 280
+ch = 11
+tfg = decoroff
+
+ch = 20 
+x = -300 y = -380 add text ("Ventilation Fan (Two Speed)")
+
+ch = 14
+y = -300 
+x = -300 fan_2_spd_display(fan_stopped_local)
+y+=40 x-=20 text("State 1") y-=40
+x+=120   fan_2_spd_display(fan_running_local)
+y+=40 x-=20 text("State 2") y-=40
+x+=120   fan_2_spd_display(fan_stopped_remote)
+y+=40 x-=20 text("State 3") y-=40
+x+=120   fan_2_spd_display(fan_running_remote)
+y+=40 x-=20 text("State 4") y-=40
+
+x = 110
+y =-335 text ("State 1 :- "+fan_stopped_local)
+y += 17 text ("State 2 :- "+fan_running_local)
+y += 17 text ("State 3 :- "+fan_stopped_remote)
+y += 17 text ("State 4 :- "+fan_running_remote)
+clear 
+
+
+ch = 20 
+x = -300 y = -200 add text ("Ventilation Fan (Three Speed)")
+
+ch = 14
+y = -120 
+x = -300 fan_3_spd_display(fan_stopped_local)
+y+=40 x-=20 text("State 1") y-=40
+x+=120   fan_3_spd_display(fan_running_local)
+y+=40 x-=20 text("State 2") y-=40
+x+=120   fan_3_spd_display(fan_stopped_remote)
+y+=40 x-=20 text("State 3") y-=40
+x+=120   fan_3_spd_display(fan_running_remote)
+y+=40 x-=20 text("State 4") y-=40
+
+x = 110
+y = -160 text ("State 1 :- "+fan_stopped_local)
+y += 17 text ("State 2 :- "+fan_running_local)
+y += 17 text ("State 3 :- "+fan_stopped_remote)
+y += 17 text ("State 4 :- "+fan_running_remote)
+clear 
+
+
+
+
+ch = 20 
+x = -300 y = -10 text ("Outstation Monitor")
+
+ch = 14
+x = -400 
+y = 88 outstation_display(duty_plc,standby_plc)
+y+=70 x-=30 text("State 1") y-=70
+
+x +=225 outstation_display(comms_failed_plc,duty_plc)
+y+=70 x-=30 text("State 2") y-=70 
+
+x +=225 outstation_display(failed_plc,failed_plc)
+y+=70 x-=30 text("State 3") y-=70
+
+x=110 
+y = 40 text ("State 1 :- PLC A Duty, PLC B Standby")
+y += 17 text ("State 2 :-PLC A Communications Failed, PLC B Duty")
+y += 17 text ("State 3 :-PLC A Failed, PLC B Failed")
+
+
+
+ch = 20
+x = -440 y = 210 add text ("Electric Pump Symbols:-")
+ch=14
+y = 282 
+x = -460 cargo_sump_pump_display(fan_stopped_local)
+y += 40 x -= 25 text("State 1") y -= 40
+x += 105 cargo_sump_pump_display(fan_running_local)
+y += 40 x -= 25 text("State 2") y -= 40
+x += 105 cargo_sump_pump_display(fan_stopped_remote)
+y += 40 x -= 25 text("State 3") y -= 40
+x += 105 cargo_sump_pump_display(fan_running_remote)
+y += 40 x -= 25 text("State 4") y -= 40
+
+ch = 20
+
+x = -150 y = 210 add text ("Key for Firemain Pumps")
+x = 205 add text ("Key for Cargo Tunnel Sump Pumps")
+
+
+ch = 14
+
+x = -150
+y = 245 text ("State 1 :- "+fan_stopped_local)
+y += 17 text ("State 2 :- "+fan_running_local)
+y += 17 text ("State 3 :- "+fan_stopped_remote)
+y += 17 text ("State 4 :- "+fan_running_remote)
+clear 
+
+x = 205
+y = 245 text ("State 1 :-  Stopped")
+y += 17 text ("State 2 :-  Running")
+y += 17 text ("State 3 :-  Not Applicable")
+y += 17 text ("State 4 :-  Not Applicable")
+clear 
+
+!y += 40 x -= 43 add text ("States 1,2, & 3")
+)
+ch = 14 
+y = 300 x = -240 
+text ("State 1 (Green)         :-  Available For Use")
+y += 17 text ("State 2 (Red)             :-  Mains Fail or Standby Run")
+y += 17 text ("State 3 (Light Blue)  :-  Running In Manual Control")
+
+!
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

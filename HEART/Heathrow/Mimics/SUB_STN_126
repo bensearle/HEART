@@ -1,0 +1,112 @@
+load mimic_libutil
+load hv_lib
+
+
+object busbar_126_temp
+begin
+just=centrecentre
+lw=2
+X=260 Y=15 add text (tfg=black,"126",ch = 25) clear
+x = -230 y = 0 add x += 500 add line(lw=4,fg=red) clear
+x = -180 y = -100 add y += 100 add line (fg=red) clear
+x = -130 y = 0 add y += 190 add line (fg=red) clear
+x = -80  y = 0 add y += 190 add line (fg=red) clear
+x = -30  y = 0 add y += 190 add line (fg=red) clear
+x = 70  y = 0 add y += 50 add line (fg=red) clear
+x = 120 y = 0 add y += 190 add line (fg=red) clear
+x = 170 y = -100 add y += 100 add line (fg=red) clear
+x = 220 y = -100 add y += 100 add line (fg=red) clear
+x =    56 y = 50 add x +=30 add line line (fg=red) clear
+x =    61 y = 55 add x +=20 add line line (fg=red) clear
+x =    66 y = 60 add x +=10 add line line (fg=red) clear
+
+! *** Scaling for objects *** !
+scale=256
+! *** Circuit Breaker objects *** !
+
+x = -180 y = -25 hv_lib_breaker("eclipse",10500,10580,800,900,996,HEATHRO3,1,"TOP",10)
+x = -130 y = 25 hv_lib_breaker("eclipse",10500,10600,801,901,996,HEATHRO3,2,"BTM",INT)
+x = -80  y = 25 hv_lib_breaker("eclipse",10500,10620,802,902,996,HEATHRO3,3,"BTM",INT)
+x = -30    y = 25 hv_lib_breaker("eclipse",10500,10640,803,903,996,HEATHRO3,4,"BTM",INT)
+x = 70   y = 25 hv_lib_breaker("eclipse",10500,10660,804,904,996,HEATHRO3,5,"SECT",INT,angle=90)
+x = 20   y = 0 hv_lib_breaker("eclipse",10500,10680,805,905,996,HEATHRO3,5,"SECT",20)
+x = 120  y = 25 hv_lib_breaker("eclipse",10500,10700,806,906,996,HEATHRO3,6,"BTM",INT)
+x = 170  y = -25 hv_lib_breaker("eclipse",10500,10720,807,907,996,HEATHRO3,7,"TOP",INT)
+x = 220  y = -25 hv_lib_breaker("eclipse",10500,10740,808,908,996,HEATHRO3,8,"TOP",30)
+
+! *** Transformer objects *** !
+X =  -130  Y=170  add transformer_lib("LT","LOCAL")
+X =  -80  Y=170  add transformer_lib("Tx 1","LOCAL")
+X= -30 Y=170 add transformer_lib("LT","LOCAL")
+X =  120 Y=170 add transformer_lib("Tx 2","LOCAL")
+
+! *** Labels *** !
+scale=256
+tfg=black ch=12
+!**panel 1**!
+x = -180 y = -170 text("SS 76")
+x = -180 y = -155 text("P3")
+
+!**panel 2**!
+x = -130 y = 205 text(tfg=red,"Site")
+x = -130 y = 220 text(tfg=red,"Supply")
+x = -130 y = 235 text(tfg=red,font=font_italic,"TEMP")
+
+!**panel 3**!
+x = -80   y = 205 text("Virgin")
+x = -80   y = 220 text("Hangar")
+
+!**panel 4**!
+x = -30   y = 205 text("United")
+x = -30   y = 220 text("Airline")
+
+!**panel 5a & 5**!
+x = 70   y = 70 text("Right")
+x = 70   y = 85 text("Hand")
+x = 70   y = 100 text("Earth")
+x = 50   y = 35 text("a")
+!**panel 6**!
+x = 120  y = 205 text("Virgin")
+x = 120  y = 220 text("Hangar")
+
+!**panel 7**!
+x = 170 y = -170 text("SS 100")
+x = 170 y = -155 text("P2")
+
+!**panel 8**!
+x = 220 y = -170 text("M1/2")
+x = 220 y = -155 text("P7")
+
+
+! ****** ANALOGUE METERING INFORMATION ******* !
+scale=354
+
+X=-180 Y=-96 hv_lib_meter(10500,810,912,10872,10842,HEATHRO3,"400A","PANEL 1")
+X=-130 Y=-96 hv_lib_meter(10500,811,913,10873,10843,HEATHRO3,"14kv","PANEL 1")
+X=-130 Y=96 hv_lib_meter(10500,812,914,10874,10844,HEATHRO3,"200A","PANEL 2")
+X=-80 Y=96 hv_lib_meter(10500,814,916,10876,10846,HEATHRO3,"200A","PANEL 3")
+X=-30 Y=96 hv_lib_meter(10500,816,918,10878,10848,HEATHRO3,"200A","PANEL 4")
+X=20 Y=-70 hv_lib_meter(10500,818,920,10880,10850,HEATHRO3,"800A","PANEL 5")
+X=120 Y=96 hv_lib_meter(10500,820,922,10882,10852,HEATHRO3,"200A","PANEL 6")
+X=170 Y=-96 hv_lib_meter(10500,822,924,10884,10854,HEATHRO3,"200A","PANEL 7")
+X=220 Y=-96 hv_lib_meter(10500,824,926,10886,10856,HEATHRO3,"400A","PANEL 8")
+X=270 Y=-96 hv_lib_meter(10500,825,927,10887,10857,HEATHRO3,"14kv","PANEL 8")
+
+! ****** PULSE METERING INFORMATION ******* !
+
+scale=220
+
+X=-130 Y=250 hv_lib_pulsebutton("PULSE MONITOR P2 Local Tx kWh v Time",954,heathro3,840,981)
+X=-80 Y=250 hv_lib_pulsebutton("PULSE MONITOR P3 Virgin Hangar Tx1 kWh v Time",960,heathro3,842,981)
+X=-30 Y=250 hv_lib_pulsebutton("PULSE MONITOR P4 United Airline LT kWh v Time",966,heathro3,844,981)
+X=120 Y=250 hv_lib_pulsebutton("PULSE MONITOR P6 Virgin Hangar Tx2 kWh v Time",972,heathro3,846,981)
+X=170 Y=-190 hv_lib_pulsebutton("PULSE MONITOR P7 SS 100 kWh v Time",978,heathro3,848,981)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=-25 Y=-30 busbar_126_temp
+end
+
+mimic = main_object w=560,h=470,just=centrecentre,fg=white,bg=aquamarine3,resizable

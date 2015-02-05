@@ -1,0 +1,751 @@
+! HEATHROW CMS - FAN TWO SPEED MT (PAIR)
+
+loaded by: MAIN_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type panel_item_row = table (str=string(30))
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+ 
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+ 
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+! 
+********************************************
+* DRAW FAN                                 *
+********************************************
+!
+
+object draw_fan(just,fan_fg=colour,fan_bg=colour,
+                     status_text_1=string,
+                     status_text_2=string,
+                     ident=string)
+begin
+  rect(h=70,w=70,fg=fan_bg)
+  x -= 35 y += 35 add
+  y -= 70 add
+  x += 70 add line(fg=decorlight) clear
+  x = 35 add
+  y += 70 add
+  x -= 70 add line(fg=decorshadow) clear 
+  x= -10 y = 0 add
+  circle(h=10,w=20,fg=fan_fg,lw=2)
+  x= 10 add
+  circle(h=10,w=20,fg=fan_fg,lw=2)
+  x=0 y=-10 add
+  circle(h=20,w=10,fg=fan_fg,lw=2)
+  y=10 add
+  circle(h=20,w=10,fg=fan_fg,lw=2)  
+
+  ch = 10
+  x = 0 y = -27 add
+  text (ident)
+  ch = 10
+  y += 35
+  text (status_text_1)
+  y += 19 add text (status_text_2)
+  clear
+end
+
+
+!
+************************************************************
+* SUPPLY FAN (TWO POSITION) MAIN TUNNEL OBJECT             *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object fan_two_speed_mt(fg,bg,plc_offset=int,b_offset=int,
+                          c_offset=int,src=source,
+                          ident1=string,ident2=string)
+
+!PLC INPUTS!
+VAR plc_a_comms_fail_ip = input  b_db_row_type
+VAR plc_b_comms_fail_ip = input  b_db_row_type
+VAR plc_group_remote = input  b_db_row_type
+
+!INPUTS!
+VAR fan1_low_speed = input  b_db_row_type
+VAR fan1_high_speed = input  b_db_row_type
+VAR fan1_selected = input  b_db_row_type
+VAR fan2_low_speed = input  b_db_row_type
+VAR fan2_high_speed = input  b_db_row_type
+VAR fan2_selected = input  b_db_row_type
+VAR set_duty_fan_low = input  b_db_row_type
+VAR set_duty_fan_high = input  b_db_row_type
+VAR set_duty_fan_off = input  b_db_row_type
+
+! ALARMS !
+VAR fan1_failed_low = input  alarm_row_type
+VAR fan1_failed_high = input  alarm_row_type
+VAR low_speed1_discr = input  alarm_row_type
+VAR high_speed1_discr = input  alarm_row_type
+VAR selected1_discr = input  alarm_row_type
+
+VAR fan2_failed_low = input  alarm_row_type
+VAR fan2_failed_high = input  alarm_row_type
+VAR low_speed2_discr = input  alarm_row_type
+VAR high_speed2_discr = input  alarm_row_type
+VAR selected2_discr = input  alarm_row_type
+
+VAR set_duty_fan_low_discr = input  alarm_row_type
+VAR set_duty_fan_high_discr = input  alarm_row_type
+VAR equipment_alarm = input  alarm_row_type
+VAR equipment_discr = input  alarm_row_type
+
+!CHARACTER INPUTS!
+VAR tag_message_ip = input  c_db_row_type
+
+! LOOPBACKS !
+VAR fan1_fg = loopback  colour
+VAR fan_bg = loopback  colour
+VAR fan2_fg = loopback  colour
+VAR fan1_status_text_1 = loopback  string
+VAR fan1_status_text_2 = loopback  string
+VAR fan2_status_text_1 = loopback  string
+VAR fan2_status_text_2 = loopback  string
+VAR already_done_fan1_high          = onoff
+VAR already_done_fan1_low           = onoff
+VAR already_done_fan2_high          = onoff
+VAR already_done_fan2_low           = onoff
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+
+begin
+
+! INITIALISATION !
+if invalid already_done_fan1_high then
+  already_done_fan1_high=off
+if invalid already_done_fan1_low then
+  already_done_fan1_low=off
+if invalid already_done_fan2_high then
+  already_done_fan2_high=off
+if invalid already_done_fan2_low then
+  already_done_fan2_low=off
+
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source plc_a_comms_fail_ip then 
+
+   begin
+
+   set source plc_a_comms_fail_ip = src
+   set filter plc_a_comms_fail_ip.db_addr = lim_eq
+   set limit plc_a_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset -1)
+   set persist plc_a_comms_fail_ip 
+   request plc_a_comms_fail_ip
+
+   set source plc_b_comms_fail_ip = src
+   set filter plc_b_comms_fail_ip.db_addr = lim_eq
+   set limit plc_b_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset)
+   set persist plc_b_comms_fail_ip 
+   request plc_b_comms_fail_ip
+
+   set source fan1_low_speed = src
+   set filter fan1_low_speed.db_addr = lim_eq
+   set limit fan1_low_speed.db_addr = db_address(int(b1) + b_offset -1)
+   set persist fan1_low_speed 
+   request fan1_low_speed
+
+   set source fan1_high_speed = src
+   set filter fan1_high_speed.db_addr = lim_eq
+   set limit fan1_high_speed.db_addr = db_address(int(b1) + b_offset)
+   set persist fan1_high_speed 
+   request fan1_high_speed
+ 
+   set source fan1_selected = src
+   set filter fan1_selected.db_addr = lim_eq
+   set limit fan1_selected.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist fan1_selected 
+   request fan1_selected
+
+   set source fan2_low_speed = src
+   set filter fan2_low_speed.db_addr = lim_eq
+   set limit fan2_low_speed.db_addr = db_address(int(b1) + b_offset + 2)
+   set persist fan2_low_speed 
+   request fan2_low_speed
+
+   set source fan2_high_speed = src
+   set filter fan2_high_speed.db_addr = lim_eq
+   set limit fan2_high_speed.db_addr = db_address(int(b1) + b_offset + 3)
+   set persist fan2_high_speed 
+   request fan2_high_speed
+ 
+   set source fan2_selected = src
+   set filter fan2_selected.db_addr = lim_eq
+   set limit fan2_selected.db_addr = db_address(int(b1) + b_offset + 4)
+   set persist fan2_selected 
+   request fan2_selected
+
+   set source set_duty_fan_low = src
+   set filter set_duty_fan_low.db_addr = lim_eq
+   set limit set_duty_fan_low.db_addr = db_address(int(b1) + b_offset + 5)
+   set persist set_duty_fan_low 
+   request set_duty_fan_low
+
+   set source set_duty_fan_high = src
+   set filter set_duty_fan_high.db_addr = lim_eq
+   set limit set_duty_fan_high.db_addr = db_address(int(b1) + b_offset + 6)
+   set persist set_duty_fan_high 
+   request set_duty_fan_high
+
+   set source set_duty_fan_off = src
+   set filter set_duty_fan_off.db_addr = lim_eq
+   set limit set_duty_fan_off.db_addr = db_address(int(b1) + b_offset + 7)
+   set persist set_duty_fan_off 
+   request set_duty_fan_off
+
+   set source equipment_alarm = src
+   set filter equipment_alarm.db_addr = lim_eq
+   set limit equipment_alarm.db_addr = db_address(int(b1) + b_offset + 8)
+   set persist equipment_alarm 
+   request equipment_alarm
+
+   set source fan1_failed_low = src
+   set filter fan1_failed_low.db_addr = lim_eq
+   set limit fan1_failed_low.db_addr = db_address(int(b1) + b_offset + 9)
+   set persist fan1_failed_low 
+   request fan1_failed_low
+
+   set source fan1_failed_high = src
+   set filter fan1_failed_high.db_addr = lim_eq
+   set limit fan1_failed_high.db_addr = db_address(int(b1) + b_offset + 10)
+   set persist fan1_failed_high 
+   request fan1_failed_high
+
+   set source fan2_failed_low = src
+   set filter fan2_failed_low.db_addr = lim_eq
+   set limit fan2_failed_low.db_addr = db_address(int(b1) + b_offset + 11)
+   set persist fan2_failed_low 
+   request fan2_failed_low
+
+   set source fan2_failed_high = src
+   set filter fan2_failed_high.db_addr = lim_eq
+   set limit fan2_failed_high.db_addr = db_address(int(b1) + b_offset + 12)
+   set persist fan2_failed_high 
+   request fan2_failed_high
+
+   set source low_speed1_discr = src
+   set filter low_speed1_discr.db_addr = lim_eq
+   set limit low_speed1_discr.db_addr = db_address(int(b1) + b_offset + 13)
+   set persist low_speed1_discr 
+   request low_speed1_discr
+
+   set source high_speed1_discr = src
+   set filter high_speed1_discr.db_addr = lim_eq
+   set limit high_speed1_discr.db_addr = db_address(int(b1) + b_offset + 14)
+   set persist high_speed1_discr 
+   request high_speed1_discr
+
+   set source low_speed2_discr = src
+   set filter low_speed2_discr.db_addr = lim_eq
+   set limit low_speed2_discr.db_addr = db_address(int(b1) + b_offset + 15)
+   set persist low_speed2_discr 
+   request low_speed2_discr
+
+   set source high_speed2_discr = src
+   set filter high_speed2_discr.db_addr = lim_eq
+   set limit high_speed2_discr.db_addr = db_address(int(b1) + b_offset + 16)
+   set persist high_speed2_discr 
+   request high_speed2_discr
+
+   set source selected1_discr = src
+   set filter selected1_discr.db_addr = lim_eq
+   set limit selected1_discr.db_addr = db_address(int(b1) + b_offset + 17)
+   set persist selected1_discr 
+   request selected1_discr
+
+   set source selected2_discr = src
+   set filter selected2_discr.db_addr = lim_eq
+   set limit selected2_discr.db_addr = db_address(int(b1) + b_offset + 18)
+   set persist selected2_discr 
+   request selected2_discr
+
+   set source equipment_discr = src
+   set filter equipment_discr.db_addr = lim_eq
+   set limit equipment_discr.db_addr = db_address(int(b1) + b_offset + 19)
+   set persist equipment_discr 
+   request equipment_discr
+
+   set source plc_group_remote = src
+   set filter plc_group_remote.db_addr = lim_eq
+   set limit plc_group_remote.db_addr = db_address(int(b1) + b_offset + 20)
+   set persist plc_group_remote 
+   request plc_group_remote
+
+   set source set_duty_fan_low_discr = src
+   set filter set_duty_fan_low_discr.db_addr = lim_eq
+   set limit set_duty_fan_low_discr.db_addr = db_address(int(b1) + b_offset + 21)
+   set persist set_duty_fan_low_discr 
+   request set_duty_fan_low_discr
+
+   set source set_duty_fan_high_discr = src
+   set filter set_duty_fan_high_discr.db_addr = lim_eq
+   set limit set_duty_fan_high_discr.db_addr = db_address(int(b1) + b_offset + 22)
+   set persist set_duty_fan_high_discr 
+   request set_duty_fan_high_discr
+
+
+!REQUEST TEXT FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   end
+
+
+! SELECT FANS BG COLOUR !
+
+if plc_group_remote.b_value then
+  fan_bg = lightblue
+else if tag_message_ip.c_value <> "" then
+  fan_bg = yellow
+else
+  fan_bg = decoroff     
+
+
+! SELECT FAN 1 FG COLOUR !
+
+if plc_a_comms_fail_ip.b_value and plc_b_comms_fail_ip.b_value then
+   fan1_fg = magenta
+
+
+else if (fan1_selected.b_value) and (set_duty_fan_low_discr.alarm_status==w_note) then fan1_fg=flashred
+
+else if (fan1_selected.b_value) and (set_duty_fan_high_discr.alarm_status==w_note) then fan1_fg = flashred
+       
+else if equipment_alarm.alarm_status  == w_note or
+        fan1_failed_low.alarm_status   == w_note or
+        fan1_failed_high.alarm_status  == w_note or
+        low_speed1_discr.alarm_status  == w_note or        
+        high_speed1_discr.alarm_status == w_note or        
+        selected1_discr.alarm_status   == w_note or        
+        equipment_discr.alarm_status  == w_note then       
+   fan1_fg = flashred      
+
+else if (fan1_selected.b_value) and (set_duty_fan_low_discr.alarm_status==w_clr) then fan1_fg = red
+
+else if (fan1_selected.b_value) and (set_duty_fan_high_discr.alarm_status==w_clr) then fan1_fg = red
+   
+else if equipment_alarm.alarm_status  == w_clr or
+        fan1_failed_low.alarm_status   == w_clr or
+        fan1_failed_high.alarm_status  == w_clr or
+        low_speed1_discr.alarm_status  == w_clr or        
+        high_speed1_discr.alarm_status == w_clr or        
+        selected1_discr.alarm_status   == w_clr or        
+        equipment_discr.alarm_status  == w_clr then      
+   fan1_fg = red
+
+else if fan1_selected.b_value==off then
+   fan1_fg=black
+else if (fan1_high_speed.b_value==on) or (fan1_low_speed.b_value==on) then
+   fan1_fg=green3
+else 
+   fan1_fg = white
+
+
+! SELECT FAN 2 FG COLOUR !
+
+if plc_a_comms_fail_ip.b_value and plc_b_comms_fail_ip.b_value then
+   fan2_fg = magenta
+
+else if (fan2_selected.b_value) and (set_duty_fan_low_discr.alarm_status==w_note) then fan2_fg=flashred
+     
+else if (fan2_selected.b_value) and (set_duty_fan_high_discr.alarm_status==w_note) then fan2_fg = flashred
+       
+else if equipment_alarm.alarm_status  == w_note or      
+        fan2_failed_low.alarm_status   == w_note or      
+        fan2_failed_high.alarm_status  == w_note or      
+        low_speed2_discr.alarm_status  == w_note or      
+        high_speed2_discr.alarm_status == w_note or      
+        selected2_discr.alarm_status   == w_note or      
+        equipment_discr.alarm_status  == w_note then
+   fan2_fg = flashred
+
+else if (fan2_selected.b_value) and (set_duty_fan_low_discr.alarm_status==w_clr) then fan2_fg = red
+             
+else if (fan2_selected.b_value) and (set_duty_fan_high_discr.alarm_status==w_clr) then fan2_fg = red
+
+else if equipment_alarm.alarm_status  == w_clr or      
+        fan2_failed_low.alarm_status   == w_clr or      
+        fan2_failed_high.alarm_status  == w_clr or      
+        low_speed2_discr.alarm_status  == w_clr or      
+        high_speed2_discr.alarm_status == w_clr or      
+        selected2_discr.alarm_status   == w_clr or      
+        equipment_discr.alarm_status  == w_clr then
+  fan2_fg = red
+
+else if fan2_selected.b_value == off then
+  fan2_fg = black
+else if (fan2_low_speed.b_value) or (fan2_high_speed.b_value) then
+  fan2_fg = green3
+else
+  fan2_fg = white
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w=90 h=70 
+set rect main_menu
+set title main_menu  = "Supply Fan Pair"
+set remove main_menu = "Duty Fan Stop"
+set remove main_menu = "Duty Fan Low Speed"
+set remove main_menu = "Duty Fan High Speed"
+set remove main_menu = "Group Remote Control"
+set remove main_menu = "Group Local Control"
+set remove main_menu = "Alter Tagged Message"
+set remove main_menu = "Clear Tagged Message"
+set add main_menu = "Alter Tagged Message"
+set add main_menu = "Clear Tagged Message"
+
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+   case main_menu of
+
+      "Duty Fan Stop"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 7), src, on)
+         
+         end
+
+      "Duty Fan Low Speed"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 5), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 7), src, off)
+         end
+ 
+      "Duty Fan High Speed"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 6), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 7), src, off)
+         end
+
+       "Group Remote Control"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 20), src, on)
+         end
+
+       "Group Local Control"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 20), src, off) 
+         set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 7), src, on)
+	 end
+
+       "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tagged Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+       "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+
+! TAG MESSAGE BOX !
+
+w=140 h=70
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+! MAIN MENU OPTIONS !
+
+if plc_a_comms_fail_ip.b_value==0 or 
+   plc_b_comms_fail_ip.b_value==0 then
+   begin
+   if plc_group_remote.b_value then
+     begin
+     set add main_menu = "Group Local Control"
+
+     if fan1_low_speed.b_value or fan2_low_speed.b_value then
+       begin
+       set add main_menu = "Duty Fan Stop"
+       set add main_menu = "Duty Fan High Speed"
+       end
+
+     else if fan1_high_speed.b_value or fan2_high_speed.b_value then
+       begin
+       set add main_menu = "Duty Fan Stop"
+       set add main_menu = "Duty Fan Low Speed"
+       end
+
+     else 
+       begin
+       set add main_menu = "Duty Fan Low Speed"
+       set add main_menu = "Duty Fan High Speed"
+       end
+     end
+
+   else
+     set add main_menu = "Group Remote Control"
+
+   end
+if fan1_selected.b_value then
+   begin
+   if fan1_low_speed.b_value == off and 
+      fan1_high_speed.b_value == off then
+      begin
+      fan1_status_text_1 = ""
+      fan1_status_text_2 = "Off"
+      end
+
+   if fan1_low_speed.b_value then
+      begin
+      fan1_status_text_1 = ""
+      fan1_status_text_2 = "Low Speed"
+      end
+
+   if fan1_high_speed.b_value then
+      begin
+      fan1_status_text_1 = ""
+      fan1_status_text_2 = "High Speed"
+      end
+   if fan1_low_speed.b_value and
+      fan1_high_speed.b_value then
+      begin
+      fan1_status_text_1 = ""
+      fan1_status_text_2 = "Error"
+      end
+
+   if fan1_failed_high.alarm_status==w_note then
+        if already_done_fan1_high==off then
+          begin
+          set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+          set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+          set_b_value(db_address(int(b1) + b_offset + 7), src, on)
+          already_done_fan1_high=on
+          end
+   
+   if fan1_failed_high.alarm_status==w_clr then
+        already_done_fan1_high=off
+
+   if fan1_failed_low.alarm_status==w_note then
+        if already_done_fan1_low==off then
+          begin
+          set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+          set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+          set_b_value(db_address(int(b1) + b_offset + 7), src, on)
+          already_done_fan1_low=on
+          end
+   
+   if fan1_failed_low.alarm_status==w_clr then
+        already_done_fan1_low=off
+  
+   fan2_status_text_1 = ""
+   fan2_status_text_2 = "Off"
+   end
+
+else if fan2_selected.b_value then
+   begin
+   if fan2_low_speed.b_value == off and 
+      fan2_high_speed.b_value == off then
+      begin
+      fan2_status_text_1 = ""
+      fan2_status_text_2 = "Off"
+      end
+
+   if fan2_low_speed.b_value then
+      begin
+      fan2_status_text_1 = ""
+      fan2_status_text_2 = "Low Speed"
+      end
+
+   if fan2_high_speed.b_value then
+      begin
+      fan2_status_text_1 = ""
+      fan2_status_text_2 = "High Speed"
+      end
+
+   if fan2_failed_high.alarm_status==w_note then
+        if already_done_fan2_high==off then
+          begin
+          set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+          set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+          set_b_value(db_address(int(b1) + b_offset + 7), src, on)
+          already_done_fan2_high=on
+          end
+   
+   if fan2_failed_high.alarm_status==w_clr then
+        already_done_fan2_high=off
+
+   if fan2_failed_low.alarm_status==w_note then
+        if already_done_fan2_low==off then
+          begin
+          set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+          set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+          set_b_value(db_address(int(b1) + b_offset + 7), src, on)
+          already_done_fan2_low=on
+          end
+   
+   if fan2_failed_low.alarm_status==w_clr then
+        already_done_fan2_low=off
+
+         
+   fan1_status_text_1 = ""
+   fan1_status_text_2 = "Off"
+   end
+
+else 
+  begin
+  fan1_status_text_1 = ""
+  fan2_status_text_1 = ""
+  fan1_status_text_2 = "Off"
+  fan2_status_text_2 = "Off"
+  end
+
+
+x = -34
+draw_fan(fan1_fg,fan_bg,fan1_status_text_1,fan1_status_text_2,ident1)
+x = 34
+draw_fan(fan2_fg,fan_bg,fan2_status_text_1,fan2_status_text_2,ident2)
+x = -1
+y = -34 add
+y += 69 add
+line(lw=2,fg=fan_bg)
+clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 260
+fan_two_speed_mt(9000,9100,1,heathrow,"Fan No. 1","Fan No. 2")
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=white,resizable
+

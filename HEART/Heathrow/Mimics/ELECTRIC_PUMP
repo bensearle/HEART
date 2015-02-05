@@ -1,0 +1,428 @@
+! HEATHROW CMS - ELECTRIC PUMP
+
+loaded by: FIRE_MAIN
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type panel_item_row = table (str=string(30))
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+
+!
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+!
+
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+ 
+!
+************************************************************
+* ELECTRIC PUMP OBJECT                                     *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object electric_pump(plc_offset=int,group_offset=int,b_offset=int,c_offset=int,src=source)
+
+
+!B INPUTS
+b_inputs[1] = transfer_of_service
+b_inputs[2] = start_pump
+b_inputs[3] = not_pump_started
+b_inputs[4] = pump_stopped
+!
+var b_inputs = input b_db_row_type[4]
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+var plc_enabled = input  b_db_row_type
+
+!ALARM INPUTS
+alarm_inputs[1] = pump_started_alarm
+alarm_inputs[2] = pump_stopped_alarm
+alarm_inputs[3] = vcb_tripped
+alarm_inputs[4] = start_pump_discr
+alarm_inputs[5] = pump_started_discr
+alarm_inputs[6] = pump_stopped_discr
+alarm_inputs[7] = vcb_discr
+alarm_inputs[8] = failed_to_start
+alarm_inputs[10] = failed_to_stop
+!
+
+var tag_message_ip = input  c_db_row_type
+
+var alarm_inputs = input alarm_row_type[10]
+
+! LOOPBACKS !
+VAR pump_fg = loopback  colour
+VAR pump_bg = loopback  colour
+VAR status_text_1 = loopback  string
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+if invalid get source b_inputs then 
+
+   begin
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset - 1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source plc_enabled = src
+   set filter plc_enabled.db_addr = lim_eq
+   set limit plc_enabled.db_addr = db_address(int(b1) + group_offset - 1)
+   set priority plc_enabled.db_addr = 15
+   set persist plc_enabled
+   set mayexist plc_enabled
+   request plc_enabled
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset - 1)
+   set priority tag_message_ip.db_addr = 15
+   set persist tag_message_ip
+   set mayexist tag_message_ip
+   request tag_message_ip
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset + 1)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   end
+
+
+! SELECT PUMP BG COLOUR ! 
+
+if b_inputs[1].b_value then
+   pump_bg = orange
+
+else if (plc_enabled.b_value == 0) then
+   pump_bg = lightblue
+
+else if tag_message_ip.c_value <> "" then
+   pump_bg = yellow
+
+else pump_bg = decoroff
+
+
+! SELECT PUMP FG COLOUR !
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+   pump_fg = magenta
+
+else if alarm_inputs[1].alarm_status == w_note or  
+        alarm_inputs[2].alarm_status == w_note or
+        alarm_inputs[3].alarm_status == w_note or
+        alarm_inputs[4].alarm_status == w_note or
+        alarm_inputs[5].alarm_status == w_note or
+        alarm_inputs[6].alarm_status == w_note or
+        alarm_inputs[7].alarm_status == w_note or
+        alarm_inputs[8].alarm_status == w_note or
+	alarm_inputs[10].alarm_status== w_note then
+        pump_fg = flashred
+
+else if alarm_inputs[1].alarm_status == w_act or  
+        alarm_inputs[2].alarm_status == w_act or
+        alarm_inputs[3].alarm_status == w_act or
+        alarm_inputs[4].alarm_status == w_act or
+        alarm_inputs[5].alarm_status == w_act or
+        alarm_inputs[6].alarm_status == w_act or
+        alarm_inputs[7].alarm_status == w_act or
+        alarm_inputs[8].alarm_status == w_act then
+        pump_fg = flashred
+
+else if alarm_inputs[1].alarm_status == w_clr or
+        alarm_inputs[2].alarm_status == w_clr or
+        alarm_inputs[3].alarm_status == w_clr or
+        alarm_inputs[4].alarm_status == w_clr or
+        alarm_inputs[5].alarm_status == w_clr or
+        alarm_inputs[6].alarm_status == w_clr or
+        alarm_inputs[7].alarm_status == w_clr or
+        alarm_inputs[8].alarm_status == w_clr or
+	alarm_inputs[10].alarm_status== w_clr then
+        pump_fg = red
+
+else if b_inputs[3].b_value then
+        pump_fg = white
+
+else    pump_fg = green4
+
+
+ 
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w=90 h=70 
+set rect main_menu
+set title main_menu  = "Electric Pump"
+set remove main_menu = "Alter Tagged Message"
+set remove main_menu = "Clear Tagged Message"
+set remove main_menu = "Alter Transfer of Service"
+set remove main_menu = "Enable Remote Control"
+set remove main_menu = "Enable Local Control"
+set remove main_menu = "Start Pump"
+set remove main_menu = "Stop Pump"
+set add main_menu="Alter Tagged Message"
+set add main_menu="Clear Tagged Message"
+set add main_menu="Alter Transfer of Service"
+
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+   case main_menu of
+
+  "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tagged Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Transfer of Service"
+         begin
+         if  b_inputs[1].b_value then
+            begin
+            set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+            end
+         else
+            set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+         end
+
+      "Start Pump"
+         begin
+         set_b_value(db_address(int(b1) + b_offset +9), src, off)
+         set_b_value(db_address(int(b1) + b_offset), src, on)
+         end
+
+      "Stop Pump"
+         begin
+         set_b_value(db_address(int(b1) + b_offset), src, off)
+         set_b_value(db_address(int(b1) + b_offset +9), src, on)
+         end
+ 
+      "Enable Local Control"
+         begin
+         set_b_value(db_address(int(b1) + group_offset), src, off)
+         set_b_value(db_address(int(b1) + group_offset - 1), src, on)
+                 end
+ 
+
+      "Enable Remote Control"
+         begin
+         set_b_value(db_address(int(b1) + group_offset - 1), src, off)
+         set_b_value(db_address(int(b1) + group_offset), src, on)
+         end
+
+         default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+
+! TAG MESSAGE BOX !
+
+w = 60 h = 60
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+! DRAW FAN !
+
+bg=pump_bg
+fg=pump_fg
+just = centrecentre
+x=0 y=0
+rect (w=60,h=60,fg=pump_bg)
+x = -30 y = 30 add
+y -= 60 add
+x += 60 add
+line(fg=decorlight) 
+clear
+y +=1 add
+y += 59 add
+x -= 60 add
+line(fg=decorshadow)
+clear
+
+x=0 y=0
+lw = 4
+circle (h=45,w=45)
+clear
+X=-10 Y=20  Add 
+Y= -17 Add 
+X=20 Y=0  Add 
+X=-10 Y=18  Add 
+LINE
+clear
+
+
+! SELECT REMOTE OPTIONS !
+
+if plc_inputs[1].b_value == 0 or plc_inputs[2].b_value == 0 then
+   begin
+ 
+   if plc_enabled.b_value then
+     begin
+     set add main_menu = "Enable Remote Control"
+     end
+
+   else
+     begin
+     set add main_menu = "Enable Local Control"
+     if b_inputs[3].b_value then
+       set add main_menu = "Start Pump"
+     else
+       set add main_menu = "Stop Pump"
+     end
+   end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+
+electric_pump(15000,15028,15305,1,heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=white,resizable
+

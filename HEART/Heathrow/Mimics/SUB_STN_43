@@ -1,0 +1,78 @@
+load mimic_libutil
+load lv_contactor
+load lv_generator_nrc1
+load ocb_monitored
+load transformer
+
+
+!************* BUSBAR 43 *************!
+
+object busbar_43
+
+begin
+
+just = centrecentre
+
+tfg = black x = 60 y = -15 add text ("43",ch = 25) clear
+
+lw=2
+x = -175 y = 0 add x += 340 add line(lw=4,fg=blue) clear
+y = 0 x = -150  add y -= 50 add line(fg=blue) clear
+y = 0 x = -100  add y -= 50 add line(fg=blue) clear
+y = 0 x =  -50  add y += 75 add line(fg=blue) clear
+y = 0 x =    0  add y += 75 add line(fg=blue) clear
+y = 0 x =   50  add y += 175 add line(fg=blue) clear
+y = 0 x =  140  add y += 75 add line(fg=blue) clear
+y = 78 x = 79 add y += 98 add line(fg=blue) clear
+y = 176 x = 45 add x += 40 add line(fg=blue,lw=4) clear
+
+scale=120
+
+x = -150   y = -25  ocb_mont(3000,3340,133,249,heathro2,1,"top")
+x = -100   y = -25  ocb_mont(3000,3350,134,250,heathro2,2,"top")
+x =  -50   y =  25  ocb_mont(3000,3360,135,251,heathro2,3,"btm")
+x =    0   y =  25  ocb_mont(3000,3370,136,252,heathro2,4,"btm")
+x =   50   y =  25  ocb_mont(3000,3380,137,253,heathro2,5,"btm")
+x =  140   y =  25  ocb_mont(3000,3490,254,262,heathro2,6,"btm")
+
+scale=100
+x =  -50   y = 75 transformer("T 1","")
+x =    0   y = 75 transformer("T 1","")
+x =   50   y = 75 transformer("T 1","")
+x =  140   y = 75 transformer("T 1","")
+
+scale=120
+
+x = 65  y = 135 lv_changeover(3000,3410,140,heathro2)
+
+
+scale=140
+x = 90 y = 78 lv_generator_nrc1(3000,3410,3420,141,heathro2)
+
+scale = 260
+tfg = black ch=12
+x = -50 y = 105 text("Menzies")
+x = 0   y = 105 text("AIR")
+x = 0   y = 120 text("CANADA")
+x = 0   y = 135 text("BLDG")
+x = 0   y = 150 text("553")
+x = 140 y = 105 text("WORLD")
+x = 140 y = 120 text("CARGO")
+x = 140 y = 135 text("FEGP")
+
+x = -150 y = -75 text("SS42")
+x = -150 y = -60 text("P13")
+x = -100 y = -75 text("WI-NEW")
+x = -100 y = -60 text("P24")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 25 y = -40 busbar_43
+
+end
+
+mimic = main_object w=400,h=350,just=centrecentre,fg=white,bg=aquamarine3,resizable

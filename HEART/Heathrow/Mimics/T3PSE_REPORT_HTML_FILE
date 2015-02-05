@@ -1,0 +1,22 @@
+Load replib
+Load t3pse_report
+const pse_report_name = "PSE_REPORT"
+
+object main_object(bg,fg,w,h)
+var getting_data = loopback yesno
+var start_print = loopback int
+var dummy = int
+
+begin
+
+X=10 Y=5 JUST=TOPLEFT TFG=BLACK FONT=FONT_NORMAL CH=14 FONTNAME="Arial" TEXT("Generating PSE Report File ....")
+    
+    getting_data = T3PSE_AVAIL_REPORT(monthly,"current")   
+    if getting_data == no then
+    begin
+       exit
+    end
+end
+mimic = main_object w=280, h=30, KEEP=1, NORESIZABLE
+
+

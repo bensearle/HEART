@@ -1,0 +1,157 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!********HEX CTA 11KVA SUBSTATION********!
+
+
+load mimic_libutil
+load ammeter
+load transformer_meter
+load hv_menu_bar
+load ocb
+load ocb_monitored
+load transformer
+load nse_transformer
+load hv_hierarchy
+
+!
+************************************************************
+* NORTH INTAKE OBJECT                                      *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object north_intake(lw,angle)
+begin
+just = centrecentre
+lw=4
+scale = 260
+fg = red
+x = 520 y = 0 add
+x = -520 add line clear
+
+!********************************lines*********************************!
+scale=120
+lw =5 
+
+y=30
+x =-500 ocb(1,100,1,25,heathrow,1,"top")
+x =-360 ocb(1,460,20,44,heathrow,3,"top")
+x =-290 ocb(1,180,5,29,heathrow,4,"top")
+x =-110 ocb(1,260,9,33,heathrow,1,"top")
+x = 170 ocb(1,340,13,37,heathrow,2,"top")
+
+y=-30 x=-430 ocb(1,120,2,26,heathrow,2,"top")
+
+angle = 90
+y=0
+x =-230 ocb(1,200,6,30,heathrow,5,"sect")
+x = 100 ocb(1,280,10,34,heathrow,1,"sect")
+angle = 0
+y=-30 x=310 ocb(1,300,11,35,heathrow,4,"top")
+x=240 ocb(1,380,15,39,heathrow,3,"top")
+y=-30X=440 ocb(1,380,15,39,heathrow,5,"top")
+y=30 x=500 ocb(1,380,15,39,heathrow,6,"top")
+angle = 0
+
+scale =260
+
+x = -230 y = -290 text ("BUS SECTION",ch=12,tfg=black)
+x = -230 y = -277 text ("1 TO 2",ch=12,tfg=black)
+
+x = 100 y = -290 text ("BUS SECTION",ch=12,tfg=black)
+x = 100 y = -277 text ("2 TO 3",ch=12,tfg=black)
+
+
+x = -500 y = 300 text ("11/0.433 kV",ch=12,tfg=black)
+x = -500 y = 315 text ("TX A",ch=12,tfg=black)
+x = -430 y = 300 text ("BUS",ch=12,tfg=black)
+x = -430 y = 315 text ("BAR",ch=12,tfg=black)
+
+x = -360 y = 300 text ("VENT",ch=12,tfg=black)
+x = -360 y = 315 text ("FAN F1",ch=12,tfg=black)
+x = -360 y =330 text ("NORTH",ch=12,tfg=black)
+x = -290 y = 300 text ("VENT",ch=12,tfg=black)
+x = -290 y = 315 text ("FAN F1",ch=12,tfg=black)
+x = -290 y =330 text ("SOUTH",ch=12,tfg=black)
+
+x = 10 y = 300 text ("BUS",ch=12,tfg=black)
+x = 10 y = 315 text ("BAR",ch=12,tfg=black)
+
+x = 170 y = 300 text ("VENT",ch=12,tfg=black)
+x = 170 y = 315 text ("FAN F2",ch=12,tfg=black)
+x = 170 y =330 text ("NORTH",ch=12,tfg=black)
+x = 240 y = 300 text ("VENT",ch=12,tfg=black)
+x = 240 y = 315 text ("FAN F3",ch=12,tfg=black)
+x = 240 y =330 text ("SOUTH",ch=12,tfg=black)
+
+x = 500 y = 300 text ("11/0.433 kV",ch=12,tfg=black)
+x = 500 y = 315 text ("TX B",ch=12,tfg=black)
+
+
+end
+
+object north_intake_unit
+begin
+
+just = centrecentre
+fg=red
+x = -500 y = 0 add y = 150 add line(fg=red,lw=2) clear
+x = -430 y = -150 add y = 150 add line(fg=red,lw=2) clear
+x = -360 y = 0 add y = 150 add line(fg=red,lw=2) clear
+x = -290 y = 0 add y = 150 add line(fg=red,lw=2) clear
+x = 10 y=0 add y=150 add line(fg=red,lw=2) clear
+x =-110 y=0 add y=150 add line(fg=red,lw=2) clear
+x =-230 y=0 add y=-150 add line (fg=red,lw=2) clear
+x = 100 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = 240 y = 0 add y = 150 add line(fg=red,lw=2) clear
+x = 170 y = 0 add y = 150 add line(fg=red,lw=2) clear
+x = 311 y = 0 add y = -150 add line(fg=red,lw=2) clear
+x = 440 y = 0 add y = -150 add line(fg=red,lw=2) clear
+x = 500 y = 0 add y = 150 add line(fg=red,lw=2) clear
+
+
+x = 0 y = 0 north_intake
+scale = 200
+y = 200 x = -500 ammeter(1,heathrow,"0-400A","TX B")
+y = 200 x = -430 ammeter(2,heathrow,"0-400A","BS/BAR")
+y = 200 x = -360 ammeter(14,heathrow,"0-400A","F1 NTH")
+y = 200 x = -290 ammeter(3,heathrow,"0-400A","F1 STH")
+y = -150 x = -230 ammeter(6,heathrow,"0-400A","B/S1/2")
+y =-150 x =  100 ammeter(8,heathrow,"0-400A","B/S2/3")
+y = 200 x =  170 ammeter(11,heathrow,"0-400A","F2 NTH")
+y = 200 x =  10 ammeter(11,heathrow,"0-400A","BS/BAR")
+y = 200 x =  240 ammeter(12,heathrow,"0-400A","F3 STH")
+y = 200 x =  500 ammeter(13,heathrow,"0-400A","TX B")
+y = -150 x = 440 ammeter(17,heathrow,"0-400A","S/S 62")
+
+
+scale=200
+x = -430 y = -189 
+transformer_meter(15,5,heathrow,"85","SUBSTATION","0-1200A")
+x =  310  
+transformer_meter(16,7,heathrow,"","WEST INTAKE","0-1200A")
+y=208 x =  -110  
+transformer_meter(16,7,heathrow,"SOUTH","VENT FAN F2","0-1200A")
+
+x = -50 y = 380 add text(scale=260,ch=20,tfg=red,"HEX TERMINAL 4 11KV SUBSTATION") clear
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+goto_menu
+x = 500 y = 285 command_button(49,heathrow)
+clear
+
+x = 0 
+y = -100 north_intake_unit
+y = 322 menu_bar
+
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

@@ -1,0 +1,70 @@
+Object main_object(w,h,fg,bg)
+var openInput = input db_elements(db_addr, b_value)
+var closedInput = input db_elements(db_addr, b_value)
+var valveAlarms = input db_elements(db_addr, alarm_status)[5]
+var valveColour = colour
+var i = int
+var WFN_found = int
+var WFC_found = int
+Begin
+	!Opened database read!
+	set source openInput = heathrow
+	set filter openInput.db_addr = lim_eq
+	set limit openInput.db_addr = B50000
+	request openInput
+	
+	!Closed database read!
+	set source closedInput = heathrow
+	set filter closedInput.db_addr = lim_eq
+	set limit closedInput.db_addr = B50001
+	request closedInput
+	
+	!Alarms database read!
+	set source valveAlarms = heathrow
+	set filter valveAlarms.db_addr = lim_ge
+	set limit valveAlarms.db_addr = B50000
+	request valveAlarms
+	
+	!Scan for alarms!
+	WFN_found = 0
+	WFC_found = 0
+	for i from 1 to 5 do
+	begin
+		if valveAlarms[i].alarm_status == w_note then
+			WFN_found++
+		if valveAlarms[i].alarm_status == w_clr then
+			WFC_found++
+	end
+
+	!Set the valve colour!
+	if WFN_found > 0 then
+		valveColour = flashred
+	else if WFC_found > 0 then
+		valveColour = red
+	else if openInput.b_value then
+		valveColour = green
+	else if closedInput.b_value then
+		valveColour = white
+	else
+		valveColour = lightgrey
+	
+	!Draw bow tie shape!
+	x=50 y=50 add
+	y+=50 add
+	x+=100 y-=50 add
+	y+=50 add
+	fg=valveColour
+	fill
+	fg=black
+	lw=3
+	polygon
+	
+	!Draw circle shape!
+	x=80 y=55 h=40 w=40 sa=0 aa=360
+	fg=lightgrey
+	pie
+	fg=black
+	arc	
+End
+
+mimic = main_object w=400,h=300,bg=lightblue,resizable

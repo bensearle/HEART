@@ -1,0 +1,59 @@
+load mimic_libutil
+
+object normal_key
+begin
+just=centrecentre
+
+rect(x=0,y=0,w=64,h=30,fg=decoroff) clear
+x = -32 y = 15 add x += 64 add y -= 30 add line(lw=1,fg=decorshadow) clear
+x = -32 y = 15 add y -= 30 add x += 64 add line(lw=1,fg=decorlight) clear
+
+
+rect(x=0,y=0,w=44,h=18,fg=decoroff)
+x = -22 y = 9 add x += 44 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = -22 y = 9 add y -= 18 add x += 44 add line(lw=1,fg=decorlight) clear
+x = 0 y = 0 text(tfg=black,ch=10,"Hot Key")
+end
+
+
+object flash_key
+begin
+just=centrecentre
+
+rect(x=0,y=0,w=64,h=30,fg=flashred) clear
+x = -32 y = 15 add x += 64 add y -= 30 add line(lw=1,fg=decorshadow) clear
+x = -32 y = 15 add y -= 30 add x += 64 add line(lw=1,fg=decorlight) clear
+
+
+rect(x=0,y=0,w=44,h=18,fg=decoroff)
+x = -22 y = 9 add x += 44 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = -22 y = 9 add y -= 18 add x += 44 add line(lw=1,fg=decorlight) clear
+x = 0 y = 0 text(tfg=black,ch=10,"Hot Key")
+end
+
+
+object non_flash_key
+begin
+just=centrecentre
+
+rect(x=0,y=0,w=64,h=30,fg=red) clear
+x = -32 y = 15 add x += 64 add y -= 30 add line(lw=1,fg=decorshadow) clear
+x = -32 y = 15 add y -= 30 add x += 64 add line(lw=1,fg=decorlight) clear
+
+
+rect(x=0,y=0,w=44,h=18,fg=decoroff)
+x = -22 y = 9 add x += 44 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = -22 y = 9 add y -= 18 add x += 44 add line(lw=1,fg=decorlight) clear
+x = 0 y = 0 text(tfg=black,ch=10,"Hot Key")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = -50 normal_key
+y = 0 flash_key
+y = 50 non_flash_key
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

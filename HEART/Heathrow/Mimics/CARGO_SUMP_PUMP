@@ -1,0 +1,330 @@
+! HEATHROW CMS - CARGO SUMP PUMP
+
+loaded by: CARGO_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type panel_item_row = table (str=string(20))
+
+type menu_options_type = enum(
+           tag_message = "Alter Tagged Message",
+         untag_message = "Clear Tagged Message")
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+ 
+!
+************************************************************
+* CARGO SUMP PUMP                                          *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object cargo_sump_pump(fg,bg,plc_offset=int,mains_offset=int,b_offset=int,
+                    c_offset=int,src=source,rot_angle=int,angle)
+
+! B INPUTS
+b_inputs[1] = manual_control_ip
+b_inputs[2] = available_ip
+b_inputs[3] = standby_run_ip
+!
+var b_inputs = input b_db_row_type[3]
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+var tag_message_ip = input  c_db_row_type
+
+! ALARM INPUTS
+alarm_inputs[1] = not_available_alarm
+alarm_inputs[2] = manual_ctrl_discr
+alarm_inputs[3] = available_discr
+alarm_inputs[4] = standby_run_discr
+!
+var alarm_inputs = input alarm_row_type[4]
+
+!MAINS INPUTS
+mains_inputs[1] = mains_fail
+mains_inputs[2] = mains_fail_discr
+!
+var mains_inputs = input alarm_row_type[2]
+
+! LOOPBACKS !
+VAR stand_bg = loopback  colour
+VAR stand_fg = loopback  colour
+
+! MENUS !
+VAR stand_control_menu = menu  menu_options_type
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source b_inputs then 
+
+   begin
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset-1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset - 1)
+   set priority tag_message_ip.db_addr = 15
+   set persist tag_message_ip
+   set mayexist tag_message_ip
+   request tag_message_ip
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   set source mains_inputs = src
+   set filter mains_inputs.db_addr = lim_ge
+   set limit mains_inputs.db_addr = db_address(int(b1) + mains_offset - 1)
+   set priority mains_inputs.db_addr = 15
+   set persist mains_inputs
+   set mayexist mains_inputs
+   request mains_inputs
+
+   end
+
+
+! SELECT PUMP BG COLOUR ! 
+
+if b_inputs[1].b_value then
+  stand_bg = lightblue
+
+else if tag_message_ip.c_value <> "" then 
+  stand_bg = yellow
+  
+else
+  stand_bg = decoroff     
+
+
+! SELECT PUMP FG COLOUR !
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+  begin
+  stand_fg = magenta
+  end
+
+else if alarm_inputs[1].alarm_status == w_note or
+        mains_inputs[1].alarm_status == w_note or
+        mains_inputs[2].alarm_status == w_note or
+        alarm_inputs[2].alarm_status == w_note or
+        alarm_inputs[3].alarm_status == w_note or
+        alarm_inputs[4].alarm_status == w_note then
+  stand_fg = flashred
+
+else if alarm_inputs[1].alarm_status == w_clr or
+        mains_inputs[1].alarm_status == w_clr or
+        mains_inputs[2].alarm_status == w_clr or
+        alarm_inputs[2].alarm_status == w_clr or
+        alarm_inputs[3].alarm_status == w_clr or
+        alarm_inputs[4].alarm_status == w_clr then
+   stand_fg = red
+
+else if b_inputs[3].b_value then
+   stand_fg = green4
+
+else if b_inputs[2].b_value then
+   stand_fg = white
+
+else
+   stand_fg = black
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! CONTROL MENU !
+
+if valid stand_control_menu then
+   begin
+   case stand_control_menu of
+      tag_message
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      untag_message
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+   default
+      begin
+      end
+   set invalid stand_control_menu
+   end
+
+
+! CONTROL MENU !
+
+just=centrecentre
+w=60 h=60
+x=0 y=0
+set rect stand_control_menu 
+
+set title stand_control_menu = "Control Menu"
+! if select button pressed then display tag message !
+
+
+! DRAW PUMP !
+
+bg=stand_bg
+fg=stand_fg
+just = centrecentre
+
+rect (w=60,h=60,fg=bg)
+x = -30 y = 30 add
+y-=60 add
+x+=60 add
+line(lw=1,fg=decorlight) 
+clear
+add
+y+=60 add
+x-=60 add
+line(lw=1,fg=decorshadow)
+  
+x=0 y=0    
+lw = 5
+circle (h=45,w=45)
+
+Clear
+X=-9 Y=21  Add 
+Y=-16 Add 
+X=20 Y=1  Add 
+X=-9 Y=17  Add 
+LINE
+clear
+
+
+! TAG MESSAGE BOX !
+
+w=60 h=60
+x=0 y=0
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+
+   end
+end
+
+
+object main_object(bg,fg,just,angle)
+ 
+begin
+
+scale=260
+cargo_sump_pump(10000,10068,10100,500,heathrow,0)
+
+end
+mimic = main_object w = 200,h = 200,just = centrecentre, bg=white, fg=white

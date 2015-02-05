@@ -1,0 +1,232 @@
+load mimic_libutil
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+!
+************************************************************
+* HAND DRESSED LINE STATUS OBJECT                          *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+
+object cable_status(e_offset=int,src=source,pointx=int,pointy=int,pointa=int,
+                   pointb=int,pointc=int,pointd=int,pointe=int,pointf=int,
+                   pointg=int,pointh=int,pointi=int,pointj=int)
+
+!************ REAL INPUTS ***************!
+
+var line_status_ip = input  e_db_row_type
+
+!********** PANELS AND MENUS ************!
+
+var main_menu = menu  string(30)
+
+!************ LOOPBACKS *****************!
+
+var line_fg = loopback  colour
+
+begin
+
+!******** REQUEST REAL FROM SCOPE *******!  
+
+   set source line_status_ip = src
+   set filter line_status_ip.db_addr = lim_eq
+   set limit line_status_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist line_status_ip 
+   request line_status_ip
+
+!********** MAIN MENU CONTROL ***********!
+
+if valid main_menu then
+    begin
+
+    case main_menu of
+                  
+      "Fed from North Intake"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+
+      "Fed from South Intake"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+
+      "Fed from East Intake"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+
+      "Fed from West Intake"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 4)
+
+      "Cable Earthed"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 5)
+
+      "Cable in Parallel"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 6)
+
+      default
+      begin
+      end
+
+   set invalid main_menu
+   end
+
+!************* MAIN MENU *************!
+x = pointx y = pointy
+w = 4 h = pointa
+set rect main_menu
+set title main_menu = "11kV Cable"
+
+set remove main_menu = "Fed from North Intake"
+set remove main_menu = "Fed from South Intake"
+set remove main_menu = "Fed from East Intake"
+set remove main_menu = "Fed from West Intake"
+set remove main_menu = "Cable Earthed"
+set remove main_menu = "Cable in Parallel"
+
+! ************* DRAW LINE ************!
+
+if int(line_status_ip.e_value) >= 1 then
+   case int(line_status_ip.e_value) of
+     1
+      begin
+      lw = 2
+      fg = red
+      x = pointx y = pointy add
+      x = pointa y = pointb add
+      x = pointc y = pointd add
+      x = pointe y = pointf add
+      x = pointg y = pointh add line
+      clear
+      set add main_menu = "Fed from South Intake"
+      set add main_menu = "Fed from East Intake"
+      set add main_menu = "Fed from West Intake"
+      set add main_menu = "Cable Earthed"
+      set add main_menu = "Cable in Parallel"
+
+      end
+
+     2
+      begin
+      lw = 2
+      fg = green4
+      x = pointx y = pointy add
+      x = pointa y = pointb add
+      x = pointc y = pointd add
+      x = pointe y = pointf add
+      x = pointg y = pointh add line
+      clear
+      set add main_menu = "Fed from North Intake"
+      set add main_menu = "Fed from East Intake"
+      set add main_menu = "Fed from West Intake"
+      set add main_menu = "Cable Earthed"
+      set add main_menu = "Cable in Parallel"
+
+      end
+
+     3
+      begin
+      lw = 2
+      fg = orange
+      x = pointx y = pointy add
+      x = pointa y = pointb add
+      x = pointc y = pointd add
+      x = pointe y = pointf add
+      x = pointg y = pointh add line
+      clear
+      set add main_menu = "Fed from North Intake"
+      set add main_menu = "Fed from South Intake"
+      set add main_menu = "Fed from West Intake"
+      set add main_menu = "Cable Earthed"
+      set add main_menu = "Cable in Parallel"
+
+      end
+
+     4
+      begin
+      lw = 2
+      fg = blue
+      x = pointx y = pointy add
+      x = pointa y = pointb add
+      x = pointc y = pointd add
+      x = pointe y = pointf add
+      x = pointg y = pointh add line
+      clear
+      set add main_menu = "Fed from North Intake"
+      set add main_menu = "Fed from South Intake"
+      set add main_menu = "Fed from East Intake"
+      set add main_menu = "Cable Earthed"
+      set add main_menu = "Cable in Parallel"
+
+      end
+
+     5
+      begin
+      lw = 2
+      fg = yellow
+      x = pointx y = pointy add
+      x = pointa y = pointb add
+      x = pointc y = pointd add
+      x = pointe y = pointf add
+      x = pointg y = pointh add line
+      clear
+      set add main_menu = "Fed from North Intake"
+      set add main_menu = "Fed from South Intake"
+      set add main_menu = "Fed from East Intake"
+      set add main_menu = "Fed from West Intake"
+      set add main_menu = "Cable in Parallel"
+
+      end
+
+     6
+      begin
+      lw = 2
+      fg = flashgreen
+      x = pointx y = pointy add
+      x = pointa y = pointb add
+      x = pointc y = pointd add
+      x = pointe y = pointf add
+      x = pointg y = pointh add line
+      set add main_menu = "Fed from North Intake"
+      set add main_menu = "Fed from South Intake"
+      set add main_menu = "Fed from East Intake"
+      set add main_menu = "Fed from West Intake"
+      set add main_menu = "Cable Earthed"
+
+      clear
+      end
+
+     default
+     begin
+     end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+cable_status(2100,heathrow,0,-100,0,-50,200,-50,200,0,350,0,350,0)
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=white,resizable

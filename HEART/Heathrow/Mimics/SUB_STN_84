@@ -1,0 +1,84 @@
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: SUB_STN_84                               **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 3.0 (For OS08 SAT)                  **!
+!** Date: 24/05/13                                       **!
+!** Changes made:                                        **!
+!**  - No changes from FAT (renumbering only).           **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.1 (For OS08 FAT)                  **!
+!** Date: 23/11/12                                       **!
+!** Changes made:                                        **!
+!**  - Label text update for panel 1, now connected to   **!
+!**    Sub 302                                           **!
+!**  - Change made as part of T3IB project.              **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 07/05/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 1.0 (For RTU29-03 FAT)              **!
+!** Date: 02/04/12                                       **!
+!** Changes made:                                        **!
+!**  - Points re-mapped from old OS08 to new OS29.       **!
+!**  - These changes have been made as part of the A1    **!
+!**    Centre decommissioning project.                   **!
+!**********************************************************!
+
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+!*************** BUSBAR 84 ***************!
+
+object busbar_84
+begin
+
+just = centrecentre
+tfg = black x = 210 y = -5 add text ("84",ch = 30) clear
+x = -25 y = 25 add x = 225 add line(lw=4,fg=magenta3) clear
+ch=12
+X = 200 Y = 125 text("Spare",tfg=black)
+x = 0 y = -50 text("SS 302")
+x = 0 y = -35 text("P3")
+x = 50 y = -50 text("SS 121")
+x = 50 y = -35 text("P18")
+
+lw=2
+x =   0 y = -25 add y += 50 add line (fg=magenta3) clear
+x =  50  y = -25 add y += 50 add line (fg=magenta3) clear
+x =  100 y = 25 add y += 50 add line (fg=magenta3) clear
+x =  150 y = 25 add y += 50 add line (fg=magenta3) clear
+x =  200 y = 25 add y += 50 add line (fg=magenta3) clear
+
+scale = 120
+x = 0 y = 0     ocb_mont(32700,33790,2966,8122,heathro2,1,"top")
+x = 50 y = 0   ocb_mont(32700,33800,2967,8123,heathro2,2,"top")
+x = 100 y = 50  ocb_mont(32700,33810,2968,8124,heathro2,3,"btm")
+x = 150 y = 50  ocb_mont(32700,33820,2969,8125,heathro2,4,"btm")
+x = 200 y = 50   ocb_mont(32700,33830,2970,8126,heathro2,5,"btm")
+
+scale = 100
+X =  100  Y = 95 add transformer("LT 1","")
+X =  150 Y = 95 add transformer("LT 2","")
+x = 200 y = 95 add transformer("T 1","")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+x = - 100 y = -50 busbar_84
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

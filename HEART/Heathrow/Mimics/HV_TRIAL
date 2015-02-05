@@ -1,0 +1,269 @@
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load MGL_BUTTONS
+Load MGL_DRAWLIB
+Load MGL_util
+
+Load BROWSER
+load hv_lib
+load generic_meter_library
+
+type	meter_tab_db_row_type=db_elements(db_addr,db_name,alarm_value,e_value)[15]
+
+
+
+object value_box
+begin
+	clear
+	X=-155 Y=-112 rect(fg=grey80,w=228, h=12)
+	x=78 rect(fg=grey80,w=75, h=12)
+	clear
+end
+
+object meter_tab(src=source,plc_offset=int, key_field1=string,num_values=int,label=string,bg)
+var ip=input meter_tab_db_row_type
+var plc_inputs=input b_db_row_type[2]
+var height_tab=int 
+var n =int
+var i =int
+var num_val_check =int
+begin
+	clear
+	value_box
+
+	for i FROM 2 TO num_val_check  DO
+	begin
+		Y+=18 value_box
+	end
+
+	clear
+	X=-150 Y=-153 CH=12 FONT=FONT_BOLD FONTNAME="Arial" TFG=BLUE JUST=TOPLEFT TEXT(label)
+	X=-150 Y=-133 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Ident")
+	X=76 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Value")
+	bg=white
+
+      if invalid src then
+        begin
+        end
+      else
+      begin
+		if invalid num_values then num_val_check = 0
+		else num_val_check = num_values 
+	
+		if invalid get source ip then
+		begin
+		   set source ip = src
+		   set max_rows ip = num_values
+		   set priority ip = 0
+		   set mayexist ip
+		   set priority ip.DB_ADDR = 1
+		   set mustexist ip.DB_ADDR
+		   set filter ip.DB_ADDR = lim_GE
+		   set limit ip.DB_ADDR = DB_ADDRESS(key_field1)
+		   set persist ip
+		   request ip
+
+		   ! ** get comms status** !
+		   set source plc_inputs=src
+		   set filter plc_inputs.db_addr=lim_ge
+		   set limit plc_inputs.db_addr=db_address(int(b1) + plc_offset - 1)
+		   set priority plc_inputs.db_addr=15
+		   set persist plc_inputs
+		   set mayexist plc_inputs
+		   request plc_inputs
+		end
+
+	X=-140 Y=-138 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT 
+
+	CH=12 
+	y+=8
+	for n FROM 1 TO num_val_check  DO
+	begin
+		if plc_inputs[1].b_value==on and plc_inputs[2].b_value==on then
+			tfg=magenta3
+		else if ip[n].alarm_value == "" then
+			tfg=green4
+		else
+			tfg=red
+
+		X=80	y+=18 TEXT(ip[n].e_value)
+		tfg=black
+		X=-150 TEXT(fontname="roman",ch=10,ip[n].db_name)
+	end
+      end
+end
+mimic meter_tab = meter_tab w=320,h=320,just=centrecentre, bg=lightgrey
+
+
+!*********** BUSBAR HV TRIAL *************!
+
+object busbar_trial
+
+begin
+	!** sub label **!
+	tfg = black x = 0 y = -55 add text (just=centrecentre,"TRIAL",ch = 20) clear
+
+!***  connecting lines  ***!
+
+	!** busbar **!
+	x = -225 y = -25 add x += 100 add line(lw=4,fg=red) clear
+	x =  125 y = -25 add x += 100 add line(lw=4,fg=red) clear
+
+	!** circuit breakers **!
+	lw = 2
+	x = -205 y = -25 add y += 50 add line (fg=red) clear
+	x = -155 y = -25 add y -= 55	add line (fg=red) clear
+
+	x = 145 y = -25 add y -= 55	add line (fg=red) clear
+	x = 195 y = -25 add y += 50	add line (fg=red) clear
+
+
+
+	!***  circuit breaker objects  ***!
+	!		hv_lib_breaker("type",plc,b_off,tag,dress,ctrl_reg,HEATHROW,1,"pos",ctrl_code)!
+	scale = 310
+	x = -205 y = 0	hv_lib_breaker("eclipse",39000,39050,1280,4415,4496,HEATHROW,1,"BTM",10)
+	x = -155 y = -50	hv_lib_breaker("eclipse",39000,39070,1281,4416,4496,HEATHROW,2,"TOP",20)
+
+	x = 145 y = -50	hv_lib_breaker("eclipse",39000,39090,1282,4417,4496,HEATHROW,1,"TOP",30)
+	x = 195 y = 0	hv_lib_breaker("eclipse",39000,39110,1283,4418,4496,HEATHROW,2,"BTM",40)
+
+
+	!***  analogue meter objects  ***!
+
+	!		generic_bar_meter_lib(plc,tag,e_val,over,under,source,"units","panel no",0,100,0,yellow,0,int,string)!
+	scale = 165
+	x = -205 y = 80	generic_bar_meter_lib(39000,1284,4419,int,int,heathrow,"A","PHASE 1",0,100,0,yellow,0,int,string)
+	x = -155 y = -120	generic_bar_meter_lib(39000,1285,4422,int,int,heathrow,"A","PHASE 1",0,100,0,yellow,0,int,string)
+	x = 145 y = -120	generic_bar_meter_lib(39000,1286,4427,int,int,heathrow,"A","PHASE 1",0,100,0,yellow,0,int,string)
+	x = 195 y = 80	generic_bar_meter_lib(39000,1287,4441,int,int,heathrow,"A","PHASE 1",0,100,0,yellow,0,int,string)
+
+	scale=256
+	just=centrecentre tfg=black ch=12
+	x = -205 y = 135 text("SEPAM")
+	y += 15 text("1000")
+
+	x = -155 y = -200 text("SEPAM")
+	y += 15 text("2000")
+
+	x = 145 y = -200 text("SLAVE 1")
+	y += 15 text("SIPROTEC")
+
+	x = 198 y = 135  text("SIPROTEC")
+	y += 15 text("SLAVE 2")
+
+
+x=0 y= -300 text(ch=20,"HV INTELLIGENT INTERFACE TRIAL - OS85")
+end
+
+object nav_box_obj(title=string,mimic_title=string,src=source)
+var mm = toplevel  string_50
+var fg1=colour
+var fg2=colour
+var num_letters = int
+var width = int
+begin
+	X=-17 Y=-17 W=33 H=34 ANGLE=0 JUST=TOPLEFT FG=grey80 FS=FILLSOLID ROTRECT 
+	if selb then
+	begin
+         		set source mm = src
+         		set mimic mm = mimic_title
+         		set selfreplace mm
+         		request mm
+		fg1=lightgreen4
+		fg2=grey60
+	end
+	else 
+	begin
+		fg1=lightgreen3
+		fg2=decorlight
+	end
+
+	clear
+	X=5 Y=-10 Add
+	X=-10 Y=0 Add
+	X=5 Y=10 Add
+	fg=fg1 FS=FILLSOLID FILL clear
+
+
+ 	Clear
+	X=17 Y=-18 Add
+	X=-17 Y=-18 Add
+	X=-17 Y=18 Add
+	FG=fg2 LS=SOLID LW=1 CS=CAPROUND LINE clear
+	X=-17 Y=18 Add
+	X=17 Y=18 Add
+	X=17 Y=-18 Add
+	FG=grey40 LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	num_letters=nchars(title)
+	width =  (num_letters * 11) +2
+	
+	x=18 y=-18
+	W=width H=34 ANGLE=0 JUST=TOPLEFT FG=grey80 FS=FILLSOLID ROTRECT
+	x=20 y=-8 text(tfg=grey40,title)
+
+	Clear
+	X=18 Y=17 Add
+	X=18 Y=-18 Add
+	X+=width Y=-18 Add
+	FG=grey60 LS=SOLID LW=1 CS=CAPROUND LINE
+	Y=-18 Add
+	Y=16 Add
+	X=18 Y=16 Add
+	FG=decorlight LS=SOLID LW=1 CS=CAPROUND LINE clear
+end
+
+object meter_btn(title=string,label=string,src=source,plc_offset=int, key_field1=string,num_values=int)
+var meter_tab_pop = popup meter_tab
+begin
+	X=0 Y=0 W=50 H=16 FG=grey80 JUST=centrecentre FS=FILLSOLID ANGLE=0 ROTRECT
+	if selb then
+	begin
+		FG=grey60 JUST=centrecentre FS=FILLSOLID ANGLE=0 ROTRECT
+		set title meter_tab_pop = "Detailed Info - " + label
+		request meter_tab_pop(src,plc_offset,key_field1,num_values,label)
+	end
+
+	Clear
+	X=25 Y=-10 Add
+	X=-25 Y=-10 Add
+	X=-25 Y=8 Add
+	FG=decorlight LS=SOLID LW=1 CS=CAPROUND LINE clear
+	
+	X=-25 Y=8 Add
+	X=25 Y=8 Add
+	X=25 Y=-10 Add
+	FG=darkgrey LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=0 Y=-1 CH=10 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT(title)
+
+	!
+	X=0 Y=14 CH=10 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT(label)
+	!
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var meter_tab_pop = popup meter_tab
+!var ip=input fuses_tab_db_row_type!
+begin
+	x = 0 y = -25 busbar_trial
+	clear
+
+	x = -570 y = 310 browser(1288,heathrow,1140)
+	clear
+
+	X=-529 Y=-350 nav_box_obj("MODBUS NETWORK","hv_trial_modbus",heathrow)
+	clear
+
+
+	X=-120 Y=-59 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Schneider")
+	X=229 Y=-59 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Siemens")
+
+	X=-202 Y=150 	meter_btn("PANEL1","GCB1 - SEPAM1000",heathrow,39000,"e4419",3)
+	X=-155 Y=-245	meter_btn("PANEL2","GCB2 - SEPAM2000",heathrow,39000,"e4422",5)
+	X=141 Y=-245 	meter_btn("PANEL1","GCB1 - 7SJ62",heathrow,39000,"e4427",14)
+	X=197 Y=150 	meter_btn("PANEL2","GCB2 - 7SJ62",heathrow,39000,"e4441",14)
+
+End
+mimic = MAIN_OBJECT W=1140, H=800, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE

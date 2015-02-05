@@ -1,0 +1,61 @@
+load hex_calmu_meter
+load calmu_config_ss128
+!load FAS_CALMU_OVERVIEW_SS128_HELP!
+Load BROWSER
+
+object separator
+begin
+	Clear
+	X=-250 Y=88 Add
+	X=261 Y=88 Add
+	FG=WHITE LS=SOLID LW=1 CS=CAPROUND LINE clear
+	X=-250 Y=87 Add
+	X=261 Y=87 Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	! first row !
+			!Order -	(source,scale_value,calmu_e_offset,trend_add,comms_add,req_blk,meter_no,sub_no,hist_count,max_no,min_no)!
+	X=-325	Y=-75	CALMU_METER(heathrow,200,5050,E5092,37430,37445,1,128,5300,100,-100)
+
+	X+=230 		CALMU_METER(heathrow,200,5100,E5142,37431,37446,2,128,5300,100,-100)
+	X+=230		CALMU_METER(heathrow,200,5150,E5192,37432,37447,3,128,5300,100,-100)
+
+
+	! second row !
+
+	X=-325 Y= 115	CALMU_METER(heathrow,200,5200,E5242,37433,37448,4,128,5300,100,-100)
+	X+=230		CALMU_METER(heathrow,200,5250,E5292,37434,37449,5,128,5300,100,-100)
+
+	! Draw box !
+	Clear
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE Clear
+	X = 261	Y = -198 Add
+	X = 261	Y = -108 Add
+	X = -250	Y = -108 Add
+	FG=WHITE LS=SOLID LW=1 CS=CAPROUND LINE clear
+	X = -250	Y = -108 Add
+	X = -250	Y = -198 Add
+	X = 261	Y = -198 Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X = -140	Y = -190 CH=33 FONT=FONT_NORMAL FONTNAME="Arial" TFG=DECORSHADOW JUST=TOPLEFT REALF=Fixed0 TIMEF=LOCAL_D_HM TEXT("SUBSTATION 128")
+	X = -138	Y = -191 CH=33 FONT=FONT_NORMAL FONTNAME="Arial" TFG=DECORLIGHT JUST=TOPLEFT REALF=Fixed0 TIMEF=LOCAL_D_HM TEXT("SUBSTATION 128")
+	X = -155	Y = -148 CH=29 FONT=FONT_NORMAL FONTNAME="Arial" TFG=DECORSHADOW JUST=TOPLEFT TEXT("CALMU INFORMATION")
+	X = -153	Y = -150 CH=29 FONT=FONT_NORMAL FONTNAME="Arial" TFG=DECORLIGHT JUST=TOPLEFT TEXT("CALMU INFORMATION")
+
+	x = 0	y = 0	separator
+		y += 190	separator
+
+
+	x = -570	y = 310	browser(1198,heathrow,1140)
+
+!
+x=0 y=0 text(just=centrecentre,tfg=flashred,ch=36,"MIMIC UNDER CONTRUCTION")
+!
+end
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

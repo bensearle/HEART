@@ -1,0 +1,370 @@
+! HEATHROW CMS - OS DUTY STATUS
+
+loaded by: HIERARCHY 
+!
+
+load mimic_libutil
+
+load main_hierarchy
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(alarm_status)
+
+type duty_options = enum(adbs = "A - Duty / B - Standby",asbd = "A - Standby / B - Duty")
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+
+
+
+!
+*************************************************************
+* OUTSTATION OBJECT                                         *
+* this object is called from the Top Level variable (mimic) *
+*************************************************************
+!
+
+object outstation (src=source,ident = string(20),plc_offset=int,offset=int,inter_offset=int,fail_offset=int,fault_offset=int,just)
+
+var plc_a = input  b_db_row_type
+var plc_b = input  b_db_row_type 
+var plc_a_watchdog_failure = input  b_db_row_type
+var plc_b_watchdog_failure = input  b_db_row_type
+var set_plc_a = input  b_db_row_type
+var set_plc_b = input  b_db_row_type
+var inter_plc_comms_fail = input  alarm_row_type 
+var plc_a_call_failure = input  b_db_row_type
+var plc_b_call_failure = input  b_db_row_type
+var plc_a_fault = input  b_db_row_type
+var plc_b_fault = input  b_db_row_type
+
+var plc_a_text = string(20)
+var plc_b_text = string(20)
+
+var alter_ds_panel = menu  duty_options
+
+begin 
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source plc_a then 
+
+   begin
+
+   set source set_plc_a = src
+   set filter set_plc_a.db_addr = lim_eq
+   set limit set_plc_a.db_addr = db_address(int(b1) + offset -1)
+   set persist set_plc_a 
+   request set_plc_a
+
+   set source set_plc_b = src
+   set filter set_plc_b.db_addr = lim_eq
+   set limit set_plc_b.db_addr = db_address(int(b1) + offset)
+   set persist set_plc_b 
+   request set_plc_b
+
+   set source plc_a = src
+   set filter plc_a.db_addr = lim_eq
+   set limit plc_a.db_addr = db_address(int(b1) + offset +1)
+   set persist plc_a 
+   request plc_a
+
+   set source plc_b = src
+   set filter plc_b.db_addr = lim_eq
+   set limit plc_b.db_addr = db_address(int(b1) + offset +2)
+   set persist plc_b 
+   request plc_b
+
+   set source plc_a_watchdog_failure = src
+   set filter plc_a_watchdog_failure.db_addr = lim_eq
+   set limit plc_a_watchdog_failure.db_addr = db_address(int(b1) + plc_offset - 1)
+   set persist plc_a_watchdog_failure 
+   request plc_a_watchdog_failure
+
+   set source plc_b_watchdog_failure = src
+   set filter plc_b_watchdog_failure.db_addr = lim_eq
+   set limit plc_b_watchdog_failure.db_addr = db_address(int(b1) + plc_offset)
+   set persist plc_b_watchdog_failure 
+   request plc_b_watchdog_failure
+
+   set source inter_plc_comms_fail = src
+   set filter inter_plc_comms_fail.db_addr = lim_eq
+   set limit inter_plc_comms_fail.db_addr=db_address(int(b1)+ inter_offset -1)
+   set persist inter_plc_comms_fail 
+   request inter_plc_comms_fail
+
+   set source plc_a_call_failure = src
+   set filter plc_a_call_failure.db_addr = lim_eq
+   set limit plc_a_call_failure.db_addr=db_address(int(b1)+ fail_offset -1)
+   set persist plc_a_call_failure 
+   request plc_a_call_failure
+
+   set source plc_b_call_failure = src
+   set filter plc_b_call_failure.db_addr = lim_eq
+   set limit plc_b_call_failure.db_addr=db_address(int(b1)+ fail_offset )
+   set persist plc_b_call_failure 
+   request plc_b_call_failure
+
+
+   set source plc_a_fault = src
+   set filter plc_a_fault.db_addr = lim_eq
+   set limit plc_a_fault.db_addr=db_address(int(b1)+ fault_offset -1)
+   set persist plc_a_fault 
+   request plc_a_fault
+   
+
+   set source plc_b_fault = src
+   set filter plc_b_fault.db_addr = lim_eq
+   set limit plc_b_fault.db_addr=db_address(int(b1)+ fault_offset)
+   set persist plc_b_fault 
+   request plc_b_fault
+
+
+   end
+
+
+! CONTROL MENU !
+
+if valid alter_ds_panel then
+   begin
+   case alter_ds_panel of
+
+   adbs
+      begin
+      set_b_value(db_address(int(b1) + offset), src, off)
+      set_b_value(db_address(int(b1) + offset - 1), src, on)
+      end
+   asbd   
+      begin
+      set_b_value(db_address(int(b1) + offset - 1), src, off)
+      set_b_value(db_address(int(b1) + offset), src, on)
+      end
+   default 
+      begin
+      end
+   set invalid alter_ds_panel  
+end
+
+
+! SELECT STATUS !
+
+   if plc_a_call_failure.b_value then
+   plc_a_text = "FAILED"
+else
+if plc_a_watchdog_failure.b_value then
+   plc_a_text = "FAILED"
+else
+if plc_a.b_value then
+   plc_a_text = "DUTY"
+else
+   plc_a_text = "STANDBY"
+
+if plc_a_fault.b_value then
+   plc_a_text = "FAILED"
+
+if plc_b_call_failure.b_value then
+plc_b_text ="FAILED"
+else
+if plc_b_watchdog_failure.b_value then
+   plc_b_text = "FAILED"
+else
+if plc_b.b_value then
+   plc_b_text = "DUTY"
+else
+   plc_b_text = "STANDBY"
+
+if plc_b_fault.b_value then
+   plc_b_text = "FAILED"
+
+
+! DRAW OUTSTAION !
+
+just=centrecentre
+fg = decoroff
+w=150 h=100
+x=0 y=0
+set rect alter_ds_panel 
+rect (h=100,w=160) CLEAR
+x += 80 y -= 50 add
+y += 100 add
+x -= 160 add line(fg=decorshadow) clear
+y -= 1 add
+y -= 99 add
+x += 160 add line (fg = decorlight) clear
+tfg = black
+x = 0 y = -35 add text (ident)
+x = -40 y = 30 add text (plc_a_text)
+x = 40 add text (plc_b_text) clear
+
+if plc_a_call_failure.b_value then
+   fg = magenta
+else if plc_a_watchdog_failure.b_value then
+   fg = red
+
+else if plc_a.b_value then
+   fg = green 
+else
+   fg = Yellow
+
+if plc_a_fault.b_value then
+   fg = red
+
+
+x = -40 y = 0 add rect(h=40,w=46)
+add text ("PLC A") clear
+
+if plc_b_call_failure.b_value then
+   fg = magenta
+else if plc_b_watchdog_failure.b_value then
+   fg = red 
+
+else if plc_b.b_value then
+   fg = green 
+else
+   fg = yellow
+
+if plc_b_fault.b_value then
+   fg = red
+
+
+x = 40 y = 0 add rect(h=40,w=46) 
+add text ("PLC B") clear
+
+if plc_a_watchdog_failure.b_value or plc_a.b_value then
+   begin
+   x = -17 y -= 20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorshadow) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorlight) clear
+   end
+else
+   begin
+   x = -17 y -= 20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorlight) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorshadow) clear
+   end
+
+
+if plc_b_watchdog_failure.b_value or plc_b.b_value then
+   begin
+   x = 63 y = -20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorshadow) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorlight) CLEAR
+   end
+else
+   begin
+   x = 63 y = -20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorlight) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorshadow) CLEAR
+   end
+
+if inter_plc_comms_fail.alarm_status == w_note then
+   begin
+   x = 0 y = 42 text(tfg=flashred,ch=12,"Inter-PLC comms Failure")
+   end
+else if inter_plc_comms_fail.alarm_status == w_clr then
+   begin
+   x = 0 y = 42 text(tfg=red,ch=12,"Inter-PLC comms Failure")
+   end
+
+end
+
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+var wd_aa = loopback  db_address
+var wda = input  b_db_row_type
+var src = loopback  source
+
+begin
+just = centrecentre
+goto_menu
+x = 470 y = 360 command_button(235,heathrow)
+x = 0 y = 0 clear
+
+scale = 175
+x = 0 y =0  outstation (heathrow,"OS 1 : NORTH INTAKE",1,42,54,62,71)
+
+wd_aa=b41
+src = heathrow
+
+   set source  wda = src
+   set filter  wda.db_addr = lim_eq
+   set limit   wda.db_addr = wd_aa
+   set persist wda 
+   request     wda
+
+  
+
+tfg=white
+
+
+CH=10
+
+x=0 y=0
+if wda.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+
+
+end
+
+mimic = main_object w=300,h=200,just=centrecentre,fg=white,bg=black,resizable

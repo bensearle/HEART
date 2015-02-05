@@ -1,0 +1,119 @@
+
+
+!***************************************************!
+!       Mimic modified by Vijay Kara               !
+!        for T5 TTS mimic ---4/2/2009               !
+!***************************************************!
+
+
+
+load mimic_libutil
+load heathrow_libutil
+
+object isolator3a(fg,bg,state_address=db_address,src=source)
+
+var control_menu = menu string(20)
+var isolator_state_ip = input b_db_row_type
+  
+begin
+
+just=centrecentre
+clear
+if invalid get source isolator_state_ip then
+  begin
+  set source isolator_state_ip = src
+  set filter isolator_state_ip.db_addr = lim_eq
+  set limit  isolator_state_ip.db_addr = state_address
+  set persist isolator_state_ip
+  request isolator_state_ip
+  end
+
+if valid control_menu then
+  begin
+  case control_menu of 
+
+  "Dress Isolator Off"
+  begin
+  set_b_value(state_address,heathro4,off)
+  end
+
+  "Dress Isolator On"
+  begin
+  set_b_value(state_address,heathro4,on)
+  end
+
+  default
+  begin
+  end
+
+  set invalid control_menu
+  end
+ 
+! CONTROL MENU !
+
+w=60 h=30
+x = 0
+y = 0
+set rect control_menu
+
+set title control_menu = "Isolator Menu"
+set empty control_menu
+
+!*********Draw Box MIMIC****************!
+
+!
+rect(w=43,h=65,fg=green)
+x=22 y=-10 add
+y+=43 add
+x-=41 add
+line(fg=decorshadow)
+clear
+x=-20 y=12 add
+y-=45 add
+x+=44 add
+line(fg=decorlight)
+clear
+!
+
+x=0 y=-23 !****Right Contact**!
+x=15
+circle(w=14,h=15,lw=3)
+
+x=0 y=24  !**Centre Contact**!
+x=0
+circle(w=14,h=15,lw=3)
+
+x=0 y=-23  !**Left Contact**!
+x=-13
+circle(w=14,h=15,lw=3)
+
+if isolator_state_ip.b_value==on then
+  begin
+  x=-8 y=-30 add
+  x=0 y=20 add
+  line(lw=3)
+  clear
+  set add control_menu = "Dress Isolator Off"
+  end
+else
+  begin
+  x=0 y=20 add
+  x=8 y=-30 add
+  line(lw=3)
+  clear
+  set add control_menu = "Dress Isolator On"
+  end
+end
+
+object main_object(fg,bg)
+begin
+isolator3a(fg=red,b17100,heathro4)
+end
+
+mimic = main_object fg=white,bg=black,resizable,just=centrecentre
+
+
+
+
+
+

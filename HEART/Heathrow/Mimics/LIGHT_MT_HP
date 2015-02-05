@@ -1,0 +1,83 @@
+! HEATHROW CMS - LIGHT MT HT (high power)
+
+loaded by: MAIN_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+
+!
+************************************************************
+* LIGHT MT HP OBJECT                                       *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object light_high_power(offset=int,src=source)
+
+var lights_on_ip = input  b_db_row_type
+var light_alarm = input  alarm_row_type
+var light_bg = loopback  colour
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source lights_on_ip then 
+   begin
+
+   set source lights_on_ip = src
+   set filter lights_on_ip.db_addr = lim_eq
+   set limit lights_on_ip.db_addr = db_address(int(b1) + offset - 1)
+   set persist lights_on_ip 
+   request lights_on_ip
+
+   set source light_alarm = src
+   set filter light_alarm.db_addr = lim_eq
+   set limit light_alarm.db_addr = db_address(int(b1) + offset)
+   set persist light_alarm 
+   request light_alarm
+
+   end
+
+
+! SELECT LIGHT COLOUR !
+
+if light_alarm.alarm_status == w_note then
+   
+   light_bg = flashred
+
+else if light_alarm.alarm_status == w_clr then
+
+   light_bg = red
+
+else if lights_on_ip.b_value then
+
+   light_bg = yellow
+
+else 
+
+   light_bg = decoroff
+
+
+! DRAW LIGHT !
+
+just = centrecentre
+rect(fg=light_bg,h=20,w=130) 
+x -= 65 y += 10 add y -= 20 add x += 130 add line(lw=1,fg=decorlight) clear
+x = 65 y = -10 add y += 20 add x -= 130 add line(lw=1,fg=decorshadow) clear
+x = 0 y = 0 text (tfg=black,ch=18,"High Power")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=200
+light_high_power(100,heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

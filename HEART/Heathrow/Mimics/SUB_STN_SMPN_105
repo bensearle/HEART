@@ -1,0 +1,124 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+!***************************************!
+! Created by VIJAY KARA  !
+
+!  Dated  1th October 2006  !
+
+! This sub station is for Viewing purpose only and does not allow any
+  live CONTROL or MONITORING !
+
+
+
+!************ DSS 7 *************!
+
+object busbar_smpn_105
+
+begin
+
+just = centrecentre
+
+
+
+tfg = black x = 100 y = -200 add text ("DSS 7",ch = 40) clear
+tfg = black x = 100 y = - 170 add text ("TERMINAL",ch = 20) clear
+tfg = black x = 100 y = - 150 add text ("BUILDING",ch = 20) clear
+
+tfg = black x = 90 y = -40 add text ("TERMINAL BUILDING",ch = 20) clear
+tfg = black x = 80 y = -20 add text ("LV SWITCHBOARD",ch = 20) clear
+
+
+lw = 2
+x = -250 y = 0 add x += 450 add line(lw=4,fg=blue) clear
+y = 0 x = -150 add y -= 180 add line(fg=red) clear  ! 1 !
+y = 0 x = -220 add y = 95 add line(fg=red) clear  ! 2 !
+y = 0 x = -160 add y = 95 add line(fg=red) clear  ! 3 !
+y = 0 x = -100 add y = 95 add line(fg=red) clear   ! 4 !
+y = 0 x = -40 add y += 95 add line(fg=red) clear  ! 5 !
+y = 0 x = 20 add y += 95 add line(fg=red) clear  ! 6 !
+y = 0 x = 80 add y += 95 add line(fg=red) clear  ! 7 !
+
+
+!*******************1st Dotted Line***************************!
+
+x = -250 y = -90 add x = -50 add line(lw=3,fg=yellow) clear
+x = -240 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -225 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -215 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -200 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -190 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -175 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -160 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -145 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -130 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -115 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -100 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -85 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -70 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -55 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+
+
+!*********************2nd DOTTED LINE**********************!
+
+x = -250 y = -10 add x = -50 add line(lw=3,fg=white) clear
+x = -240 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -225 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -215 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -200 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -190 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -175 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -160 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -145 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -130 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -115 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -100 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -85 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -70 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -55 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+
+
+scale = 120
+y = -100 x = -150 transformer("Tx","LOCAL")
+
+
+scale = 120
+
+x = -150 y = -45 ocb_mont(0,15290,1910,8790,heathro4,1,"top")
+
+x = -220  y = 35  ocb_mont(0,15300,1911,8791,heathro4,1,"btm")
+x = -160  y = 35  ocb_mont(0,15310,1912,8792,heathro4,2,"btm")
+x = -100  y = 35  ocb_mont(0,15320,1913,8793,heathro4,3,"btm")
+x = -40  y = 35  ocb_mont(0,15330,1914,8794,heathro4,4,"btm")
+x = 20    y = 35  ocb_mont(0,15340,1915,8795,heathro4,5,"btm")
+x = 80  y = 35  ocb_mont(0,15350,1916,8796,heathro4,6,"btm")
+
+
+
+
+scale = 256 !just = centrecentre!
+tfg = black ch = 12
+x = -80 y = -140 text("DSS 7")
+x = -70 y = -125 text("LOCAL Tx")
+x = -75 y = -110 text("1000 kVA")
+
+x = -220 y = -100 text("6600v")
+x = -220 y = -80 text("433v")
+x = -220 y = -25 text("EDF Limit")
+
+x = -90 y = -50 text("MG")
+x = -90 y = -35 text("ACB")
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 10 y = 20 busbar_smpn_105
+
+end
+
+mimic = main_object w=600,h=500,just=centrecentre,fg=white,bg=aquamarine3,resizable

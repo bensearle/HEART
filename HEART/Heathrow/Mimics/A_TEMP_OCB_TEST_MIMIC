@@ -1,0 +1,11 @@
+load hv_lib
+load mimic_libutil
+load A_TEMP_OCB_TEST_MIMIC_HELP
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+ scale = 500
+ hv_lib_breaker("eclipse",INT,20000,807,907,INT,HEATHRO3,1,"TOP",INT)
+end
+
+mimic = main_object w=400,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable

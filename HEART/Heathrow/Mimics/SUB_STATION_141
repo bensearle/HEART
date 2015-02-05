@@ -1,0 +1,170 @@
+!**	HEATHROW\SUB_STN_141		**!
+!** 	Created by ULTRA - 23 Dec 2008	**!
+!** 	Modified by John S CCS - Sept 2010	**!
+
+load circuit_breakers
+load lv_breaker
+load dual_bus_objects
+load transformer
+load transformer_types
+load browser
+load generic_bar_meter
+load alarm_indication
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+Object main_object(w,h,fg,bg)
+var helpstr	= help string(30)
+var line_col	= colour
+var modbus_btn_col = colour
+Begin
+   	scale = 256
+   	just = centrecentre
+   	x = 20 y = 20 w =1040 h = 500
+   	set text helpstr = "sub_stn_141_help"
+
+	line_col=white
+	just = centrecentre
+
+	! title !
+	X=0 Y=-68 CH=18 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK TEXT("SUB 141")
+	Y +=20 TEXT("NORTHERN FUEL FARM")
+
+	!** Circuit Breaker Connecting Lines **!
+	Clear
+	FG=line_col LS=SOLID LW=3 
+	X=-350 Y=-28 Add X=-90 Y=-28 Add LINE clear
+	
+	lw=3
+	!X=-300 Y=-28 Add Y+=70 Add LINE clear	** P1 **!
+	X=-225 Y=-28 Add Y-=70 Add LINE clear	!** P2 **!
+	X=-250 Y=-28 Add Y+=70 Add LINE clear	!** P3 **!
+	X=-275 Y=-28 Add Y-=70 Add LINE clear	!** P4 **!
+	X=-200 Y=-28 Add Y+=70 Add LINE clear	!** P5 **!
+	X=-150 Y=-28 Add Y+=70 Add LINE clear	!** P6 **!
+	X=-100 Y=-28 Add Y+=220 Add x+=200 add y-=220 add LINE clear	!** P7 to P8 **!
+
+	X=150 Y=-28 Add Y+=70 Add LINE clear	!** P9 **!
+	X=200 Y=-28 Add Y+=70 Add LINE clear	!** P10**!
+	X=225 Y=-28 Add Y-=70 Add LINE clear	!** P11**!
+	X=250 Y=-28 Add Y+=70 Add LINE clear	!** P12**!
+	X=275 Y=-28 Add Y-=70 Add LINE clear	!** P13**!
+	!X=300 Y=-28 Add Y+=70 Add LINE clear	** P14**!
+
+	! * LHS to RHS Line * !
+
+	FG=line_col LS=SOLID LW=3
+	X= 350 Y=-28 Add X= 90 Y=-28 Add LINE clear
+
+	!** Breakers**!
+	scale=120
+			
+
+!** SPARES - PANEL 1	
+		X=-300 Y=0 	modbus_cb(	21400,		21759,	21459,	3170,	10008,	10118,		heathro4,1,	"btm",	10,		int,		string,	int,	int)
+ **!	
+!						plc_offset		node	b_offset	c_offset	e_offset	cont_offset	src	ident	position	cont_code	xtra_alarms	res_str	res2	res1	angle!
+!** PANEL 2 **!	X=-275 Y=-55 	modbus_cb(	21400,		21765,	21479,	3171,	10013,	10118,		heathro4,	2,	"TOP",	20,		int,		string,	int,	int)
+!** PANEL 3 **!	X=-250 Y=0 	modbus_cb(	21400,		21771,	21499,	3172,	10018,	10118,		heathro4,	3,	"btm",	30,		int,		string,	int,	int)
+!** PANEL 4 **!	X=-225 Y=-55 	modbus_cb(	21400,		21777,	21519,	3173,	10023,	10118,		heathro4,	4,	"TOP",	40,		int,		string,	int,	int)
+!** PANEL 5 **!	X=-200 Y=0 	modbus_cb(	21400,		21783,	21539,	3174,	10028,	10118,		heathro4,	5,	"btm",	50,		int,		string,	int,	int)
+!** PANEL 6 **!	X=-150 Y=0 	modbus_cb(	21400,		21789,	21559,	3175,	10033,	10118,		heathro4,	6,	"btm",	60,		int,		string,	int,	int)
+!** PANEL 7 **!	X= -100 Y=0 	modbus_cb(	21400,		21795,	21579,	3176,	10038,	10118,		heathro4,	7,	"btm",	70,		int,		string,	int,	int)  !**!
+
+!** PANEL 8 **!	X=100 Y=0 	modbus_cb(	21400,		21801,	21599,	3177,	10043,	10118,		heathro4,	8,	"btm",	80,		int,		string,	int,	int)
+!** PANEL 9 **!	X=150 Y=0 	modbus_cb(	21400,		21807,	21619,	3178,	10048,	10118,		heathro4,	9,	"btm",	90,		int,		string,	int,	int)
+!** PANEL 10 **!	X=200 Y=0	modbus_cb(	21400,		21813,	21639,	3179,	10053,	10118,		heathro4,	10,	"btm",	100,		int,		string,	int,	int)
+!** PANEL 11 **!	X=225 Y=-55 	modbus_cb(	21400,		21819,	21659,	3180,	10058,	10118,		heathro4,	11,	"TOP",	110,		int,		string,	int,	int)
+!** PANEL 12 **!	X=250 Y=0 	modbus_cb(	21400,		21825,	21679,	3181,	10063,	10118,		heathro4,	12,	"btm",	120,		int,		string,	int,	int)
+!** PANEL 13 **!	X=275 Y=-55 	modbus_cb(	21400,		21831,	21699,	3182,	10068,	10118,		heathro4,	13,	"TOP",	130,		int,		string,	int,	int)
+!** SPARES - PANEL 14
+		X=300 Y=0 	modbus_cb(	21400,		21837,	21719,	3183,	10073,	10118,		heathro4,14,	"btm",	140,		int,		string,	int,	int)
+ **!
+
+	! MAX DEMAND meters !
+	! LHS !
+	scale = 250
+!** SPARES 
+	p1	X=-300 Y=134	text_meter(21400,10094,heathro4,"MVA","",black,0)	 
+**!
+	!p2!	X=-277 Y=-190	text_meter(21400,10095,heathro4,"MVA","",black,0)
+	!p3!	X=-250 Y=134	text_meter(21400,10096,heathro4,"MVA","",black,0)
+	!p4!	X=-225 Y=-190	text_meter(21400,10097,heathro4,"MVA","",black,0)
+	!p5!	X=-200 Y=134	text_meter(21400,10098,heathro4,"MVA","",black,0)
+	!p6!	X=-150 Y=134	text_meter(21400,10099,heathro4,"MVA","",black,0)
+	!p7!	X=-100 Y=134	text_meter(21400,10100,heathro4,"MVA","",black,0)
+
+	! MAX DEMAND meters !
+	! RHS !
+	scale = 250
+	!p8!	X=100 Y=134	text_meter(21400,10101,heathro4,"MVA","",black,0)
+	!p9!	X=150 Y=134	text_meter(21400,10102,heathro4,"MVA","",black,0)
+	!p10!	X=200 Y=134	text_meter(21400,10103,heathro4,"MVA","",black,0)
+	!p11!	X=223 Y=-190	text_meter(21400,10104,heathro4,"MVA","",black,0)
+	!p12!	X=250 Y=134	text_meter(21400,10105,heathro4,"MVA","",black,0)
+	!p13!	X=275 Y=-190	text_meter(21400,10106,heathro4,"MVA","",black,0)
+!** SPARES 
+	p14	X=300 Y=134	text_meter(21400,10107,heathro4,"MVA","",black,0)	 
+**!
+	! Current and Voltage meters !
+	scale = 150
+		! METER					(plc_comms,c_offset,e_offset,b_over/modbus node,b_under,src,units,metname,range_lo,range_hi,dec_places,bar_colour,range_dec_places,	 res_int1,res_str1)!
+!** SPARES
+	PANEL 1  	X=-300 Y=70 	generic_bar_meter_obj(21400,3184,10074,21759,int,heathro4,"A","FUTURE",0,100,0,yellow,0,int,"MODBUS")
+	PANEL14 	X=300 Y=70 	generic_bar_meter_obj(21400,3197,10087,21837,int,heathro4,"A","FUTURE",0,100,0,yellow,0,int,"MODBUS")
+**!
+	! *** PANEL 2 *** !	X=-325 Y=-125 	generic_bar_meter_obj(21400,3185,10075,21765,int,heathro4,"A","INCOMER1",0,300,0,yellow,0,int,"MODBUS")
+	! *** PANEL 3 *** !	X=-250 Y=70 	generic_bar_meter_obj(21400,3186,10076,21771,int,heathro4,"A","HAFCO 1A",0,100,0,yellow,0,int,"MODBUS")
+	! *** PANEL 4 *** !	X=-225 Y=-125 	generic_bar_meter_obj(21400,3187,10077,21777,int,heathro4,"A","FUTURE",0,300,0,yellow,0,int,"MODBUS")
+	! *** PANEL 5 *** !	X=-200 Y=70 	generic_bar_meter_obj(21400,3188,10078,21783,int,heathro4,"A","HAFCO 2A",0,100,0,yellow,0,int,"MODBUS")
+	! *** PANEL 6 *** !	X=-150 Y=70 	generic_bar_meter_obj(21400,3189,10079,21789,int,heathro4,"A","LOC TX1",0,100,0,yellow,0,int,"MODBUS")
+	! *** PANEL 7 *** !	X= -100 Y=70 	generic_bar_meter_obj(21400,3190,10080,21795,int,heathro4,"A","LHS",0,300,0,yellow,0,int,"MODBUS")
+	
+	! *** PANEL 8 *** !	X=100 Y=70 	generic_bar_meter_obj(21400,3191,10081,21801,int,heathro4,"A","RHS",0,300,0,yellow,0,int,"MODBUS")
+	! *** PANEL 9 *** !	X=150 Y=70 	generic_bar_meter_obj(21400,3192,10082,21807,int,heathro4,"A","LOC TX2",0,100,0,yellow,0,int,"MODBUS")
+	! *** PANEL10 *** !	X=200 Y=70	generic_bar_meter_obj(21400,3193,10083,21813,int,heathro4,"A","HAFCO 1B",0,100,0,yellow,0,int,"MODBUS")
+	! *** PANEL11 *** !	X=175 Y= -125 	generic_bar_meter_obj(21400,3194,10084,21819,int,heathro4,"A","FUTURE",0,300,0,yellow,0,int,"MODBUS")
+	! *** PANEL12 *** !	X=250 Y=70 	generic_bar_meter_obj(21400,3195,10085,21825,int,heathro4,"A","HAFCO 2B",0,100,0,yellow,0,int,"MODBUS")
+	! *** PANEL13 *** !	X=275 Y= -125 	generic_bar_meter_obj(21400,3196,10086,21831,int,heathro4,"A","INCOMER2",0,300,0,yellow,0,int,"MODBUS")
+
+	! *** PANEL 2 *** !	X=-277 Y= -125 	generic_bar_meter_obj(21400,3198,10088,21765,int,heathro4,"kV","INCOMER1",0,13.2,1,blue,1,int,"MODBUS")
+	! *** PANEL 4 *** !	X=-177 Y= -125 	generic_bar_meter_obj(21400,3199,10089,21777,int,heathro4,"kV","FUTURE",0,13.2,1,blue,1,int,"MODBUS")
+	! *** PANEL 7 *** !	X=-52 Y=70 	generic_bar_meter_obj(21400,3200,10090,21795,int,heathro4,"kV","LHS",0,13.2,1,blue,1,int,"MODBUS")
+	! *** PANEL 8 *** !	X=52 Y=70 	generic_bar_meter_obj(21400,3201,10091,21801,int,heathro4,"kV","RHS",0,13.2,1,blue,1,int,"MODBUS")
+	! *** PANEL11 *** !	X=223 Y= -125	generic_bar_meter_obj(21400,3202,10092,21819,int,heathro4,"kV","FUTURE",0,13.2,1,blue,1,int,"MODBUS")
+	! *** PANEL13 *** !	X=323 Y= -125	generic_bar_meter_obj(21400,3203,10093,21831,int,heathro4,"kV","INCOMER2",0,13.2,1,blue,1,int,"MODBUS")
+
+	! ** Labels ** !
+	scale = 256 just=centrecentre ch=10 tfg=black
+	X=-275 Y=-225 text("Sub 54A") y+=12 text("P8")
+	X=-225 Y=-225 text("Sub 182") y+=12 text("P3")
+	X=225 Y=-225 text("Sub 191") y+=12 text("P15")
+	X=275 Y=-225 text("Sub 103") y+=12 text("P5")
+
+	clear
+
+	! ** Modbus Navigation ** !
+!
+	X=-124 Y=-199 W=240 H=108 FG=grey80 JUST=TOPLEFT FS=FILLSOLID ANGLE=0 ROTRECT
+	box(fg=white)
+!
+	! ** Get Alarm Status Colour - this checks MCM timeout status for PLC A and B - by entering 4 on the parameters only 1 call to database is required ** !
+	! * if in alarm, a reset of the plc is required * !
+	modbus_btn_col=multiple_alm_test(21400,21852,4,heathro4)
+
+	X=369 Y=-238	main_sub_call(grey80,100,25,"Modbus","",blue4,14,yes,"comms_sub_141",heathrow,int,"string",int,fg=modbus_btn_col)
+	clear
+
+	X=-96 Y=-144	Alarms_Indicator("3",21400,21593,HEATHRO4,scale=120)
+	X=85 Y=-144	Alarms_Indicator("3",21400,21613,HEATHRO4,scale=120)
+!
+	ch=10 font=font_normal
+	X=-119 Y=-115	text("BUS ZONE")
+	X=-105 Y=-103	text("LHS")
+	X=55 Y=-115	text("BUS ZONE")
+	X=72 Y=-103	text("RHS")
+	X=-3 Y=-188 just=centrecentre text("11kV SUB STATION 141")
+!
+
+End
+mimic = MAIN_OBJECT x=200,y=200, W=840, H=500, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE, top=1

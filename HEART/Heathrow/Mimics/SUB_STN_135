@@ -1,0 +1,140 @@
+load mimic_libutil
+load SUB_STN_128_HELP
+load hv_lib
+load generic_meter_library
+
+!*** BUSBAR 135 ***!
+
+object busbar_135
+var helpstr	= help string(30)
+var line_col	= colour
+
+begin
+   	scale = 256
+   	just = centrecentre
+   	x = 20 y = 20 w = 850 h = 460
+   	set text helpstr = "sub_stn_135_help"
+
+	line_col=orange3
+	just = centrecentre
+
+	!*** main busbar and title ***!
+
+	tfg = black 
+	x = 200 y = 25 add text ("135",ch = 25) clear
+	x = -200 y = 0 add x += 380 add line(lw=4,fg=line_col) clear
+
+	!*** connecting lines ***!
+
+	lw=2
+	!*** p1 ***!
+	x = -175 y = 0 add y -= 65 add line (fg=line_col) clear
+
+	!*** p2 ***!
+	x = -150 y = 0 add y += 65 add line (fg=line_col) clear
+
+	!*** p3 ***!
+	x = -100 y = 0 add y += 65 add line (fg=line_col) clear
+
+	!*** p4 ***!
+	x = -50 y = 0 add y += 65 add line (fg=line_col) clear
+
+	!*** p5 sect ***!
+
+	!*** p6 ***!
+	x = 50 y = 0 add y += 65 add line (fg=line_col) clear
+
+	!*** p7 sect ***!
+	x = 100 y = 0 add y += 65 add line (fg=line_col) clear
+
+	!*** p8 ***!
+	x = 150 y = 0 add y -= 65 add line (fg=line_col) clear
+
+
+
+	!*** circuit breakers ***!
+
+   	scale = 300
+
+	x  = -175	y = -25	hv_lib_breaker("eclipse",41000,41060,1386,5767,INT,HEATHROW,1,"TOP",INT)
+	x  = -150	y = 25	hv_lib_breaker("eclipse",41000,41100,1387,5768,INT,HEATHROW,2,"BTM",INT)
+	x  = -100	y = 25	hv_lib_breaker("eclipse",41000,41140,1388,5769,INT,HEATHROW,3,"BTM",INT)
+	x = -50	y = 25	hv_lib_breaker("eclipse",41000,41180,1389,5770,INT,HEATHROW,4,"BTM",INT)
+	x = 0	y =0 	hv_lib_breaker("eclipse",41000,41260,1390,5772,INT,HEATHROW,5,"SECT",INT)
+	x = 50	y = 25 	hv_lib_breaker("eclipse",41000,41300,1391,5773,INT,HEATHROW,6,"BTM",INT)
+	x = 100 	y = 25	hv_lib_breaker("eclipse",41000,41340,1392,5774,INT,HEATHROW,7,"BTM",INT)
+	x  = 150	y = -25	hv_lib_breaker("eclipse",41000,41380,1393,5775,INT,HEATHROW,8,"TOP",INT)
+
+
+	!*** hv meters ***!
+
+	scale = 155
+
+	x = -175	y = -93	generic_bar_meter_lib(41000,1395,5717, 41057,41089, heathrow,"A","PANEL 1",0,400,0,yellow,0,int,string)
+	x = -225	y = -93	generic_bar_meter_lib(41000,1394,5715, 41056,41086, heathrow,"kV","PANEL 1",9.35,12.65,2,blue,1,int,string)
+	x = -150	y = 103	generic_bar_meter_lib(41000,1396,5720, 41058,41059, heathrow,"A","PANEL 2",0,200,0,yellow,0,int,string)
+	x = -100	y = 103	generic_bar_meter_lib(41000,1397,5725, 41061,41063, heathrow,"A","PANEL 3",0,200,0,yellow,0,int,string)
+	x = -50	y = 103	generic_bar_meter_lib(41000,1398,5730, 41064,41065, heathrow,"A","PANEL 4",0,200,0,yellow,0,int,string)
+	x = 25	y = -73	generic_bar_meter_lib(41000,1399,5735, 41071,41073, heathrow,"A","PANEL 5",0,400,0,yellow,0,int,string)
+	x = 50	y = 103	generic_bar_meter_lib(41000,1400,5740, 41074,41075, heathrow,"A","PANEL 6",0,200,0,yellow,0,int,string)
+	x = 100	y = 103	generic_bar_meter_lib(41000,1401,5745, 41076,41078, heathrow,"A","PANEL 7",0,200,0,yellow,0,int,string)
+	x = 150	y = -93	generic_bar_meter_lib(41000,1403,5752, 41081,41082, heathrow,"A","PANEL 8",0,400,0,yellow,0,int,string)
+	x = 200	y = -93	generic_bar_meter_lib(41000,1402,5750, 41079,41080, heathrow,"kV","PANEL 8",9.35,12.65,2,blue,1,int,string)
+
+
+	!*** transformers ***!
+
+ 
+
+	!*** labels ***!
+
+	scale = 260
+
+	tfg = black ch =12
+
+	!*** p1 ***!
+	x = -175	y = -170	text("EI")
+	x = -175	y = -157	text("P6")
+
+	!*** p2 ***!
+	x = -150	y = 157	text("Local")
+	x = -150	y = 170	text("Tx.1")
+
+	!*** p3 ***!
+	x = -100	y = 157	text("Future")
+	x = -100	y = 170	text("")
+
+	!*** p4 ***!
+	x = -50 y = 157	text("Hotel")
+	x = -50 y = 170	text("Tx. 1")
+
+	!*** p5 ***!
+	x = 25	y = -150	text("")
+	x = 25	y = -138	text("Bus Sect")
+	
+	!*** p6 ***!
+	x = 50	y = 157	text("Hotel")
+	x = 50	y = 170	text("Tx.2")
+
+	!*** p7 ***!
+	x = 100	y = 157	text("E2")
+	x = 100	y = 170	text("Car Park")
+	x = 100	y = 183	text("Tx")
+
+	!*** p8 ***!
+	x = 150	y = -170	text("EI")
+	x = 150	y = -157	text("P20")
+
+!
+x=0 y=0 text(tfg=flashred,ch=36,"MIMIC UNDER CONTRUCTION")
+!
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=0 Y=-30 busbar_135
+end
+mimic = MAIN_OBJECT W=600, h=460, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE
+
+

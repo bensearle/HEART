@@ -1,0 +1,63 @@
+!**	HEATHROW\SUB_STN_264		**!
+!** 	Created by ULTRA - 18 Nov 2008	**!
+
+
+load mimic_libutil
+load fp_ocb_monitored
+load transformer
+load hv_switch
+
+!************** Sub 264 T2B Welfare Facility ****************!
+
+object busbar_264
+var helpstr = help string(30)
+
+begin
+
+clear
+scale=256
+just=centrecentre
+x=20 y=20  w=350 h=510
+set text helpstr = "sub_stn_264_help"
+
+just = centrecentre
+
+tfg = black x = 80 y = 10 add text ("264",ch = 25) clear
+tfg = black x = -25 y = 140 add text ("T2B Welfare Facility",ch = 12) clear
+
+x = -100 y = 25 add x +=150 add line(lw=4,fg=red) clear
+
+lw=2
+x =  -75 y = -25 add y += 50 add line (fg=red) clear
+x =  25 y = 25 add y += 50 add line (fg=red) clear
+x =  0 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 140
+!			(sw_type=string,	plc_offset=int,	b_offset=int,	c_offset=int,	e_offset=int,	src=source,	ident=string,	position=string(4),	num_alarms=int,	cont_offset=int,	cont_code=int,	res2=int,	res1=int,	angle)	!
+! ** RMU 1 ** !
+x= -75 y=-5 hv_switch_obj(	"RMU",		int,		3224,		145,		615,		heathro4,		"1",		"top",		int, 		int, 		int,		int,	int)
+x= 0 y=-5 hv_switch_obj(	"RMU",		int,		3231,		146,		616,		heathro4,		"2",		"top",		int,		int, 		int,		int,	int)
+x = 25 y = 50 fp_ocb_mont(int,3238,147,617,heathro4,3,"rmu",scale=130)
+
+scale = 100
+X = 25 Y = 95 transformer("LT 1","LOCAL") 
+
+scale=260
+tfg=black ch=12
+
+x = -75 y = -35 text("Spare")
+
+x = 0 y = -50 text("SS129")
+x = 0 y = -35 text("P3")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 25 y = -30 busbar_264
+
+end
+
+mimic = MAIN_OBJECT W=300, H=260, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE

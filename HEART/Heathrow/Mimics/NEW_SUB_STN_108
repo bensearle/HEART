@@ -1,0 +1,65 @@
+load mimic_libutil
+load ocb_mont_with_earth
+load intruder_display
+load transformer
+
+!*********** BUSBAR 108 *************!
+
+object busbar_108
+begin
+
+just = centrecentre
+
+tfg = black x = -120 y = 0 add text ("108",ch = 25) clear
+
+x = -125 y = -25 add x = 225 add line(lw=4,fg=red) clear
+
+lw=2
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y += 30 add line (fg=red) clear
+x =  100  y = -25 add y -= 50 add line (fg=red) clear
+x =  150  y = -25 add y += 50 add line (fg=red) clear
+x =  200  y = -25 add y -= 50 add line (fg=red) clear
+
+scale = 120
+x =  -100 y = -50 ocb_mont_with_earth(6000,6850,910,540,heathro2,1,"top")
+x =  -50  y =  0  ocb_mont_with_earth(6000,6860,911,541,heathro2,2,"btm")
+x =  0  y =  -50  ocb_mont_with_earth(6000,6870,912,542,heathro2,3,"top")
+x =   50  y =  0  ocb_mont_with_earth(6000,6880,913,543,heathro2,4,"btm")
+x =  100  y = -50 ocb_mont_with_earth(6000,6890,914,544,heathro2,5,"top")
+x =     150 y = 0 ocb_mont_with_earth(6000,6900,915,545,heathro2,6,"btm")
+x =   200 y = -50 ocb_mont_with_earth(6000,6910,916,546,heathro2,7,"top")
+
+scale = 180
+x = -120 y = 30 int_sensor(6950,heathro2,"INT")
+
+scale = 100
+X =  -50 Y = 45 transformer("LT 1","LOCAL")
+X =  50   Y = 45 transformer("LT 2","LOCAL")
+X =  150   Y = 45 transformer("LT 3","LOCAL")
+
+scale = 256 just = centrecentre
+tfg = black ch = 12
+x = 0 y = -100 text("56")
+x = 0 y = -85 text("P1")
+x = 100 y = -100 text("23")
+x = 100 y = -85 text("P17")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -40 busbar_108
+
+end
+
+mimic = main_object w=430,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+
+
+

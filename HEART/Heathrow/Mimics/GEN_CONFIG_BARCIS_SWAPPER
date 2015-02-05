@@ -1,0 +1,154 @@
+load mimic_libutil
+
+type db_element_type =  db_elements(db_addr,
+                                         db_name)
+  
+type db_elements_table_type =  db_element_type[4]                                                                                                 
+type save_test_row =  db_alarm_config(db_addr,
+					   config_number,
+					   text_id,
+					   wrkstn_set,
+					   printer_set,
+                                           alarm_group_set,
+					   rtl_number,
+			                   text,
+					   command_text,
+					   print_on_accept,
+					   print_on_return,
+					   accept_level,
+					   accept_delay_specifier,
+			                   annunciation_delay,
+			                   test_db_addr,
+					   alarm_level,
+			                   banner_note_required,
+			                   action_required,
+                                           normal_accept_required,
+					   inhibit_retrigger,
+			                   r_test,
+					   b_test,
+					   c_test,
+			                   test_value,
+			                   test_deadband,
+					   db_addr_2,
+					   r_test_2,
+					   b_test_2,
+					   test_value_2,
+					   test_deadband_2,
+					   test_db_addr_2)
+
+type save_test_type =  save_test_row[6]
+
+type current_state_type = enum(waiting_for_input, 
+                               checking_database_points,
+                               modifying_database_points)
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+var input_panel = panel  db_address
+
+var start_address = loopback  db_address
+var current_state = loopback  current_state_type
+var push = loopback  int
+
+var input_data = input  db_elements_table_type
+var input_alarms = input  save_test_type
+
+var output_data = output  db_elements_table_type
+var output_alarms = output  save_test_type
+
+begin
+
+if invalid current_state then
+   begin
+   set default current_state
+   set title input_panel = "Start Address"
+   set apply input_panel
+   end
+
+text(ch = 18,just=topleft,tfg = black,current_state)
+
+if valid input_panel then
+   begin
+   start_address=input_panel
+   set invalid input_panel
+   current_state=checking_database_points
+   end
+
+if current_state==checking_database_points then
+   begin
+   set source  input_data = heathrow
+   set filter  input_data.db_addr = lim_ge
+   set limit   input_data.db_addr = start_address
+   set persist input_data
+
+   set source  input_alarms = heathrow
+   set filter  input_alarms.db_addr = lim_ge
+   set limit   input_alarms.db_addr = start_address
+   set persist input_alarms   
+
+   request input_alarms
+   request input_data
+   
+
+   if not get busy input_data and
+      not get busy input_alarms then
+      begin
+      if getword(4,input_data[1].db_name) == "closed" !and  
+         getword(4,input_alarms[1].text) == "closed"!  then
+         begin
+         text(y=150,tfg=flashred,"checked ok")
+         current_state=modifying_database_points
+         end
+      else
+          begin
+          text(y=150,tfg=flashred,"incorrect point")
+          set invalid input_panel
+          set invalid input_data 
+          set invalid start_address
+          current_state=waiting_for_input 
+          end
+      end
+ 
+   end
+
+
+
+tfg=blue
+x=0
+y=15
+text("DB NAME = "+input_data[1].db_name)
+y+=12
+text("DB ADDR = "+input_data[1].db_addr)
+y+=12
+text("DB ALARM TEXT = "+input_alarms[1].text)
+y+=12
+text("VALID REQUEST "+valid(input_alarms))
+
+y=210 x=375
+tfg=black
+push = right_button("Exit")
+if push > 0 then
+   exit
+
+x=150
+push = right_button("Reset")
+if push >0 then 
+   begin
+   set invalid input_panel
+   set invalid input_data 
+   set invalid start_address
+   current_state=waiting_for_input
+   end
+x -= abs push +6
+
+push = right_button("Input")
+if push > 0 and 
+   current_state==waiting_for_input then 
+   request input_panel
+
+
+
+
+end
+
+mimic = main_object w=400,h=240,just=topleft,fg=red,bg=decoroff,resizable

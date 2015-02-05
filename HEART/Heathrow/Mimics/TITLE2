@@ -1,0 +1,18 @@
+load mimic_libutil
+load TITLE2_HELP
+
+object temp
+begin
+scale = 460
+x = 0 y = 0 add text(tfg=red,ch=70,just=centrecentre,"TITLE 2")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+x = 10 
+y = 200 temp
+y = -200 temp
+end
+
+mimic = main_object w=1150,h=800,just=centrecentre,fg=white,bg=black,resizable

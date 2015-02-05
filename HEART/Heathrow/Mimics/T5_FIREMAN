@@ -1,0 +1,936 @@
+load mimic_libutil
+load cta_pressure_help
+
+type c_db_row_type =  db_elements(db_addr,c_value)
+
+type e_alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type e_test_row =  db_alarm_config(db_addr,
+			           config_number,
+			           test_value)
+
+type e_test_table =  e_test_row[6]
+
+type panel_item_row = table(str=string(40))
+
+type menu_options_type = enum(
+           tag_message = "Alter Tagged Message",
+         untag_message = "Clear Tagged Message")
+
+type alarm_row_type =  db_elements(alarm_status)
+
+
+!
+*****************************************************************
+* PRES ALARM TEST                                               *
+* this object checks to see if the pressure is in alarm   *
+****************************************************************
+!
+
+object pres_note_clr_alarm(e_alm=int,src=source)=int
+
+var pres_note_clr_status = int
+
+
+!********************* ALARMS *****************************!
+
+var pres_alarm = input  alarm_row_type
+
+begin
+ set source pres_alarm = src
+ set filter pres_alarm.db_addr = lim_eq
+ set limit pres_alarm.db_addr = db_address(int(e1) + e_alm - 1)
+ set persist pres_alarm 
+ request pres_alarm
+
+if pres_alarm.alarm_status == w_note then
+	pres_note_clr_status = 1 
+else if pres_alarm.alarm_status == w_clr then
+	pres_note_clr_status = 2
+else
+	pres_note_clr_status = 0
+pres_note_clr_alarm = pres_note_clr_status
+end
+
+
+!
+*******************************************************************
+* Seven Segment                                                         *
+*******************************************************************
+!
+
+!***************** DRAW ILLUMINTED SEGMENT **********!
+
+object segment_on (e_alm=int,fg,bg,angle)
+begin
+if pres_note_clr_alarm(e_alm,heathrow) == 1 then
+  fg = flashred
+else if pres_note_clr_alarm(e_alm,heathrow) == 2 then
+  fg = red
+else
+  fg = yellow
+x = 0 y = 0 add
+x = 30 y = 0 add
+x = 35 y = 5 add
+x = -5 y = 5 add
+x = 0 y = 0 add fill polygon clear
+if pres_note_clr_alarm(e_alm,heathrow) == 1 then
+  fg = flashred
+else if pres_note_clr_alarm(e_alm,heathrow) == 2 then
+  fg = red
+else
+  fg = yellow3
+x = 0 y = 10 add
+x += 30 add 
+x += 5 y -= 5 add
+x -= 40 add
+x = 0 y = 10 add fill polygon clear
+fg=black
+x = 0 y = 0 add
+x = 30 y = 0 add
+x = 35 y = 5 add
+x = 30 y = 10 add
+x = 0 y = 10 add
+x = -5 y = 5 add
+x = 0 y = 0 add line
+end
+
+
+
+
+!********************* DRAW BLANK SEGMENT ***********************!
+
+
+object segment_off (fg,bg,angle)
+begin
+fg=decoroff
+x = 0 y = 0 add
+x = 30 y = 0 add
+x = 35 y = 5 add
+x = 30 y = 10 add
+x = 0 y = 10 add
+x = -5 y = 5 add
+x = 0 y = 0 add fill(fg=decoroff) line
+end
+
+
+
+!************* POSITIONING OF INDIVIDUAL SEGMENTS ****************!
+
+
+object seven_segment_1(e_alm=int,fg,bg)
+begin
+segment_off (angle=0) clear                       !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_off (angle=0) clear            !A!
+x+=45 y+=15 segment_on (e_alm,angle=90) clear           !B!
+y+=45 segment_on (e_alm,angle=90) clear                 !C!
+x-=45 y-=12 segment_off (angle=0) clear           !G!
+end
+
+object seven_segment_2(e_alm=int,fg,bg)
+begin
+segment_on (e_alm,angle=0) clear                        !D!
+x-=5 y-=35 segment_on (e_alm,angle=90) clear            !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_on (e_alm,angle=0) clear             !A! 
+x+=45 y+=15 segment_on (e_alm,angle=90) clear           !B!
+y+=45 segment_off (angle=90) clear                !C!
+x-=45 y-=12 segment_on (e_alm,angle=0) clear            !G!
+end
+
+object seven_segment_3(e_alm=int,fg,bg)
+begin
+segment_on (e_alm,angle=0) clear                        !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_on (e_alm,angle=0) clear             !A!
+x+=45 y+=15 segment_on (e_alm,angle=90) clear           !B!
+y+=45 segment_on (e_alm,angle=90) clear                 !C!
+x-=45 y-=12 segment_on (e_alm,angle=0) clear            !G!
+end
+
+object seven_segment_4(e_alm=int,fg,bg)
+begin
+segment_off (angle=0) clear                       !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_on (e_alm,angle=90) clear                 !F!
+y-=15 x+=5 segment_off (angle=0) clear            !A!
+x+=45 y+=15 segment_on (e_alm,angle=90) clear           !B!
+y+=45 segment_on (e_alm,angle=90) clear                 !C!
+x-=45 y-=12 segment_on (e_alm,angle=0) clear            !G!
+end
+
+object seven_segment_5(e_alm=int,fg,bg)
+begin
+segment_on (e_alm,angle=0) clear                        !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_on (e_alm,angle=90) clear                 !F!
+y-=15 x+=5 segment_on (e_alm,angle=0) clear             !A!
+x+=45 y+=15 segment_off (angle=90) clear          !B!
+y+=45 segment_on (e_alm,angle=90) clear                 !C!
+x-=45 y-=12 segment_on (e_alm,angle=0) clear            !G!
+end
+
+object seven_segment_6(e_alm=int,fg,bg)
+begin
+segment_on (e_alm,angle=0) clear                        !D!
+x-=5 y-=35 segment_on (e_alm,angle=90) clear            !E!
+y-=45 segment_on (e_alm,angle=90) clear                 !F!
+y-=15 x+=5 segment_on (e_alm,angle=0) clear             !A!
+x+=45 y+=15 segment_off (angle=90) clear          !B!
+y+=45 segment_on (e_alm,angle=90) clear                 !C!
+x-=45 y-=12 segment_on (e_alm,angle=0) clear            !G!
+end
+
+object seven_segment_7(e_alm=int,fg,bg)
+begin
+segment_off (angle=0) clear                       !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_on (e_alm,angle=0) clear             !A!
+x+=45 y+=15 segment_on (e_alm,angle=90) clear           !B!
+y+=45 segment_on (e_alm,angle=90) clear                 !C!
+x-=45 y-=12 segment_off (angle=0) clear           !G!
+end
+
+object seven_segment_8(e_alm=int,fg,bg)
+begin
+segment_on (e_alm,angle=0) clear                        !D!
+x-=5 y-=35 segment_on (e_alm,angle=90) clear            !E!
+y-=45 segment_on (e_alm,angle=90) clear                 !F!
+y-=15 x+=5 segment_on (e_alm,angle=0) clear             !A!
+x+=45 y+=15 segment_on (e_alm,angle=90) clear           !B!
+y+=45 segment_on (e_alm,angle=90) clear                 !C!
+x-=45 y-=12 segment_on (e_alm,angle=0) clear            !G!
+end
+
+object seven_segment_9(e_alm=int,fg,bg)
+begin
+segment_on (e_alm,angle=0) clear                        !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_on (e_alm,angle=90) clear                 !F!
+y-=15 x+=5 segment_on (e_alm,angle=0) clear             !A!
+x+=45 y+=15 segment_on (e_alm,angle=90) clear           !B!
+y+=45 segment_on (e_alm,angle=90) clear                 !C!
+x-=45 y-=12 segment_on (e_alm,angle=0) clear            !G!
+end
+
+object seven_segment_0(e_alm=int,fg,bg)
+begin
+segment_on (e_alm,angle=0) clear                        !D!
+x-=5 y-=35 segment_on (e_alm,angle=90) clear            !E!
+y-=45 segment_on (e_alm,angle=90) clear                 !F!
+y-=15 x+=5 segment_on (e_alm,angle=0) clear             !A!
+x+=45 y+=15 segment_on (e_alm,angle=90) clear           !B!
+y+=45 segment_on (e_alm,angle=90) clear                 !C!
+x-=45 y-=12 segment_off (angle=0) clear           !G!
+end
+
+object seven_segment_blank(e_alm=int,fg,bg)
+begin
+segment_off (angle=0) clear                       !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_off (angle=0) clear            !A!
+x+=45 y+=15 segment_off (angle=90) clear          !B!
+y+=45 segment_off (angle=90) clear                !C!
+x-=45 y-=12 segment_off (angle=0) clear           !G!
+end
+
+
+
+!
+**********************************************************************
+* SET C VALUE                                                               *
+* This object writes the vaLue of a char from a given server.  *
+**********************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+**********************************************
+* MESSAGE TEXT                             *
+* This object displays a tag message.  *
+**********************************************
+!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=400,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+! 
+******************************************************************
+* PRESSURE SETPOINT                                            *
+* this object is called by the Top Level variable (mimic)   *
+******************************************************************
+!
+
+object cta_pressure(c_offset=int,e_offset=int,src=source,disp_type=string,e_alm=int)
+
+var pres_alarm              = input  e_alarm_row_type
+var pres_level_ip           = input  e_db_row_type
+var input_setpoint          = input  e_test_table
+var output_setpoint         = output e_test_table
+var tag_message_ip          = input c_db_row_type
+
+var temp_menu               = menu  string
+var high_setpoint_panel     = panel  int
+var low_setpoint_panel      = panel  int
+
+var items_added             = loopback  int
+var sensor_bg               = loopback  colour
+var sensor_fg               = loopback  colour
+var dot_fg                  = loopback  colour
+var temp_sps                = loopback  string
+var box_text                = loopback  string
+var box_width               = loopback  int
+
+var pressure_level_int      = loopback int
+var pressure_level_real     = loopback real
+var second_digit_real       = loopback real
+var second_digit_real_2     = loopback real
+var third_digit_real        = loopback real
+var third_digit_real_2      = loopback real
+var forth_digit_real        = loopback real
+var forth_digit_real_2      = loopback real
+var tag_message_panel       = panel panel_item_row
+var main_menu               = menu string(30)
+var stand_control_menu      = menu menu_options_type
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source pres_alarm then 
+   begin
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   set source pres_alarm = src
+   set filter pres_alarm.db_addr = lim_eq
+   set limit pres_alarm.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist pres_alarm 
+   request pres_alarm
+
+   set source pres_level_ip = src
+   set filter pres_level_ip.db_addr = lim_eq
+   set limit pres_level_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist pres_level_ip 
+   request pres_level_ip
+
+   set source    input_setpoint = src
+   set filter    input_setpoint.db_addr = lim_eq
+   set limit     input_setpoint.db_addr = db_address(int(e1) + e_offset - 1)
+   set mayexist  input_setpoint
+   set mustexist input_setpoint.db_addr
+   set mustexist input_setpoint.config_number
+   set persist   input_setpoint
+   request       input_setpoint
+
+   end
+
+!*************** TAG MESSAGE PANEL *******************!
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+!****************** MAIN MENU ************************!
+
+
+just = centrecentre
+x=35 y=-40 w=380 h=160 
+set rect main_menu
+set title main_menu="Meter Menu"
+set remove main_menu="Alter Tag Message"
+set remove main_menu="Clear Tag Message"
+set add main_menu="Alter Tag Message"
+set add main_menu="Clear Tag Message"
+
+
+!*********************************************************************!
+!************* SEVEN SEGMENT CONVERSION **************!
+!*********************************************************************!
+
+
+!************* SET UP PRESSURE VARIABLE **************!
+
+if disp_type == "BAR" then
+	begin
+	pressure_level_real = real(pres_level_ip.e_value/14.50377)
+	pressure_level_int = int(pressure_level_real * 10)
+	end
+else
+	begin
+	pressure_level_real = real(pres_level_ip.e_value)
+	pressure_level_int = int(pressure_level_real * 10)
+	end
+
+!**************** SECOND DIGIT MATHS *****************!
+
+
+if pressure_level_real < 100 then
+  begin
+  second_digit_real = (pressure_level_int/100)
+  end
+else
+  begin
+  second_digit_real = ((pressure_level_int - 1000)/100)
+  end  
+second_digit_real_2 = int(second_digit_real)
+
+
+!**************** THIRD DIGIT MATHS *****************!
+
+
+if pressure_level_real < 100 then
+  begin
+  third_digit_real = (pressure_level_int/10 - (second_digit_real_2 * 10))
+  end
+else
+  begin
+  third_digit_real = ((pressure_level_int - 1000)/10 - (second_digit_real_2 * 10))
+  end
+third_digit_real_2 = int(third_digit_real)
+
+
+!**************** FORTH DIGIT MATHS *****************!
+
+
+if pressure_level_real < 100 then
+  begin
+  forth_digit_real = pressure_level_int - ((second_digit_real_2 * 100) + (third_digit_real_2 * 10))
+  end
+else
+  begin
+  forth_digit_real = (pressure_level_int - 1000) - ((second_digit_real_2 * 100) + (third_digit_real_2 * 10))
+  end
+forth_digit_real_2 = int(forth_digit_real)
+
+
+
+
+
+!********** CASE MENU OPTIONS **************!
+
+if valid main_menu then
+   begin
+
+   case main_menu of
+        "Alter High Alarm Level"
+            begin
+            set title high_setpoint_panel = "Alter High Alarm Level in PSI"
+            set unpinned high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter Low Alarm Level"
+            begin
+            set title low_setpoint_panel = "Alter Low Alarm Level in PSI"
+            set unpinned low_setpoint_panel
+            request low_setpoint_panel
+            end
+
+        "Alter Tag Message"
+            begin
+            set title tag_message_panel = "Modify Tag Message"
+            set label tag_message_panel.str = "Tag Message :"
+            set unpinned tag_message_panel
+            request tag_message_panel
+            end
+
+        "Clear Tag Message"
+            begin
+            set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+            end
+       
+
+        default
+            begin
+            end
+
+   set invalid main_menu
+   end
+
+
+!********************** TAG MESSAGE BOX *********************!
+
+x = 0 y = 0
+w = 250 h = 250
+if selb and tag_message_ip.c_value <> "" then
+   begin
+    message_text_box(tag_message_ip.c_value)
+   end
+
+
+
+!********************** CONFIGURE MENU **********************!
+
+if valid input_setpoint then
+   temp_sps = "High = "+ int(input_setpoint[1].test_value) +"  Low = " +int(input_setpoint[2].test_value)
+x=35 y=-40
+w=380 h=160
+set rect main_menu
+set title main_menu = temp_sps
+
+if invalid items_added then
+  begin
+  set add main_menu   = "Alter High Alarm Level"
+  set add main_menu   = "Alter Low Alarm Level"
+  items_added = 1
+  end
+
+
+!****************** WRITE INPUT TO SERVER ***********************!
+
+if valid high_setpoint_panel and high_setpoint_panel > input_setpoint[2].test_value then
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[1].test_value = high_setpoint_panel
+   request output_setpoint
+   set invalid high_setpoint_panel
+   end
+
+if valid low_setpoint_panel and low_setpoint_panel < input_setpoint[1].test_value then 
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[2].test_value = low_setpoint_panel
+   request output_setpoint
+   set invalid low_setpoint_panel
+   end
+
+!************* SELECT OBJECT FG COLOUR ***************!
+
+
+if pres_alarm.alarm_status == w_note then
+   
+   sensor_fg = flashred
+
+else if pres_alarm.alarm_status == w_clr then
+
+   sensor_fg = red
+
+else sensor_fg = decoroff
+
+
+!************* SELECT OBJECT BG COLOUR ***************!
+
+
+if tag_message_ip.c_value <> "" then
+   
+   sensor_bg = yellow
+
+else sensor_bg = black
+
+
+
+!*************** DRAW DISPLAY *****************!
+
+just=centrecentre
+
+x = 35 y = -40 rect(w=380,h=160,fg=black) clear
+x = 35 y = -40 rect(w=362,h=142,fg=sensor_bg) clear
+x = 35 y = -40 rect(w=352,h=132,fg=black) clear
+x = 35 y = -40 rect(w=340,h=120,fg=decoroff) clear
+x = -151 y = 35 add x += 372 add y -= 151 add line(fg=decorshadow,lw=2) clear
+x = -151 y = 35 add y -= 151 add x += 372 add line(fg=decoroff,lw=2) clear
+x = -138 y = 23 add x += 346 add y -= 126 add line(fg=decorlight,lw=2) clear
+x = -138 y = 23 add y -= 126 add x += 346 add line(fg=white,lw=2) clear
+
+!**************************************************************!
+!************ SEVEN SEGMENT DISPLAY **************!
+!**************************************************************!
+
+                                                 
+!**************** FIRST DIGIT DISPLAY ***************!
+
+if pressure_level_real < 100 then
+   begin
+   x = -100 y = 0 seven_segment_blank(e_alm)
+   end
+else
+   begin
+   x = -100 y = 0 seven_segment_1(e_alm)
+   end
+
+
+!************* SECOND DIGIT DISPLAY ***************!
+
+if pressure_level_real < 10 then
+   begin
+   x = -30 y = 0 seven_segment_blank(e_alm)
+   end
+
+else if second_digit_real_2 == 0 then
+   begin
+   x = -30 y = 0 seven_segment_0(e_alm)
+   end
+
+else if second_digit_real_2 == 1 then
+   begin
+   x = -30 y = 0 seven_segment_1(e_alm)
+   end
+
+else if second_digit_real_2 == 2 then
+   begin
+   x = -30 y = 0 seven_segment_2(e_alm)
+   end
+
+else if second_digit_real_2 == 3 then
+   begin
+   x = -30 y = 0 seven_segment_3(e_alm)
+   end
+
+else if second_digit_real_2 == 4 then
+   begin
+   x = -30 y = 0 seven_segment_4(e_alm)
+   end
+
+else if second_digit_real_2 == 5 then
+   begin
+   x = -30 y = 0 seven_segment_5(e_alm)
+   end
+
+else if second_digit_real_2 == 6 then
+   begin
+   x = -30 y = 0 seven_segment_6(e_alm)
+   end
+
+else if second_digit_real_2 == 7 then
+   begin
+   x = -30 y = 0 seven_segment_7(e_alm)
+   end
+
+else if second_digit_real_2 == 8 then
+   begin
+   x = -30 y = 0 seven_segment_8(e_alm)
+   end
+
+else
+   begin
+   x = -30 y = 0 seven_segment_9(e_alm)
+   end
+
+
+!************** THIRD DIGIT DISPLAY *****************!
+
+
+if third_digit_real_2 == 0 then
+   begin
+   x = 40 y = 0 seven_segment_0(e_alm)
+   end
+
+else if third_digit_real_2 == 1 then
+   begin
+   x = 40 y = 0 seven_segment_1(e_alm)
+   end
+
+else if third_digit_real_2 == 2 then
+   begin
+   x = 40 y = 0 seven_segment_2(e_alm)
+   end
+
+else if third_digit_real_2 == 3 then
+   begin
+   x = 40 y = 0 seven_segment_3(e_alm)
+   end
+
+else if third_digit_real_2 == 4 then
+   begin
+   x = 40 y = 0 seven_segment_4(e_alm)
+   end
+
+else if third_digit_real_2 == 5 then
+   begin
+   x = 40 y = 0 seven_segment_5(e_alm)
+   end
+
+else if third_digit_real_2 == 6 then
+   begin
+   x = 40 y = 0 seven_segment_6(e_alm)
+   end
+
+else if third_digit_real_2 == 7 then
+   begin
+   x = 40 y = 0 seven_segment_7(e_alm)
+   end
+
+else if third_digit_real_2 == 8 then
+   begin
+   x = 40 y = 0 seven_segment_8(e_alm)
+   end
+
+else
+   begin
+   x = 40 y = 0 seven_segment_9(e_alm)
+   end
+
+
+!************** FORTH DIGIT DISPLAY *****************!
+
+
+if forth_digit_real_2 == 0 then
+   begin
+   x = 140 y = 0 seven_segment_0(e_alm)
+   end
+
+else if forth_digit_real_2 == 1 then
+   begin
+   x = 140 y = 0 seven_segment_1(e_alm)
+   end
+
+else if forth_digit_real_2 == 2 then
+   begin
+   x = 140 y = 0 seven_segment_2(e_alm)
+   end
+
+else if forth_digit_real_2 == 3 then
+   begin
+   x = 140 y = 0 seven_segment_3(e_alm)
+   end
+
+else if forth_digit_real_2 == 4 then
+   begin
+   x = 140 y = 0 seven_segment_4(e_alm)
+   end
+
+else if forth_digit_real_2 == 5 then
+   begin
+   x = 140 y = 0 seven_segment_5(e_alm)
+   end
+
+else if forth_digit_real_2 == 6 then
+   begin
+   x = 140 y = 0 seven_segment_6(e_alm)
+   end
+
+else if forth_digit_real_2 == 7 then
+   begin
+   x = 140 y = 0 seven_segment_7(e_alm)
+   end
+
+else if forth_digit_real_2 == 8 then
+   begin
+   x = 140 y = 0 seven_segment_8(e_alm)
+   end
+
+else
+   begin
+   x = 140 y = 0 seven_segment_9(e_alm)
+   end
+
+
+!************* DECIMAL POINT ***************!
+
+if pres_note_clr_alarm(e_alm,heathrow) == 1 then
+  dot_fg = flashred
+else if pres_note_clr_alarm(e_alm,heathrow) == 2 then
+  dot_fg = red
+else
+  dot_fg = yellow
+x = 105 y = 0 disk(w=14,h=14,fg=dot_fg) clear
+x = 105 y = 0 circle(w=14,h=14,fg=black) clear
+end
+
+
+
+object normal_button(xpos=int, ypos=int, width=int, height=int, disp=string)
+begin
+!** NORMAL BUTTON **!
+
+	X=xpos Y=ypos W=width H=height FG=LIGHTGREY JUST=TOPLEFT FS=FILLSOLID ANGLE=0 ROTRECT
+	Clear
+
+	X=X+(width/2) Y=Y+(height/2) H=height*2 JUST=CENTRECENTRE CH=25 TFG=BLACK  text(disp)		
+	X=xpos Y=ypos
+	
+	!** Left side **!
+	add
+	Y=Y+height Add
+	BG=DECORLIGHT FG=WHITE LS=SOLID CS=CAPROUND LW=2 LINE
+	Clear
+
+	!** Bottom side **!
+	Add
+	X=X+width Add
+	BG=DECORLIGHT FG=BLACK LS=SOLID CS=CAPROUND LW=2 LINE
+	Clear
+
+	!** Right side **!
+	Add
+	Y=Y-height Add
+	BG=DECORLIGHT FG=BLACK LS=SOLID CS=CAPROUND LW=2 LINE
+	Clear
+
+	!** Top side **!
+	Add
+	X=X-width Add
+	BG=DECORLIGHT FG=WHITE LS=SOLID CS=CAPROUND LW=2 LINE
+	Clear
+end
+
+object depressed_button(xpos=int, ypos=int, width=int, height=int, disp=string)
+begin
+!** DEPRESSED BUTTON **!
+
+	X=xpos Y=ypos W=width H=height FG=LIGHTGREY JUST=TOPLEFT FS=FILLSOLID ANGLE=0 ROTRECT
+	Clear
+
+	X=X+(width/2) Y=Y+(height/2) H=height*2 JUST=CENTRECENTRE CH=25 TFG=BLACK  text(disp)		
+	X=xpos Y=ypos
+	
+	!** Left side **!
+	add
+	Y=Y+height Add
+	BG=DECORLIGHT FG=BLACK LS=SOLID CS=CAPROUND LW=2 LINE
+	Clear
+
+	!** Bottom side **!
+	Add
+	X=X+width Add
+	BG=DECORLIGHT FG=WHITE LS=SOLID CS=CAPROUND LW=2 LINE
+	Clear
+
+	!** Right side **!
+	Add
+	Y=Y-height Add
+	BG=DECORLIGHT FG=WHITE LS=SOLID CS=CAPROUND LW=2 LINE
+	Clear
+
+	!** Top side **!
+	Add
+	X=X-width Add
+	BG=DECORLIGHT FG=BLACK LS=SOLID CS=CAPROUND LW=2 LINE
+	Clear
+
+
+end
+
+
+!
+***************************************************
+***********      MAIN OBJECT      *************
+***************************************************
+!
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var helpstr = help string(30)
+var new_toggle = loopback int
+var old_toggle = loopback int
+
+begin
+
+!*** Initialise toggle status ***!
+if invalid new_toggle then new_toggle=0
+if invalid old_toggle then old_toggle=0
+
+scale = 256
+
+!***new sensor**!
+!*** X=100 Y=-85 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("NEW") ***!
+
+!*** specify new toggle area for right hand mouse click ***!
+X= 79 Y=30 W=55 H=35 FG=aquamarine4 JUST=TOPLEFT LS=SOLID LW=1 ANGLE=0 ROTBOX
+if menb then
+begin	
+	if new_toggle == 0 then new_toggle =1
+	else new_toggle = 0
+end
+	
+if new_toggle == 0 then
+	begin
+	scale = 180
+	X=-25 Y=0 cta_pressure(0,0,heathrow,"Psi",0)
+	scale = 256
+	normal_button(107,33,50,30,"psi")
+	end
+else
+	begin
+	scale = 180
+	X=-25 Y=0 cta_pressure(0,0,heathrow,"BAR",0)
+	scale = 256
+	depressed_button(107,33,50,30,"bar")
+	end
+
+x = -120 y = 40 add text(just=topleft,tfg=yellow,ch=18,"CTA Firemain Pressure")
+
+!****OLD sensor***!
+!*** X=84 Y=10 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("EXISTING") ***!
+
+!*** specify old toggle area ***!
+!*** OLD SENSOR COMMENTED OUT 
+X=90 Y=28 W=55 H=35 FG=aquamarine4 JUST=TOPLEFT LS=SOLID LW=1 ANGLE=0 ROTBOX
+if menb then
+begin	
+	if old_toggle == 0 then old_toggle =1
+	else old_toggle = 0
+end
+	
+if old_toggle == 0  then
+	begin
+		scale = 145
+		X=-45 Y=70 cta_pressure(0,0,heathrow,"Psi",0)
+		scale = 256		
+		normal_button(135,-40,50,30,"psi")
+	end
+else
+	begin
+		scale = 145		
+		X=-45 Y=70 cta_pressure(0,0,heathrow,"BAR",0)
+		scale = 256
+		depressed_button(135,-40,50,30,"bar")
+	end
+** End of OLD SENSOR COMMENTED OUT **! 
+!***** Code for F1 help ******!
+scale = 256
+just = centrecentre
+x = 0 y = 0
+w = 300 h = 200
+set text helpstr = "pressure_help"
+!** End of F1 Help **!
+
+end
+
+mimic = main_object w=300,h=200,top=2,just=centrecentre,bg=aquamarine4,resizable

@@ -1,0 +1,705 @@
+! HEATHROW CMS - LV CONTACTOR (controllable)
+
+loaded by: EAST_INTAKE, HV_10, HV_13, HV_14, HV_15, HV_2, HV_4,
+           HV_6, HV_8, HV_9, NORTH_INTAKE, SOUTH_INTAKE, SUB_STN_23, 
+           SUB_STN_32, SUB_STN_64, WEST_INTAKE
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type panel_item_row = table (str=string(20))
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+ 
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+!y-=60 add
+clear
+just = centrecentre
+rect(w=370,h=60,fg=yellow) 
+lw=2
+fg=black
+clear
+y-=30 x-=185 add
+x+=370 add line
+y+=60 add line
+x-=370 add line
+y-=60 add line
+y+=30 x+=185 add
+y-=18 add !
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+************************************************************
+* LV CHANGEOVER CONTACTOR OBJECT  Only -Mains On or Standby on signals    *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+object lv_changeover_offset(fg,bg,plc_offset=int,b_offset=int,c_offset=int,
+                    src=source)
+! VARIABLE DECLARATION !
+! PLC INPUTS
+var plc_inputs[1] = plca_comms_status
+var plc_inputs[2] = plcb_comms_status
+!
+var plc_inputs = input b_db_row_type[2]
+
+! B INPUTS!
+var b_inputs = input b_db_row_type[2]
+
+! ALARM INPUTS!
+var alarm_inputs = input alarm_row_type[2]
+
+!CHARACTER INPUTS!
+VAR tag_message = input  c_db_row_type
+
+var mains_on_ip	 	= onoff	!1!
+var standby_on_ip		= onoff	!2!
+
+var mains_on_al	 	= alarm_status !2!
+var standby_on_al		= alarm_status !3!
+
+! LOOPBACKS !
+VAR contactor_fg = loopback  colour
+VAR contactor_bg = loopback  colour
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+begin
+	! INITIALISATION !
+	! REQUEST DATA FROM SERVER !
+
+	if invalid get source plc_inputs then 
+
+	begin
+
+		! GET PLC INPUTS !
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+	   	! GET B INPUTS !
+	   	set source b_inputs = src
+	   	set filter b_inputs.db_addr = lim_ge
+	   	set limit b_inputs.db_addr = db_address(int(b1) + b_offset -1)
+	   	set priority b_inputs.db_addr = 15
+	   	set persist b_inputs
+	   	set mayexist b_inputs
+	   	request b_inputs
+
+	   	! GET ALARM INPUTS !
+	   	set source alarm_inputs = src
+	   	set filter alarm_inputs.db_addr = lim_ge
+	   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+	   	set priority alarm_inputs.db_addr = 15
+	   	set persist alarm_inputs
+   		set mayexist alarm_inputs
+   		request alarm_inputs
+
+	   	! GET TAG MESSAGE !
+	   	set source tag_message = src
+	   	set filter tag_message.db_addr = lim_eq
+	   	set limit tag_message.db_addr = db_address(int(c1) + c_offset -1)
+	   	set persist tag_message
+	   	request tag_message
+	end
+
+	mains_on_ip	 	= b_inputs[1].b_value
+	standby_on_ip		= b_inputs[2].b_value
+
+	mains_on_al	 	= alarm_inputs[1].alarm_status
+	standby_on_al		= alarm_inputs[2].alarm_status
+
+
+	! SELECT CONTACTOR BG COLOUR ! 
+
+	if tag_message.c_value <> "" then
+		contactor_bg = yellow
+	else
+		contactor_bg = decoroff
+
+	! SELECT CONTACTOR FG COLOUR !
+
+	if plc_inputs[1].b_value == on  and plc_inputs[2].b_value == on then
+		contactor_fg = magenta
+
+	else if mains_on_al	 	== w_note or
+	standby_on_al		== w_note then
+		contactor_fg = flashred
+
+	else if mains_on_al	 	== w_clr or
+	standby_on_al		== w_clr then
+		contactor_fg = red
+  
+	else 
+		contactor_fg = green4
+
+
+	! TAG MESSAGE PANEL !
+	if valid tag_message_panel then
+	begin
+		set_c_value(db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	end
+
+
+	if valid main_menu then
+	begin
+	case main_menu of
+		"Alter Tagged Message"
+		begin
+			set title tag_message_panel = "Modify Tag Message"
+			set label tag_message_panel.str = "Tag Message :"
+			set unpinned tag_message_panel
+			request tag_message_panel
+		end
+
+		"Clear Tagged Message"
+		begin
+			set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+		end
+
+		default
+		begin
+		end
+			set invalid main_menu
+	end
+
+
+	! CONTROL MENU !
+
+	just=centrecentre
+	w=120 h=100
+	set rect main_menu 
+	set title main_menu = "Contactor Menu"
+	set remove main_menu = "Alter Tagged Message"
+	set remove main_menu = "Clear Tagged Message"
+	set add main_menu = "Alter Tagged Message"
+	set add main_menu = "Clear Tagged Message"
+
+
+	! DRAW CONTACTOR !
+
+	bg=contactor_bg
+	fg=contactor_fg
+	just = centrecentre
+	rect (h=100,w=120,fg=contactor_bg)
+	y += 50 x -= 60 add
+	y -= 100 add
+	x +=119 add line(fg=decorlight) clear
+	x += 1 add
+	y += 100 add
+	x -= 120 add
+	line (fg=black) clear
+	x=0 y=0 
+	x -= 10 y -= 35 add
+	x -= 40 add
+	y += 69 add line (fg=decorshadow) clear
+	y += 1 add
+	x += 40 add
+	y -= 70 add line (fg=decorlight) clear
+	x = 60 y=0
+	x -= 10 y -= 35 add
+	x -= 40 add
+	y += 69 add line (fg=decorshadow) clear
+	y += 1 add
+	x += 40 add
+	y -= 70 add line (fg=decorlight) clear
+
+
+	if standby_on_ip == on and mains_on_ip == off then
+	begin
+		! DRAW SOLID DISKS AND LINE ON RIGHT OF SYMBOL !
+		x = 30  y = -50 add
+		y += 50 add line(lw=2,fg=contactor_fg) clear
+		y -= 20 add disk(w=14,h=14,fg=contactor_fg)
+		y += 40 add disk(w=14,h=14,fg=contactor_fg) clear
+		y -= 40 add
+		y += 40 add line(lw=4,fg=contactor_fg) clear
+		y += 1 add 
+		y += 29 add line (fg=contactor_fg,lw=2) clear
+	end
+	else
+	begin
+		! DRAW WHITE DISKS AND SMALL HORIZONTAL LINE ON RIGHT OF SYMBOL !
+		x = 30 y = -50 add
+		y += 30 add line(lw=2,fg=contactor_fg) clear
+		add disk(w=14,h=14,fg=white)
+		add circle(w=14,h=14,fg=contactor_fg)
+		y += 40 add disk(w=14,h=14,fg=white) 
+		add circle(w=14,h=14,fg=contactor_fg) clear
+		y += 7 add 
+		y += 23 add line (fg=contactor_fg,lw=2) clear
+		y -= 50 x -= 10 add 
+		x += 20 add line(fg=contactor_fg,lw=4) clear
+	end
+
+ 
+	if mains_on_ip == on and standby_on_ip == off then
+	begin
+   		! DRAW SOLID DISK AND LINE ON LEFT OF SYMBOL !
+		x = -30  y = -50 add
+		y += 50 add line(lw=2,fg=contactor_fg) clear
+		y -= 20 add disk(w=14,h=14,fg=contactor_fg)
+		y += 40 add disk(w=14,h=14,fg=contactor_fg) clear
+		y -= 40 add
+		y += 40 add line(lw=4,fg=contactor_fg) clear
+		y += 1 add 
+		y += 29 add line (fg=contactor_fg,lw=2) clear
+	end
+	else
+	begin
+		! DRAW WHITE DISKS AND HORIZONTAL LINE ON LEFT OF SYMBOL !
+		x = -30 y = -50 add
+		y += 30 add line(lw=2,fg=contactor_fg) clear
+		add disk(w=14,h=14,fg=white)
+		add circle(w=14,h=14,fg=contactor_fg)
+		y += 40 add disk(w=14,h=14,fg=white) 
+		add circle(w=14,h=14,fg=contactor_fg) clear
+		y += 7 add 
+		y += 23 add line (fg=contactor_fg,lw=2) clear
+		y -= 50 x -= 10 add 
+		x += 20 add line(fg=contactor_fg,lw=4) clear
+	end
+
+
+	if standby_on_ip == off and mains_on_ip == off then
+	begin
+		! DRAW THIN LINE ACROSS MIDDLE OF SYMBOL !
+		y = 0 x = -15 add 
+		x += 30 add line (fg=contactor_fg,lw=1) clear
+	end
+
+	if standby_on_ip == off and mains_on_ip == on then
+	begin
+		! DRAW THIN LINE ACROSS LEFT OF SYMBOL !
+		y = 0 x = -25 add 
+		x += 40 add line (fg=contactor_fg,lw=1) clear
+	end
+
+	if standby_on_ip == on and mains_on_ip == off then
+	begin
+		! DRAW THIN LINE ACROSS RIGHT OF SYMBOL !
+		y = 0 x = -15 add 
+		x += 40 add line (fg=contactor_fg,lw=1) clear
+	end
+
+
+	! TAG MESSAGE BOX !
+
+	x=0 y=0
+	w=120 h=100
+	if selb and tag_message.c_value <> "" then
+	begin
+		message_text_box(tag_message.c_value)
+	end
+end
+
+
+
+
+
+
+!
+************************************************************
+* LV CHANGEOVER CONTACTOR OBJECT                           *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object lv_changeover(fg,bg,plc_offset=int,b_offset=int,c_offset=int,
+                    src=source)
+
+! INPUTS!
+VAR plc_a_comms_fail_ip = input  b_db_row_type
+VAR plc_b_comms_fail_ip = input  b_db_row_type
+
+VAR mains_on = input  b_db_row_type
+VAR standby_on = input  b_db_row_type
+
+VAR tag_message_ip = input  c_db_row_type
+! ALARMS !
+VAR mains_on_discr = input  alarm_row_type
+VAR standby_on_discr = input  alarm_row_type
+VAR mains_n_standby_both_on = input  alarm_row_type
+VAR standby_n_mains_both_on = input  alarm_row_type
+VAR mains_failed = input  alarm_row_type
+VAR standby_failed = input  alarm_row_type
+ 
+! LOOPBACKS !
+VAR contactor_fg = loopback  colour
+VAR contactor_bg = loopback  colour
+
+! MENUS !
+VAR main_menu = menu  string(80)
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+if invalid get source plc_a_comms_fail_ip then 
+   begin
+
+   set source plc_a_comms_fail_ip = src
+   set filter plc_a_comms_fail_ip.db_addr = lim_eq
+   set limit plc_a_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset -1)
+   set persist plc_a_comms_fail_ip 
+   request plc_a_comms_fail_ip
+ 
+   set source plc_b_comms_fail_ip = src
+   set filter plc_b_comms_fail_ip.db_addr = lim_eq
+   set limit plc_b_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset)
+   set persist plc_b_comms_fail_ip 
+   request plc_b_comms_fail_ip
+ 
+   set source mains_on = src
+   set filter mains_on.db_addr = lim_eq
+   set limit mains_on.db_addr = db_address(int(b1) + b_offset -1)
+   set persist mains_on
+   request mains_on
+
+   set source mains_failed = src
+   set filter mains_failed.db_addr = lim_eq
+   set limit mains_failed.db_addr = db_address(int(b1) + b_offset -1)
+   set persist mains_failed 
+   request mains_failed
+
+   set source mains_n_standby_both_on = src
+   set filter mains_n_standby_both_on.db_addr = lim_eq
+   set limit mains_n_standby_both_on.db_addr=db_address(int(b1) + b_offset - 1)
+   set persist mains_n_standby_both_on 
+   request mains_n_standby_both_on
+
+   set source standby_on = src
+   set filter standby_on.db_addr = lim_eq
+   set limit standby_on.db_addr = db_address(int(b1) + b_offset)
+   set persist standby_on 
+   request standby_on
+  
+   set source standby_failed = src
+   set filter standby_failed.db_addr = lim_eq
+   set limit standby_failed.db_addr = db_address(int(b1) + b_offset)
+   set persist standby_failed 
+   request standby_failed
+
+   set source standby_n_mains_both_on = src
+   set filter standby_n_mains_both_on.db_addr = lim_eq
+   set limit standby_n_mains_both_on.db_addr=db_address(int(b1) + b_offset)
+   set persist standby_n_mains_both_on 
+   request standby_n_mains_both_on
+
+   set source mains_on_discr = src
+   set filter mains_on_discr.db_addr = lim_eq
+   set limit mains_on_discr.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist mains_on_discr 
+   request mains_on_discr
+
+   set source standby_on_discr = src
+   set filter standby_on_discr.db_addr = lim_eq
+   set limit standby_on_discr.db_addr = db_address(int(b1) + b_offset + 2)
+   set persist standby_on_discr
+   request standby_on_discr
+
+
+! REQUEST TAGGED MESSAGE !
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset - 1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   end
+
+
+! SELECT CONTACTOR BG COLOUR ! 
+
+if tag_message_ip.c_value <> "" then
+   contactor_bg = yellow
+else
+   contactor_bg = decoroff
+
+
+! SELECT CONTACTOR FG COLOUR !
+
+if plc_a_comms_fail_ip.b_value and plc_b_comms_fail_ip.b_value then
+   contactor_fg = magenta
+
+else if mains_on_discr.alarm_status           == w_note or
+        standby_on_discr.alarm_status         == w_note or
+        mains_n_standby_both_on.alarm_status  == w_note or
+        standby_n_mains_both_on.alarm_status  == w_note or
+        mains_failed.alarm_status             == w_note or
+        standby_failed.alarm_status           == w_note then
+   contactor_fg = flashred
+
+else if mains_on_discr.alarm_status           == w_clr or
+        standby_on_discr.alarm_status         == w_clr or
+        mains_n_standby_both_on.alarm_status  == w_clr or
+        standby_n_mains_both_on.alarm_status  == w_clr or
+        mains_failed.alarm_status             == w_clr or
+        standby_failed.alarm_status           == w_clr then
+   contactor_fg = red
+  
+else 
+   contactor_fg = green4
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+   case main_menu of
+      "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+   default
+      begin
+      end
+   set invalid main_menu
+   end
+
+
+! CONTROL MENU !
+
+just=centrecentre
+w=120 h=100
+set rect main_menu 
+set title main_menu = "Contactor Menu"
+set remove main_menu = "Alter Tagged Message"
+set remove main_menu = "Clear Tagged Message"
+set add main_menu = "Alter Tagged Message"
+set add main_menu = "Clear Tagged Message"
+
+
+! DRAW CONTACTOR !
+
+bg=contactor_bg
+fg=contactor_fg
+just = centrecentre
+rect (h=100,w=120,fg=contactor_bg)
+y += 50 x -= 60 add
+y -= 100 add
+x +=119 add line(fg=decorlight) clear
+x += 1 add
+y += 100 add
+x -= 120 add
+line (fg=black) clear
+x=0 y=0 
+x -= 10 y -= 35 add
+x -= 40 add
+y += 69 add line (fg=decorshadow) clear
+y += 1 add
+x += 40 add
+y -= 70 add line (fg=decorlight) clear
+x = 60 y=0
+x -= 10 y -= 35 add
+x -= 40 add
+y += 69 add line (fg=decorshadow) clear
+y += 1 add
+x += 40 add
+y -= 70 add line (fg=decorlight) clear
+
+if standby_on.b_value and mains_on.b_value == off then
+begin
+   ! DRAW SOLID DISKS AND LINE ON RIGHT OF SYMBOL !
+   x = 30  y = -50 add
+   y += 50 add line(lw=2,fg=contactor_fg) clear
+   y -= 20 add disk(w=14,h=14,fg=contactor_fg)
+   y += 40 add disk(w=14,h=14,fg=contactor_fg) clear
+   y -= 40 add
+   y += 40 add line(lw=4,fg=contactor_fg) clear
+   y += 1 add 
+   y += 29 add line (fg=contactor_fg,lw=2) clear
+end
+else
+begin
+   ! DRAW WHITE DISKS AND SMALL HORIZONTAL LINE ON RIGHT OF SYMBOL !
+   x = 30 y = -50 add
+   y += 30 add line(lw=2,fg=contactor_fg) clear
+           add disk(w=14,h=14,fg=white)
+           add circle(w=14,h=14,fg=contactor_fg)
+   y += 40 add disk(w=14,h=14,fg=white) 
+           add circle(w=14,h=14,fg=contactor_fg) clear
+   y += 7 add 
+   y += 23 add line (fg=contactor_fg,lw=2) clear
+   y -= 50 x -= 10 add 
+   x += 20 add line(fg=contactor_fg,lw=4) clear
+
+end
+ 
+if mains_on.b_value and standby_on.b_value == off then
+begin
+   ! DRAW SOLID DISK AND LINE ON LEFT OF SYMBOL !
+   x = -30  y = -50 add
+   y += 50 add line(lw=2,fg=contactor_fg) clear
+   y -= 20 add disk(w=14,h=14,fg=contactor_fg)
+   y += 40 add disk(w=14,h=14,fg=contactor_fg) clear
+   y -= 40 add
+   y += 40 add line(lw=4,fg=contactor_fg) clear
+   y += 1 add 
+   y += 29 add line (fg=contactor_fg,lw=2) clear
+end
+else
+begin
+   ! DRAW WHITE DISKS AND HORIZONTAL LINE ON LEFT OF SYMBOL !
+   x = -30 y = -50 add
+   y += 30 add line(lw=2,fg=contactor_fg) clear
+           add disk(w=14,h=14,fg=white)
+           add circle(w=14,h=14,fg=contactor_fg)
+   y += 40 add disk(w=14,h=14,fg=white) 
+           add circle(w=14,h=14,fg=contactor_fg) clear
+   y += 7 add 
+   y += 23 add line (fg=contactor_fg,lw=2) clear
+   y -= 50 x -= 10 add 
+   x += 20 add line(fg=contactor_fg,lw=4) clear
+
+end
+
+if standby_on.b_value == off and
+     mains_on.b_value == off then
+
+! DRAW THIN LINE ACROSS MIDDLE OF SYMBOL !
+begin
+   y = 0 x = -15 add 
+   x += 30 add line (fg=contactor_fg,lw=1) clear
+end
+
+if standby_on.b_value == off and
+   mains_on.b_value then
+
+! DRAW THIN LINE ACROSS LEFT OF SYMBOL !
+begin
+   y = 0 x = -25 add 
+   x += 40 add line (fg=contactor_fg,lw=1) clear
+end
+
+if standby_on.b_value and
+     mains_on.b_value == off then
+
+! DRAW THIN LINE ACROSS RIGHT OF SYMBOL !
+begin
+   y = 0 x = -15 add 
+   x += 40 add line (fg=contactor_fg,lw=1) clear
+end
+
+
+! TAG MESSAGE BOX !
+
+x=0 y=0
+w=120 h=100
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+scale = 200
+x=70
+y=-70
+lv_changeover(19990,19900,1,heathrow)
+
+end
+
+mimic = main_object w=400,h=400,just=centrecentre,bg=decoroff,resizable
+

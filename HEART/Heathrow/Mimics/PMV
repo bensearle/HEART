@@ -1,0 +1,559 @@
+! HEATHROW CMS - PMV
+
+loaded by: POTABLE_WATER
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type panel_item_row = table (str=string(20))
+
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+ 
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+************************************************************
+* FEGP POTABLE MOTORISED VALVE                             *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object pmv(fg,bg,angle,plc_offset=int,b_offset=int,
+           c_offset=int,
+           src=source,rot_angle=string(1),ident=string)
+
+!B INPUTS
+b_inputs[1] = transfer_of_service_ip
+b_inputs[2] = opened_ip
+b_inputs[3] = closed_ip
+b_inputs[14] = normally_open
+!
+var b_inputs = input b_db_row_type[14]
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+var tag_message_ip = input  c_db_row_type
+
+!ALARM INPUTS
+alarm_inputs[1] = opened_alarm_ip
+alarm_inputs[2] = closed_alarm_ip
+alarm_inputs[3] = mains_failed_alarm_ip
+alarm_inputs[6] = open_in_discr_ip
+alarm_inputs[7] = close_in_discr_ip
+alarm_inputs[8] = open_out_discr_ip
+alarm_inputs[9] = close_out_discr_ip
+alarm_inputs[10] = failed_to_open_ip
+alarm_inputs[11] = failed_to_close_ip
+alarm_inputs[12] = mains_failed_discr_ip
+!
+var alarm_inputs = input alarm_row_type[12]
+
+! LOOPBACKS !
+VAR stand_bg = loopback  colour
+VAR valve_fg = loopback  colour
+VAR menu_count = loopback  int 
+VAR already_done = loopback  yesno
+
+! MENUS !
+VAR stand_control_menu = menu  string(80)
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source b_inputs then 
+   begin
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset-1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+ 
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset - 1)
+   set priority tag_message_ip.db_addr = 15
+   set persist tag_message_ip
+   set mayexist tag_message_ip
+   request tag_message_ip
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   end
+
+
+! SELECT PMV BG COLOUR ! 
+
+if b_inputs[1].b_value then
+  begin
+  stand_bg = orange
+  end
+
+else if tag_message_ip.c_value <> "" then 
+  begin
+  stand_bg = yellow
+  end
+
+else
+  stand_bg = lightblue 
+
+
+! SELECT PMV FG COLOUR !
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+  begin
+  valve_fg = magenta
+  end
+
+else if alarm_inputs[1].alarm_status  == w_note or
+        alarm_inputs[2].alarm_status  == w_note or
+        alarm_inputs[3].alarm_status  == w_note or
+        alarm_inputs[6].alarm_status  == w_note or
+	alarm_inputs[7].alarm_status  == w_note or
+	alarm_inputs[8].alarm_status  == w_note or
+        alarm_inputs[9].alarm_status  == w_note or
+        alarm_inputs[10].alarm_status == w_note or
+     	alarm_inputs[11].alarm_status == w_note or
+        alarm_inputs[12].alarm_status == w_note then
+      valve_fg = flashred
+
+else if alarm_inputs[1].alarm_status  == w_clr or
+        alarm_inputs[2].alarm_status  == w_clr or
+        alarm_inputs[3].alarm_status  == w_clr or
+	alarm_inputs[6].alarm_status  == w_clr or
+	alarm_inputs[7].alarm_status  == w_clr or
+        alarm_inputs[8].alarm_status  == w_clr or
+        alarm_inputs[9].alarm_status  == w_clr or
+        alarm_inputs[10].alarm_status == w_clr or
+        alarm_inputs[11].alarm_status == w_clr or
+        alarm_inputs[12].alarm_status == w_clr then
+      valve_fg = red
+
+else if b_inputs[2].b_value and b_inputs[3].b_value==off then valve_fg=green4
+else if b_inputs[3].b_value and b_inputs[2].b_value==off then valve_fg=white
+else valve_fg = red
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! If failed to open or close then return to default position !
+if alarm_inputs[11].alarm_status==w_note and 
+   already_done==no then
+   begin
+   if b_inputs[14].b_value then
+     begin
+     set_b_value(db_address(int(b1) + b_offset +4), src, off) !clear close!
+     set_b_value(db_address(int(b1) + b_offset +3), src, on)  !set open!
+     end
+   already_done=yes
+   end
+
+if alarm_inputs[10].alarm_status==w_note and
+   already_done==no then
+   begin
+   if b_inputs[14].b_value==0 then
+     begin
+     set_b_value(db_address(int(b1) + b_offset + 3), src, off) !clear open!
+     set_b_value(db_address(int(b1) + b_offset + 4), src, on)  !set close!
+     end
+   already_done=yes
+   end
+
+if alarm_inputs[10].alarm_status==w_clr then already_done=no
+if alarm_inputs[11].alarm_status==w_clr then already_done=no
+
+
+! CONTROL MENU !
+
+if valid stand_control_menu then
+   begin
+   case stand_control_menu of
+      "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Transfer of Service"
+         begin
+         if b_inputs[1].b_value then
+            set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+         else
+            set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+         end
+
+       "Open Valve"
+       begin
+		 set_b_value(db_address(int(b1) + b_offset +3), src, on)
+          	set_b_value(db_address(int(b1) + b_offset +4), src, off)
+       end
+       
+       "Close Valve"
+       begin
+ 
+     		set_b_value(db_address(int(b1) + b_offset +3), src, off)
+          	set_b_value(db_address(int(b1) + b_offset +4), src, on)              						             end
+     
+   default
+      begin
+      end
+   set invalid stand_control_menu
+   end
+
+
+
+
+
+! CONTROL MENU !
+just=centrecentre
+w=70 h=95
+set rect stand_control_menu 
+set title stand_control_menu = "Control Menu"
+set empty stand_control_menu 
+
+
+! DRAW PMV !
+
+bg=stand_bg
+fg=valve_fg
+just = centrecentre
+
+rect (w=70,h=110,fg=bg)
+x -= 35 y += 55 add
+y -= 110 add
+x += 70 add line (fg=decorlight) clear 
+y += 1 add
+y += 109 add
+x -= 70 add line (fg=decorshadow) clear
+x += 35 y -= 55
+
+if b_inputs[2].b_value and b_inputs[3].b_value == off then
+   begin
+   if rot_angle == "n" then
+      begin
+      lw=2
+      y += 10 x += 6
+      x -= 12 add
+      x += 12 add 
+      y += 10 x -=6 add
+      y -= 10 x -=6 add
+      fill clear
+      x += 6 add
+      y -= 20 add
+      line clear
+      x += 6 add
+      x -= 12 add 
+      y -= 11 x +=6 add
+      y += 11 x +=6 add
+      fill clear
+      lw=4
+      x -= 6 y += 9 
+      circle (w=42,h=42)
+      y -= 40
+      end
+   else if rot_angle == "y" then
+      begin
+      x += 10 y += 6
+      lw=2
+      y -= 12 add
+      y += 12 add 
+      x += 10 y -=6 add
+      x -= 10 y -=6 add
+      fill clear
+      y += 6 add
+      x -= 20 add
+      line clear
+      y += 6 add
+      y -= 12 add 
+      x -= 11 y +=6 add
+      x += 11 y +=6 add
+      fill clear
+      lw=4
+      y -= 7 x += 10 
+      circle (w=42,h=42)
+      y -= 40
+      end
+
+  
+   ch =20
+   tfg = black
+   text (ident)
+   ch =16
+   y += 78  text ("OPENED")
+   clear
+   set add stand_control_menu = "Alter Tagged Message"
+   set add stand_control_menu = "Clear Tagged Message"
+   set add stand_control_menu = "Alter Transfer of Service"
+   if plc_inputs[1].b_value==0 or 
+      plc_inputs[2].b_value==0 then
+      set add stand_control_menu = "Close Valve"
+   end
+
+else if b_inputs[2].b_value == off and b_inputs[3].b_value then
+   begin
+
+   if rot_angle == "y" then
+      begin
+      lw=2
+      y += 10 x += 6
+      x -= 12 add
+      x += 12 add 
+      y += 10 x -=6 add
+      y -= 10 x -=6 add
+      fill clear
+      x += 6 add
+      y -= 20 add
+      line clear
+      x += 6 add
+      x -= 12 add 
+      y -= 11 x +=6 add
+      y += 11 x +=6 add
+      fill clear
+      lw=4
+      x -= 6 y += 9 
+      circle (w=42,h=42)
+      y -= 40
+      end
+   else if rot_angle == "n" then
+      begin
+      x += 10 y += 6
+      lw=2
+      y -= 12 add
+      y += 12 add 
+      x += 10 y -=6 add
+      x -= 10 y -=6 add
+      fill clear
+      y += 6 add
+      x -= 20 add
+      line clear
+      y += 6 add
+      y -= 12 add 
+      x -= 11 y +=6 add
+      x += 11 y +=6 add
+      fill clear
+      lw=4
+      y -= 7 x += 10 
+      circle (w=42,h=42)
+      y -= 40
+      end
+
+   ch =20
+   tfg = black
+   text (ident)
+   ch =16
+   y += 78 text ("CLOSED")
+   set add stand_control_menu = "Alter Tagged Message"
+   set add stand_control_menu = "Clear Tagged Message"
+   set add stand_control_menu = "Alter Transfer of Service"
+   if plc_inputs[1].b_value==0 or 
+      plc_inputs[2].b_value==0 then
+      set add stand_control_menu = "Open Valve"
+
+   end
+
+else if b_inputs[2].b_value == off and b_inputs[3].b_value == off then
+   begin
+   lw = 1
+   x += 13 y -= 13 
+   x -= 8 add
+   x += 8 y += 8 add 
+   y -= 8 add 
+   x -= 8 add fill clear
+   lw=2
+   x += 4 y += 4 add
+   x -= 18 y += 18 add line clear
+   lw =2
+   x -= 4 y-= 5 add
+   y += 9 add 
+   x += 9 add 
+   y -= 11 x -= 11 add
+   fill clear
+   y -= 3 x += 15 
+   lw=4
+   circle (w=42,h=42)
+   y -= 40
+   ch =20
+   tfg = black
+   text (ident)
+   ch =18
+   y += 78  text ("TRAVEL")
+   clear
+   set add stand_control_menu = "Alter Tagged Message"
+   set add stand_control_menu = "Clear Tagged Message"
+   set add stand_control_menu = "Alter Transfer of Service"
+   end
+
+else if b_inputs[2].b_value and b_inputs[3].b_value then
+   begin
+   lw=4
+   x += 10 y += 6
+   y -= 7 x -= 10 
+   circle (w=42,h=42)
+   ch = 30 
+   text ("?")
+   y -= 40
+   
+   ch =20
+   tfg = black
+   text (ident)
+   ch =16
+   y += 78  text ("ERROR")
+   clear
+   set add stand_control_menu = "Alter Tagged Message"
+   set add stand_control_menu = "Clear Tagged Message"
+   set add stand_control_menu = "Alter Transfer of Service"
+   end
+
+
+! TAG MESSAGE BOX !
+
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+end
+
+object main_object(bg,fg,just,angle)
+ 
+begin
+y = 0 x = -50
+pmv(15000,101,100,heathrow,"n","MV 4")
+x+=100
+pmv(15000,101,100,heathrow,"y","MV 4")
+ 
+end
+mimic = main_object w = 300,h = 200,just = centrecentre, bg=black

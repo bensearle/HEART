@@ -1,0 +1,2163 @@
+load cust_objs
+load libutil
+load wrkstn_libutil
+load alarm_config
+load stats_config
+load archive_config
+load trend_config
+load cmdparser_libutil
+load master_util
+load menu_view
+load menu_util
+load alarm_types_libutil
+load alarm_popups_libutil
+load alarm_printing_libutil
+load alarm_view
+load disabled_alarm_view
+load gadgets_libutil
+
+type string_80 = string(80)
+
+type volume_table_type = table(volume_percent=int)
+
+type commands = string(80)
+
+type ua_oa_info_type =  workstations(wrkstn_number,
+                                          unaccepted_alarms,
+					  overall_alarms)
+
+type banner_string_type = table(str = string,
+                                src = string_40,
+				new_alarm = yesno,
+				external_alarm_on = yesno,
+				alarm_db_addr = db_address,
+				alarm_command_text = string)
+
+type server_id_type = enum(invalid_serv,
+			   serv_1,
+			   serv_2,
+			   serv_3,
+			   serv_4,
+			   serv_5,
+			   serv_6)
+
+type options = enum(cmd_continue = "Continue",
+		    cmd_cancel = "Cancel current command",
+		    cmd_clear = "Clear command buffer")
+
+type cmd_buffer_row = table(cmd = commands,
+			    reply = string_160)
+
+type cmd_buffer_type =  cmd_buffer_row[5]
+
+type display_mode_type = enum(alarm_banner,mail_message,system_message)
+
+type user_number_type =  users(user_number)
+
+type alarm_type =  db_elements(db_addr,
+                                    db_name,
+				    alarm_status,
+				    alarm_level,
+				    alarm_text,
+				    alarm_time,
+				    alarm_value)
+
+type alarm_banner_type =  workstations(alarm_db_addr,
+                                            wrkstn_number,
+                                            unaccepted_alarms,
+					    alarm_value,
+                                            alarm_time,
+					    alarm_level,
+                                            alarm_status,
+                                            alarm_text,
+                                            new_alarm,
+					    external_alarm_on,
+                                            alarm_command_text)
+
+type wrkstn_mail_type =  workstations(mail_message,
+                                           mail_message_time,
+					   mail_command_text)
+
+type wrkstn_mail_display_type = table (wrkstn_mail = string,
+				       cmd_txt = string_40)
+
+type wrkstn_sys_message_type =  workstations(system_message,
+                                                  system_message_time,
+                                                  system_message_success,
+						  system_command_text)
+
+type wrkstn_sys_message_display_type = table (wrkstn_sys_message = string,
+				              cmd_txt = string_40)
+
+
+type user_logged_in_type =  workstations(wrkstn_number,
+                                              user_name, 
+                                              wrkstn_is_me)
+
+type login_info_row = table(source = source,
+			    status = int,
+			    wrkstn_number = wrkstn_number,
+			    name = string_30,
+			    user_name = string_30,
+			    access_str = string_30)
+
+type login_table_type =  login_info_row[6]
+
+type banner_table_type =  alarm_banner_type[6]
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+object get_login_status = name_type
+var ws_info = loopback  ws_info_row
+begin
+
+   get_login_status = ""
+
+   ws_info = get_ws_info(source(0))
+   if valid ws_info and ws_info.user_name <> "" then
+      get_login_status = ws_info.user_name
+
+   if get_login_status == "" then
+      begin
+      ws_info = get_ws_info(source(1))
+      if valid ws_info and ws_info.user_name <> "" then
+	 get_login_status = ws_info.user_name
+      end
+
+   if get_login_status == "" then
+      begin
+      ws_info = get_ws_info(source(2))
+      if valid ws_info and ws_info.user_name <> "" then
+	 get_login_status = ws_info.user_name
+      end
+
+   if get_login_status == "" then
+      begin
+      ws_info = get_ws_info(source(3))
+      if valid ws_info and ws_info.user_name <> "" then
+	 get_login_status = ws_info.user_name
+      end
+
+   if get_login_status == "" then
+      begin
+      ws_info = get_ws_info(source(4))
+      if valid ws_info and ws_info.user_name <> "" then
+	 get_login_status = ws_info.user_name
+      end
+
+   if get_login_status == "" then
+      begin
+      ws_info = get_ws_info(source(5))
+      if valid ws_info and ws_info.user_name <> "" then
+	 get_login_status = ws_info.user_name
+      end
+end
+
+object get_access_levels (l_set = set( access_level)) = string_24
+
+var i = access_level
+
+begin
+   get_access_levels = ""
+   for i from min access_level to max access_level do
+      begin
+      if i in l_set then
+	 get_access_levels += i + "," 
+      end
+   if get_access_levels <> "" then
+      get_access_levels = getchars (1, nchars (get_access_levels) - 1,
+					get_access_levels) 
+end
+
+object alarm_data(bg,alarm_details = banner_string_type,
+                  exit_yesno = yesno,
+		  text_colour = colour)
+var old_address = loopback  db_address
+var alarm_info = input  alarm_type
+begin
+
+   if invalid old_address then
+      old_address = alarm_details.alarm_db_addr
+
+   tfg = text_colour
+
+   if old_address <> alarm_details.alarm_db_addr then
+      set invalid alarm_info
+
+   set source alarm_info = alarm_details.src
+   set mayexist alarm_info.db_name
+   set filter alarm_info.db_addr = lim_eq
+   set limit alarm_info.db_addr = alarm_details.alarm_db_addr
+   set persist alarm_info
+
+   request alarm_info
+
+   intf = decimal
+   realf = fixed3
+
+   y = 10
+   if valid alarm_info then
+      begin
+      text(tfg = black,font = font_bold,x = 10,"Name")
+      text(tfg = black,font = font_bold,x = 60, "  :  ")
+      text(x = 85,alarm_info.db_name)
+      y += ch + 3
+      text(tfg = black,font = font_bold,x = 10,"Value")
+      text(tfg = black,font = font_bold,x = 60, "  :  ")
+      text(x = 85,alarm_info.alarm_value)
+      y += ch + 3
+      text(tfg = black,font = font_bold,x = 10,"Level")
+      text(tfg = black,font = font_bold,x = 60, "  :  ")
+      text(x = 85,alarm_info.alarm_level)
+      y += ch + 3
+      text(tfg = black,font = font_bold,x = 10,"Time")
+      text(tfg = black,font = font_bold,x = 60, "  :  ")
+      text(x = 85,alarm_info.alarm_time)
+      end
+   else
+      xv_message(x = 200,y = 30,just = centrecentre,ch = 12,fg =  decoroff,
+          "Alarm Banner Message",
+	  "Waiting for " + alarm_details.src + " reponses")
+
+   old_address = alarm_details.alarm_db_addr
+
+end
+
+mimic alarm_data = alarm_data w = 400,h = 90,bg = decoroff
+
+object find_current_wrkstn_mail(ip_wm1 = wrkstn_mail_type,
+				ip_wm2 = wrkstn_mail_type,
+				ip_wm3 = wrkstn_mail_type,
+				ip_wm4 = wrkstn_mail_type,
+				ip_wm5 = wrkstn_mail_type,
+				ip_wm6 = wrkstn_mail_type) = server_id_type
+
+var wm1 = loopback  wrkstn_mail_type
+var wm2 = loopback  wrkstn_mail_type
+var wm3 = loopback  wrkstn_mail_type
+var wm4 = loopback  wrkstn_mail_type
+var wm5 = loopback  wrkstn_mail_type
+var wm6 = loopback  wrkstn_mail_type
+
+begin
+
+   if valid ip_wm1 then
+      wm1 = ip_wm1
+   else
+      begin
+      set default wm1
+      wm1.mail_message_time = min time
+      end
+
+   if valid ip_wm2 then
+      wm2 = ip_wm2
+   else
+      begin
+      set default wm2
+      wm2.mail_message_time = min time
+      end
+
+   if valid ip_wm3 then
+      wm3 = ip_wm3
+   else
+      begin
+      set default wm3
+      wm3.mail_message_time = min time
+      end
+
+   if valid ip_wm4 then
+      wm4 = ip_wm4
+   else
+      begin
+      set default wm4
+      wm4.mail_message_time = min time
+      end
+
+   if valid ip_wm5 then
+      wm5 = ip_wm5
+   else
+      begin
+      set default wm5
+      wm5.mail_message_time = min time
+      end
+
+   if valid ip_wm6 then
+      wm6 = ip_wm6
+   else
+      begin
+      set default wm6
+      wm6.mail_message_time = min time
+      end
+
+   if wm1.mail_message_time >= wm2.mail_message_time and
+       wm1.mail_message_time >= wm3.mail_message_time and
+       wm1.mail_message_time >= wm4.mail_message_time and
+       wm1.mail_message_time >= wm5.mail_message_time and
+       wm1.mail_message_time >= wm6.mail_message_time then
+      find_current_wrkstn_mail = serv_1
+   else if wm2.mail_message_time >= wm1.mail_message_time and
+       wm2.mail_message_time >= wm3.mail_message_time and
+       wm2.mail_message_time >= wm4.mail_message_time and
+       wm2.mail_message_time >= wm5.mail_message_time and
+       wm2.mail_message_time >= wm6.mail_message_time then
+      find_current_wrkstn_mail = serv_2
+   else if wm3.mail_message_time >= wm1.mail_message_time and
+       wm3.mail_message_time >= wm2.mail_message_time and
+       wm3.mail_message_time >= wm4.mail_message_time and
+       wm3.mail_message_time >= wm5.mail_message_time and
+       wm3.mail_message_time >= wm6.mail_message_time then
+      find_current_wrkstn_mail = serv_3
+   else if wm4.mail_message_time >= wm1.mail_message_time and
+       wm4.mail_message_time >= wm2.mail_message_time and
+       wm4.mail_message_time >= wm3.mail_message_time and
+       wm4.mail_message_time >= wm5.mail_message_time and
+       wm4.mail_message_time >= wm6.mail_message_time then
+      find_current_wrkstn_mail = serv_4
+   else if wm5.mail_message_time >= wm1.mail_message_time and
+       wm5.mail_message_time >= wm2.mail_message_time and
+       wm5.mail_message_time >= wm3.mail_message_time and
+       wm5.mail_message_time >= wm4.mail_message_time and
+       wm5.mail_message_time >= wm6.mail_message_time then
+      find_current_wrkstn_mail = serv_5
+   else if wm6.mail_message_time >= wm1.mail_message_time and
+       wm6.mail_message_time >= wm2.mail_message_time and
+       wm6.mail_message_time >= wm3.mail_message_time and
+       wm6.mail_message_time >= wm4.mail_message_time and
+       wm6.mail_message_time >= wm5.mail_message_time then
+      find_current_wrkstn_mail = serv_6
+      
+end
+
+object get_wrkstn_mail(src = source) = wrkstn_mail_type
+var wrkstn_mail = input  wrkstn_mail_type
+var w_info = ws_info_row
+begin
+
+   w_info = get_ws_info(src)
+   if valid w_info then
+      begin
+      set source wrkstn_mail = src
+      set filter wrkstn_mail.wrkstn_number = lim_eq
+      set limit wrkstn_mail.wrkstn_number = w_info.wrkstn_number
+      set mayexist wrkstn_mail.mail_command_text
+      set mayexist wrkstn_mail.mail_message_time
+      set persist wrkstn_mail
+      request wrkstn_mail
+      end
+   get_wrkstn_mail = wrkstn_mail
+
+end
+
+object set_up_mail_message = wrkstn_mail_display_type
+var server_id = server_id_type
+var current_source = source
+var wrkstn_mail = loopback  wrkstn_mail_display_type
+var old_wrkstn_mail = loopback  wrkstn_mail_type
+var wrkstn_mail_1 = loopback  wrkstn_mail_type
+var wrkstn_mail_2 = loopback  wrkstn_mail_type
+var wrkstn_mail_3 = loopback  wrkstn_mail_type
+var wrkstn_mail_4 = loopback  wrkstn_mail_type
+var wrkstn_mail_5 = loopback  wrkstn_mail_type
+var wrkstn_mail_6 = loopback  wrkstn_mail_type
+var current_wrkstn_mail = loopback  wrkstn_mail_type
+begin
+ 
+   if invalid old_wrkstn_mail then
+      set default old_wrkstn_mail
+    
+   wrkstn_mail_1 = get_wrkstn_mail(source(0))
+   wrkstn_mail_2 = get_wrkstn_mail(source(1))
+   wrkstn_mail_3 = get_wrkstn_mail(source(2))
+   wrkstn_mail_4 = get_wrkstn_mail(source(3))
+   wrkstn_mail_5 = get_wrkstn_mail(source(4))
+   wrkstn_mail_6 = get_wrkstn_mail(source(5))
+
+   server_id = find_current_wrkstn_mail(wrkstn_mail_1,
+				        wrkstn_mail_2,
+				        wrkstn_mail_3,
+				        wrkstn_mail_4,
+					wrkstn_mail_5,
+					wrkstn_mail_6)
+
+   case server_id of
+      serv_1
+	 begin
+	 current_wrkstn_mail = wrkstn_mail_1
+	 current_source = source(0)
+	 end
+      serv_2
+	 begin
+	 current_wrkstn_mail = wrkstn_mail_2
+	 current_source = source(1)
+	 end
+      serv_3
+	 begin
+	 current_wrkstn_mail = wrkstn_mail_3
+	 current_source = source(2)
+	 end
+      serv_4
+	 begin
+	 current_wrkstn_mail = wrkstn_mail_4
+	 current_source = source(3)
+	 end
+      serv_5
+	 begin
+	 current_wrkstn_mail = wrkstn_mail_5
+	 current_source = source(4)
+	 end
+      serv_6
+	 begin
+	 current_wrkstn_mail = wrkstn_mail_6
+	 current_source = source(5)
+	 end
+   default
+      begin
+      end
+ 
+   if not(old_wrkstn_mail.mail_message == current_wrkstn_mail.mail_message and
+       old_wrkstn_mail.mail_message_time ==
+       current_wrkstn_mail.mail_message_time) then
+      begin
+      if current_wrkstn_mail.mail_message_time <> min time then
+         begin
+         timef = LOCAL_DMY_HMS
+	 set default wrkstn_mail
+         wrkstn_mail.wrkstn_mail = current_wrkstn_mail.mail_message_time +
+			       "   " + current_source + " : " +
+			       current_wrkstn_mail.mail_message
+	 wrkstn_mail.cmd_txt = current_wrkstn_mail.mail_command_text
+	 set_up_mail_message = wrkstn_mail
+         old_wrkstn_mail = current_wrkstn_mail
+         bell(100,1000,1)
+         end
+      end       
+   if invalid current_wrkstn_mail then
+      begin
+      set default wrkstn_mail
+      set_up_mail_message = wrkstn_mail
+      set invalid old_wrkstn_mail
+      end
+end
+
+object display_wrkstn_mail(x,y,wrkstn_mail = string)
+var old_wrkstn_mail = loopback  wrkstn_mail_type
+begin
+ 
+   x = 125
+   ch = 14
+   font = font_bold
+   while(length (wrkstn_mail) > 720) do
+      ch --
+
+   timef=LOCAL_DMY_HMS
+
+   if valid wrkstn_mail then
+      text(wrkstn_mail)
+ 
+end
+
+object find_current_wrkstn_sys_message(ip_ws1 = wrkstn_sys_message_type,
+				ip_ws2 = wrkstn_sys_message_type,
+				ip_ws3 = wrkstn_sys_message_type,
+				ip_ws4 = wrkstn_sys_message_type,
+				ip_ws5 = wrkstn_sys_message_type,
+				ip_ws6 = wrkstn_sys_message_type) 
+				= server_id_type
+
+var wsm1 = loopback  wrkstn_sys_message_type
+var wsm2 = loopback  wrkstn_sys_message_type
+var wsm3 = loopback  wrkstn_sys_message_type
+var wsm4 = loopback  wrkstn_sys_message_type
+var wsm5 = loopback  wrkstn_sys_message_type
+var wsm6 = loopback  wrkstn_sys_message_type
+
+var default_message = loopback  wrkstn_sys_message_type
+begin
+
+   if valid ip_ws1 then
+      wsm1 = ip_ws1
+   else
+      begin
+      set default wsm1
+      wsm1.system_message_time = min time
+      end
+
+   if valid ip_ws2 then
+      wsm2 = ip_ws2
+   else
+      begin
+      set default wsm2
+      wsm2.system_message_time = min time
+      end
+
+   if valid ip_ws3 then
+      wsm3 = ip_ws3
+   else
+      begin
+      set default wsm3
+      wsm3.system_message_time = min time
+      end
+
+   if valid ip_ws4 then
+      wsm4 = ip_ws4
+   else
+      begin
+      set default wsm4
+      wsm4.system_message_time = min time
+      end
+
+   if valid ip_ws5 then
+      wsm4 = ip_ws5
+   else
+      begin
+      set default wsm5
+      wsm5.system_message_time = min time
+      end
+
+   if valid ip_ws6 then
+      wsm6 = ip_ws6
+   else
+      begin
+      set default wsm6
+      wsm6.system_message_time = min time
+      end
+
+   if wsm1.system_message_time >= wsm2.system_message_time and
+       wsm1.system_message_time >= wsm3.system_message_time and
+       wsm1.system_message_time >= wsm4.system_message_time and
+       wsm1.system_message_time >= wsm5.system_message_time and
+       wsm1.system_message_time >= wsm6.system_message_time then
+      find_current_wrkstn_sys_message = serv_1
+   else if wsm2.system_message_time >= wsm1.system_message_time and
+       wsm2.system_message_time >= wsm3.system_message_time and
+       wsm2.system_message_time >= wsm4.system_message_time and
+       wsm2.system_message_time >= wsm5.system_message_time and
+       wsm2.system_message_time >= wsm6.system_message_time then
+      find_current_wrkstn_sys_message = serv_2
+   else if wsm3.system_message_time >= wsm1.system_message_time and
+       wsm3.system_message_time >= wsm2.system_message_time and
+       wsm3.system_message_time >= wsm4.system_message_time and
+       wsm3.system_message_time >= wsm5.system_message_time and
+       wsm3.system_message_time >= wsm6.system_message_time then
+      find_current_wrkstn_sys_message = serv_3
+   else if wsm4.system_message_time >= wsm1.system_message_time and
+       wsm4.system_message_time >= wsm2.system_message_time and
+       wsm4.system_message_time >= wsm3.system_message_time and
+       wsm4.system_message_time >= wsm5.system_message_time and
+       wsm4.system_message_time >= wsm6.system_message_time then
+      find_current_wrkstn_sys_message = serv_4
+   else if wsm5.system_message_time >= wsm1.system_message_time and
+       wsm5.system_message_time >= wsm2.system_message_time and
+       wsm5.system_message_time >= wsm3.system_message_time and
+       wsm5.system_message_time >= wsm4.system_message_time and
+       wsm5.system_message_time >= wsm6.system_message_time then
+      find_current_wrkstn_sys_message = serv_5
+   else if wsm6.system_message_time >= wsm1.system_message_time and
+       wsm6.system_message_time >= wsm2.system_message_time and
+       wsm6.system_message_time >= wsm3.system_message_time and
+       wsm6.system_message_time >= wsm4.system_message_time and
+       wsm6.system_message_time >= wsm5.system_message_time then
+      find_current_wrkstn_sys_message = serv_6
+      
+end
+
+object get_wrkstn_sys_message(src = source) = wrkstn_sys_message_type
+var wrkstn_sys_message = input  wrkstn_sys_message_type
+var w_info = ws_info_row
+begin
+
+   w_info = get_ws_info(src)
+
+   if valid w_info then
+      begin
+      set source wrkstn_sys_message = src
+      set filter wrkstn_sys_message.wrkstn_number = lim_eq
+      set limit wrkstn_sys_message.wrkstn_number = w_info.wrkstn_number
+      set mayexist wrkstn_sys_message.system_command_text
+      set mayexist wrkstn_sys_message.system_message_time
+      set mayexist wrkstn_sys_message.system_message_success
+      set persist wrkstn_sys_message
+      request wrkstn_sys_message
+      end
+   get_wrkstn_sys_message = wrkstn_sys_message
+
+end
+
+object set_up_system_message = wrkstn_sys_message_display_type
+var current_source = source
+
+var wrkstn_sys_message = loopback  wrkstn_sys_message_display_type
+var wrkstn_sys_message_1 = loopback  wrkstn_sys_message_type
+var wrkstn_sys_message_2 = loopback  wrkstn_sys_message_type
+var wrkstn_sys_message_3 = loopback  wrkstn_sys_message_type
+var wrkstn_sys_message_4 = loopback  wrkstn_sys_message_type
+var wrkstn_sys_message_5 = loopback  wrkstn_sys_message_type
+var wrkstn_sys_message_6 = loopback  wrkstn_sys_message_type
+
+var current_wrkstn_sys_message = loopback  wrkstn_sys_message_type
+var old_wrkstn_sys_message = loopback  wrkstn_sys_message_type
+var server_id = server_id_type
+begin
+ 
+   if invalid old_wrkstn_sys_message then
+      set default old_wrkstn_sys_message
+ 
+   wrkstn_sys_message_1 = get_wrkstn_sys_message(source(0))
+   wrkstn_sys_message_2 = get_wrkstn_sys_message(source(1))
+   wrkstn_sys_message_3 = get_wrkstn_sys_message(source(2))
+   wrkstn_sys_message_4 = get_wrkstn_sys_message(source(3))
+   wrkstn_sys_message_5 = get_wrkstn_sys_message(source(4))
+   wrkstn_sys_message_6 = get_wrkstn_sys_message(source(5))
+
+   server_id = find_current_wrkstn_sys_message(wrkstn_sys_message_1,
+				               wrkstn_sys_message_2,
+				               wrkstn_sys_message_3,
+				               wrkstn_sys_message_4,
+					       wrkstn_sys_message_5,
+					       wrkstn_sys_message_6)
+
+   case server_id of
+      serv_1
+	 begin
+	 current_wrkstn_sys_message = wrkstn_sys_message_1
+	 current_source = source(0)
+	 end
+      serv_2
+	 begin
+	 current_wrkstn_sys_message = wrkstn_sys_message_2
+	 current_source = source(1)
+	 end
+      serv_3
+	 begin
+	 current_wrkstn_sys_message = wrkstn_sys_message_3
+	 current_source = source(2)
+	 end
+      serv_4
+	 begin
+	 current_wrkstn_sys_message = wrkstn_sys_message_4
+	 current_source = source(3)
+	 end
+      serv_5
+	 begin
+	 current_wrkstn_sys_message = wrkstn_sys_message_5
+	 current_source = source(4)
+	 end
+      serv_6
+	 begin
+	 current_wrkstn_sys_message = wrkstn_sys_message_6
+	 current_source = source(5)
+	 end
+   default
+      begin
+      end
+ 
+   if not(old_wrkstn_sys_message.system_message ==
+       current_wrkstn_sys_message.system_message and
+       old_wrkstn_sys_message.system_message_time ==
+       current_wrkstn_sys_message.system_message_time) and
+       current_wrkstn_sys_message.system_message_time <> min time then
+      begin
+      timef = LOCAL_DMY_HMS
+      set default wrkstn_sys_message
+      wrkstn_sys_message.wrkstn_sys_message = 
+	  current_wrkstn_sys_message.system_message_time +
+	  "    " + current_source + " : " + 
+	  current_wrkstn_sys_message.system_message
+      wrkstn_sys_message.cmd_txt =
+	  current_wrkstn_sys_message.system_command_text
+      set_up_system_message = wrkstn_sys_message
+      old_wrkstn_sys_message = current_wrkstn_sys_message
+      bell(100,1000,1)
+      end
+ 
+end
+
+object display_system_message(wrkstn_sys_message = string)
+begin
+ 
+   if customer == "HEATHROW" then
+      x = 130
+   else
+      x = 125
+   ch = 14
+   while(length(wrkstn_sys_message) > 720) do
+      begin
+      ch --
+      y ++
+      end
+
+   font = font_bold
+   timef = LOCAL_DMY_HMS
+   if valid wrkstn_sys_message then
+      begin
+      if customer == "HEATHROW" then
+	 tfg=orange3
+      else
+	 tfg=orange
+      text(wrkstn_sys_message)
+      end 
+
+end
+
+object find_current_banner(b1 = alarm_banner_type,
+			   b2 = alarm_banner_type,
+			   b3 = alarm_banner_type,
+			   b4 = alarm_banner_type,
+			   b5 = alarm_banner_type,
+			   b6 = alarm_banner_type) = server_id_type
+
+var i = int
+var al = loopback  banner_table_type
+
+var ib1 = loopback  alarm_banner_type
+var ib2 = loopback  alarm_banner_type
+var ib3 = loopback  alarm_banner_type
+var ib4 = loopback  alarm_banner_type
+var ib5 = loopback  alarm_banner_type
+var ib6 = loopback  alarm_banner_type
+
+var tmp_al = loopback  alarm_banner_type
+
+var current_banner = loopback  server_id_type
+
+begin
+
+   if invalid b1 then
+      begin
+      set default ib1
+      ib1.alarm_time = min time
+      end
+   else
+      ib1 = b1
+
+   if invalid b2 then
+      begin
+      set default ib2
+      ib2.alarm_time = min time
+      end
+   else
+      ib2 = b2
+
+   if invalid b3 then
+      begin
+      set default ib3
+      ib3.alarm_time = min time
+      end
+   else
+      ib3 = b3
+
+   if invalid b4 then
+      begin
+      set default ib4
+      ib4.alarm_time = min time
+      end
+   else
+      ib4 = b4
+
+   if invalid b5 then
+      begin
+      set default ib5
+      ib5.alarm_time = min time
+      end
+   else
+      ib5 = b5
+
+   if invalid b6 then
+      begin
+      set default ib6
+      ib6.alarm_time = min time
+      end
+   else
+      ib6 = b6
+
+   set default al
+
+   al[1] = ib1
+   al[2] = ib2
+   al[3] = ib3
+   al[4] = ib4
+   al[5] = ib5
+   al[6] = ib6
+
+   for i from 1 to 3 do
+      begin
+      if al[1].alarm_level > al[2].alarm_level then
+	 begin
+	 tmp_al = al[2]
+	 al[2] = al[3]
+	 al[3] = al[4]
+	 al[4] = al[5]
+	 al[5] = al[6]
+	 al[4] = tmp_al
+	 end
+      else if al[1].alarm_level == al[2].alarm_level then
+	 begin
+	 if al[1].alarm_time >= al[2].alarm_time then
+	    begin
+	    tmp_al = al[2]
+	    al[2] = al[3]
+	    al[3] = al[4]
+	    al[4] = al[5]
+	    al[5] = al[6]
+	    al[6] = tmp_al
+	    end
+         else
+	    begin
+	    tmp_al = al[1]
+	    al[1] = al[2]
+	    al[2] = al[3]
+	    al[3] = al[4]
+	    al[4] = al[5]
+	    al[5] = al[6]
+	    al[6] = tmp_al
+	    end
+	 end
+      else
+	 begin
+	 tmp_al = al[1]
+	 al[1] = al[2]
+	 al[2] = al[3]
+	 al[3] = al[4]
+	 al[4] = al[5]
+	 al[5] = al[6]
+	 al[6] = tmp_al
+	 end
+      end
+
+   if al[1].alarm_level == ib1.alarm_level and
+       al[1].alarm_time == ib1.alarm_time and
+       al[1].alarm_db_addr == ib1.alarm_db_addr then
+      current_banner = serv_1
+   else if al[1].alarm_level == ib2.alarm_level and
+       al[1].alarm_time == ib2.alarm_time and
+       al[1].alarm_db_addr == ib2.alarm_db_addr then
+      current_banner = serv_2
+   else if al[1].alarm_level == ib3.alarm_level and
+       al[1].alarm_time == ib3.alarm_time and
+       al[1].alarm_db_addr == ib3.alarm_db_addr then
+      current_banner = serv_3
+   else if al[1].alarm_level == ib4.alarm_level and
+       al[1].alarm_time == ib4.alarm_time and
+       al[1].alarm_db_addr == ib4.alarm_db_addr then
+      current_banner = serv_4
+   else if al[1].alarm_level == ib5.alarm_level and
+       al[1].alarm_time == ib5.alarm_time and
+       al[1].alarm_db_addr == ib5.alarm_db_addr then
+      current_banner = serv_5
+   else if al[1].alarm_level == ib6.alarm_level and
+       al[1].alarm_time == ib6.alarm_time and
+       al[1].alarm_db_addr == ib6.alarm_db_addr then
+      current_banner = serv_6
+
+   if valid b1 or valid b2 or valid b3 or valid b4 or valid b5 or valid b6 then
+      find_current_banner = current_banner
+   else
+      find_current_banner = invalid_serv
+
+end
+
+object get_alarm_banner(src = source) = alarm_banner_type
+var banner = input  alarm_banner_type
+var w_info = ws_info_row
+begin
+
+   w_info = get_ws_info(src)
+   if valid w_info then
+      begin
+      set source banner = src
+      set mayexist banner.alarm_status
+      set mayexist banner.alarm_text
+      set mayexist banner.alarm_db_addr
+      set priority banner.wrkstn_number = 10
+      set filter banner.wrkstn_number = lim_eq
+      set limit banner.wrkstn_number = w_info.wrkstn_number
+      set filter banner.alarm_status = lim_eq
+      set limit banner.alarm_status = w_note
+      set persist banner
+      request banner
+      end
+   get_alarm_banner = banner
+
+end
+
+object set_up_alarm_banner(master_volume = int) = banner_string_type
+var current_source = source
+var server_id = server_id_type
+var level = int
+var banner_1 = loopback  alarm_banner_type
+var banner_2 = loopback  alarm_banner_type
+var banner_3 = loopback  alarm_banner_type
+var banner_4 = loopback  alarm_banner_type
+var banner_5 = loopback  alarm_banner_type
+var banner_6 = loopback  alarm_banner_type
+var banner = loopback  alarm_banner_type
+var old_banner = loopback  alarm_banner_type
+var new_banner_string = loopback  banner_string_type
+var op_port = filewrite  string
+
+begin
+ 
+ 
+   banner_1 = get_alarm_banner(source(0))
+   banner_2 = get_alarm_banner(source(1))
+   banner_3 = get_alarm_banner(source(2))
+   banner_4 = get_alarm_banner(source(3))
+   banner_5 = get_alarm_banner(source(4))
+   banner_6 = get_alarm_banner(source(5))
+
+   server_id = find_current_banner(banner_1,
+			           banner_2,
+			           banner_3,
+			           banner_4,
+				   banner_5,
+				   banner_6)
+
+   case server_id of
+      invalid_serv
+	begin
+	set invalid banner
+	end
+      serv_1
+	 begin
+	 banner = banner_1
+	 current_source = source(0)
+	 end
+      serv_2
+	 begin
+	 banner = banner_2
+	 current_source = source(1)
+	 end
+      serv_3
+	 begin
+	 banner = banner_3
+	 current_source = source(2)
+	 end
+      serv_4
+	 begin
+	 banner = banner_4
+	 current_source = source(3)
+	 end
+      serv_5
+	 begin
+	 banner = banner_5
+	 current_source = source(4)
+	 end
+      serv_6
+	 begin
+	 banner = banner_6
+	 current_source = source(5)
+	 end
+   default
+      begin
+      end
+
+   if invalid old_banner and valid banner then
+      set default old_banner
+ 
+   timef = LOCAL_DMY_HMS
+   realf = fixed3
+   level = banner.alarm_level
+   if customer == "HEATHROW" then
+      begin
+      set file op_port = "/usr/wrkstn/alarm_dir/npipe"
+      set noonchange op_port
+      end
+   else
+      set file op_port = "/dev/ttyb"
+   if not(old_banner.alarm_text == banner.alarm_text and
+       old_banner.alarm_db_addr == banner.alarm_db_addr and
+       old_banner.alarm_status == banner.alarm_status and
+       old_banner.alarm_time == banner.alarm_time) then
+      begin
+      set default new_banner_string
+      new_banner_string.str = banner.alarm_time + "   " + 
+		  banner.alarm_text + "  " + banner.alarm_value
+      new_banner_string.src = current_source
+      new_banner_string.new_alarm = banner.new_alarm
+      new_banner_string.external_alarm_on = banner.external_alarm_on
+      new_banner_string.alarm_command_text = banner.alarm_command_text
+      new_banner_string.alarm_db_addr = banner.alarm_db_addr
+      if banner.new_alarm == yes and banner.external_alarm_on == yes then
+	 begin
+	 intf = decimal
+	 if old_banner.new_alarm == no then
+	    begin
+	    if customer == "HEATHROW" then
+	       begin
+	       op_port = "/usr/wrkstn/alarm_dir/play -v "+master_volume+" /usr/wrkstn/alarm_dir/tone_"+level+"&"
+	       end
+	    else
+	       begin
+	       bell(100,1000,1)
+	       op_port = toascii(2) + level + "t90" + toascii(13) 
+	       end
+	    request op_port
+	    end
+	 else if banner.alarm_level >= old_banner.alarm_level and
+	     banner.alarm_time > old_banner.alarm_time then
+	    begin
+	    if customer == "HEATHROW" then 
+	       begin
+	       op_port = "/usr/wrkstn/alarm_dir/play -v "+master_volume+" /usr/wrkstn/alarm_dir/tone_"+level+"&"
+	       end
+	    else
+	       begin
+	       bell(100,1000,1)
+	       op_port = toascii(2) + level + "t90" + toascii(13) 
+	       end
+	    request op_port
+	    end
+	 else 
+	    begin
+	    if customer == "HEATHROW" then 
+	       begin
+	       end
+	    else
+	       begin
+	       op_port = toascii(2) + "0" + toascii(13)
+	       request op_port
+	       end
+	    end
+	 end
+      else 
+	 begin
+	 if customer == "HEATHROW" then
+	    begin
+	    end
+	 else
+	    begin
+	    op_port = toascii(2) + "0" + toascii(13)
+	    request op_port
+	    end
+         end
+      old_banner = banner
+      end
+
+   if customer == "HEATHROW" then
+      begin
+      end
+   else
+      begin
+      if invalid banner then
+	 begin
+	 op_port = toascii(2) + "0" + toascii(13)
+	 request op_port
+	 end
+      else if banner.alarm_text == "" then
+	 begin
+	 op_port = toascii(2) + "0" + toascii(13)
+	 request op_port
+	 end
+      end
+
+   if valid old_banner and invalid banner then
+      begin
+      set default new_banner_string
+      set default old_banner
+      new_banner_string.str = old_banner.alarm_text
+      new_banner_string.new_alarm = yes
+      set invalid old_banner
+      end
+
+   set_up_alarm_banner = new_banner_string
+
+end
+
+object display_user_name (y,username = string_30)
+var al_string = string_30
+begin
+   intf=decimal
+   font = font_bold
+   ch = 14
+   tfg = red 
+   if valid username then
+      begin
+      al_string = username
+      while (length(al_string) > 250) do
+         ch --
+      x=x-length(al_string)
+      text(al_string)
+      end
+end
+
+object display_banner_info(x,y,tfg,banner = string)
+begin
+ 
+   timef=LOCAL_DMY_HMS
+   x = 125
+   ch = 14
+   font = font_bold
+
+   while(length(banner) > 720) do
+      begin
+      ch --
+      end
+
+   intf=decimal
+   tfg=red
+   if valid banner then
+      text(banner)
+end
+
+
+
+object cmdline(bg,cmd_buffer = cmd_buffer_type, current_cmd = int) = commands
+var i = int 
+var option = control  options
+var cmdline_command = control  commands
+begin
+
+  if valid option then
+     begin
+     cmdline = getword(1,option)
+     set invalid option
+     end
+
+  if valid cmd_buffer then
+     begin
+     set remove cmdline_command = cmd_buffer[lastrow cmd_buffer].cmd
+     set add cmdline_command = cmd_buffer[lastrow cmd_buffer].cmd
+     if get number_of_items cmdline_command > 10 then
+	set delete cmdline_command = 1
+     end
+
+  if valid cmdline_command then
+     begin
+
+     cmdline = cmdline_command
+     set invalid cmdline_command
+     end
+
+  y = 5
+  w = 860
+  h = ch 
+
+  for i to lastrow cmd_buffer do
+     begin
+     x = 10
+     if selb then
+	begin
+	rect(fg = decoron)
+	cmdline = cmd_buffer[i].cmd
+	end
+     if adjb then
+	begin
+	rect(fg = decoron)
+	set edit cmdline_command = cmd_buffer[i].cmd
+	end
+     if i == current_cmd then
+	tfg = red
+     else
+	tfg = black
+     font=font_bold
+     while (((length(cmd_buffer[i].cmd) + length(cmd_buffer[i].reply)) > (w - 20)) and (ch > 1))do
+	begin
+	ch --
+	y ++
+	end
+     text(cmd_buffer[i].cmd)
+     x += 10 + length(cmd_buffer[i].cmd)
+     font = font_normal
+     text(": " + cmd_buffer[i].reply)
+     ch = 14
+     y += ch + 5
+     end
+  end
+
+mimic cmd_line_util = cmdline w = 860,h = 105,bg = decoroff
+
+type ws_info_table =  ws_info_row[6]
+
+object login_info(bg,l_ttbl = login_table_type)
+var i = int
+var old_ch = int
+begin
+
+   font = font_bold
+   y = 5
+   for i from 1 to lastrow l_ttbl do 
+      begin
+      text(x = 10,tfg = red,l_ttbl[i].source)
+      case l_ttbl[i].status of
+	 1
+	    begin
+	    text(x = 120,tfg = red,l_ttbl[i].wrkstn_number)
+	    old_ch = ch
+	    while (length(l_ttbl[i].name) > 180) do
+	       ch --
+	    text(x = 160,y = y + (old_ch/2),just = centreleft,
+		 tfg = red,l_ttbl[i].name)
+	    ch = old_ch
+	    while (length(l_ttbl[i].user_name) > 180) do
+	       ch --
+	    text(x = 350,y = y + (old_ch/2),just = centreleft,
+		 tfg = red,l_ttbl[i].user_name)
+	    ch = old_ch
+	    text(x = 540,tfg = red,l_ttbl[i].access_str)
+	    end
+	 2
+	    begin
+	    text(x = 375,y = y + 6,tfg = yellow,just = centrecentre,
+		 font = font_bold,"Not logged in")
+	    end
+         3  begin
+	    text(x = 375,y = y + 6,tfg = green,just = centrecentre,
+		 font = font_bold,"Waiting for connection")
+	    end
+      default
+	 begin
+	 end
+      y += ch + 4
+      end
+end
+
+
+mimic login_info = login_info w = 650,h = 120,bg = decoroff
+
+
+object get_ua_oa(src = source) = ua_oa_info_type
+var w_info = ws_info_row
+var ua_oa = input  ua_oa_info_type
+begin
+   
+   w_info = get_ws_info(src)
+
+   if valid w_info then
+      begin
+      set source ua_oa = src
+      set mayexist ua_oa
+      set priority ua_oa.wrkstn_number = 10
+      set filter ua_oa.wrkstn_number = lim_eq
+      set limit ua_oa.wrkstn_number = w_info.wrkstn_number
+      set persist ua_oa
+      request ua_oa
+      end
+
+
+   if valid ua_oa then
+      get_ua_oa = ua_oa
+
+end
+
+object get_ua_oa_info = ua_oa_info_type
+
+var ua_oa_1 = loopback  ua_oa_info_type
+var ua_oa_2 = loopback  ua_oa_info_type
+var ua_oa_3 = loopback  ua_oa_info_type
+var ua_oa_4 = loopback  ua_oa_info_type
+var ua_oa_5 = loopback  ua_oa_info_type
+var ua_oa_6 = loopback  ua_oa_info_type
+
+begin
+
+   ua_oa_1 = get_ua_oa(source(0))
+   ua_oa_2 = get_ua_oa(source(1))
+   ua_oa_3 = get_ua_oa(source(2))
+   ua_oa_4 = get_ua_oa(source(3))
+   ua_oa_5 = get_ua_oa(source(4))
+   ua_oa_6 = get_ua_oa(source(5))
+
+   get_ua_oa_info = ua_oa_info_type
+   
+   if valid ua_oa_1 then
+      begin
+      get_ua_oa_info.unaccepted_alarms += ua_oa_1.unaccepted_alarms
+      get_ua_oa_info.overall_alarms += ua_oa_1.overall_alarms
+      end
+   if valid ua_oa_2 then
+      begin
+      get_ua_oa_info.unaccepted_alarms += ua_oa_2.unaccepted_alarms
+      get_ua_oa_info.overall_alarms += ua_oa_2.overall_alarms
+      end
+   if valid ua_oa_3 then
+      begin
+      get_ua_oa_info.unaccepted_alarms += ua_oa_3.unaccepted_alarms
+      get_ua_oa_info.overall_alarms += ua_oa_3.overall_alarms
+      end
+   if valid ua_oa_4 then
+      begin
+      get_ua_oa_info.unaccepted_alarms += ua_oa_4.unaccepted_alarms
+      get_ua_oa_info.overall_alarms += ua_oa_4.overall_alarms
+      end
+   if valid ua_oa_5 then
+      begin
+      get_ua_oa_info.unaccepted_alarms += ua_oa_5.unaccepted_alarms
+      get_ua_oa_info.overall_alarms += ua_oa_5.overall_alarms
+      end
+   if valid ua_oa_6 then
+      begin
+      get_ua_oa_info.unaccepted_alarms += ua_oa_6.unaccepted_alarms
+      get_ua_oa_info.overall_alarms += ua_oa_6.overall_alarms
+      end
+
+   if invalid ua_oa_1 and 
+       invalid ua_oa_2 and 
+       invalid ua_oa_3 and 
+       invalid ua_oa_4 and 
+       invalid ua_oa_5 and 
+       invalid ua_oa_6 then
+      get_ua_oa_info.overall_alarms = int("z") 
+
+end
+
+object am(bg, dismiss_popup = yesno)
+
+   begin
+   text(ch=35, x=500, y=275, just=centrecentre,
+	"Click in this window to reset activity timer.")
+   if anyb(w=1000,h=600) then
+      exit
+   if dismiss_popup == yes then
+      exit
+   end
+mimic activity_mimic = am w=1000, h=600, bg = decoroff
+
+
+object banner (bg,fg,w,h,src = source, banner_command=commands)
+
+var i = int
+var j = source
+var cmd_ended = int
+var c_str = string
+var tmp_src_str = string_40
+var tmp_ws_info = ws_info_row
+var ws_info = loopback  ws_info_row
+var alarm_b_state = loopback  onoff
+var mail_b_state = loopback  onoff
+var system_b_state = loopback  onoff
+var cmd_buffer = loopback  cmd_buffer_type
+var cmd_number = loopback  int
+var src_str = loopback  string_40
+var display_mode = loopback  display_mode_type
+var ua_oa_info = loopback  ua_oa_info_type
+var banner = loopback  banner_string_type
+var new_banner = loopback  banner_string_type
+var wrkstn_mail = loopback  wrkstn_mail_display_type
+var new_wrkstn_mail = loopback  wrkstn_mail_display_type
+var wrkstn_sys_message = loopback  wrkstn_sys_message_display_type
+var new_wrkstn_sys_message = loopback  wrkstn_sys_message_display_type
+var w_info = loopback  ws_info_row
+var ws_1 = loopback  ws_info_row
+var logged_in_to_scope = loopback  string_30 
+var old_login_name = loopback  string_30
+var re_request_login = loopback  int
+var login_table = loopback  login_table_type
+var old_login_table = loopback  login_table_type
+var activity_popup = popup activity_mimic
+var cmd_line = popup  cmd_line_util
+var alarm_info = popup  al_info_type
+var logged_in = popup  login_info
+var p_login_info = panel  name_type
+var m_areas = popup  master_util
+var menu_view_popup = popup  menu_view
+var menu_util_popup = popup  menu_util
+var top = toplevel  string_50
+var unit_ip = input  unit_text_table
+var bool_ip = input  state_text_table
+var unit1 = mimicedit  string_50
+var unit2 = mimicedit  string_50
+var unit3 = mimicedit  string_50
+var unit4 = mimicedit  string_50
+var unit5 = mimicedit  string_50
+var unit6 = mimicedit  string_50
+var unit_table = unit_text_table
+var unit_str = unit_text_type
+var bool_table = state_text_table
+var bool_strs = state_text_type
+var first_1 = int
+var first_2 = int
+var first_3 = int
+var first_4 = int
+var first_5 = int
+var first_6 = int
+var op_file = filewrite  string
+var local_src = source
+var old_user_name = loopback  name_type
+var alarm_view_popup = popup  alarm_view
+var hello_text = string
+var w_hello = int
+var bye_text = string
+var x_bye = int
+var w_bye = int
+var x_commands = int
+var x_view_menu = int
+var x_util_menu = int
+var x_a_button = int
+var x_m_button = int
+var x_s_button = int
+var x_login_info = int
+var y_login_info = int
+var x_user_name = int
+var y_user_name = int
+var master_volume = loopback int
+var volume_panel = panel volume_table_type
+var op_port = filewrite  string
+begin
+
+   ! Default values !
+   hello_text = "Hello"
+   w_hello = 100
+   bye_text = "Bye"
+   x_bye = 112
+   w_bye = 100
+   x_commands = 321
+   x_view_menu = 426
+   x_util_menu = 528
+   x_a_button = 634
+   x_m_button = 662
+   x_s_button = 689
+   x_login_info = 720
+   y_login_info = 30
+   x_user_name = 865
+   y_user_name = 37
+
+   if customer == "HEATHROW" then 
+      begin
+      if invalid master_volume then
+	 begin
+	 set default master_volume
+	 master_volume = 100
+	 end
+      hello_text = "Log on"
+      bye_text = "Log off"
+      x_commands = 316
+      x_view_menu = 418
+      x_util_menu = 520
+      x_a_button = 1064
+      x_m_button = 1091
+      x_s_button = 1118
+      x_login_info = 1025
+      y_login_info = 50
+      x_user_name = 1025
+      y_user_name = 50
+      end
+   else if customer == "SEWATER" then
+      begin
+      w_hello = 48
+      x_bye = 60
+      w_bye = 48
+      x_commands = 216
+      x_view_menu = 319
+      x_util_menu = 422
+      end
+
+   if invalid local_src then
+      local_src = source(0)
+   else
+      local_src = src
+
+   c_str = int("z")
+
+   if invalid banner then
+      set default banner
+
+
+   re_request_login = 0
+
+   set invalid login_table
+
+   for j from min source to max source do
+      begin
+      if int(j) <= 6 then
+	 begin
+	 if getchar(nchars(j),j) <> "i" then
+	    begin
+	    set default login_table[lastrow login_table + 1]
+	    ws_info = get_ws_info(j)
+	    login_table[lastrow login_table].source = j
+	    if ws_info.user_name <> "" then
+	       begin
+	       login_table[lastrow login_table].status = 1
+	       login_table[lastrow login_table].wrkstn_number = 
+		  ws_info.wrkstn_number
+	       login_table[lastrow login_table].name = ws_info.name 
+	       login_table[lastrow login_table].user_name = ws_info.user_name
+	       login_table[lastrow login_table].access_str += 
+	           get_access_levels(ws_info.current_access_level)
+	       end
+            else if valid ws_info then
+	       login_table[lastrow login_table].status = 2
+	    else
+	       login_table[lastrow login_table].status = 3
+	    end
+	 end
+      if login_table[lastrow login_table].status == 3 and
+	 old_login_table[lastrow login_table].status <> 3 then
+	 re_request_login = 2
+      else if not(login_table[lastrow login_table].status ==
+	    old_login_table[lastrow login_table].status and
+	    login_table[lastrow login_table].name ==
+	    login_table[lastrow login_table].name and 
+	    login_table[lastrow login_table].wrkstn_number ==
+	    login_table[lastrow login_table].wrkstn_number and 
+	    login_table[lastrow login_table].user_name ==
+	    old_login_table[lastrow login_table].user_name and   
+	    login_table[lastrow login_table].access_str ==
+	    old_login_table[lastrow login_table].access_str) then
+	 re_request_login = 1
+      end
+
+   old_login_table = login_table
+
+
+   if invalid wrkstn_sys_message then
+      set default wrkstn_sys_message
+
+   if invalid wrkstn_mail then
+      set default wrkstn_mail
+
+   if invalid display_mode then
+      begin
+      display_mode = alarm_banner
+      alarm_b_state = on
+      mail_b_state = off
+      system_b_state = off
+      end
+  
+   if invalid first_1 and valid get_ws_info(source(0)) then
+      begin
+      first_1 = 1
+      set source unit1 = source(0)
+      set file unit1 = "unit_util"
+      set object unit1 = "unit_util"
+      set X unit1 = 0
+      set Y unit1 = 170
+      set unpinned unit1
+      set preserve unit1
+      request unit1
+      end
+
+   if invalid first_2 and valid get_ws_info(source(1)) then
+      begin
+      first_2 = 1
+      set source unit2 = source(1)
+      set file unit2 = "unit_util"
+      set object unit2 = "unit_util"
+      set X unit2 = 0
+      set Y unit2 = 170
+      set unpinned unit2
+      set preserve unit2
+      request unit2
+      end
+
+   if invalid first_3 and valid get_ws_info(source(2)) then
+      begin
+      first_3 = 1
+      set source unit3 = source(2)
+      set file unit3 = "unit_util"
+      set object unit3 = "unit_util"
+      set X unit3 = 0 
+      set Y unit3 = 170
+      set unpinned unit3
+      set preserve unit3
+      request unit3
+      end
+
+   if invalid first_4 and valid get_ws_info(source(3)) then
+      begin
+      first_4 = 1
+      set source unit4 = source(3)
+      set file unit4 = "unit_util"
+      set object unit4 = "unit_util"
+      set X unit4 = 0
+      set y unit4 = 170
+      set unpinned unit4
+      set preserve unit4
+      request unit4
+      end
+
+   if invalid first_5 and valid get_ws_info(source(4)) then
+      begin
+      first_5 = 1
+      set source unit5 = source(4)
+      set file unit5 = "unit_util"
+      set object unit5 = "unit_util"
+      set X unit5 = 0
+      set y unit5 = 170
+      set unpinned unit5
+      set preserve unit5
+      request unit5
+      end
+
+   if invalid first_6 and valid get_ws_info(source(5)) then
+      begin
+      first_6 = 1
+      set source unit6 = source(5)
+      set file unit6 = "unit_util"
+      set object unit6 = "unit_util"
+      set X unit6 = 0
+      set y unit6 = 170
+      set unpinned unit6
+      set preserve unit6
+      request unit6
+      end
+
+   ws_1=get_ws_info(source(0))
+
+   if valid ws_1 then
+      w_info=ws_1
+   ws_1=get_ws_info(source(1))
+
+   if valid ws_1 then
+      w_info=ws_1
+   ws_1=get_ws_info(source(2))
+
+   if valid ws_1 then
+      w_info=ws_1
+   ws_1=get_ws_info(source(3))
+
+   if valid ws_1 then
+      w_info=ws_1
+   ws_1=get_ws_info(source(4))
+
+   if valid ws_1 then
+      w_info=ws_1
+   ws_1=get_ws_info(source(5))
+
+   if valid ws_1 then
+      w_info=ws_1
+  
+   
+   ua_oa_info = get_ua_oa_info
+
+   if valid w_info then
+      begin
+      new_banner = set_up_alarm_banner(master_volume)
+      new_wrkstn_mail = set_up_mail_message
+      new_wrkstn_sys_message = set_up_system_message
+      end
+ 
+   if valid new_banner then
+      begin
+      if banner.str <> new_banner.str then
+         display_mode = alarm_banner
+      banner = new_banner
+      end
+       
+   if valid new_wrkstn_mail then
+      begin
+      if wrkstn_mail.wrkstn_mail <> new_wrkstn_mail.wrkstn_mail then
+	 display_mode = mail_message
+      wrkstn_mail = new_wrkstn_mail
+      end
+ 
+   if valid new_wrkstn_sys_message then
+      begin
+      if new_wrkstn_sys_message.wrkstn_sys_message <> 
+	 wrkstn_sys_message.wrkstn_sys_message then
+	 begin
+         display_mode = system_message
+	 tmp_src_str = getword(3,new_wrkstn_sys_message.wrkstn_sys_message)
+	 tmp_ws_info = get_ws_info(source(source(tmp_src_str)))
+	 if getwords(5,4,new_wrkstn_sys_message.wrkstn_sys_message) ==
+	    "No activity at Workstation" and 
+	    getword(9,new_wrkstn_sys_message.wrkstn_sys_message) ==
+	    string(tmp_ws_info.wrkstn_number) then
+	    begin
+	    set unpinned activity_popup
+	    set fixed activity_popup
+	    set x activity_popup = 75
+	    set y activity_popup = 150
+	    if getwords(14,2,new_wrkstn_sys_message.wrkstn_sys_message) <>
+	       "Logged Off" then
+	       request activity_popup(no)
+            else if get busy activity_popup then
+	       request activity_popup(yes)
+            end
+         end
+      wrkstn_sys_message = new_wrkstn_sys_message
+      end
+
+   h = 20
+   if customer == "HEATHROW" then
+      begin
+      x = 4
+      y = 4
+      w = 1142
+      end
+   else
+      begin
+      x = 0
+      y = 0
+      end
+   rect(fg = white)
+   if customer == "HEATHROW" then
+      begin
+      box(h = 62,fg=black)
+      add(x=4,y=23) add(x=1146,y=23) line(fg=black)
+      end
+
+   y=h
+   move
+   add
+   line
+   fg=decoroff
+
+   if customer == "HEATHROW" then
+      begin
+      x = 1130
+      y = 28
+      end
+   else
+      begin
+      y = 25
+      end
+
+   if xv_thin_button(x = 10,hello_text,w_hello) then
+      begin
+      set unpinned p_login_info
+      set title p_login_info = "Login Information."
+      set label p_login_info = "Enter Username : "
+      set x p_login_info = 30
+      set y p_login_info = 95
+      request p_login_info
+      end
+
+   if p_login_info <> "" then
+      begin
+      c_str= "Hello " + p_login_info
+      set invalid p_login_info
+      end
+
+   if customer == "HEATHROW" then
+      begin
+      if old_user_name == "" and w_info.user_name <> "" then
+	 begin
+	 c_str = "master default"
+	 end
+      old_user_name = w_info.user_name
+      end
+
+   if xv_thin_button(x = x_bye,bye_text,w_bye) then
+      begin
+      if logged_in_to_scope <> "" then
+	 begin
+         c_str = "Bye"
+	 end
+      else
+	 text(x = 780,ch = 12,tfg = yellow,"Sorry - not logged in.")
+      end
+
+   if customer == "HEATHROW" then
+      begin
+      if xv_thin_button(x = 214,"CTA Pressure",100) then
+	 begin
+	 if logged_in_to_scope <> "" then
+	    begin
+	    c_str = "window cta_pressure"
+	    end
+	 else
+	    text(x = 780,ch = 12,tfg = yellow,"Sorry - not logged in.")
+	 end
+      if xv_thin_button(x = 622,"Alarm View ",100) then
+	 begin
+	 c_str = "alarms"
+	 end
+      if xv_thin_button(x=724,"Volume", 80) then
+	 begin
+	 if logged_in_to_scope <> "" then
+	    begin
+	    set unpinned volume_panel
+	    set y volume_panel = 1
+	    set value volume_panel.volume_percent = master_volume
+	    set title volume_panel = "Alarm Volume"
+	    request volume_panel
+	    end
+	 end
+      end
+   else if customer == "SEWATER" then
+      begin
+      if xv_thin_button(x = 113,"Alarms",100) then
+	 begin
+	 if logged_in_to_scope <> "" then
+	    begin
+	    c_str = "Alarms"
+	    end
+	 else
+	    text(x = 780,ch = 12,tfg = yellow,"Sorry - not logged in.")
+	 end
+      if xv_thin_button(x = 525,"Main Menu",100) then
+	 begin
+	 if logged_in_to_scope <> "" then
+	    begin
+	    c_str = "MIMIC " + source(0) + ":MAIN_MENU"
+	    end
+	 else
+	    text(x = 780,ch = 12,tfg = yellow,"Sorry - not logged in.")
+	 end
+      end
+   else
+      begin
+      if xv_thin_button(x = 216,"FORs",100) then
+	 begin
+	 if logged_in_to_scope <> "" then
+	    begin
+	    set x m_areas = 150
+	    set y m_areas = 95
+	    set unpinned m_areas
+	    request m_areas(w_info)
+	    end
+	 else
+	    text(x = 780,ch = 12,tfg = yellow,"Sorry - not logged in.")
+	 end
+      end
+
+   if valid volume_panel then
+      begin
+      master_volume = volume_panel.volume_percent
+      if (master_volume < 0) then
+	 master_volume = 0
+      if (master_volume > 100) then
+	 master_volume = 100
+      set file op_port = "/usr/wrkstn/alarm_dir/npipe"
+      set noonchange op_port
+      op_port = "/usr/wrkstn/alarm_dir/play -v "+master_volume+" /usr/wrkstn/alarm_dir/tone_1&"
+      request op_port
+      set invalid volume_panel
+      end
+
+   if xv_thin_button(x = x_commands,"Commands",100) then
+      begin
+      set x cmd_line = 240
+      set y cmd_line = 95
+      set title cmd_line = "Command Line"
+      set pinned cmd_line
+      set top cmd_line
+      request cmd_line(cmd_buffer, cmd_number)
+      set notop cmd_line
+      end
+
+   if xv_thin_button(x = x_view_menu,"View Menu",100) then
+      begin
+      set x menu_view_popup = 955
+      set y menu_view_popup = 70
+      set fixed menu_view_popup
+      set pinned menu_view_popup
+      request menu_view_popup(src)
+      end
+
+   if xv_thin_button(x = x_util_menu,"Util Menu ",100) then
+      begin
+      set x menu_util_popup = 955
+      set y menu_util_popup = 355
+      set pinned menu_util_popup
+      set fixed menu_util_popup
+      request menu_util_popup(src)
+      end
+
+   if banner.str == "" and display_mode == alarm_banner then
+      begin
+      if wrkstn_mail.wrkstn_mail <> "" then
+	 display_mode = mail_message
+      else if wrkstn_sys_message.wrkstn_sys_message <> "" then
+	 display_mode = system_message 
+      end
+
+   if wrkstn_mail.wrkstn_mail == "" and display_mode == mail_message then
+      begin
+      if banner.str <> "" then
+	 display_mode = alarm_banner
+      else if wrkstn_sys_message.wrkstn_sys_message <> "" then
+	 display_mode = system_message 
+      end
+    
+  if wrkstn_sys_message.wrkstn_sys_message == "" and 
+       display_mode == system_message then
+      begin
+      if banner.str <> "" then
+	 display_mode = alarm_banner
+      else if wrkstn_mail.wrkstn_mail <> "" then
+	 display_mode = mail_message
+      end
+
+   case display_mode of
+      alarm_banner
+	 begin
+	 alarm_b_state = on
+	 mail_b_state = off
+	 system_b_state = off
+	 end
+      mail_message
+	 begin
+	 alarm_b_state = off
+	 mail_b_state = on
+	 system_b_state = off
+	 end
+      system_message
+	 begin
+	 alarm_b_state = off
+	 mail_b_state = off
+	 system_b_state = on
+	 end
+   default
+      begin
+      alarm_b_state = off
+      mail_b_state = off
+      system_b_state = off
+      end
+
+   if banner.str <> ""  and
+       (ua_oa_info.unaccepted_alarms + ua_oa_info.overall_alarms) then
+      begin
+      if xv_thin_exc_button(x = x_a_button,alarm_b_state,"A",25) then
+         display_mode = alarm_banner
+      end
+
+   if wrkstn_mail.wrkstn_mail <> "" then
+      begin
+      if xv_thin_exc_button(x = x_m_button,mail_b_state,"M",25) then
+         display_mode = mail_message
+      end
+
+   if wrkstn_sys_message.wrkstn_sys_message <> "" then
+      begin
+      if xv_thin_exc_button(x = x_s_button,system_b_state,"S",25) then
+         display_mode = system_message
+      end
+
+   x=0 y=0 w=974 h=20
+   if customer == "HEATHROW" then
+      begin
+      w = 908
+      end
+   if menb then
+      begin
+      case display_mode of
+	 alarm_banner
+	    begin
+	    if valid banner and banner.alarm_command_text <> "" then
+               c_str = banner.alarm_command_text
+	    end
+         mail_message 
+	    begin
+	    if valid wrkstn_mail and wrkstn_mail.cmd_txt <> "" then
+	       c_str = wrkstn_mail.cmd_txt
+	    end
+	 system_message
+	    begin
+	    if valid wrkstn_sys_message and 
+		wrkstn_sys_message.cmd_txt <> "" then
+	       c_str = wrkstn_sys_message.cmd_txt
+	    end
+      default
+	 begin
+	 end
+      end
+       
+  if selb and display_mode == alarm_banner then
+     begin
+     if valid banner then
+	begin
+	set title alarm_info = banner.src + " : " + banner.alarm_db_addr
+	set x alarm_info = 500
+	set y alarm_info = 95
+	set unpinned alarm_info
+	request alarm_info(banner.alarm_db_addr,source(banner.src),red)
+	end
+     end
+
+   if selb(x = x_login_info,y = y_login_info,w = 400,h = 30) then
+      begin
+      set title logged_in = "Login Information"
+      set pinned logged_in
+      set x logged_in =  480
+      set y logged_in = 95
+      set top logged_in
+      request logged_in(login_table)
+      set notop logged_in
+      end
+   
+   if re_request_login  == 2 then
+      begin
+      bell(100,1000,1)
+      set title logged_in = "Login Information"
+      set pinned logged_in
+      set x logged_in =  480
+      set y logged_in = 95
+      set top logged_in
+      request logged_in(login_table)
+      end
+
+   if get busy logged_in and re_request_login then
+      request logged_in(login_table)
+
+   if valid cmd_line then
+      begin
+      c_str = cmd_line
+      set invalid cmd_line
+      end
+
+   if valid banner_command then
+      begin
+      c_str = banner_command
+      set mimic top = "alarm_banner_util"
+      set existing top
+      request top
+      end
+
+   if c_str == "cancel" then
+      begin
+      if cmd_number then
+	 cmd_buffer[cmd_number].reply = "Cancelling"
+      end
+   else if c_str == "continue" then
+      begin
+      if cmd_number then
+	 cmd_buffer[cmd_number].reply = " Continuing"
+      end
+   else if nwords(c_str) then 
+      begin
+      if invalid cmd_buffer then
+	 begin
+	 set default cmd_buffer
+	 cmd_number = 0
+	 end
+      if lastrow cmd_buffer < 5 then
+	 begin
+	 set default cmd_buffer[lastrow cmd_buffer + 1]
+	 cmd_buffer[lastrow cmd_buffer].cmd = c_str
+	 cmd_buffer[lastrow cmd_buffer].reply = " Waiting"
+	 end
+      else if cmd_number > 1 then
+	 begin
+	 for i to lastrow cmd_buffer - 1 do
+	    cmd_buffer[i] = cmd_buffer[i + 1]
+	 cmd_buffer[lastrow cmd_buffer].cmd = c_str
+	 cmd_buffer[lastrow cmd_buffer].reply = " Waiting"
+	 cmd_number --
+	 end
+      if get busy cmd_line then
+	 request cmd_line(cmd_buffer, cmd_number)
+      end
+
+   cmd_ended = 1
+   while cmd_ended do
+      begin
+      if cmd_number then
+	 cmd_ended = getchar(1,cmd_buffer[cmd_number].reply) <> " "
+      else
+	 cmd_ended = 1
+      c_str = int("z")
+      if cmd_buffer[cmd_number].reply == "cancelling" then
+	 begin
+	 c_str = "Cancel"
+	 cmd_buffer[cmd_number].reply = "Cancelled"
+	 end
+      else if cmd_buffer[cmd_number].reply == " continuing" then
+	 begin
+	 c_str = "Continue"
+	 end
+      else if cmd_ended and cmd_number < lastrow cmd_buffer then
+	 begin
+	 cmd_number ++
+	 c_str = cmd_buffer[cmd_number].cmd
+	 if c_str == "clear" then
+	    begin
+	    c_str = int("z")
+	    cmd_number = 0
+	    set default cmd_buffer
+	    end
+	 end
+
+      cmd_buffer[cmd_number].reply = cmdparser(x = 300,y = 0,c_str)
+
+      cmd_ended = 0
+      if getchar(1,cmd_buffer[cmd_number].reply) <> " " 
+      and cmd_number < lastrow cmd_buffer then
+	 cmd_ended = 1
+
+      if get busy cmd_line then
+	 request cmd_line(cmd_buffer, cmd_number)
+      end
+
+   if customer == "HEATHROW" then
+      y = 6
+   else
+      y = 2
+   x = 20
+   case display_mode of
+      alarm_banner 
+	 display_banner_info(banner.str)
+      mail_message 
+	 display_wrkstn_mail(wrkstn_mail.wrkstn_mail)
+      system_message 
+	 display_system_message(wrkstn_sys_message.wrkstn_sys_message)
+   default
+      begin
+      end
+      
+   intf=decimal
+  
+   logged_in_to_scope = get_login_status
+
+   if logged_in_to_scope == "" and invalid old_login_name then
+      old_login_name = "X"
+   else if invalid old_login_name then
+      set default old_login_name
+
+   if logged_in_to_scope <> "" then 
+      display_user_name(x = x_user_name + 90, y = y_user_name, logged_in_to_scope)
+   else
+      text(tfg=yellow,font=font_bold,x=x_user_name,y=y_user_name,"Not Logged In")
+
+   if logged_in_to_scope <> old_login_name then
+      begin
+      set file op_file = "/tmp/current_user"
+      op_file = logged_in_to_scope + toascii(10)
+      request op_file
+      if customer == "HEATHROW" then
+	 begin
+	 c_str = "master default"
+	 end
+      end
+
+  old_login_name = logged_in_to_scope
+
+   if customer == "HEATHROW" then 
+      begin
+      get_and_display_time_and_date
+      rect(x = 832,y=28,h = ch + 4,w = 180,fg = white)
+      box(x = 832,y=28,h = ch + 4,w = 180,fg = black)
+      text(x = 840,y=30,font = font_bold,timef = local_dmy_hm,current_time)
+      text(ch=14,tfg=blue,x= 910,y=6,font = font_bold,display_scope_status)
+      end
+  ch=14
+  tfg=red
+
+   if valid ua_oa_info then
+      begin
+      x=10
+      intf=decimal
+      font = font_bold
+      text("UA =")
+      x=80
+      text("OA =")
+      x=50
+      text(ua_oa_info.unaccepted_alarms)
+      x=120
+      text(ua_oa_info.overall_alarms)
+      end
+   if cmd_number then
+      begin
+      x=10
+      if customer == "HEATHROW" then
+	 y = 50
+      else
+	 y = 46 
+      font=font_bold
+      while (((length(cmd_buffer[cmd_number].cmd) + length(cmd_buffer[cmd_number].reply)) > 885) and (ch > 1)) do
+	 begin
+	 ch --
+	 y ++
+	 end
+      text(cmd_buffer[cmd_number].cmd)
+      x += 10 + length(cmd_buffer[cmd_number].cmd)
+      font = font_normal
+      text(": " + cmd_buffer[cmd_number].reply)
+      ch = 16
+      end
+end
+
+mimic alarm_banner_util = banner x = x_banner, y = y_banner, w = w_banner, h = h_banner, top=2, bg=decoroff, keep=2, nomovable

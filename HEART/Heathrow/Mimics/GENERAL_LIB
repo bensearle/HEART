@@ -1,0 +1,24 @@
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load BROWSER
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object heart_browser(c_offset=int,src=source,browser_width=int,configured=string)
+begin
+clear
+just=centrecentre
+if configured == "yes" then
+   begin
+   x = 0 y = 0 browser(c_offset,src,browser_width)
+   end
+   else if configured == "" then
+   begin
+   x = 0 y = -6 text(tfg=black,ch=10,"HEART")
+   x = 0 y = 6 text(tfg=black,ch=10,"Browser")
+   end
+end
+
+object test_object
+begin
+end

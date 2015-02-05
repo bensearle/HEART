@@ -1,0 +1,215 @@
+! HEATHTROW CMS - MMM SELECTOR
+
+loaded by: CARGO_TUNNEL, FIRE_MAIN
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!
+****************************************************************
+* MMM SELECTOR OBJECT                                          *
+* this object is called from the Top Level variable (mimic)    *
+****************************************************************
+!
+ 
+object mmm_selector(plc_offset=int,b_offset=int,
+                    ident_in=string,src=source)
+
+!B INPUTS
+b_inputs[1] = min_calc_mode
+b_inputs[2] = mean_calc_mode
+b_inputs[3] = max_calc_mode
+!
+var b_inputs = input b_db_row_type[3]
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+var mode_width = loopback  int
+var calc_mode_text = loopback  string(25)
+var ident = loopback  string
+
+var mode_menu = menu  string
+
+begin
+
+! INITIALISATION !
+just=centrecentre
+if invalid ident then ident="Calc"
+
+
+! REQUEST DATA FROM SERVER !
+if invalid get source b_inputs then 
+   begin
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset - 1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   end
+
+
+! CASE MENU OPTIONS !
+
+if valid mode_menu then
+   begin
+   
+   case mode_menu of
+         "Use Min Calc Mode"
+          begin 
+          set_b_value(db_address(int(b1) + b_offset), src, off)
+          set_b_value(db_address(int(b1) + b_offset +1), src, off)
+          set_b_value(db_address(int(b1) + b_offset -1), src, on)
+          end
+
+          "Use Mean Calc Mode"
+          begin 
+          set_b_value(db_address(int(b1) + b_offset -1), src, off)
+          set_b_value(db_address(int(b1) + b_offset +1), src, off)
+          set_b_value(db_address(int(b1) + b_offset   ), src, on)
+          end
+
+          "Use Max Calc Mode"
+          begin 
+          set_b_value(db_address(int(b1) + b_offset -1), src, off)
+          set_b_value(db_address(int(b1) + b_offset   ), src, off)
+          set_b_value(db_address(int(b1) + b_offset +1), src, on)
+          end 
+
+          default
+          begin 
+          end
+
+          set invalid mode_menu
+   end
+
+
+! DRAW SYMBOL !
+
+if ident_in=="" then 
+  ident="Calc"
+else
+   ident=ident_in
+
+if b_inputs[2].b_value then calc_mode_text = ident+" Mode: Mean"
+else if b_inputs[1].b_value  then calc_mode_text = ident+" Mode: Min"
+else if b_inputs[3].b_value  then calc_mode_text = ident+" Mode: Max"
+else calc_mode_text = ident+" Mode: None"
+
+if plc_inputs[1].b_value==1 and
+   plc_inputs[2].b_value==1 then
+   tfg=magenta
+else
+   tfg=red
+
+x = 0 y = 0
+mode_width = length(calc_mode_text)+10
+rect(fg=decoroff,h=20,w=mode_width)
+x -= mode_width/2
+y +=10     add 
+y -=20     add 
+x += mode_width add 
+line(lw=1,fg=decorlight) clear
+add y +=20 add 
+x -= mode_width add 
+line(lw=1,fg=decorshadow) clear
+y = 0
+x = 0 
+text(ch=15,calc_mode_text)
+
+
+! CONFIGURE MENU !
+
+set title mode_menu    = "Calculation Mode"
+set empty mode_menu 
+
+if b_inputs[1].b_value then
+   begin
+   set remove mode_menu  = "Use Min Calc Mode"
+   set add mode_menu     = "Use Max Calc Mode"
+   set add mode_menu     = "Use Mean Calc Mode"
+   end
+
+else if b_inputs[2].b_value then
+   begin
+   set add mode_menu    = "Use Min Calc Mode"
+   set add mode_menu    = "Use Max Calc Mode"
+   set remove mode_menu = "Use Mean Calc Mode"
+   end
+
+else if b_inputs[3].b_value then
+   begin
+   set add mode_menu     = "Use Min Calc Mode"
+   set remove mode_menu  = "Use Max Calc Mode"
+   set add mode_menu     = "Use Mean Calc Mode"
+   end
+
+else
+   begin
+   set add mode_menu   = "Use Min Calc Mode"
+   set add mode_menu   = "Use Mean Calc Mode"
+   set add mode_menu   = "Use Max Calc Mode"
+   end
+
+x=0 y=0
+if plc_inputs[1].b_value == 0 or
+   plc_inputs[2].b_value == 0 then
+   begin
+   h=20 w=mode_width
+   end
+else
+   begin
+   h=0 w=0
+   end
+
+set rect mode_menu
+
+end
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=260
+mmm_selector(15000,15041,"",heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

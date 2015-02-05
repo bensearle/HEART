@@ -1,0 +1,268 @@
+
+!-----------------------------------------------------------------------------!
+!  33KV NORTH INTAKE OCB ALARM OBJECT                                         !
+!-----------------------------------------------------------------------------!
+
+load mimic_libutil
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+
+TYPE alarm_row_type 	= db_elements(alarm_status)
+
+TYPE b_bool_type 	= db_elements(b_value)
+
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  OCB ALARM OBJECT                                                           !
+!-----------------------------------------------------------------------------!
+
+OBJECT tx_alarm_indicator(plc_offset=INT,b_number=INT,src=SOURCE)
+
+! PLC STATUS !
+VAR plc_a_comms_status 		= input		b_bool_type
+VAR plc_b_comms_status 		= input		b_bool_type
+
+
+! OCB ALARMS !
+VAR tap_changer_gas		= input		alarm_row_type
+VAR main_gas			= input		alarm_row_type
+VAR winding_temperature		= input		alarm_row_type
+VAR point_1_temperature		= input		alarm_row_type
+VAR tap_out_of_step		= input		alarm_row_type
+VAR tap_incomplete		= input		alarm_row_type
+VAR cpf_failure			= input		alarm_row_type
+VAR gas_oil_relay		= input		alarm_row_type
+VAR tap_switch_oil		= input		alarm_row_type
+VAR aux_tx_pressure		= input		alarm_row_type
+VAR aux_ac_supply		= input		alarm_row_type
+VAR tap_manual			= input		alarm_row_type
+VAR tap_remote			= input		alarm_row_type
+
+
+! GENERAL !
+VAR foreground_colour		= colour
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+IF INVALID plc_a_comms_status.b_value THEN
+BEGIN
+
+set source tap_changer_gas = src
+set filter tap_changer_gas.db_addr = lim_eq
+set limit tap_changer_gas.db_addr = db_address(int(b1) + b_number-1 )
+set persist tap_changer_gas
+request tap_changer_gas
+
+set source main_gas = src
+set filter main_gas.db_addr = lim_eq
+set limit main_gas.db_addr = db_address(int(b1) + b_number )
+set persist main_gas
+request main_gas
+
+set source winding_temperature = src
+set filter winding_temperature.db_addr = lim_eq
+set limit winding_temperature.db_addr = db_address(int(b1) + b_number+1 )
+set persist winding_temperature
+request winding_temperature
+
+set source point_1_temperature = src
+set filter point_1_temperature.db_addr = lim_eq
+set limit point_1_temperature.db_addr = db_address(int(b1) + b_number+2 )
+set persist point_1_temperature
+request point_1_temperature
+
+set source tap_out_of_step = src
+set filter tap_out_of_step.db_addr = lim_eq
+set limit tap_out_of_step.db_addr = db_address(int(b1) + b_number+3 )
+set persist tap_out_of_step
+request tap_out_of_step
+
+set source tap_incomplete = src
+set filter tap_incomplete.db_addr = lim_eq
+set limit tap_incomplete.db_addr = db_address(int(b1) + b_number+4 )
+set persist tap_incomplete
+request tap_incomplete
+
+set source cpf_failure = src
+set filter cpf_failure.db_addr = lim_eq
+set limit cpf_failure.db_addr = db_address(int(b1) + b_number+5 )
+set persist cpf_failure
+request cpf_failure
+
+set source gas_oil_relay = src
+set filter gas_oil_relay.db_addr = lim_eq
+set limit gas_oil_relay.db_addr = db_address(int(b1) + b_number+6 )
+set persist gas_oil_relay
+request gas_oil_relay
+
+set source tap_switch_oil = src
+set filter tap_switch_oil.db_addr = lim_eq
+set limit tap_switch_oil.db_addr = db_address(int(b1) + b_number+7 )
+set persist tap_switch_oil
+request tap_switch_oil
+
+set source cpf_failure = src
+set filter cpf_failure.db_addr = lim_eq
+set limit cpf_failure.db_addr = db_address(int(b1) + b_number+8 )
+set persist cpf_failure
+request cpf_failure
+
+set source aux_tx_pressure = src
+set filter aux_tx_pressure.db_addr = lim_eq
+set limit aux_tx_pressure.db_addr = db_address(int(b1) + b_number+9 )
+set persist aux_tx_pressure
+request aux_tx_pressure
+
+set source aux_ac_supply = src
+set filter aux_ac_supply.db_addr = lim_eq
+set limit aux_ac_supply.db_addr = db_address(int(b1) + b_number+10 )
+set persist aux_ac_supply
+request aux_ac_supply
+
+set source aux_tx_pressure = src
+set filter aux_tx_pressure.db_addr = lim_eq
+set limit aux_tx_pressure.db_addr = db_address(int(b1) + b_number+11 )
+set persist aux_tx_pressure
+request aux_tx_pressure
+
+set source tap_manual = src
+set filter tap_manual.db_addr = lim_eq
+set limit tap_manual.db_addr = db_address(int(b1) + b_number+12 )
+set persist tap_manual
+request tap_manual
+
+set source tap_remote = src
+set filter tap_remote.db_addr = lim_eq
+set limit tap_remote.db_addr = db_address(int(b1) + b_number+13 )
+set persist tap_remote
+request tap_remote
+
+! GET PLC A STATUS !
+set source plc_a_comms_status = src
+set filter plc_a_comms_status.db_addr = lim_eq
+set limit plc_a_comms_status.db_addr = db_address(int(b1) + plc_offset +9 )
+set persist plc_a_comms_status
+request plc_a_comms_status
+
+! GET PLC B STATUS !
+set source plc_b_comms_status = src
+set filter plc_b_comms_status.db_addr = lim_eq
+set limit plc_b_comms_status.db_addr = db_address(int(b1) + plc_offset +10 )
+set persist plc_b_comms_status 
+request plc_b_comms_status
+
+END
+
+!-----------------------------------------------------------------------------!
+!  DRAW SYMBOL                                                                !
+!-----------------------------------------------------------------------------!
+
+JUST = CENTRECENTRE
+
+X = 0 Y = 0
+
+IF plc_a_comms_status.b_value AND plc_b_comms_status.b_value THEN
+  foreground_colour = MAGENTA
+ELSE IF tap_changer_gas.alarm_status == w_note or
+main_gas.alarm_status == w_note or
+winding_temperature.alarm_status == w_note or
+point_1_temperature.alarm_status == w_note or
+tap_out_of_step.alarm_status == w_note or
+tap_incomplete.alarm_status == w_note or
+cpf_failure.alarm_status == w_note or
+gas_oil_relay.alarm_status == w_note or
+tap_switch_oil.alarm_status == w_note or
+aux_tx_pressure.alarm_status == w_note or
+aux_ac_supply.alarm_status == w_note or
+tap_manual.alarm_status == w_note or
+tap_remote.alarm_status == w_note THEN
+
+  foreground_colour = FLASHRED
+
+ELSE IF plc_a_comms_status.b_value AND plc_b_comms_status.b_value THEN
+  foreground_colour = MAGENTA
+ELSE IF tap_changer_gas.alarm_status == w_clr or
+main_gas.alarm_status == w_clr or
+winding_temperature.alarm_status == w_clr or
+point_1_temperature.alarm_status == w_clr or
+tap_out_of_step.alarm_status == w_clr or
+tap_incomplete.alarm_status == w_clr or
+cpf_failure.alarm_status == w_clr or
+gas_oil_relay.alarm_status == w_clr or
+tap_switch_oil.alarm_status == w_clr or
+aux_tx_pressure.alarm_status == w_clr or
+aux_ac_supply.alarm_status == w_clr or
+tap_manual.alarm_status == w_clr or
+tap_remote.alarm_status == w_clr THEN
+  
+  foreground_colour = RED
+
+ELSE
+
+  foreground_colour = GREEN
+
+
+!FG=DECOROFF!
+RECT(W=120,H=180,FG=BLACK)
+!
+X =-60 y = 90 ADD
+Y -= 180 ADD
+X += 120 ADD
+LINE(FG=WHITE) CLEAR
+ADD
+Y += 180 ADD
+X -= 120 ADD
+LINE(FG=DECORON) CLEAR
+!
+
+FG=foreground_colour
+!X += 60 Y -=90!
+BOX(W=100,H=160,LW=8) CLEAR
+y += 50
+DISK(W=24,H=24) CLEAR
+X=-20 Y=-45  Add 
+X=20 Y=-45  Add 
+X=5 Y=20  Add 
+X=-5 Y=20  Add 
+FILL
+X += 5 Y -= 70
+DISK(W=40,H=40) CLEAR
+Y += 65
+DISK(W=10,H=10) CLEAR
+
+
+END
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+scale=120
+tx_alarm_indicator(20000,20030,HEATHRO2)
+
+end
+
+mimic = main_object w=300,h=400,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,257 @@
+! HEATHROW CMS - FEGP CUBICLE
+
+loaded by: FEGP_T2, FEGP_T3, FEGP_T4, KEY_3
+!
+
+load mimic_libutil
+load heathrow_libutil
+
+
+type panel_item_row = table (str=string(20))
+
+type menu_options_type = enum(
+           tag_message = "Alter Tagged Message",
+         untag_message = "Clear Tagged Message",
+    set_permit_to_work = "Alter permit to work")
+
+
+!
+************************************************************
+* FEGP CUBICLE                                             *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object fegp_cubicle(fg,bg,plc_offset=int,b_offset=int,
+                    c_offset=int,
+                    src=source,cubicle_ident=string(7))
+
+! INPUTS!
+VAR in_use_ip = input  b_db_row_type
+VAR permit_to_work_ip = input  b_db_row_type
+VAR plca_comms_ip = input  b_db_row_type
+VAR plcb_comms_ip = input  b_db_row_type
+VAR tag_message_ip = input  c_db_row_type
+
+! ALARMS !
+VAR alarm = input  alarm_row_type
+VAR in_use_discr = input  alarm_row_type
+VAR alarm_discr = input  alarm_row_type
+
+! LOOPBACKS !
+VAR cubicle_bg = loopback  colour
+VAR cubicle_fg = loopback  colour
+
+! MENUS !
+VAR stand_control_menu = menu  menu_options_type
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+if invalid get source in_use_ip then 
+   begin
+
+   set source permit_to_work_ip = src
+   set filter permit_to_work_ip.db_addr = lim_eq
+   set limit permit_to_work_ip.db_addr = db_address(int(b1) + b_offset - 1)
+   set persist permit_to_work_ip 
+   request permit_to_work_ip
+
+   set source in_use_ip = src
+   set filter in_use_ip.db_addr = lim_eq
+   set limit in_use_ip.db_addr = db_address(int(b1) + b_offset)
+   set persist in_use_ip 
+   request in_use_ip
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   set source plca_comms_ip = src
+   set filter plca_comms_ip.db_addr = lim_eq
+   set limit plca_comms_ip.db_addr = db_address(int(b1) + plc_offset - 1)
+   set persist plca_comms_ip 
+   request plca_comms_ip
+
+   set source plcb_comms_ip = src
+   set filter plcb_comms_ip.db_addr = lim_eq
+   set limit plcb_comms_ip.db_addr = db_address(int(b1) + plc_offset)
+   set persist plcb_comms_ip 
+   request plcb_comms_ip
+   
+
+   set source alarm = src
+   set filter alarm.db_addr = lim_eq
+   set limit alarm.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist alarm
+   request alarm
+
+   set source in_use_discr = src
+   set filter in_use_discr.db_addr = lim_eq
+   set limit in_use_discr.db_addr = db_address(int(b1) + b_offset + 2)
+   set persist in_use_discr 
+   request in_use_discr
+
+   set source alarm_discr = src
+   set filter alarm_discr.db_addr = lim_eq
+   set limit alarm_discr.db_addr = db_address(int(b1) + b_offset + 3)
+   set persist alarm_discr 
+   request alarm_discr
+  
+   end
+
+
+! SELECT CUBICLE BG COLOUR ! 
+
+if permit_to_work_ip.b_value then
+  begin
+  cubicle_bg = orange
+  end
+
+else if tag_message_ip.c_value <> "" then 
+  begin
+  cubicle_bg = yellow
+  end
+
+else
+  cubicle_bg = decoroff     
+
+
+! SELECT CUBICLE FG COLOUR !
+
+if plca_comms_ip.b_value and plcb_comms_ip.b_value then
+  begin
+  cubicle_fg = magenta
+  end
+
+else if alarm_discr.alarm_status == w_note or
+        alarm.alarm_status == w_note or
+        in_use_discr.alarm_status == w_note then
+   cubicle_fg = flashred
+
+else if alarm_discr.alarm_status == w_clr or
+        alarm.alarm_status == w_clr or
+        in_use_discr.alarm_status == w_clr then
+   cubicle_fg = red
+   
+else if in_use_ip.b_value then
+   cubicle_fg = green3
+  
+else if in_use_ip.b_value == off then
+   cubicle_fg = white
+ 
+else
+   cubicle_fg = decoroff
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! CONTROL MENU !
+
+if valid stand_control_menu then
+   begin
+   case stand_control_menu of
+      tag_message
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      untag_message
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      set_permit_to_work
+         begin
+         if permit_to_work_ip.b_value then
+            begin
+            set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+            end
+         else
+            set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+         end
+
+   default
+      begin
+      end
+   set invalid stand_control_menu
+   end
+
+
+! CONTROL MENU !
+
+just=centrecentre
+w=90 h=48
+x=0 y=0
+set rect stand_control_menu 
+
+set title stand_control_menu = "Control Menu"
+! if select button pressed then display tag message !
+
+
+! DRAW CUBICLE !
+
+bg=cubicle_bg
+fg=cubicle_fg
+just = centrecentre
+rect (w=90,h=50,fg=bg) clear
+x -= 45 y += 25 add
+y -= 50 add
+x += 90 add line(fg=decorlight) clear
+y += 1 add
+y += 49 add
+x -= 89 add line(fg=decorshadow) clear
+x += 44 y -= 25 add
+
+rect (w=70,h=35,bg=fg) clear
+add text (ch=30,cubicle_ident)
+clear
+fg = decorshadow
+x+=35 y-=17 add
+y+=35 add
+x-=70 add 
+line
+clear
+fg=white
+add
+y-=35 add 
+x+=70 add line
+clear
+
+
+! TAG MESSAGE BOX !
+
+w=90 h=48
+x=0 y=0
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 300
+fegp_cubicle(13000,13100,100,heathrow,"K25")
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=white,resizable
+

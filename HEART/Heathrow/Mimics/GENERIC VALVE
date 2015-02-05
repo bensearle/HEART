@@ -1,0 +1,12 @@
+
+type panel_item=table (str=string)
+object get_b_value(db_addr = db_address, src=source)=onoff
+var ip = input db_elements(db_addr, b_value)
+begin
+set source ip = src
+set filter ip.db_addr=lim_eq
+set limit ip.db_addr = db_addr
+set persist ip
+request ip
+get_b_value=ip.b_value
+end

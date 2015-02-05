@@ -1,0 +1,13 @@
+load mimic_libutil
+load small_transformer_meter
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y = 0
+
+hv_17_meter(535,1524,heathro2,"well_big_voltmeter","SE Tx 1")
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

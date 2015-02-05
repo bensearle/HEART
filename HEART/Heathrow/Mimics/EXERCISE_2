@@ -1,0 +1,44 @@
+Object main_object(w,h,fg,bg)
+var openInput = input db_elements(db_addr, b_value)
+var closedInput = input db_elements(db_addr, b_value)
+var valveColour = colour
+Begin
+	!Opened database read!
+	set source openInput = heathrow
+	set filter openInput.db_addr = lim_eq
+	set limit openInput.db_addr = B50000
+	request openInput
+	
+	!Closed database read!
+	set source closedInput = heathrow
+	set filter closedInput.db_addr = lim_eq
+	set limit closedInput.db_addr = B50001
+	request closedInput
+	
+	if openInput.b_value then
+		valveColour = green
+	else if closedInput.b_value then
+		valveColour = white
+	else
+		valveColour = lightgrey
+	
+	!Draw bow tie shape!
+	x=50 y=50 add
+	y+=50 add
+	x+=100 y-=50 add
+	y+=50 add
+	fg=valveColour
+	fill
+	fg=black
+	lw=3
+	polygon
+	
+	!Draw circle shape!
+	x=80 y=55 h=40 w=40 sa=0 aa=360
+	fg=lightgrey
+	pie
+	fg=black
+	arc	
+End
+
+mimic = main_object w=400,h=300,bg=lightblue,resizable

@@ -1,0 +1,56 @@
+load mimic_libutil
+load sub_stn_106
+load sub_stn_107
+
+
+!****************** SUB 106 ********************!
+
+object sub_symbol_106
+
+var call_var = popup  sub_stn_106
+
+begin
+
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 106",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 107 ********************!
+
+object sub_symbol_107
+
+var call_var = popup  sub_stn_107
+
+begin
+
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 107",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

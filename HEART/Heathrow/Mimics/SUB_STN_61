@@ -1,0 +1,62 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+!************ BUSBAR 61 *************!
+
+object busbar_61
+
+begin
+
+tfg = black x = -175 y = -55 add text ("61",ch = 25) clear
+
+lw=2
+x = -175 y = -25 add x = 175 add line(lw=4,fg=green4) clear
+
+x = -150  y = -25 add y += 50 add line (fg=green4) clear
+x = -100  y = -25 add y += 50 add line (fg=green4) clear
+x =  -50  y = -25 add y -= 50 add line (fg=green4) clear
+x =    0  y = -25 add y -= 50 add line (fg=green4) clear
+x =   50  y = -25 add y += 50 add line (fg=green4) clear
+x =  100  y = -25 add y += 50 add line (fg=green4) clear
+x =  150  y = -25 add y -= 50 add line (fg=green4) clear
+
+scale = 120
+
+x =   -150 y =   0 ocb_mont(2500,2730,97,188,heathro2,1,"btm")
+x =   -100 y =   0 ocb_mont(2500,2740,98,189,heathro2,2,"btm")
+x =   -50  y = -50 ocb_mont(2500,2750,99,190,heathro2,3,"top")
+x =     0  y = -50 ocb_mont(2500,2760,100,191,heathro2,4,"top")
+x =    50  y = 0   ocb_mont(2500,2770,101,192,heathro2,5,"btm")
+x =   100  y = 0   ocb_mont(2500,2780,102,193,heathro2,6,"btm")
+x =   150  y = -50 ocb_mont(1500,1730,103,88,heathro2,7,"top")
+
+
+scale = 100
+
+X =  -150   Y = 45 transformer("T 1","HOTEL")
+X =  -100   Y = 45 transformer("T 2","HOTEL")
+X =   50    Y = 45 transformer("LT 1","LOCAL")
+X =   100   Y = 45 transformer("LT 2","LOCAL")
+
+scale =260
+just=centrecentre
+tfg = black ch=12
+x = -150 y = 75 text("HILTON")
+x = -100 y = 75 text("HOTEL")
+x = -50 y = -85 text("116 P2")
+x = 0 y = -85 text("60 P3")
+x = 150 y = -85 text("SI P18") !ADD FOR SI PROJECT!
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+busbar_61
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

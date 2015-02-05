@@ -1,0 +1,143 @@
+! HEATHROW CMS - CHP METER
+
+loaded by: HV_3, SUB_STN_62
+!
+
+load mimic_libutil
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+
+!
+******************************************************************
+* CHP METER OBJECT                                               *
+* this object is called by the Top Level variable (mimic)        *
+******************************************************************
+!
+
+object chp_meter(e_offset=int,src=source,range=string,metname=string)
+
+var voltage_alarm = input  alarm_row_type
+var voltage_level_ip = input  e_db_row_type
+var sensor_bg = loopback  colour
+var volt_scale_1 = real
+var volt_scale_2 = real
+var scaler = real
+var bar_length = int
+var bar_start = int
+
+var point_a = loopback  string
+var point_b = loopback  string
+var point_c = loopback  string
+var point_d = loopback  string
+var point_e = loopback  string
+
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source voltage_alarm then 
+
+   begin
+
+   set source voltage_alarm = src
+   set filter voltage_alarm.db_addr = lim_eq
+   set limit voltage_alarm.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist voltage_alarm 
+   request voltage_alarm
+
+   set source voltage_level_ip = src
+   set filter voltage_level_ip.db_addr = lim_eq
+   set limit voltage_level_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist voltage_level_ip 
+   request voltage_level_ip
+
+   end
+
+
+! SELECT METER SCALE !
+
+if range == "9.5-12.5KV" then
+
+   begin
+
+   scaler = 1
+
+   point_a = "9.5"
+   point_b = "10.25"
+   point_c = "11"
+   point_d = "11.75"
+   point_e = "12.5"
+
+   scaler = 1
+   volt_scale_1 = voltage_level_ip.e_value
+   volt_scale_2 = volt_scale_1 - 9.5
+   bar_length = int((volt_scale_2)*66.67)
+   bar_start = 100
+   end
+
+
+if voltage_alarm.alarm_status == w_note then
+   begin   
+   sensor_bg = flashred
+   bar_length = 200
+   bar_start = 100
+   end
+
+else if bar_length > 200 or bar_length < 0 or 
+   voltage_alarm.alarm_status == w_clr then
+   begin
+   sensor_bg = red
+   bar_length = 200
+   bar_start = 100
+   end
+
+
+else sensor_bg = blue
+
+
+! DRAW METER !
+
+just = centrecentre
+x = 0 y = -20 rect(fg=decoroff,h=260,w=60)
+x -= 30 y += 130 add y -= 260 add x += 60 add line(lw=1,fg=decorlight) clear
+x = 30 y = -150 add y += 260 add x -= 60 add line(lw=1,fg=decorshadow) clear
+
+y = -100 x = 5 add x = -0 add y = -50 add x = 5 add x = -0 add 
+y = 0 add x = 5 add x = -0 add y = 50 add x = 5 add x = -0 add
+y = 100 add x = 5 add line(fg=black,lw=2)
+
+x = -15 y = 100 text (tfg=black,ch=12,point_a)
+x = -15 y = 50 text (tfg=black,ch=12,point_b)
+x = -15 y = 0 text (tfg=black,ch=12,point_c)
+x = -15 y = -50 text (tfg=black,ch=12,point_d)
+x = -15 y = -100 text (tfg=black,ch=12,point_e)
+x = 25 y = -100 add  
+y = -140 x = 0 text(tfg=black,ch=17,metname)
+y = -120 x = 0 text(realf=fixed1,tfg=black,ch=16,volt_scale_1+" KV")
+
+! DRAW BAR !
+
+just = bottomcentre
+y = bar_start x = 15 rect(w=10,h=bar_length,fg=sensor_bg) clear
+y = -100 x = 20 add x -= 10 add y += 200 add line(lw=1,fg=decorshadow) clear
+y = 100 x = 10 add x += 10 add y -= 200 add line(lw=1,fg=decorlight) clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=200
+
+x = -100 chp_meter(561,heathrow,"9.5-12.5KV","CHP")
+
+
+
+
+end
+
+mimic = main_object w=400,h=400,just=centrecentre,!zzzfg=white,!bg=gold,resizable

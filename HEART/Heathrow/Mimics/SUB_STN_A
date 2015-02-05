@@ -1,0 +1,155 @@
+Load SUB_STN_A_HELP
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load BROWSER
+load hv_lib
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+
+Object main_object(w,h,fg,bg)
+var helpstr = help string(30)
+var y_default=int
+var x_default=int
+var line_col=colour
+Begin
+
+! HELP !
+just = centrecentre
+   x = 0 y = 0
+   W=1140 H=800
+   set text helpstr = "SUB_STN_A_HELP"
+
+	line_col=yellow
+
+	y_default=-70
+	x_default=0
+
+	X=0 Y=-390 text(ch=20,tfg=black,"TEMPORARY SITE POWER 33/11kV DISTRIBUTION SYSTEM")
+	X=370 Y=y_default-20  text(ch=20,tfg=black,font=font_normal,"TEMP SUB A")
+
+	!***  33KV Main BUS BAR - connecting Line***!
+	Clear
+	x=x_default y=y_default
+	x=350 Add
+	x=-350 Add
+	fg=line_col ls=solid lw=5 cs=capround line clear
+
+	!** Circuit Breaker Connecting Lines **!
+	scale=256
+	lw=3
+	x=-350 y=y_default !*centre*!
+	x += 100 y=y_default  Add
+	y+=10 Add line clear
+	y+=40 Add
+	y+=30 Add line clear
+
+	x += 100 y=y_default  Add
+	y+=10 Add line clear
+	y+=40 Add
+	y+=30 Add line clear
+
+	x += 100 y=y_default  Add
+	y+=10 Add line clear
+	y+=40 Add
+	y+=30 Add line clear
+
+	!*incomer 1*!
+	x=x_default-100 y=y_default Add
+	y-=10 Add line clear
+	y-=40 Add
+	y-=30 Add line clear
+	y-=105 Add
+	y-=8 Add line clear
+
+	x += 150 y=y_default  Add
+	y+=10 Add line clear
+	y+=40 Add
+	y+=30 Add line clear
+
+	x += 100 y=y_default  Add
+	y+=10 Add line clear
+	y+=40 Add
+	y+=30 Add line clear
+
+	x += 100 y=y_default  Add
+	y+=10 Add line clear
+	y+=40 Add
+	y+=30 Add line clear
+
+	!** Breakers & Transformers**!
+	scale=300
+	x=-350 y=y_default !*centre*!
+	x += 100 y +=30 ocb_mont_lib(14001,14120,600,400,heathro3,1,"btm")		!*P1 CB!
+	x += 100 ocb_mont_lib(14001,14130,601,401,heathro3,2,"btm")			!*P2 CB!
+	x += 100 ocb_mont_lib(14001,14140,602,402,heathro3,4,"btm")			!*P4 CB!
+	x=x_default-100 y=y_default !*centre*!
+	y-=30 ocb_mont_lib(14001,14150,603,403,heathro3,3,"top")				!*P3 CB!
+	y-=190 SCALE=400 HV_LIB_TRANSFORMER_SELECT("TYPE2",14001,int,14220,610,int,heathro3,"","",1,int,"black",line_col) CLEAR
+	scale=300
+	x=x_default y=y_default !*centre*!
+	x += 50 y +=30 ocb_mont_lib(14001,14160,604,404,heathro3,5,"btm")			!*P5 CB!
+	x += 100 ocb_mont_lib(14001,14170,605,405,heathro3,6,"btm")			!*P6 CB!
+	x += 100 ocb_mont_lib(14001,14180,606,406,heathro3,7,"btm")			!*P7 CB!
+	scale=256
+
+	!** Meters **!
+	scale=400
+	x=-350 y=y_default !*centre*!
+
+	x += 100 y+=130 hv_lib_meter(14001,615,417,14062,14092,heathro3,"400A","PANEL 1")
+	x += 100 hv_lib_meter(14001,617,419,14064,14094,heathro3,"400A","PANEL 2")
+	x += 100 hv_lib_meter(14001,619,421,14066,14096,heathro3,"400A","PANEL 4")
+	x=x_default-100 y=y_default !*centre*!
+	y-=130 hv_lib_meter(14001,621,423,14068,14098,heathro3,"1250A","PANEL 3")
+	x-=60 hv_lib_meter(14001,622,424,14069,14099,heathro3,"12_65KV","PANEL 3")
+	x=x_default y=y_default !*centre*!
+	x += 50 y+=130 hv_lib_meter(14001,623,425,14070,14100,heathro3,"400A","PANEL 5")
+	x += 100 hv_lib_meter(14001,625,427,14072,14102,heathro3,"400A","PANEL 6")
+	x += 100 hv_lib_meter(14001,627,429,14074,14104,heathro3,"400A","PANEL 7")
+
+
+	!** Labels **!
+	scale=256
+	x=-350 y=y_default !*centre*!
+	x += 100 y+=200 text(ch=10,"TEMP SITE")
+	y+=15 text(ch=10,"SUPPLIES")
+	y+=15 text(ch=10,"FDR1")
+	y+=15 text(ch=10,"(SUB AA)")
+
+	x += 100 y-=45 text(ch=10,"TEMP SITE")
+	y+=15 text(ch=10,"SUPPLIES")
+	y+=15 text(ch=10,"FDR2")
+	y+=15 text(ch=10,"(SUB T)")
+
+	x += 100 y-=45 text(ch=10,"TEMP SITE")
+	y+=15 text(ch=10,"SUPPLIES")
+	y+=15 text(ch=10,"FDR3")
+	y+=15 text(ch=10,"(SUB Y)")
+
+	x=x_default-100 y=y_default !*centre*!
+	y-=290 text(ch=10,"BSP CTA")
+	y+=15 text(ch=10,"(P5)")
+	y+=15 text(ch=10,"INCOMER 1")
+
+	x=x_default y=y_default !*centre*!
+	x += 50 y+=200 text(ch=10,"TEMP SITE")
+	y+=15 text(ch=10,"SUPPLIES")
+	y+=15 text(ch=10,"FDR4")
+	y+=15 text(ch=10,"(SUB X)")
+
+	x += 100 y-=45 text(ch=10,"TEMP SITE")
+	y+=15 text(ch=10,"SUPPLIES")
+	y+=15 text(ch=10,"FDR5")
+	y+=15 text(ch=10,"(SUB D)")
+
+	x += 100 y-=45 text(ch=10,"TEMP SITE")
+	y+=15 text(ch=10,"SUPPLIES")
+	y+=15 text(ch=10,"FDR6")
+	y+=15 text(ch=10,"(SUB G)")
+
+
+
+	!** Browser **!
+	x = -570 y = 310 browser(636,heathro3,1140)
+End
+mimic = MAIN_OBJECT W=1140, H=800, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE

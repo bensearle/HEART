@@ -1,0 +1,417 @@
+! Control and Monitoring System !
+
+!*** Modified by Vijay Kara ******!
+!*** Removal of M 1/12 and Re-arrange Mimic ***!
+!** Date:- 25th April 2008****!
+
+!-------------------------------!
+
+!*********Hv Ring 2*************!
+
+
+load mimic_libutil
+load ocb
+load nse_ocb_4
+load hv_2_sub_stations
+load hv_cable_ident
+Load BROWSER
+
+
+!************* SUB 76 ***************!
+
+object sub_76
+
+begin
+
+sub_symbol_76
+
+lw = 2
+x = 0 y = -205 add y += 230 add line (fg=red) clear
+x = 100 y = -25 add y += 50 add line (fg=red) clear
+x = 150 y = -25 add y += 50 add line (fg=red) clear
+x = 200 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0   y = 0 ocb_mont(500,650,20,30,heathro2,1,"top")
+x = 100 y = 0 ocb_mont(500,670,22,32,heathro2,3,"top")
+x = 150 y = 0 ocb_mont(500,680,23,33,heathro2,4,"top")
+x = 200 y = 0 ocb_mont(500,690,24,34,heathro2,5,"top")
+
+
+end
+
+
+!************* SUB 127 ***************!
+
+object sub_127
+
+begin
+
+sub_symbol_127
+
+lw = 2
+x = 0 y = -45 add y += 70 add line (fg=red) clear
+x = 100 y = -45 add y += 70 add line (fg=red) clear
+
+scale = 315
+x =0 y = 0 hv_lib_breaker("eclipse",1000,1320,69,75,int,HEATHROW,1,"TOP",int)
+x =100  y = 0 hv_lib_breaker("eclipse",1000,1440,75,81,int,HEATHROW,7,"TOP",int)
+
+
+end
+
+!************* SUB 126 ***************!
+
+object sub_126
+
+begin
+
+sub_symbol_126
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 100 y = -60 add y += 85 add line (fg=red) clear
+x = 150 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 300
+x =0 y = 0 hv_lib_breaker("eclipse",10500,10580,800,900,996,HEATHRO3,1,"TOP",10)
+x =100  y = 0 hv_lib_breaker("eclipse",10500,10720,807,907,996,HEATHRO3,7,"TOP",INT)
+x =150  y = 0 hv_lib_breaker("eclipse",10500,10740,808,908,996,HEATHRO3,8,"TOP",30)
+
+
+end
+
+
+
+!************* SUB 63 ***************!
+
+object sub_63
+
+begin
+
+sub_symbol_63
+
+lw = 2
+x = 25 y = -25  add y += 50 add line (fg=red) clear
+
+scale = 120
+x = 25 y = 0 oil_switch(25014,37,1307,heathrow,"c")
+
+scale = 256
+x = 40 y = -5 text("1",ch=12,tfg=black)
+
+end
+
+!************* SUB M1/12 ***************!
+!
+object sub_m1_12
+
+begin
+
+sub_symbol_m1_12
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(1000,1210,63,61,heathrow,1,"top")
+x = 50 y = 0 ocb_mont(1000,1220,64,62,heathrow,2,"top")
+
+end
+!
+
+!************* SUB 100 ***************!
+
+object sub_100
+
+begin
+
+sub_symbol_100
+
+lw = 2
+x = 0  y = 10 add y = -0 add line (fg=red) clear
+x = 50 y = -80 add y = 25 add line (fg=red) clear
+scale = 120
+x = 0 y = 0 oil_switch(25103,493,1371,heathrow,"o")
+x = 50 y=0 oil_switch(25104,494,1372,heathrow,"c")
+scale = 256
+x = 15 y = -5 text("1",ch=12,tfg=black)
+x = 65 y = -5 text("2",ch=12,tfg=black)
+end
+
+
+!*********** HV 2 1 SOUTH INTAKE 2 ***********!
+
+object hv_2_1_south_intake
+
+var call_var = toplevel string
+
+begin
+
+!set source call_var = heathro2
+set selfreplace call_var
+set mimic call_var = "south_intake_2"
+
+W=200 H=25 X=0 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 100 y = 38 text(tfg=white,ch=25,"South Intake",just=centrecentre) clear!
+
+!x = 200 y = 25 add x -= 200 add y += 25 add line (fg=white) clear
+x = 200 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear!
+
+lw=2
+!x = -100 y = 35 add y = -25 add line(fg=red) clear
+x = -50 y = 35 add y = -25 add line(fg=red) clear!
+lw=4
+!x = -125 y = 35 add x += 125 add line(fg=red) clear!
+
+!scale=120
+x = -100 y = 0 nse_ocb_4(21000,21490,724,1726,1700,heathro2,24,"top",148)
+x = -50 y = 0 NSE_OCB_4(21000,21470,723,1725,1700,HEATHRO2,23,"TOP",146)
+x = -5 y = 35  NSE_OCB_4(21000,21450,722,1724,1700,HEATHRO2,22,"SECT",144)!
+
+
+end
+
+
+!*********** HV 2 NORTH INTAKE ************!
+
+object hv_2_north_intake
+
+var call_var = toplevel string
+
+begin
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var="north_intake"
+
+W=150 H=25 X=115 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 190 y = 38 text(tfg=white,ch=25,"North Intake",just=centrecentre) clear
+
+x = 265 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 265 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 50 y = 37 add y = -25 add line(fg=red) clear
+x = 330 y = 37 add y = -25 add line(fg=red) clear
+lw=4
+x = 25 y = 37 add x += 75 add line(fg=red) clear
+x = 280 y =37 add x +=75 add line(fg=red) clear
+scale=120
+x = 50 y = 0 ocb(1,100,1,25,heathrow,1,"top")
+
+angle = 90
+x = 95 y = 37 ocb(1,140,3,27,heathrow,3,"sect")
+x = 285 y = 37 ocb(1,360,14,38,heathrow,18,"sect")
+
+angle = 0
+x = 330 y = 0 ocb(1,380,15,39,heathrow,19,"top")
+!x = 330 y = 0 ocb(1,420,17,41,heathrow,21,"top")!
+
+
+
+end
+
+!************* EAST INTAKE ***************!
+
+!object hv_8_east_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathro2
+set selfreplace call_var
+set mimic call_var = "east_intake"
+
+w=150 h=25 x=175 y=25 rect(fg=decoroff)
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 250 y = 38 text(tfg=white,ch=25,"East Intake",just=centrecentre) clear
+x = 325 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 325 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw = 2
+x = 50 y = 40 add y -= 75 add line (fg=orange3) clear
+lw = 4
+x = -25 y = 40 add x = 175 add line (fg=orange3) clear
+
+scale = 120
+
+x = 50 y = 0 nse_ocb_4(22000,22050,802,1804,1800,HEATHRO2,2,"TOP",202)
+
+x = 150 y = 40 nse_ocb_4(22000,22090,804,1806,1800,HEATHRO2,4,"SECT",206)
+
+end!
+
+!************* SUB M1/2 ***************!
+
+object sub_m1_2
+
+begin
+
+sub_symbol_m1_2
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(1000,1140,33,54,heathro2,6,"top")
+x = 50 y = 0 ocb_mont(1000,1150,34,55,heathro2,7,"top")
+
+
+end
+
+!*************** SUB 133 ***************!
+
+object sub_133
+
+begin
+
+sub_symbol_133
+
+lw = 2
+x = 0 y = 25 add y -= 50 add line (fg=red) clear
+x = 50 y = 25 add y -= 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0 y = 0 oil_switch(26120,106,2093,heathrow,"c")
+x = 50 y = 0 oil_switch(26122,107,2094,heathrow,"c")
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 15 y = 0 text("1")
+x = 65 y = 0 text("2")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin 
+
+clear
+
+lw=2
+
+! 127-1 TO NI-1 !
+x = -355 y = -205 add 
+y -= 160 add
+x += 205 add
+y += 15 add
+line(fg=red) clear
+x = -250 y = -365 cable_ident("red","maggot","5.6") clear
+
+! 127-1 TO SS76-4 !
+x = -455 y = -205 add
+y -= 15 add
+x -= 60 add
+y += 180  add
+x += 190 add
+!y += 50 add!
+line(fg=red) clear
+!x = -468y = -40 cable_ident("red","maggot","5.6") clear!
+
+! SS76-1 TO SS100-1 !
+x = -175 y = -120 add
+y = -205 add
+x = 50 add
+
+line(fg=red) clear
+!x = -70 y = -35 cable_ident("red","maggot","4.1") clear!
+
+! SS100-2 TO SS126-7 !
+x = -125 y = -240 add
+x += 445 add
+!y += 35 add!
+line(fg=red) clear
+x = -70 y = -205 cable_ident("red","maggot","4.1") clear
+
+!M1/2-6 TO NI-19!
+x = 450 y = -200 add
+y -= 165 add
+x -= 320 add
+y += 15 add
+line(fg=red) clear
+x = 280 y = -365 cable_ident("red","maggot","5.6") clear
+
+! M1/2-7 TO SS126-8 !
+x = 150 y = 0 add
+y -= 215 add
+x += 70 add
+y += 10 add
+line(fg=red) clear
+x = 185 y = -215 cable_ident("red","maggot","5.6") clear
+
+! SS76-3 TO SS126-1 !
+x = 500 y = -200 add
+y -= 35 add
+x -= 130 add
+y += 40 add
+line(fg=red) clear
+
+! SS76-4 TO SS127-1 !
+x = 200 y =0 add 
+y-=75 add
+x += 300 add
+y += 360 add
+x -= 765 add
+y-= 325 add
+x -=110 add
+y += 0 add
+line(fg=red) clear
+x = 225 y = 285 cable_ident("red","maggot","5.6") clear
+
+! SS76-5 TO SS133-2 !
+x = 250 y =0 add 
+y-=55 add
+x += 175 add
+y += 40 add
+line(fg=red) clear
+x = 315 y = -55 cable_ident("red","maggot","4.1") clear
+
+! SS133-1 TO SS63-1 !
+x = 375 y = 0 add
+y -= 35 add
+x -= 50 add
+y += 210 add
+line(fg=red) clear
+
+
+X=50 Y=0 sub_76
+X=220 Y=-180 sub_126
+x = -455 y = -160 sub_127
+!x = -425 y = 0 sub_m1_12!
+x = -175 y = -160 sub_100
+x = 300  y = 200 sub_63
+x =  -100 y = 200 hv_2_1_south_intake
+x = -200 y = -330 hv_2_north_intake
+x = 450 y = -180 sub_m1_2
+!x = 220 y = -330 hv_8_east_intake!
+
+
+x = 375 y = 0 sub_133
+
+x = -570 y = 310 browser(1062,heathrow,1140)end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

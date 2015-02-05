@@ -1,0 +1,64 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!************* BUSBAR 44 ***************!
+
+object busbar_44
+
+begin
+
+tfg = black x = -210 y = -70 add text ("44",ch = 40) clear
+
+lw=2
+x = -220 y = -25 add x = 275 add line(lw=4,fg=blue) clear
+x = -125 y = -25 add y -= 50 add line (fg=blue) clear
+x = -75 y = -25 add y -= 50 add line (fg=blue) clear
+x = -25 y = -25 add y += 55 add line (fg=blue) clear
+x = 125 y = -25 add y += 55 add line (fg=blue) clear
+x = 175 y = -25 add y += 90 add line (fg=blue) clear
+x = 225 y = -25 add y -= 55 add line (fg=blue) clear
+
+scale = 120
+
+x = -125 y = -50 ocb_mont(3000,3190,118,234,heathro2,1,"top")
+x = -75 y = -50 ocb_mont(3000,3200,119,235,heathro2,2,"top")
+x = -25  y = 0   ocb_mont(3000,3210,120,236,heathro2,3,"btm")
+!x = 25  y = 0   ocb_mont(3000,3220,121,237,heathro2,4,"btm")
+x = 75 y = 0   ocb_mont(3000,3230,122,238,heathro2,5,"btm")!
+x = 125 y = 0 ocb_mont(3000,3450,246,254,heathro2,6,"btm")
+x = 175 y = 0 ocb_mont(3000,3070,0,264,heathro2,7,"btm")
+x = 225 y = -50 ocb_mont(3000,3080,0,265,heathro2,8,"top")
+angle = 90
+x = 55 y = -25 ocb_mont(3000,0,0,237,heathro2,4,"sect") 
+clear
+
+scale = 100
+X = 175 Y = 45 add transformer("LTX","LOCAL") 
+
+scale = 256 just=centrecentre
+tfg = black ch = 12
+x = -125 y = -100 text("WI-New")
+x = -125 y = -85 text("P20")
+x = -75 y = -90 text("SS72")
+x = 225 y = -90 text("SS74")
+x = 65 y = -2 text("/5")
+x = -25 y = 40 text("Airmail")
+x = -25 y = 55 text("Building")
+x = -25 y = 70 text("Tx. 3")
+x = 120 y = 40 text("Building")
+x = 120 y = 55 text(" 'B', Tx. 2")
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -50 y = 12 busbar_44
+
+end
+
+mimic = main_object w=600,h=350,just=centrecentre,fg=white,bg=aquamarine3,resizable

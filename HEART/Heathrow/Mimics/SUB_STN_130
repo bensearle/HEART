@@ -1,0 +1,48 @@
+load mimic_libutil
+load transformer
+load ocb_hand_dressed_2
+
+
+!******************* BUSBAR 130 ******************!
+
+object busbar_130
+begin
+
+scale = 260
+tfg = black x = -40 y = -27 add text ("130",ch = 25) clear
+
+x = 0 y = 0 add x = 170 add line(fg=blue,lw=4) clear
+lw=2
+x = 30 y = 0 add y = 50 add line (fg=blue) clear
+x = 90 y = 0 add y = 50 add line (fg=blue) clear
+x = 130 y = 0 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = 30 y = 25 ocb_hand(26006,628,2038,heathrow,heathro2,2,"btm")
+x = 90 y = 25 ocb_hand(26007,629,2039,heathrow,heathro2,3,"btm")
+x = 130 y = -25 ocb_hand(26005,627,2037,heathrow,heathro2,1,"top")
+
+scale = 100
+x = 30 y = 70 add transformer("TX","")
+x = 90 y = 70 add transformer("TX","")
+
+scale = 260
+just = centrecentre
+tfg=black
+ch=12
+x = 25 y = 100 text ("STANDS")
+x = 25 y = 115 text ("594 595")
+x = 95 y = 100 text ("STAND 576")
+x = 95 y = 115 text ("FEGP")
+x = 130 y = -60 text ("SS98 P1")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -90 y = -25 busbar_130
+
+end
+
+mimic = main_object w=300,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

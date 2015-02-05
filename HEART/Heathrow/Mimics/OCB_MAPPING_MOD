@@ -1,0 +1,264 @@
+
+
+
+type os_mapping_ip_row_type =  outstation_mapping(os_number,db_addr,
+						    db_name,
+						    reference,data_type,
+						    read_flag,write_flag,
+						    db_scan_number,scale_type,
+						    scale_factor,
+						    scale_factor_db,offset,
+						    offset_db,max_limit,
+						    min_limit,scaling_algorithm,
+						    breakpoint_number,
+						    confirm_db,confirm_type,
+						    confirm_read_delay,
+						    confirm_deadband,
+						    confirm_state,confirm_value,
+						    confirm_value_db)
+
+type os_mapping_table_ip_type =  os_mapping_ip_row_type[500]
+
+type os_mapping_op_row_type =  outstation_mapping(os_number,db_addr,
+						    reference,data_type,
+						    read_flag,write_flag,
+						    db_scan_number,scale_type,
+						    scale_factor,
+						    scale_factor_db,offset,
+						    offset_db,max_limit,
+						    min_limit,scaling_algorithm,
+						    breakpoint_number,
+						    confirm_db,confirm_type,
+						    confirm_read_delay,
+						    confirm_deadband,
+						    confirm_state,confirm_value,
+						    confirm_value_db)
+
+type os_mapping_table_op_type =  os_mapping_op_row_type[500]
+
+type modify_mode = enum (requesting,deleting,adding)
+
+
+object cv_ip_to_op(ip = os_mapping_table_ip_type) = os_mapping_table_op_type
+var i = int
+var cnv_ttbl = loopback  os_mapping_table_op_type
+begin
+
+   for i from 1 to lastrow ip do
+      begin
+      set default cnv_ttbl[i] 
+      cnv_ttbl[i].os_number = ip[i].os_number 
+      cnv_ttbl[i].db_addr = ip[i].db_addr
+      cnv_ttbl[i].reference = ip[i].reference
+      cnv_ttbl[i].data_type= ip[i].data_type
+      cnv_ttbl[i].read_flag = ip[i].read_flag
+      cnv_ttbl[i].write_flag = ip[i].write_flag
+      cnv_ttbl[i].db_scan_number = ip[i].db_scan_number
+      cnv_ttbl[i].scale_type = ip[i].scale_type
+      cnv_ttbl[i].scale_factor = ip[i].scale_factor
+      cnv_ttbl[i].scale_factor_db = ip[i].scale_factor_db
+      cnv_ttbl[i].offset_db = ip[i].offset_db
+      cnv_ttbl[i].max_limit = ip[i].max_limit
+      cnv_ttbl[i].min_limit = ip[i].min_limit
+      cnv_ttbl[i].scaling_algorithm = ip[i].scaling_algorithm
+      cnv_ttbl[i].breakpoint_number = ip[i].breakpoint_number
+      cnv_ttbl[i].confirm_db = ip[i].confirm_db
+      cnv_ttbl[i].confirm_type = ip[i].confirm_type
+      cnv_ttbl[i].confirm_read_delay = ip[i].confirm_read_delay
+      cnv_ttbl[i].confirm_deadband = ip[i].confirm_deadband
+      cnv_ttbl[i].confirm_state = ip[i].confirm_state
+      cnv_ttbl[i].confirm_value = ip[i].confirm_value
+      cnv_ttbl[i].confirm_value_db = ip[i].confirm_value_db
+      end
+   cv_ip_to_op = cnv_ttbl
+end
+
+object main_object
+var i = int
+var base_rec = int
+var mod_rec  = int
+var tripped_addr = loopback  db_address
+var closed_ref = loopback  string
+var mode = loopback  modify_mode
+var ip = input  os_mapping_table_ip_type
+var no_of_words = loopback  int
+var op = output  os_mapping_table_op_type
+var pan = panel  int
+begin
+
+if selb(w = 500,h = 500) then
+   request pan
+
+if invalid mode then
+   mode = requesting
+
+ 
+if valid pan and mode == requesting then
+   begin
+   set source ip = source(0)
+   set filter ip.os_number = lim_eq
+   set limit ip.os_number = pan
+   set mayexist ip
+   set mustexist ip.db_addr
+   set mustexist ip.os_number
+   set mustexist ip.reference
+   request ip
+   mode = requesting
+   text(mode)
+   set invalid pan
+   end
+
+if valid ip and mode == requesting then
+   begin
+   mode = deleting
+   set invalid op
+   set source op = source(0)
+   set old_value op = cv_ip_to_op(ip)
+   text(mode)
+   request  op
+   end
+
+if not get busy op and mode == deleting then
+   begin
+   mode = adding
+   text(mode)
+   set old_invalid op
+   set value op = cv_ip_to_op(ip)
+   ! Do swapping !
+   for base_rec from 1 to lastrow ip do
+      begin
+      no_of_words = int(nwords(ip[base_rec].db_name))
+      if getword(no_of_words,ip[base_rec].db_name) == "CLOSED" then
+         begin
+         closed_ref = ip[base_rec].reference
+         tripped_addr = db_address(int(ip[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow ip do
+            begin
+            if ip[mod_rec].db_addr == tripped_addr then
+               begin
+               set value op[base_rec].reference = ip[mod_rec].reference
+               set value op[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow ip do
+      begin
+      no_of_words = int(nwords(ip[base_rec].db_name))
+      if getword(no_of_words-2,ip[base_rec].db_name) == "FAILED" and
+         getword(no_of_words,ip[base_rec].db_name) == "CLOSE" then
+         begin
+         closed_ref = ip[base_rec].reference
+       tripped_addr = db_address(int(ip[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow ip do
+            begin
+            if ip[mod_rec].db_addr == tripped_addr then
+               begin
+               set value op[base_rec].reference = ip[mod_rec].reference
+               set value op[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow ip do
+      begin
+      no_of_words = int(nwords(ip[base_rec].db_name))
+      if getword(no_of_words-2,ip[base_rec].db_name) == "CLOSE" and
+         getword(no_of_words-1,ip[base_rec].db_name) == "IN" then
+         begin
+         closed_ref = ip[base_rec].reference
+         tripped_addr = db_address(int(ip[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow ip do
+            begin
+            if ip[mod_rec].db_addr == tripped_addr then
+               begin
+               set value op[base_rec].reference = ip[mod_rec].reference
+               set value op[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow ip do
+      begin
+      no_of_words = int(nwords(ip[base_rec].db_name))
+      if getword(no_of_words-2,ip[base_rec].db_name) == "CLOSE" and
+         getword(no_of_words-1,ip[base_rec].db_name) == "OUT" then
+         begin
+         closed_ref = ip[base_rec].reference
+       tripped_addr = db_address(int(ip[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow ip do
+            begin
+            if ip[mod_rec].db_addr == tripped_addr then
+               begin
+               set value op[base_rec].reference = ip[mod_rec].reference
+               set value op[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow ip do
+      begin
+      no_of_words = int(nwords(ip[base_rec].db_name))
+      if getword(no_of_words-1,ip[base_rec].db_name) == "SELECT" and
+         getword(no_of_words,ip[base_rec].db_name) == "CLOSE" then
+         begin
+         closed_ref = ip[base_rec].reference
+       tripped_addr = db_address(int(ip[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow ip do
+            begin
+            if ip[mod_rec].db_addr == tripped_addr then
+               begin
+               set value op[base_rec].reference = ip[mod_rec].reference
+               set value op[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow ip do
+      begin
+      no_of_words = int(nwords(ip[base_rec].db_name))
+      if getword(no_of_words-1,ip[base_rec].db_name) == "CLOSE" and
+         getword(no_of_words,ip[base_rec].db_name) == "SELECTED" then
+         begin
+         closed_ref = ip[base_rec].reference
+       tripped_addr = db_address(int(ip[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow ip do
+            begin
+            if ip[mod_rec].db_addr == tripped_addr then
+               begin
+               set value op[base_rec].reference = ip[mod_rec].reference
+               set value op[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+
+   ! request to add !
+   request op
+   end 
+
+if mode == adding and not get busy op then
+   begin
+   mode = requesting
+   set invalid ip
+   end
+
+if valid ip then
+   begin
+   for i from 1 to lastrow ip do
+      begin
+      !text(ip[i].db_addr)!
+      y += ch + 5
+      end
+   text(mode)
+   end
+
+end 
+
+mimic = main_object w = 500,h = 500

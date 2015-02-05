@@ -1,0 +1,108 @@
+!
+Load SUB_STATION_119_HELP
+!
+
+
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load ocb_119
+load ril_small_meter
+
+
+!
+LOAD HEX_CALMU_OVERVIEW_SS119
+!
+const CREATED_BY_MIMICEDITOR_V2 = 1
+!
+object Calmu_119
+
+var call_var = popup  HEX_CALMU_OVERVIEW_SS119
+
+begin
+
+w=150 h= 25 x = -25 y = 25 rect(fg=decoroff)
+
+set title call_var = "Calmu Meters Sub Stn 119"
+
+if anyb(x=-25,y=25,w=50,h=25)  then
+  begin
+    request call_var
+  end
+
+x = -20 y = 27 text(tfg=white,ch=20,"Calmu Meters") clear
+
+scale = 256
+angle = 0
+x =125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x =125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+end
+!
+Object main_object(w,h,fg,bg)
+Begin
+
+Clear
+ 
+X = -200 Y=50 Add
+X = 200 Y=50 ADD
+FG=Orange3 LS=SOLID LW=4    LINE
+
+clear
+X=-100 Y=-120 Add
+X=-100 Y=50 ADD
+LW=2   LINE
+
+clear
+X=100 Y=-120 Add
+X=100 Y=50 ADD
+LW=2   LINE
+
+clear
+X=-50 Y=50 Add
+X=-50 Y=150 ADD
+ LW=2   LINE
+
+clear
+X=50 Y=50 Add
+X=50 Y=150 ADD
+LW=2   LINE
+
+Clear
+X=0 Y=50
+SCALE = 140
+ocb_119(1536,1524,47,506,HEATHRO3,5,"SECT",5)
+
+X=-100 Y=20
+SCALE = 150
+ocb_119(1536,1500,45,504,HEATHRO3,3,"TOP",5)
+
+X=100 Y=20
+ocb_119(1536,1512,46,505,HEATHRO3,7,"TOP",5) 
+
+scale = 150
+x = -150 y=-60
+hv_17_meter(48,500,heathro3,"0to400Amps","Pan 3")
+x = -100 y=-60
+hv_17_meter(49,501,heathro3,"9.33to12.6volts","Pan 3")
+
+x = 150 y=-60
+hv_17_meter(50,502,heathro3,"0to400Amps","Pan 7")
+x =100 y=-60
+hv_17_meter(51,503,heathro3,"9.33To12.6volts","Pan 7")
+
+scale = 100
+X=-30 Y=-100
+CH=96 FONT=FONT_NORMAL FONTNAME="Arial" 
+TFG=BLACK JUST=TOPLEFT TEXT("119")
+
+scale = 50
+CH=64 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT 
+X = 92 Y=-148 TEXT("EI")
+X = 85 Y=-135 TEXT("P25")
+
+X = -107 Y=-148 TEXT("SI")
+X = -107 Y=-135 TEXT("P1")
+End
+mimic Sub_stn_119 = MAIN_OBJECT W=500, H=350, bg=AQUAMARINE3, RESIZABLE, JUST=CENTRECENTRE
+
+

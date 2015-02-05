@@ -1,0 +1,78 @@
+load mimic_libutil
+load fuse_sw
+load oil_switch
+load oil_switch_2
+load oil_switch_3
+load transformer
+
+
+!************* BUSBAR 93 ***************!
+
+object busbar_93
+begin
+fg = green4
+just = centrecentre
+tfg = black x = -190 y = -25 add text ("93",ch = 30) clear
+x = -210 y = 0 add x = 150 add line(lw=4) clear
+lw=2
+
+x =  -125  y = 0 add y -= 50 add line clear
+x =  -75  y = 0 add y += 50 add line clear
+x =  25  y = 0 add y += 50 add line clear
+x =  75  y = 0 add y -= 50 add line clear
+x =  125  y = 0 add y = 55 add line clear
+x =  -170  y = 0 add y += 50 add line clear
+
+scale = 120
+
+x = -170 y = 25 oil_switch(25134,281,1416,heathrow,"c")
+x =  -125 y = -25 oil_switch(25128,281,1410,heathrow,"c")
+x = -75 y = 25 oil_switch(25129,282,1411,heathrow,"c")
+
+! BUS SECTION OIL SWITCH !
+
+
+x =  -25 y = 0 oil_switch_2(25130,296,1412,heathrow,"c",angle=90)
+
+x = 25 y = 25 oil_switch(25131,297,1413,heathrow,"c")
+x =  75 y = -25 oil_switch(25132,298,1414,heathrow,"c")
+x =  125 y = 25 oil_switch_3(25133,324,1415,heathrow,"o",angle =180)
+
+
+scale = 100
+X =  -75  Y = 70 add transformer("LT 1","")
+X =  25  Y = 70 add transformer("LT 2","")
+X =  -170  Y = 70 add transformer("TX 3","")
+
+scale = 260
+just=centrecentre
+tfg=black ch=12
+x = -155 y = 25 text("0")
+x = -25 y = 95 text("LV Panel")
+x = -25 y = 110 text("Transfer Tunnel")
+x = -110 y = -25 text("1")
+x = -60 y = 25 text("3")
+x = -25 y = 17 text("4")
+x = 40 y = 25 text("6")
+x = 90 y = -25 text("7")
+x = 140  y = 25 text("9")
+x = -125 y = -75 text("SUB 62")
+x = -125 y = -60 text("P6")
+x = 75 y = -75 text("SUB 104")
+x = 75 y = -60 text("P1")
+x = 125 y = 60 text("Spare")
+x = -170 y = 100 text("Stand")
+x = -170 y = 115 text("W40/W41")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+x = 10 y = -15 busbar_93
+
+end
+
+mimic = main_object w=500,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

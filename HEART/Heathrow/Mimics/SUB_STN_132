@@ -1,0 +1,157 @@
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: SUB_STN_132                              **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.0 (For OS08 SAT)                  **!
+!** Date: 24/05/13                                       **!
+!** Changes made:                                        **!
+!**  - No changes from FAT (renumbering only).           **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 1.0 (For OS8 FAT)                   **!
+!** Date: 29/11/12                                       **!
+!** Changes made:                                        **!
+!**  - Panels 2 & 6 now spare (Transformers 1&2 migrated **!
+!**    to Sub 302 - T3IB)                                **!
+!**********************************************************!
+
+Load SUB_STN_132_HELP
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+
+Load hv_lib
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object earth_symbol(fg)
+begin
+	just=topleft
+	lw=2
+	x = 0 y = 0 add x +=30 add line clear
+	x-= 25 y += 5 add x +=20 add line clear
+	x-= 15 y += 5 add x +=10 add line clear
+end
+
+object busbar_132
+var helpstr = help string(30)
+var y_default=int
+var x_default=int
+var line_col=colour
+begin
+   	scale=256
+   	just=centrecentre
+   	x=20 y=20  w=600 h=500
+   	set text helpstr = "sub_stn_132_help"
+
+	line_col=magenta3
+	just=centrecentre
+	lw=2
+	X=240 Y=15 add text (tfg=black,"132",ch = 22) clear
+	x = -230 y = 0 add x += 460 add line(lw=4,fg=line_col) clear
+
+	x =-210 y = 0 add y += 40 add line (fg=line_col) clear
+	x =-160 y = -100 add y += 100 add line (fg=line_col) clear
+	x =-110 y = 0 add y += 100 add line (fg=line_col) clear
+	x =-60  y = 0 add y += 190 add line (fg=line_col) clear
+	x = 60  y = 0 add y += 50 add line (fg=line_col) clear
+	x = 45 earth_symbol(fg=line_col)
+	x = 110 y = 0 add y += 190 add line (fg=line_col) clear
+	x = 160 y = 0 add y += 100 add line (fg=line_col) clear
+	x = 210 y = -100 add y += 100 add line (fg=line_col) clear
+
+
+! *** Circuit Breaker objects *** !
+	scale=270
+	x = -210 y = 25 ocb_mont_lib(35500,35780,1208,4308,heathrow,0,"btm")
+
+	scale=320
+	x =-160 y = -25 hv_lib_breaker("eclipse",35500,35620,1200,4300,int,HEATHROW,1,"TOP",int)
+	x =-110 y = 25 hv_lib_breaker("eclipse",35500,35640,1201,4301,int,HEATHROW,2,"BTM",INT)
+	x =-60 y = 25 hv_lib_breaker("eclipse",35500,35660,1202,4302,int,HEATHROW,3,"BTM",INT)
+	x =0 y = 0 hv_lib_breaker("eclipse",35500,35680,1203,4303,int,HEATHROW,4,"SECT",int)
+	x = 60 y = 25 hv_lib_breaker("type3",35500,35700,1204,4304,int,HEATHROW,4,"SECT",INT,angle=270)
+	x = 110 y = 25 hv_lib_breaker("eclipse",35500,35720,1205,4305,int,HEATHROW,5,"BTM",INT)
+	x = 160 y = 25 hv_lib_breaker("eclipse",35500,35740,1206,4306,int,HEATHROW,6,"BTM",INT)
+	x = 210 y = -25 hv_lib_breaker("eclipse",35500,35760,1207,4307,int,HEATHROW,7,"TOP",int)
+
+
+! *** Scaling for objects *** !
+	scale=256
+! *** Transformer objects *** !
+	!** Tx 1 & 2 migrated to Sub 302 **!
+	!** X =  -110  Y=170  add transformer_lib("Tx 1","") **!
+	x = -60  Y=170  add transformer_lib("Tx 3","")
+	x =110 Y=170 add transformer_lib("Tx 4","")
+	!** x =160 Y=170 add transformer_lib("Tx 2","") **!
+
+! ****** ANALOGUE METERING INFORMATION ******* !
+	scale=354
+
+	X=-160 Y=-96 hv_lib_meter(35500,1215,4317,35562,35592,HEATHROW,"400A","PANEL 1")
+	X=-110 Y=-96 hv_lib_meter(35500,1216,4318,35563,35593,HEATHROW,"14kv","PANEL 1")
+	Y=96 hv_lib_meter(35500,1217,4319,35564,35594,HEATHROW,"400A","PANEL 2")
+	X=-60 Y=96 hv_lib_meter(35500,1219,4321,35566,35596,HEATHROW,"400A","PANEL 3")
+	X=50 Y=-70 hv_lib_meter(35500,1221,4323,35568,35598,HEATHROW,"800A","PANEL 4")
+	X=110 Y=96 hv_lib_meter(35500,1223,4325,35570,35600,HEATHROW,"400A","PANEL 5")
+	X=160 Y=96 hv_lib_meter(35500,1225,4327,35572,35602,HEATHROW,"400A","PANEL 6")
+	X=210 Y=-96 hv_lib_meter(35500,1227,4329,35574,35604,HEATHROW,"400A","PANEL 7")
+	X=160 Y=-96 hv_lib_meter(35500,1228,4330,35575,35605,HEATHROW,"14kv","PANEL 7")
+
+! *** Labels *** !
+	scale=256
+	tfg=black ch=12
+	!**panel 0**!
+	x = -210 y = 55 text("PiccEx")
+	y = 70 text("Junction")
+	y = 85 text("Temp Supply")
+
+	!**panel 1**!
+	x = -160 y = -170 text("SS 29")
+	y = -155 text("P5")
+
+	!**panel 2**!
+	x =-110 y = 160 text("Spare")
+	!* x =-110 y = 205 text("Arrivals") *!
+	!* y = 220 text("Baggage") *!
+	!* y = 235 text("") *!
+
+	!**panel 3**!
+	x = -60 y = 205 text("Local")
+	y = 220 text("")
+
+	!**panel 4**!
+	x =0 y = 205 text("")
+	y = 220 text("")
+
+	!**panel 4a & 4**!
+	x = 50 
+	y = -145 text("Bus")
+	y = -130 text("Section")
+	x=60
+	y = 70 text("Right")
+	y = 85 text("Hand")
+	y = 100 text("Earth")
+	x = 84 y = 35 text("a") x -= 24
+
+	!**panel 5**!
+	x =110 y = 205 text("Local")
+	y = 220 text("")
+
+	!**panel 6**!
+	x = 160 y = 160 text("Spare")
+	!* x = 160 y = 205 text("Arrivals") *!
+	!* y = 220 text("Baggage") *!
+
+	!**panel 7**!
+	x = 210 y = -170 text("SS 121")
+	y = -155 text("P15")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=-10 Y=-30 busbar_132
+end
+mimic = main_object w=560,h=470,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

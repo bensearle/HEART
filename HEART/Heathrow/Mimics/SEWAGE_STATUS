@@ -1,0 +1,348 @@
+! SEWAGE STATUS !
+
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: SEWAGE_STATUS                            **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 08/05/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 0.1-1.4 (FAT/SAT Interim Versions)  **!
+!** Date: 06/02/12 to 24/04/12                           **!
+!** Changes made:                                        **!
+!**  - Building 921 point re-mapped from OS08 to OS10.   **!
+!**  - Building 820 & 847 points re-mapped from OS08 to  **!
+!**    OS27.                                             **!
+!**  - T1 alarm points re-mapped from OS08 to OS06.      **!
+!**  - Pier 5 & Pier 6 points re-mapped from OS08 to new **!
+!**    OS29.                                             **!
+!**  - Removed defunct/superceded points: Pier 1, Pier 2,**!
+!**    RSPCA, Sub 60 & CTA/T2 Sewage as requested by Ian **!
+!**    Jolly of BAA Water Services.                      **!
+!**  - These changes have been made as part of the A1    **!
+!**    Centre decommissioning project.                   **!
+!**********************************************************!
+
+load mimic_libutil
+load sew_pump
+load SEWAGE_STATUS_HELP
+load sump_hi_sensor
+Load BROWSER
+
+
+
+
+
+
+
+!********OBJECT TO DISPLAY BOXES********!
+
+object box(src=source,ident=string,ident1=string)
+begin
+	just = centrecentre
+
+	x = 0 y = 130 add x = 0 y = -120 add x = 275 y = -120 add x = 275 y = 130 add x = 0 y = 130 add line(fg = white, lw = 1)
+
+	clear
+
+	x = 137 y = -100 add text(tfg=red,ch=25,ident)
+	clear
+
+	x = 137 y = 120 add text(tfg=white,ch=12,ident1)
+	clear
+end
+
+
+
+!*********OBJECT TO DISPLAY CARGO SEWAGE ALARMS***********!
+
+object cargo_area_sew
+
+begin
+just=centrecentre
+x = 0
+y = 0 add text(tfg=red,ch=25,"Cargo Area Sewage")
+clear
+scale = 230
+x = 0
+y = 40 sump_sensor(22484,heathrow,"Sub 41 Sewage H/L")
+scale = 260
+y = 65 add text (tfg=white,ch=12,"Location:- Sandringham")
+y = 85 add text (tfg=white,ch=12,"Rd Feeder Pillar")
+clear
+scale = 230
+x = 0
+y = 120 sump_sensor(22486,heathrow,"Sub 42 Sewage H/L")
+scale = 260
+y = 145 add text (tfg=white,ch=12,"Location:- Shoreham Road")
+y = 165 add text (tfg=white,ch=12,"West Feeder Pillar")
+clear
+scale = 230
+x = 0
+y = 200 sump_sensor(22074,heathrow,"Sub 44 Sewage H/L")
+scale = 260
+y = 225 add text (tfg=white,ch=12,"Location:- Sub 74 H.V. Room")
+y = 245 add text (tfg=white,ch=12,"BA Catering Southampton Rd")
+clear
+scale = 230
+x = 0
+y = 280 sump_sensor(22488,heathrow,"Brit Cal Sewage H/L")
+scale = 260
+y = 305 add text (tfg=white,ch=12,"Location:- Switch in Plant")
+y = 325 add text (tfg=white,ch=12,"Room Corner")
+
+clear
+end
+
+!**********OBJECT TO DISPLAY PIER SEWAGE ALARMS************!
+
+object pier_sew
+begin
+
+just=centrecentre
+x = 0
+y = 0 add text(tfg=red,ch=25,"Pier Sewage")
+clear
+
+!** Pier 1 & Pier 2 Removed **
+scale = 230
+x = 0			
+y = 40 sump_sensor(7015,heathrow,"Pier 1 Sewage H/L")
+scale = 260
+y = 65 add text (tfg=white,ch=12,"Location:- Sub 33 L.V. Room")
+y = 85 add text (tfg=white,ch=12,"Switch on 50pr Box")
+clear
+scale = 230
+x = 0
+y = 120 sump_sensor(7016,heathrow,"Pier 2 Sewage H/L")
+scale = 260
+y = 145 add text (tfg=white,ch=12,"Location:- Sub 34 L.V. Room")
+y = 165 add text (tfg=white,ch=12,"Switch on 50pr Box")
+clear
+!
+scale = 230
+x = 0
+y = 40 sump_sensor(23856,heathrow,"Pier 3 Sewage H/L")
+scale = 260
+y = 65 add text (tfg=white,ch=12,"Location:- Switch on Wall in")
+y = 85 add text (tfg=white,ch=12,"Pit adjacent to Sub 56")
+clear
+scale = 230
+x = 0
+y = 120 sump_sensor(33416,heathro2,"Pier 5 Sewage H/L")
+scale = 260
+y = 145 add text (tfg=white,ch=12,"Location:- Sub 38 L.V. Room")
+y = 165 add text (tfg=white,ch=12,"Switch on 50pr Box")
+clear
+scale = 230
+x = 0
+y = 200 sump_sensor(33412,heathro2,"Pier 6 Sewage H/L")
+scale = 260
+y = 225 add text (tfg=white,ch=12,"Location:- Underneath T3 Baggage")
+y = 245 add text (tfg=white,ch=12,"Reclaim in Service Subway")
+
+end
+
+!***********OBJECT TO DISPLAY AIRFIELD SEWAGE ALARMS**********!
+
+
+object airfield_sew
+begin
+
+just=centrecentre
+x = 0
+y = 0 add text(tfg=red,ch=25,"Airfield Sewage")
+clear
+scale = 230
+x = 0			
+y = 40 sump_sensor(20712,heathrow,"Hanger 1 Sewage H/L")
+scale = 260
+y = 65 add text (tfg=white,ch=12,"Location:- On Grass area adjacent")
+y = 85 add text (tfg=white,ch=12,"to British Midland Hanger")
+clear
+scale = 230
+x = 0
+y = 120 sump_sensor(20716,heathrow,"Hanger 4 Sewage H/L")
+scale = 260
+y = 145 add text (tfg=white,ch=12,"Location:- Landside of")
+y = 165 add text (tfg=white,ch=12,"Control Post 16")
+clear
+scale = 230
+x = 0
+y = 200 sump_sensor(20710,heathrow,"BEA Sewage H/L")
+scale = 260
+y = 225 add text (tfg=white,ch=12,"Location:- Switch just below Hatch")
+y = 245 add text (tfg=white,ch=12,"in Pit along Viscount Way")
+clear
+scale = 230
+x = 0
+y = 280 sump_sensor(220714,heathrow,"Red X Sewage H/L")
+scale = 260
+y = 305 add text (tfg=white,ch=12,"Location:- In Lorry Park Landside")
+y = 325 add text (tfg=white,ch=12,"of British Midland Hanger")
+clear
+
+!** Sub 60 Removed **
+scale = 230
+x = 0
+y = 360 sump_sensor(22072,heathrow,"Sub 60 Sewage H/L")
+scale = 260
+y = 385 add text (tfg=white,ch=12,"Location:- Cabinet at rear of")
+y = 405 add text (tfg=white,ch=12,"Sub-Station 60")
+!
+end
+
+!***********OBJECT TO DISPLAY MISCELLANEOUS ALARMS**********!
+
+
+object misc_sew
+begin
+just=centrecentre
+x = 0
+y = 0 add text(tfg=red,ch=25,"Misc Sewage")
+clear
+scale = 230
+x = 0
+y = 40 sump_sensor(5250,heathro2,"Bld 820 Sewage H/L")
+scale = 260
+y = 65 add text (tfg=white,ch=12,"Location:- Switch on")
+y = 85 add text (tfg=white,ch=12,"Panel in Plant Room")
+clear
+scale = 230
+x = 0
+y = 120 sump_sensor(5251,heathro2,"Bld 847 Sewage H/L")
+scale = 260
+y = 145 add text (tfg=white,ch=12,"Location:- Switch on")
+y = 165 add text (tfg=white,ch=12,"Panel in Plant Room")
+clear
+scale = 230
+x = 0
+y = 200 sump_sensor(10460,heathrow,"Bld 921 Sewage H/L")
+scale = 260
+y = 225 add text (tfg=white,ch=12,"Location:- Switch on side of")
+y = 245 add text (tfg=white,ch=12,"Panel in Plant Room")
+clear
+scale = 230
+x = 0
+y = 280 sump_sensor(23426,heathrow,"MT Sewage H/L")
+scale = 260
+y = 305 add text (tfg=white,ch=12,"Location:- Switch in Pit")
+y = 325 add text (tfg=white,ch=12,"N.E. Corner of MT")
+
+clear
+
+end
+
+object box_objects
+begin
+
+!****T1 BOX OBJECTS****!
+
+
+scale = 235
+
+ch = 12
+
+x = -437 y = -315 sump_sensor(5590,heathrow,"T1 Sewage Level High")
+x = -437 y = -290 sump_sensor(5592,heathrow,"T1 sewage Mains Fail")
+x = -437 y = -265 sump_sensor(5400,heathrow,"HEX Sewage High Level")
+
+scale = 240
+
+x = -497 y = -195 sew_pump(5000,5401,388,heathrow,"Pump 1")
+x = -437 y = -195 sew_pump(5000,5402,389,heathrow,"Pump 2")
+x = -377 y = -195 sew_pump(5000,5403,390,heathrow,"Pump 3")
+
+clear
+
+!****CTA BOX OBJECTS****!
+
+!** CTA onbjects removed
+scale = 235
+ch = 12
+x = -147 y = -315 sump_sensor(7009,heathrow,"T2 Sewage Level High")
+x = -147 y = -290 sump_sensor(7008,heathrow,"T2 Sewage Mains Fail")
+scale = 240
+x = -212 y = -195 sew_pump(7000,7007,385,heathrow,"Pump 1")
+x = -152 y = -195 sew_pump(7000,7019,386,heathrow,"Pump 2")
+x = -92 y = -195 sew_pump(7000,7020,387,heathrow,"Pump 3")
+clear
+!
+x = -215 y = -290 add text (tfg=white,ch=18,"Old CTA points") clear
+x = -220 y = -270 add text (tfg=white,ch=18,"decommissioned") clear
+x = -205 y = -220 add text (tfg=white,ch=18,"Refer to new") clear
+x = -255 y = -200 add text (tfg=white,ch=18,"Terminal 2 Sewage mimic") clear
+
+!****T4 BOX OBJECTS****!
+
+scale = 235
+ch = 12
+x = 420 y = -315 sump_sensor(22062,heathrow,"T4 Sewage High Level")
+x = 420 y = -290 sump_sensor(21378,heathrow,"T4 Sanitation")
+!** RSPCA Removed **
+x = 420 y = -265 sump_sensor(22058,heathrow,"RSPCA Sewage H/L")
+!
+scale = 240
+x = 360 y = -195 sew_pump(6000,6500,391,heathrow,"Pump 1")
+x = 420 y = -195 sew_pump(6000,6501,392,heathrow,"Pump 2")
+x = 480 y = -195 sew_pump(6000,6502,393,heathrow,"Pump 3")
+
+clear
+
+!****Pier 7 CONNECTOR BOX OBJECTS****!
+
+scale = 235
+ch = 12
+
+x = 131 y = -315 sump_sensor(13929,heathrow,"P7 Sewage H/L")
+x = 131 y = -290 sump_sensor(13931,heathrow,"P7 Sewage Mains Fail")
+x = 131 y = -265 sump_sensor(13930,heathrow,"P7 Sewage Mixer Tripped")
+x = 131 y = -240 sump_sensor(13932,heathrow,"P7 Sewage Lvl Detector Fail")
+
+scale = 240
+
+x = 105 y = -195 sew_pump2(13000,13927,2750,heathrow,"Pump 1")
+x = 165 y = -195 sew_pump2(13000,13928,2751,heathrow,"Pump 2")
+
+
+clear
+
+!*****POSITIONING BOXES ON SCREEN*****!
+
+x = -565 y = -250 box(heathrow,"Terminal 1 Sewage","Location:- Subway Compressor Room")
+x = -280 y = -250 box(heathrow,"CTA Sewage","Location:- Terminal 2 Taxi Rank")
+x = 5 y = -250 box(heathrow,"P7 Connector Sewage","Location:- Terminal 3 Pier 7 Connector")
+x = 290 y = -250 box(heathrow,"Terminal 4 Sewage","Location:- Don't really know")
+
+clear
+end
+
+!*******MAIN OBJECT*********!
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+just=centrecentre
+
+clear
+
+
+x = 0 y = -10 box_objects
+
+
+!*****POSITIONING ALARMS ON SCREEN*****!
+
+x = -420 y = -110 cargo_area_sew
+x = -150 y = -110 pier_sew
+x = 150 y = -110 airfield_sew
+x = 420 y = -110 misc_sew
+
+x = -570 y = 310 browser(1081,heathrow,1140)
+
+end
+
+mimic = main_object w=1150,h=800,just=centrecentre,fg=white,bg=grey40,resizable

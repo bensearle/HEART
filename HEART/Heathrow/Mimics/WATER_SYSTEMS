@@ -1,0 +1,149 @@
+!*******************************************************************************!
+!   This mimic is designed to display all Airport Pressure Systems at  !
+!   glance for CTA and T5 Water Systems.                                           !
+!   Created by:- SS/VK, 23/10/2008.                                                     !
+!********************************************************************************!
+
+load mimic_libutil
+load cta_ringmain_pressure
+load cta_pressure
+
+
+!******Cta Ringmain Pressure Display*************!
+
+object t5_ringmain
+
+var helpstr = help string(30)
+
+begin
+
+scale = 180
+
+x = -490 y = 10 cta_ringmain_pressure(107,1612,heathro3)
+
+x = -460 y = 60 add text(just=centrecentre,tfg=decorlight,ch=25,"CTA Ringmain")
+x = -460 y = 60 add text(just=centrecentre,tfg=blue,ch=25,"CTA Ringmain")
+
+scale = 256
+just = centrecentre
+x = 0 y = 0
+w = 300 h = 200
+set text helpstr = "pressure_help"
+
+end
+
+!******T5  Ringmain Pressure Display*************!
+
+object cta_ringmain_pressure
+
+var helpstr = help string(30)
+
+begin
+
+scale = 180
+
+x = 630 y = 10 cta_ringmain_pressure(1812,8689,heathro4)
+
+x = 650 y = 60 add text(just=centrecentre,tfg=decorlight,ch=25,"T5 Ringmain")
+x = 650 y = 60 add text(just=centrecentre,tfg=blue,ch=25,"T5 Ringmain")
+
+scale = 256
+just = centrecentre
+x = 0 y = 0
+w = 300 h = 200
+set text helpstr = "pressure_help"
+
+end
+
+
+!***************CTA Fireman Pressure Display******************!
+
+object t5_ffds
+
+
+begin
+
+!*** Initialise toggle status ***!
+	
+	scale = 180
+	X=-210 Y=10 cta_pressure(76,2202,heathrow,"BAR",2202)
+	scale = 256
+	
+x = -230 y = 50 add text(just=topleft,tfg=yellow,ch=18,"CTA Firemain")
+
+
+scale = 256
+just = centrecentre
+x = 0 y = 0
+w = 300 h = 200
+
+	
+end
+
+!*************** T5 Fuel Farm Fire Pumping Station Pressure Display ******************!
+
+object t5_fireman
+
+
+begin
+
+!*** Initialise toggle status ***!
+
+
+	scale = 180
+	X=70 Y=10 cta_pressure(2044,6211,heathro3,"PSI",6211)
+		
+scale = 256
+x =60 y = 50 add text(just=topleft,tfg=yellow,ch=18,"T5 FFDS")
+
+
+
+scale = 256
+just = centrecentre
+x = 0 y = 0
+w = 300 h = 200
+	
+end
+
+!*************** T5 NPWPS Pressure  Display ******************!
+
+object cta_pressure
+
+
+begin
+
+!*** Initialise toggle status ***!
+
+
+	scale = 180
+	X=350 Y=10 cta_pressure(3017,6796,heathro3,"PSI",6796)
+		
+scale = 256
+x =340 y = 50 add text(just=topleft,tfg=yellow,ch=18,"T5 Firemain")
+
+
+
+scale = 256
+just = centrecentre
+x = 0 y = 0
+w = 300 h = 200
+	
+end
+
+
+
+!***********************************************************!
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+x = -90 y = 0 cta_ringmain_pressure
+x = -90 y = 0 cta_pressure
+x = -90 y = 0 t5_ffds
+x = -90 y = 0 t5_fireman
+x = -90 y = 0 t5_ringmain
+
+end
+
+mimic = main_object w=1400,h=180,top=2,just=centrecentre,bg=aquamarine4,resizable

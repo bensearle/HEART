@@ -1,0 +1,41 @@
+load mimic_libutil
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+object show_booleans(just,b_offset=int,number_booleans=int,src=source)
+
+VAR our_boolean = input  b_db_row_type
+VAR n = loopback  int
+
+begin
+
+  n = 0
+  y = 0
+  while (n < number_booleans) do
+  begin
+  x = 0
+  set invalid our_boolean
+  if invalid get source our_boolean then 
+    begin
+    set source our_boolean = src
+    set filter our_boolean.db_addr = lim_eq
+    set limit our_boolean.db_addr = db_address(int(b1) + b_offset + n)
+    set persist our_boolean 
+    request our_boolean
+    end
+  text("b") x += 10
+  text(our_boolean.db_addr) x += 40
+  text(" -> ") x += 20
+  text(our_boolean.b_value)
+  y += 15
+  n ++
+  end
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+show_booleans(19900,2,heathrow)
+ 
+end
+
+mimic = main_object w=300,h=400,just=topleft,fg=black,bg=white,resizable

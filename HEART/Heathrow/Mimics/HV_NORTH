@@ -1,0 +1,227 @@
+! HEATHROW CMS - HV NORTH
+
+loaded by: HV_OVERVIEW
+!
+
+load paul_lib
+
+object north_intake_substations (fg,bg)
+begin
+fg=red
+X=-293 Y=-250 os("64") !64!
+X=-259 os("75") !75!
+X=-293 Y=-231 os("jj") !jj!
+X=-50 Y=-220 os("71") !71!
+X=-21 os("47") !47!
+X=24 Y=-220 os("56") !56!
+X=-21 Y=-171 os("1") !1!
+X=-21 Y=-137 os("30") !30!
+Y=-100 os("31") !31!
+X=23 Y=-79 os("57") !57!
+X=322 Y=-245 os("M1/7") !m1/7!
+X=288 Y=-214 os("M1/2") !m1/2!
+X=368 Y=-191 os("M1/3") !m1/3!
+X=288 Y=-178 os("M1/6") !m1/6!
+X=-165 Y=-167 os("37") !37!
+Y=-133 os("36") !36!
+end
+
+
+object north_intake_lines (fg,bg)
+
+begin
+!*****************************red lines lw = 2***************!
+
+lw=3
+fg=red2
+clear
+
+X=-152 Y=-32  ADD
+Y=-103  ADD
+line
+clear
+X=-73 Y=-122  ADD
+Y=-63  ADD
+line
+clear
+
+X=-175 Y=-315  ADD
+X=45 ADD
+line
+clear
+X=55 Y=-315  ADD
+X=248 ADD
+line
+clear
+X=260 Y=-315  ADD
+X=394 ADD
+line
+clear
+
+!**************************red lines lw = 1*******************!
+
+lw=2
+X=-144 Y=-330  ADD
+Y=-315  ADD
+line
+clear
+X=17 Y=-330  ADD
+Y=-315  ADD
+line
+clear
+X=99 Y=-330  ADD
+Y=-315  ADD
+line
+clear
+X=144 Y=-330  ADD
+Y=-316  ADD
+line
+clear
+X=163 Y=-315  ADD
+Y=-293  ADD
+line
+clear
+X=203 Y=-315  ADD
+Y=-293  ADD
+line
+clear
+lw=3
+X=417 Y=-93  ADD
+Y=-14  ADD
+line 
+clear
+lw=2
+X=416 Y=-22  ADD
+X=409 ADD
+line
+clear
+X=288 Y=-314  ADD
+Y=-214  ADD
+line
+clear
+X=288 Y=-203  ADD
+Y=-178  ADD
+line
+clear
+X=288 Y=-166  ADD
+Y=-73  ADD
+X=417 ADD
+line
+clear
+X=322 Y=-314  ADD
+Y=-247  ADD
+line
+clear
+X=322 Y=-234  ADD
+Y=-64  ADD
+X=417 ADD
+line
+clear
+X=368 Y=-314  ADD
+Y=-192  ADD
+line
+clear
+X=368 Y=-180  ADD
+Y=-82  ADD
+X=417 ADD
+line
+clear
+X=24 Y=-314  ADD
+Y=-220  ADD
+line
+clear
+X=24 Y=-209  ADD
+Y=-80  ADD
+line
+clear
+X=12 Y=-74  ADD
+X=-72 ADD
+line
+clear
+X=-21 Y=-315  ADD
+Y=-220  ADD
+line
+clear
+X=-21 Y=-209  ADD
+Y=-171  ADD
+line
+clear
+X=-21 Y=-160  ADD
+Y=-137  ADD
+line
+clear
+X=-21 Y=-126  ADD
+Y=-101  ADD
+line
+clear
+X=-32 Y=-95  ADD
+X=-72 ADD
+line
+clear
+X=-31 Y=-216  ADD
+X=-39 ADD
+line
+clear
+X=114 Y=-315  ADD
+Y=-271  ADD
+X=-165 Y=-271  ADD
+Y=-167  ADD
+line
+clear
+X=-166 Y=-157  ADD
+Y=-134  ADD
+line
+clear
+X=-166 Y=-122  ADD
+Y=-96  ADD
+X=-152 ADD
+line
+clear
+X=-74 Y=-113  ADD
+X=-89 ADD
+line
+clear
+X=-74 Y=-83  ADD
+X=-153 ADD
+line
+clear
+X=134 Y=-315  ADD
+Y=-280  ADD
+X=-259 ADD
+Y=-250 ADD
+line
+clear
+X=-270 Y=-245  ADD
+X=-282 ADD
+line
+clear
+X=-294 Y=-240  ADD
+Y=-232  ADD
+line
+clear
+X=-294 Y=-250  ADD
+Y=-266  ADD
+line
+clear
+X=-294 Y=-275  ADD
+Y=-291  ADD
+X=-160  ADD
+Y=-315  ADD
+line
+clear
+X=-3 Y=-315  ADD
+Y=-294  ADD
+line
+clear
+X=78 Y=-315  ADD
+Y=-294  ADD
+line
+clear
+
+end
+
+object north_intake 
+begin
+north_intake_lines
+north_intake_substations
+end

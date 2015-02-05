@@ -1,0 +1,717 @@
+! HEATHROW CMS - FAN THREE SPEED CT SF (GROUP OF 3)
+
+loaded by: CARGO_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type panel_item_row = table (str=string(30))
+
+type menu_options_type = enum(
+      tag_message = "Tag Message",
+      untag_message = "Untag Message",
+      set_permit_to_work = "Set permit to work")
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+ 
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+
+ 
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+! 
+***************************************************
+*      DRAW FAN                                   *
+***************************************************
+!
+object draw_fan(just,manual=onoff,
+                      fan_fg=colour,fan1_bg=colour,
+                      status_text_1=string,
+                      status_text_2=string,
+                      ident=string)
+begin
+  rect(h=70,w=70,fg=fan1_bg)
+  x -= 35 y += 35 add
+  y -= 70 add
+  x += 70 add line(fg=decorlight) clear
+  x = 35 add
+  y += 70 add
+  x -= 70 add line(fg=decorshadow) clear
+  x= -10 y = 0 add
+  circle(h=10,w=20,fg=fan_fg,lw=2)
+  x= 10 y = 0 add
+  circle(h=10,w=20,fg=fan_fg,lw=2)
+  x=0 y=-10
+  circle(h=20,w=10,fg=fan_fg,lw=2)
+  y=10
+  circle(h=20,w=10,fg=fan_fg,lw=2)
+  ch = 10
+  x = 0 y = -27 add
+  text (ident)
+  ch = 10
+  y += 35
+  text (status_text_1)
+  y += 19 add text (status_text_2)
+  if manual then      !used to display an M to represent manual control!
+   text(y=42,x=0,just=centrecentre,tfg=white,"Man Ctrl")
+
+  clear
+end
+
+
+ 
+!
+************************************************************
+* VENTILATION FAN (THREE SPEED) OBJECT                     *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object fan_three_speed_ct_sf(fg,bg,plc_offset=int,b_offset=int,
+                             c_offset=int,src=source,
+                             ident1=string,ident2=string,
+                             ident3=string)
+
+!B INPUTS
+b_inputs[1] = fan1_manual_control_ip
+b_inputs[3] = fan1_low_speed
+b_inputs[4] = fan1_medium_speed
+b_inputs[5] = fan1_high_speed
+b_inputs[16] = fan2_manual_control_ip
+b_inputs[18] = fan2_low_speed
+b_inputs[19] = fan2_medium_speed
+b_inputs[20] = fan2_high_speed
+b_inputs[31] = fan3_manual_control_ip
+b_inputs[33] = fan3_low_speed
+b_inputs[34] = fan3_medium_speed
+b_inputs[35] = fan3_high_speed
+b_inputs[46] = set_fans_0
+b_inputs[47] = set_fans_35
+b_inputs[48] = set_fans_50
+b_inputs[49] = set_fans_70
+b_inputs[50] = set_fans_100
+b_inputs[56] = plc_group_remote
+!
+var b_inputs = input b_db_row_type[56]
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+var tag_message_ip = input  c_db_row_type
+
+! ALARM INPUTS
+alarm_inputs[1] = fan1_not_avail
+alarm_inputs[5] = fan1_failed_low
+alarm_inputs[6] = fan1_failed_med
+alarm_inputs[7] = fan1_failed_high
+alarm_inputs[8] = fan1_duty_failed
+alarm_inputs[9] = fan1_man_ctrl_discr
+alarm_inputs[10] = fan1_not_avail_discr
+alarm_inputs[11] = fan1_low_sp_discr
+alarm_inputs[12] = fan1_med_sp_discr
+alarm_inputs[13] = fan1_high_sp_discr
+alarm_inputs[14] = fan1_duty_fail_discr
+
+alarm_inputs[16] = fan2_not_avail
+alarm_inputs[20] = fan2_failed_low
+alarm_inputs[21] = fan2_failed_med
+alarm_inputs[22] = fan2_failed_high
+alarm_inputs[23] = fan2_duty_failed
+alarm_inputs[24] = fan2_man_ctrl_discr
+alarm_inputs[25] = fan2_not_avail_discr
+alarm_inputs[26] = fan2_low_sp_discr
+alarm_inputs[27] = fan2_med_sp_discr
+alarm_inputs[28] = fan2_high_sp_discr
+alarm_inputs[29] = fan2_duty_fail_discr
+
+alarm_inputs[31] = fan3_not_avail
+alarm_inputs[35] = fan3_failed_low
+alarm_inputs[36] = fan3_failed_med
+alarm_inputs[37] = fan3_failed_high
+alarm_inputs[38] = fan3_duty_failed
+alarm_inputs[39] = fan3_man_ctrl_discr
+alarm_inputs[40] = fan3_not_avail_discr
+alarm_inputs[41] = fan3_low_sp_discr
+alarm_inputs[42] = fan3_med_sp_discr
+alarm_inputs[43] = fan3_high_sp_discr
+alarm_inputs[44] = fan3_duty_fail_discr
+
+alarm_inputs[50] = set_fans_0_discr
+alarm_inputs[51] = set_fans_35_discr
+alarm_inputs[52] = set_fans_50_discr
+alarm_inputs[53] = set_fans_70_discr
+alarm_inputs[54] = set_fans_100_discr
+!
+var alarm_inputs = input alarm_row_type[54]
+
+! LOOPBACKS !
+VAR fan1_fg = loopback  colour
+VAR fan2_fg = loopback  colour
+VAR fan3_fg = loopback  colour
+VAR fan1_bg = loopback  colour
+VAR fan2_bg = loopback  colour
+VAR fan3_bg = loopback  colour
+
+VAR fan1_status_text_1 = loopback  string
+VAR fan1_status_text_2 = loopback  string
+VAR fan2_status_text_1 = loopback  string
+VAR fan2_status_text_2 = loopback  string
+VAR fan3_status_text_1 = loopback  string
+VAR fan3_status_text_2 = loopback  string
+
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+begin
+
+! INITIALISATION !
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source plc_inputs then 
+   begin
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset-1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset - 1)
+   set priority tag_message_ip.db_addr = 15
+   set persist tag_message_ip
+   set mayexist tag_message_ip
+   request tag_message_ip
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   end
+
+
+! SELECT FAN 1 BG COLOUR ! 
+
+if b_inputs[1].b_value or b_inputs[56].b_value then
+  fan1_bg = lightblue
+
+else if tag_message_ip.c_value <> "" then
+   fan1_bg = yellow
+
+else 
+   fan1_bg = decoroff     
+
+
+! SELECT FAN 2 BG COLOUR !
+
+if b_inputs[16].b_value or b_inputs[56].b_value then
+  fan2_bg = lightblue
+
+else if tag_message_ip.c_value <> "" then
+   fan2_bg = yellow
+
+else fan2_bg = decoroff
+
+
+! SELECT FAN 3 BG COLOUR !
+
+if b_inputs[31].b_value or b_inputs[56].b_value then
+  fan3_bg = lightblue
+
+else if tag_message_ip.c_value <> "" then
+  fan3_bg = yellow
+
+else fan3_bg = decoroff
+
+
+! SELECT FAN 1 FG COLOUR !
+
+if plc_inputs[1].b_value and 
+   plc_inputs[2].b_value then
+   fan1_fg = magenta
+
+else if alarm_inputs[1].alarm_status    == w_note or
+        alarm_inputs[5].alarm_status    == w_note or
+        alarm_inputs[6].alarm_status    == w_note or
+        alarm_inputs[7].alarm_status    == w_note or
+        alarm_inputs[8].alarm_status    == w_note or
+        alarm_inputs[9].alarm_status    == w_note or
+        alarm_inputs[10].alarm_status   == w_note or
+        alarm_inputs[11].alarm_status   == w_note or
+        alarm_inputs[12].alarm_status   == w_note or
+        alarm_inputs[13].alarm_status   == w_note or
+        alarm_inputs[14].alarm_status   == w_note or
+        alarm_inputs[50].alarm_status   == w_note or
+        alarm_inputs[51].alarm_status   == w_note or
+        alarm_inputs[52].alarm_status   == w_note or
+        alarm_inputs[53].alarm_status   == w_note or
+        alarm_inputs[54].alarm_status   == w_note then
+   fan1_fg = flashred
+
+else if alarm_inputs[1].alarm_status    == w_clr or
+        alarm_inputs[5].alarm_status    == w_clr or
+        alarm_inputs[6].alarm_status    == w_clr or            
+        alarm_inputs[7].alarm_status    == w_clr or
+        alarm_inputs[8].alarm_status    == w_clr or
+        alarm_inputs[9].alarm_status    == w_clr or
+        alarm_inputs[10].alarm_status   == w_clr or
+        alarm_inputs[11].alarm_status   == w_clr or
+        alarm_inputs[12].alarm_status   == w_clr or
+        alarm_inputs[13].alarm_status   == w_clr or
+        alarm_inputs[14].alarm_status   == w_clr or
+        alarm_inputs[50].alarm_status   == w_clr or
+        alarm_inputs[51].alarm_status   == w_clr or
+        alarm_inputs[52].alarm_status   == w_clr or
+        alarm_inputs[53].alarm_status   == w_clr or
+        alarm_inputs[54].alarm_status   == w_clr then
+   fan1_fg = red
+
+else if b_inputs[3].b_value or b_inputs[4].b_value or b_inputs[5].b_value then
+  fan1_fg = green4
+else 
+  fan1_fg = white
+
+
+! SELECT FAN 2 FG COLOUR !
+
+if plc_inputs[1].b_value and 
+   plc_inputs[2].b_value then
+   fan2_fg = magenta
+
+else if alarm_inputs[16].alarm_status   == w_note or
+        alarm_inputs[20].alarm_status   == w_note or
+        alarm_inputs[21].alarm_status   == w_note or
+        alarm_inputs[22].alarm_status   == w_note or
+        alarm_inputs[23].alarm_status   == w_note or
+        alarm_inputs[24].alarm_status   == w_note or
+        alarm_inputs[25].alarm_status   == w_note or
+        alarm_inputs[26].alarm_status   == w_note or
+        alarm_inputs[27].alarm_status   == w_note or
+        alarm_inputs[28].alarm_status   == w_note or
+        alarm_inputs[29].alarm_status   == w_note or
+        alarm_inputs[50].alarm_status   == w_note or
+        alarm_inputs[51].alarm_status   == w_note or
+        alarm_inputs[52].alarm_status   == w_note or
+        alarm_inputs[53].alarm_status   == w_note or
+        alarm_inputs[54].alarm_status   == w_note then
+   fan2_fg = flashred
+
+else if alarm_inputs[16].alarm_status   == w_clr or
+        alarm_inputs[20].alarm_status   == w_clr or
+        alarm_inputs[21].alarm_status   == w_clr or
+        alarm_inputs[22].alarm_status   == w_clr or
+        alarm_inputs[23].alarm_status   == w_clr or
+        alarm_inputs[24].alarm_status   == w_clr or
+        alarm_inputs[25].alarm_status   == w_clr or
+        alarm_inputs[26].alarm_status   == w_clr or
+        alarm_inputs[27].alarm_status   == w_clr or
+        alarm_inputs[28].alarm_status   == w_clr or
+        alarm_inputs[29].alarm_status   == w_clr or
+        alarm_inputs[50].alarm_status   == w_clr or
+        alarm_inputs[51].alarm_status   == w_clr or
+        alarm_inputs[52].alarm_status   == w_clr or
+        alarm_inputs[53].alarm_status   == w_clr or
+        alarm_inputs[54].alarm_status   == w_clr then
+   fan2_fg = red
+   
+else if b_inputs[17].b_value or b_inputs[18].b_value or b_inputs[19].b_value then
+  fan2_fg = green4
+else 
+  fan2_fg = white
+
+
+! SELECT FAN 3 FG COLOUR !
+
+if plc_inputs[1].b_value and 
+   plc_inputs[2].b_value then
+   fan3_fg = magenta
+
+else if alarm_inputs[31].alarm_status   == w_note or
+        alarm_inputs[35].alarm_status   == w_note or
+        alarm_inputs[36].alarm_status   == w_note or
+        alarm_inputs[37].alarm_status   == w_note or
+        alarm_inputs[38].alarm_status   == w_note or
+        alarm_inputs[39].alarm_status   == w_note or
+        alarm_inputs[40].alarm_status   == w_note or
+        alarm_inputs[41].alarm_status   == w_note or
+        alarm_inputs[42].alarm_status   == w_note or
+        alarm_inputs[43].alarm_status   == w_note or
+        alarm_inputs[44].alarm_status   == w_note or
+        alarm_inputs[50].alarm_status   == w_note or
+        alarm_inputs[51].alarm_status   == w_note or
+        alarm_inputs[52].alarm_status   == w_note or
+        alarm_inputs[53].alarm_status   == w_note or
+        alarm_inputs[54].alarm_status   == w_note then
+   fan3_fg = flashred
+
+else if alarm_inputs[31].alarm_status   == w_clr or
+        alarm_inputs[35].alarm_status   == w_clr or
+        alarm_inputs[36].alarm_status   == w_clr or
+        alarm_inputs[37].alarm_status   == w_clr or
+        alarm_inputs[38].alarm_status   == w_clr or
+        alarm_inputs[39].alarm_status   == w_clr or
+        alarm_inputs[40].alarm_status   == w_clr or
+        alarm_inputs[41].alarm_status   == w_clr or
+        alarm_inputs[42].alarm_status   == w_clr or
+        alarm_inputs[43].alarm_status   == w_clr or
+        alarm_inputs[44].alarm_status   == w_clr or
+        alarm_inputs[50].alarm_status   == w_clr or
+        alarm_inputs[51].alarm_status   == w_clr or
+        alarm_inputs[52].alarm_status   == w_clr or
+        alarm_inputs[53].alarm_status   == w_clr or
+        alarm_inputs[54].alarm_status   == w_clr then
+   fan3_fg = red
+   
+else if b_inputs[33].b_value or b_inputs[34].b_value or b_inputs[35].b_value then
+  fan3_fg = green4
+else 
+  fan3_fg = white
+ 
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w=210 h=70 
+set rect main_menu
+set title main_menu  = "Supply Fan Set"
+set empty main_menu 
+set add main_menu = "Alter Tagged Message"
+set add main_menu = "Clear Tagged Message"
+
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+   case main_menu of
+
+      "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tagged Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Stop Fans"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 44), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 45), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 46), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 47), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 48), src, off)
+         end
+
+      "Start At 35%"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 45), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 44), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 46), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 47), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 48), src, off)
+         end
+
+      "Start At 50%"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 46), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 44), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 45), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 47), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 48), src, off)
+         end 
+
+      "Start At 70%"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 47), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 44), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 45), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 46), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 48), src, off)
+         end
+
+      "Start At 100%"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 48), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 44), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 45), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 46), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 47), src, off)
+         end
+
+       "Group Remote Control"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 54), src, on)
+         end
+
+        "Group Local Control"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 44), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 45), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 46), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 47), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 48), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 54), src, off)
+         end
+
+      default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+
+! TAG MESSAGE BOX !
+
+x=0 y=0
+w=210 h=70
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+! MAIN MENU OPTIONS !
+
+if b_inputs[56].b_value then
+   begin
+   if b_inputs[3].b_value==off and
+      b_inputs[5].b_value==off and
+      b_inputs[18].b_value==off and
+      b_inputs[20].b_value==off and
+      b_inputs[33].b_value==off and
+      b_inputs[35].b_value==off then
+     begin end
+   else
+     set add main_menu = "Stop Fans"
+   
+   set add main_menu = "Start At 35%"
+   set add main_menu = "Start At 50%"
+   set add main_menu = "Start At 70%"
+   set add main_menu = "Start At 100%"
+
+ 
+! Failed interlock removed from here 24-3-94 / for Ian  !
+
+   set add main_menu = "Group Local Control"
+   end
+else
+   set add main_menu = "Group Remote Control"
+
+
+! ESTABLISH FAN 1 STATUS !
+
+if b_inputs[5].b_value then
+   fan1_status_text_2 = "High Speed"
+
+else if b_inputs[4].b_value then
+   fan1_status_text_2 = "Medium Speed"
+
+else if b_inputs[3].b_value then
+   fan1_status_text_2 = "Low Speed"
+else 
+   fan1_status_text_2 = "Off"
+
+
+! ESTABLISH FAN 2 STATUS !    
+
+if b_inputs[20].b_value then
+   fan2_status_text_2 = "High Speed"
+
+else if b_inputs[19].b_value then
+   fan2_status_text_2 = "Medium Speed"
+
+else if b_inputs[18].b_value then
+   fan2_status_text_2 = "Low Speed"
+
+else fan2_status_text_2 = "Off"
+
+
+! ESTABLISH FAN 3 STATUS !
+
+if b_inputs[35].b_value then
+   fan3_status_text_2 = "High Speed"
+
+else if b_inputs[34].b_value then
+   fan3_status_text_2 = "Medium Speed"
+
+else if b_inputs[33].b_value then
+   fan3_status_text_2 = "Low Speed"
+
+else fan3_status_text_2 = "Off"
+
+
+! IF MANUAL CONTROL OR NOT AVAILABLE !
+! REMOVE MENU OPTIONS !
+If b_inputs[1].b_value or 
+   b_inputs[16].b_value or
+   b_inputs[31].b_value or
+   alarm_inputs[1].alarm_status == w_note or
+   alarm_inputs[1].alarm_status == w_clr or
+   alarm_inputs[16].alarm_status == w_note or
+   alarm_inputs[16].alarm_status == w_clr or
+   alarm_inputs[31].alarm_status == w_note or
+   alarm_inputs[31].alarm_status == w_clr or
+   (plc_inputs[1].b_value == 1 and
+    plc_inputs[2].b_value == 1) then
+   begin
+   set remove main_menu = "Stop Fans"
+   set remove main_menu = "Start At 35%"
+   set remove main_menu = "Start At 50%"
+   set remove main_menu = "Start At 70%"
+   set remove main_menu = "Start At 100%" 
+   set remove main_menu = "Group Remote Control"
+   set remove main_menu = "Group Local Control"
+   end
+
+
+! DRAW FAN GROUP !
+
+x = -70
+draw_fan(b_inputs[1].b_value,fan1_fg,fan1_bg,"",fan1_status_text_2,ident1)
+x = 0
+draw_fan(b_inputs[16].b_value,fan2_fg,fan2_bg,"",fan2_status_text_2,ident2)
+x = 71
+draw_fan(b_inputs[31].b_value,fan3_fg,fan3_bg,"",fan3_status_text_2,ident3)
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 270
+just=centrecentre
+fan_three_speed_ct_sf(10000,10290,1,heathrow,"Supply Fan 1","Supply Fan 2","Supply Fan 3")
+
+end
+
+mimic = main_object w=400,h=200,just=centrecentre,fg=white,bg=black,resizable
+

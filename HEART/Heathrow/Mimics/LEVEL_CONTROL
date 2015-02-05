@@ -1,0 +1,197 @@
+! HEATHROW CMS - LEVEL CONTROL
+
+loaded by: POTABLE_WATER
+!
+
+load level_control_help
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type status_type = enum (enabled="Enabled",disabled="Disabled",error="Error")
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!
+************************************************************
+* LEVEL CONTROL OBJECT                                     *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object level_control(just,scale,plc_offset=int,b_offset=int,src=source)
+
+!B INPUTS
+b_inputs[1] = ctrl_enabled_ip
+b_inputs[2] = ctrl_disabled_ip
+!
+var b_inputs = input b_db_row_type[2]
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+var ctrl_enabled_op = output  b_db_row_type
+var ctrl_disabled_op = output  b_db_row_type
+
+var object_bg = loopback  colour
+var control_status = loopback  status_type
+
+var control_menu = menu  string
+
+var helpstr = help string(30)
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid b_inputs then 
+   begin
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset-1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   end
+
+
+! SELECT BG COLOUR !
+
+object_bg = decoroff
+
+
+! CASE CONTROL MENU !
+
+if valid control_menu then
+   begin
+
+   case control_menu of
+        "Enable Level Control"
+            begin
+             set_b_value(db_address(int(b1) + b_offset), src, off)
+             set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+            end
+
+        "Disable Level Control"
+            begin
+             set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+             set_b_value(db_address(int(b1) + b_offset), src, on)
+            end
+
+        default
+            begin
+            end
+
+   set invalid control_menu
+   end
+
+
+set title  control_menu = "Tank Level Control"
+set remove control_menu = "Enable Level Control"
+set remove control_menu = "Disable Level Control"
+
+
+! WRITE INPUT TO SERVER !
+
+if valid b_inputs[1] and valid b_inputs[2] then
+   begin
+   if b_inputs[1].b_value then 
+      begin
+      control_status = enabled
+      set add control_menu   = "Disable Level Control"
+      end
+
+   else if b_inputs[2].b_value then
+      begin
+      control_status = disabled
+      set add control_menu   = "Enable Level Control"
+      end
+
+   else
+      begin
+      control_status = error
+      set add control_menu   = "Disable Level Control"
+      set add control_menu   = "Enable Level Control"
+      end
+   
+   set invalid b_inputs
+   end
+
+
+! DRAW SYMBOL !
+
+rect(fg=object_bg,h=20,w=140) 
+x -= 70 y += 10 add y -= 20 add x += 140 add line(lw=1,fg=decorlight) clear
+x = 70 y = -10 add y += 20 add x -= 140 add line(lw=1,fg=decorshadow) clear
+x = 10 y = 0 text (just=centreright,tfg=black,ch=15,"Level Ctrl: ")
+x = 8  y = 0 text (just=centreleft,tfg=blue,ch=15 , control_status)
+
+if plc_inputs[1].b_value==0 or
+   plc_inputs[2].b_value==0 then
+   begin
+   w=140 h=20
+   end
+else
+   begin
+   w=0 h=0
+   end
+  
+x=0 y=0
+set rect control_menu
+
+just = centrecentre
+x = 0 y = 0
+w = 140 h = 20
+set text helpstr = "LEVEL_CONTROL_HELP"
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=250
+just=centrecentre
+y=50
+level_control(12000,12020,heathrow)
+
+
+end
+
+mimic = main_object w=400,h=240,just=centrecentre,fg=white,bg=black,resizable

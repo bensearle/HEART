@@ -1,0 +1,57 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!********** BUSBAR 47 *********!
+
+object busbar_47
+begin
+just=centrecentre
+tfg = black x = -160 y -= 40 add text ("47",ch = 25) clear
+
+lw=2
+
+x = -175 y = -25 add x = 75 add line(lw=4,fg=red) clear
+
+x = -150  y = -25 add y += 50 add line (fg=red) clear
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+
+
+scale = 120
+
+x =   -150 y =  0  ocb_mont(1,140,7,5,heathro2,1,"btm")
+x =   -100 y =  0    ocb_mont(1,150,8,6,heathro2,2,"btm")
+x =   -50  y =  0    ocb_mont(1,160,9,7,heathro2,3,"btm")
+x =     0  y =  -50  ocb_mont(1,170,10,8,heathro2,4,"top")
+x =    50  y =  -50  ocb_mont(1,180,11,9,heathro2,5,"top")
+
+
+scale = 100
+
+X =  -150 Y = 45 transformer("LT 2","")
+X =  -50   Y = 45 transformer("LT 1","")
+ 
+scale = 260
+tfg = black ch=12
+x = -50 y = 75 text("Police")
+x = -100 y = 35 text("SPARE")
+x = -150 y = 75 text("Police")
+x = -150 y = 90 text("Compound")
+x = 0 y = -85 text("1 P1")
+x = 50 y = -85 text("NI P6")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 50 y = 0 busbar_47
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

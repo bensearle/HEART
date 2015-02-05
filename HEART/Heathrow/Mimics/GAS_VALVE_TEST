@@ -1,0 +1,285 @@
+load mimic_libutil
+load GAS_VALVE_TEST_HELP
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+type c_db_row_type = db_elements(db_addr,c_value)
+type panel_item_row = table (str=string(20))
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+ 
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+
+
+object gas_valve_popup(fg,bg,angle,b_offset=int,c_offset=int,src=source)
+
+var call_var = toplevel string
+VAR opened_ip = input  b_db_row_type
+VAR closed_ip = input  b_db_row_type
+
+VAR tag_message_ip = input  c_db_row_type
+VAR tag_message_panel = panel  panel_item_row
+
+VAR opened_alarm_ip = input  alarm_row_type
+VAR closed_alarm_ip = input  alarm_row_type
+VAR mains_failed_alarm_ip = input  alarm_row_type
+VAR battery_low_alarm_ip = input alarm_row_type
+VAR failed_to_close_ip = input  alarm_row_type
+
+var box_fg = loopback colour
+var box_bg = loopback colour
+var tag_bg = loopback colour
+VAR already_done = loopback  yesno
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "gas_valve"
+
+
+! INITIALISATION !
+if invalid already_done then
+  already_done=no
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source opened_ip then 
+   begin
+ set source opened_ip = src
+   set filter opened_ip.db_addr = lim_eq
+   set limit opened_ip.db_addr = db_address(int(b1) + b_offset)
+   set persist opened_ip 
+   request opened_ip
+
+   set source closed_ip = src
+   set filter closed_ip.db_addr = lim_eq
+   set limit closed_ip.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist closed_ip 
+   request closed_ip
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset - 1)
+   set persist tag_message_ip
+   request tag_message_ip
+  
+   set source opened_alarm_ip = src
+   set filter opened_alarm_ip.db_addr = lim_eq
+   set limit opened_alarm_ip.db_addr = db_address(int(b1) + b_offset)
+   set persist opened_alarm_ip 
+   request opened_alarm_ip
+
+   set source closed_alarm_ip = src
+   set filter closed_alarm_ip.db_addr = lim_eq
+   set limit closed_alarm_ip.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist closed_alarm_ip 
+   request closed_alarm_ip
+
+   set source mains_failed_alarm_ip = src
+   set filter mains_failed_alarm_ip.db_addr = lim_eq
+   set limit mains_failed_alarm_ip.db_addr = db_address(int(b1) + b_offset + 2)
+   set persist mains_failed_alarm_ip 
+   request mains_failed_alarm_ip
+
+   set source battery_low_alarm_ip = src
+   set filter battery_low_alarm_ip.db_addr = lim_eq
+   set limit battery_low_alarm_ip.db_addr = db_address(int(b1) + b_offset + 3)
+   set persist battery_low_alarm_ip 
+   request battery_low_alarm_ip
+
+   set source failed_to_close_ip = src
+   set filter failed_to_close_ip.db_addr = lim_eq
+   set limit failed_to_close_ip.db_addr = db_address(int(b1) + b_offset + 4)
+   set persist failed_to_close_ip 
+   request failed_to_close_ip
+
+   end
+
+
+if tag_message_ip.c_value <> "" then 
+  tag_bg = yellow
+else
+  tag_bg = decoroff
+
+box_bg = decoroff 
+
+
+if      opened_alarm_ip.alarm_status       == w_note or
+        closed_alarm_ip.alarm_status       == w_note or
+        mains_failed_alarm_ip.alarm_status == w_note or
+        battery_low_alarm_ip.alarm_status  == w_note or        
+	failed_to_close_ip.alarm_status    == w_note then      
+        box_bg = flashred 
+        
+
+        else if opened_alarm_ip.alarm_status == w_clr or
+        closed_alarm_ip.alarm_status         == w_clr or
+        mains_failed_alarm_ip.alarm_status   == w_clr or 
+        battery_low_alarm_ip.alarm_status    == w_clr or        
+        failed_to_close_ip.alarm_status      == w_clr then      
+        box_bg  = red
+
+if opened_ip.b_value and closed_ip.b_value==off then box_fg =green4
+else if closed_ip.b_value and opened_ip.b_value==off then box_fg =white
+else
+   box_fg = red
+ 
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+!********Pops up gas valve*****
+
+if      opened_alarm_ip.alarm_status       == w_note or
+        closed_alarm_ip.alarm_status       == w_note or
+        mains_failed_alarm_ip.alarm_status == w_note or
+        battery_low_alarm_ip.alarm_status  == w_note or        
+	failed_to_close_ip.alarm_status    == w_note then      
+        
+        if mimic_request invalid then
+        set valid mimic_request
+
+if valid mimic_request then
+begin
+ request call_var
+
+end!
+
+ 
+
+!*****Draw Box******!
+
+W=160 H=35 X=-30 Y=20 RECT(fg=tag_bg)
+x = 130 y = 20 add x -= 160 add y += 35 add line (fg=white) clear
+x = 130 y = 20 add y += 35 add x -= 160 add line (fg=grey40) clear
+
+W=150 H=25 X=-25 Y=25 RECT(fg=box_bg)
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+
+!fg=box_bg!
+tfg=box_fg
+
+! TAG MESSAGE BOX !
+X=-30 Y=20
+W=160 H=35
+if selb and tag_message_ip.c_value <> "" then
+  begin
+   x = 125 y = 25 add x -= 150 add y += 25 add line (fg=grey40) clear
+   x = 125 y = 25 add y += 25 add x -= 150 add line (fg=white) clear   
+   message_text_box(tag_message_ip.c_value)
+  end
+
+!*****Call Valve Mimic*******!
+if menb then
+  begin 
+   x = 125 y = 25 add x -= 150 add y += 25 add line (fg=grey40) clear
+   x = 125 y = 25 add y += 25 add x -= 150 add line (fg=white) clear   
+   request call_var
+  end
+
+x = 50 y = 38 text(tfg=box_fg,ch=25,"Gas Valve",just=centrecentre) clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+x=0 y=0 gas_valve_popup (4750,254,heathro2)
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

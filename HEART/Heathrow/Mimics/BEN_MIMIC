@@ -1,0 +1,29 @@
+Load BEN_MIMIC_LIB
+
+Object main_object(w,h,fg,bg, angle)
+	Begin
+	x=100 y=100 angle=90 createValve (B50000, B50001, B50004, C5000, E18, E19)
+	x=100 y=400 angle=90 createValve (B50010, B50011, B50012, C5001, E518, E519)
+	x=400 y=400 angle=0 createValve (B50000, B50001, B50004, C5000, E18, E19)
+	x=400 y=100 angle=0 createValve (B50010, B50011, B50012, C5001, E518, E519)
+	
+	
+	x=150 y=250 h=50 w=50
+		fg=orange
+		rotrect
+		if rotselb then
+			begin
+			set_b_value (B50000, heathrow, on)
+		end
+		
+	x=350 y=250 h=50 w=50
+		fg=orange
+		rotrect
+		if rotselb then
+			begin
+			set_b_value (B50000, heathrow, off)
+		end	
+	
+	End
+
+mimic = main_object w=700,h=500,bg=blue, resizable

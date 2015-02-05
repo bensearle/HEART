@@ -1,0 +1,1000 @@
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: HV_6_SUB_STATIONS                        **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.1                                 **!
+!** Date: 01/07/12                                       **!
+!** Changes made:                                        **!
+!**  - Corrected Sub 36, 57 & 87 alarm references.       **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 01/05/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 1.0-1.2 (FAT/SAT Interim Versions)  **!
+!** Date: 02/04/12 to 23/04/12                           **!
+!** Changes made:                                        **!
+!**  - Sub 31 re-mapped from old OS08 (heathrow) to new  **!
+!**    OS29 (heathro2).                                  **!
+!**  - Sub 30 re-mapped from old OS08 (heathrow) to OS27 **!
+!**    (heathro2).                                       **!
+!**  - These changes have been made as part of the A1    **!
+!**    Centre decommissioning project.                   **!
+!**********************************************************!
+
+!** Modified by AM (CCS) - 19/08/10 	**!
+!** New Sub 108 RTU Installed	**!
+load mimic_libutil
+load ocb_alarm_test
+
+load sub_stn_57
+load sub_stn_56
+load sub_stn_56a
+load sub_stn_87
+load sub_stn_36
+load sub_stn_37
+load sub_stn_old_tfp
+load sub_stn_1
+load sub_stn_30
+load sub_stn_31
+load sub_stn_47
+load sub_stn_92
+load sub_stn_108
+load sub_stn_122
+load sub_stn_140
+load sub_stn_263
+load sub_stn_264
+load sub_stn_27
+
+object multiple_alarm_test(plc_offset=int,b_offset=int,num_alarms=int,src=source) = colour
+var plc_inputs = input b_bool_type[2]		! * comms inputs * !
+var equip_alarms = input alarm_row_type[1000]
+var alarm_box=yesno
+var n = int
+var alarm_clear_count = int
+begin
+         		if invalid get source plc_inputs then 	! * get database values * !
+         		begin
+	   		set source plc_inputs = src
+	   		set filter plc_inputs.db_addr = lim_ge
+	   		set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   		set priority plc_inputs.db_addr = 15
+	   		set persist plc_inputs
+	   		set mayexist plc_inputs
+	   		request plc_inputs
+		end
+
+		if plc_inputs[1].b_value==1 and plc_inputs[2].b_value==1 then
+		   begin
+			 multiple_alarm_test = magenta
+		   end
+		else if invalid num_alarms or num_alarms==int then 
+		   begin
+			multiple_alarm_test = grey80
+		   end
+		else 
+		   begin
+		      if invalid get source equip_alarms then
+		         begin
+		   	set source equip_alarms = src
+		   	set max_rows equip_alarms  = num_alarms 
+		   	set filter equip_alarms.db_addr = lim_ge	
+		   	set limit equip_alarms.db_addr = db_address(int(b1) + b_offset-1)
+		   	set priority equip_alarms.db_addr = 15
+		   	set persist equip_alarms 
+		   	set mayexist equip_alarms
+		   	request equip_alarms
+		         end
+
+			if invalid equip_alarms[1].alarm_status then
+			begin
+				multiple_alarm_test = grey80
+			end
+			else
+			begin
+				alarm_clear_count = 0
+				n=1
+				while n <= num_alarms DO
+				begin
+					if equip_alarms[n].alarm_status==w_note or equip_alarms[n].alarm_status==w_clr then
+					   begin
+						n=num_alarms+1
+					   end	
+					else
+					   begin
+						alarm_clear_count = alarm_clear_count + 1
+						n++
+					   end
+				end
+
+				if alarm_clear_count <> num_alarms then
+				   multiple_alarm_test = red
+				else
+				   multiple_alarm_test = grey80
+			end
+		   end
+
+			! * debug to display the number of dbase points found before (if any) either w_note or w_clr * !
+			!	text(ch=40,alarm_clear_count )	!
+end
+
+
+
+!****************** SUB 57 ********************!
+
+object sub_symbol_57
+
+var call_var = popup sub_stn_57
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_6 = int
+
+begin
+return_1 = sub_alarm(10000,10170,heathro2)
+return_2 = sub_alarm(10000,10130,heathro2)
+return_3 = sub_alarm(10000,10140,heathro2)
+return_4 = sub_alarm(10000,10150,heathro2)
+return_5 = sub_alarm(10000,10160,heathro2)
+return_6 = sub_alarm(10000,10120,heathro2)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 or return_6 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 or return_6 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 or return_6 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 57"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 57",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+
+!****************** SUB 92 ********************!
+
+object sub_symbol_92
+
+var call_var = popup  sub_stn_92
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+
+begin
+return_1 = sub_alarm(6000,6210,heathro2)
+return_2 = sub_alarm(6000,6220,heathro2)
+return_3 = sub_alarm(6000,6230,heathro2)
+return_4 = sub_alarm(6000,6240,heathro2)
+return_5 = sub_alarm(6000,6250,heathro2)
+return_6 = sub_alarm(6000,6260,heathro2)
+return_7 = sub_alarm(6000,6270,heathro2)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 or return_6 == 1 or return_7 == 1 then
+begin
+  W=50 H=25 X=-78 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2 
+or return_5 == 2 or return_6 == 2 or return_7 == 2 then 
+begin
+  W=50 H=25 X=-78 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 or return_6 == 3 or return_7 == 3 then
+begin
+  W=50 H=25 X=-78 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=50 h=25 x=-78 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 92"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 or return_6 == 1 or return_7 == 1 then
+begin
+  W=100 H=25 X=27 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2 
+or return_5 == 2 or return_6 == 2 or return_7 == 2 then 
+begin
+  W=100 H=25 X=27 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 or return_6 == 3 or return_7 == 3 then
+begin
+  W=100 H=25 X=27 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=27 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 92"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = -27 y = 25 add x -= 50 add y += 25 add line (fg=white) clear
+x = -27 y = 25 add y += 25 add x -= 50 add line (fg=grey40) clear
+
+x = -52 y = 38 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+
+x = 128 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 128 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+x = 75 y = 38 text(tfg=white,ch=25,"92",just=centrecentre) clear
+
+x = -27 y = 38 add x +=55 add line (fg=red,lw=2) clear
+
+scale = 120
+angle = 90
+x = 1 y = 37 ocb_mont(6000,6240,612,903,heathro2,4,"sect")
+angle = 0
+
+end
+
+
+
+!****************** SUB 56 ********************!
+
+object sub_symbol_56
+
+var call_var = popup sub_stn_56
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+
+begin
+return_1 = sub_alarm(6000,6100,heathro2)
+return_2 = sub_alarm(6000,6110,heathro2)
+return_3 = sub_alarm(6000,6120,heathro2)
+return_4 = sub_alarm(6000,6130,heathro2)
+return_5 = sub_alarm(6000,6140,heathro2)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2 
+or return_5 == 2 then 
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 56"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 56",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** Relocated SUB 56a ********************!
+
+object sub_symbol_56a
+var alarm_col= colour
+var call_var = popup sub_stn_56a
+
+begin
+! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+ alarm_col=multiple_alarm_test(1600,1640,121,heathro4)
+
+  W=100 H=25 X=-25 Y=25 RECT(fg=alarm_col)
+
+set title call_var = "Sub Station 56A"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 56A",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 87 ********************!
+
+object sub_symbol_87
+
+var call_var = popup sub_stn_87
+var return_1 = int
+var return_2 = int
+var return_3 = int
+
+begin
+return_1 = sub_alarm(5000,5050,heathro3)
+return_2 = sub_alarm(5000,5060,heathro3)
+return_3 = sub_alarm(5000,5070,heathro3)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 87"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 87",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 36 ********************!
+
+object sub_symbol_36
+
+var call_var = popup sub_stn_36
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+
+begin
+
+return_1 = sub_alarm(10000,10180,heathro2)
+return_2 = sub_alarm(10000,10190,heathro2)
+return_3 = sub_alarm(10000,10200,heathro2)
+return_4 = sub_alarm(10000,10210,heathro2)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 36"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 36",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 37 ********************!
+
+object sub_symbol_37
+
+var call_var = popup sub_stn_37
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+
+begin
+return_1 = sub_alarm(10000,10070,heathro2)
+return_2 = sub_alarm(10000,10080,heathro2)
+return_3 = sub_alarm(10000,10090,heathro2)
+return_4 = sub_alarm(10000,10100,heathro2)
+return_5 = sub_alarm(10000,10110,heathro2)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 37"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 37",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** OLD TFP ********************!
+
+object sub_symbol_old_tfp
+
+var call_var = popup sub_stn_old_tfp
+var return_1 = int
+
+begin
+return_1 = sub_barcis_alarm(25020,heathrow)
+
+if sub_barcis_alarm(25020,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_barcis_alarm(25020,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_barcis_alarm(25020,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Old Taxi Feeder Park"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Old TFP",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 1 ********************!
+
+object sub_symbol_1
+
+var call_var = popup sub_stn_1
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+
+begin
+return_1 = sub_barcis_alarm(23428,heathrow)
+return_2 = sub_barcis_alarm(23448,heathrow)
+return_3 = sub_barcis_alarm(23468,heathrow)
+return_4 = sub_barcis_alarm(23488,heathrow)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 1"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 1",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 30 ********************!
+
+object sub_symbol_30
+
+var call_var = popup sub_stn_30
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+
+begin
+return_1 = sub_alarm(5000,5200,heathro2)
+return_2 = sub_alarm(5000,5210,heathro2)
+return_3 = sub_alarm(5000,5220,heathro2)
+return_4 = sub_alarm(5000,5230,heathro2)
+return_5 = sub_alarm(5000,5240,heathro2)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 then
+begin
+  W=150 H=25 X=-75 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=150 h=25 x=-75 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 30"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 0 y = 38 text(tfg=white,ch=25,"Sub 30",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 31 ********************!
+
+object sub_symbol_31
+
+var call_var = popup sub_stn_31
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+
+begin
+return_1 = sub_alarm(32700,32780,heathro2)
+return_2 = sub_alarm(32700,32790,heathro2)
+return_3 = sub_alarm(32700,32800,heathro2)
+return_4 = sub_alarm(32700,32810,heathro2)
+return_5 = sub_alarm(32700,32820,heathro2)
+
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 31"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 31",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+!****************** SUB 108 ********************!
+
+object sub_symbol_108
+
+var call_var = popup sub_stn_108
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+
+begin
+!** New Sub 108 RTU Intallated and databases linkages updated **!
+!** Old db linkages commented out **!
+! return_1 = sub_alarm(6000,6850,heathro2)
+return_2 = sub_alarm(6000,6860,heathro2)
+return_3 = sub_alarm(6000,6870,heathro2)
+return_4 = sub_alarm(6000,6880,heathro2)
+return_5 = sub_alarm(6000,6890,heathro2)
+return_6 = sub_alarm(6000,6900,heathro2)
+return_7 = sub_alarm(6000,6910,heathro2) !
+
+!** New db linkages added **!
+return_1 = sub_alarm(12220,12250,heathro4)
+return_2 = sub_alarm(12220,12255,heathro4)
+return_3 = sub_alarm(12220,12260,heathro4)
+return_4 = sub_alarm(12220,12265,heathro4)
+return_5 = sub_alarm(12220,12270,heathro4)
+return_6 = sub_alarm(12220,12275,heathro4)
+return_7 = sub_alarm(12220,12280,heathro4)  
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 or return_6 == 1 or return_7 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 or return_6 == 2 or return_7 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 or return_6 == 3 or return_7 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 108"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 108",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+!****************** SUB 140 ********************!
+
+object sub_symbol_140
+
+var call_var = popup sub_stn_140
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+
+begin
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 or return_6 == 1 or return_7 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 or return_6 == 2 or return_7 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 or return_6 == 3 or return_7 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 140"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 140",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+!****************** SUB 47 ********************!
+
+object sub_symbol_47
+
+var call_var = popup sub_stn_47
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+
+begin
+return_1 = sub_barcis_alarm(20596,heathrow)
+return_2 = sub_barcis_alarm(20520,heathrow)
+return_3 = sub_barcis_alarm(20500,heathrow)
+return_4 = sub_barcis_alarm(20540,heathrow)
+return_5 = sub_barcis_alarm(20560,heathrow)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 47"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 47",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+!****************** SUB 27 ********************!
+
+object sub_symbol_27
+
+var call_var = popup  sub_stn_27
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+
+begin
+return_1 = sub_alarm(32700,33030,heathro2)
+return_2 = sub_alarm(32700,33040,heathro2)
+return_3 = sub_alarm(32700,33050,heathro2)
+return_4 = sub_alarm(32700,33060,heathro2)
+return_5 = sub_alarm(32700,33070,heathro2)
+
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 then
+   begin
+     W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+   end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 then
+     begin
+       W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+     end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 then
+     begin
+       W=100 H=25 X=-25 Y=25 RECT(fg=red)
+     end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 27"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 27",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+
+!****************** SUB 129 T2B North ********************!
+
+object sub_symbol_129
+
+var rect_bg = loopback colour
+begin
+
+   rect_bg = decoroff
+   w=150 h=25 x=-25 y=25 rect(fg=rect_bg)
+
+   x = 50 y = 38 text(tfg=white,ch=25,"Sub 129",just=centrecentre) clear
+   x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+   x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+end
+
+!****************** SUB 263 T2B Site Supplies ********************!
+
+object sub_symbol_263
+
+var call_var = popup  sub_stn_263
+var rect_bg = loopback colour
+begin
+	
+   rect_bg = decoroff
+    
+   set title call_var = "Sub Station 263"
+   w=100 h=25 x=-25 y=25 rect(fg=rect_bg)
+   if anyb then
+      begin
+    	request call_var
+      end
+
+   x = 25 y = 38 text(tfg=white,ch=25,"Sub 263",just=centrecentre) clear
+   x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+   x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+!****************** SUB 264 T2B Welfare Facility ********************!
+
+object sub_symbol_264
+
+var call_var = popup  sub_stn_264
+var rect_bg = loopback colour
+begin
+	
+   rect_bg = decoroff
+    
+   set title call_var = "Sub Station 264"
+   w=100 h=25 x=-25 y=25 rect(fg=rect_bg)
+   if anyb then
+      begin
+    	request call_var
+      end
+
+   x = 25 y = 38 text(tfg=white,ch=25,"Sub 264",just=centrecentre) clear
+   x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+   x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+sub_symbol_30
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

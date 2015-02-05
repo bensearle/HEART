@@ -1,0 +1,406 @@
+load mimic_libutil
+
+!
+
+Below is a list of the objects included in this library
+
+message_text_box  - displays a popup showing the specified text
+set_b_value       - sets specified boolean with specified value
+set_c_value       - sets specified character with specified string
+set_e_value       - sets specified engineering with specified value
+get_b_value       - returns boolean value for specified address
+get_c_value       - returns character string for specified address
+get_e_value       - returns engineering value for specified address
+white_arrow       - draws a white arrow
+!
+
+
+! Heathrow configuration standard definitions !
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type alarm_row_type =  db_elements(alarm_status)
+
+type panel_item_row = table (str=string(30))
+
+
+!
+***************************************
+* MESSAGE TEXT BOX                    *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+!
+******************************************************************
+* GET B VALUE                                                    *
+* This object reads the value of a boolean from a given server.  *
+******************************************************************
+!
+object get_b_value(db_addr=db_address,src=source)=onoff
+var ip = input  b_db_row_type
+begin
+if not get busy ip then
+   begin
+   set source ip = src
+   set filter ip.db_addr = lim_eq
+   set limit ip.db_addr = db_addr
+   set persist ip 
+   request ip
+   get_b_value = ip.b_value
+   end
+end
+
+!
+******************************************************************
+* GET C VALUE                                                    *
+* This object reads the value of a character from a given server.*
+******************************************************************
+!
+object get_c_value(db_addr=db_address,src=source)=string
+var ip = input  c_db_row_type
+begin
+if not get busy ip then
+   begin
+   set source ip = src
+   set filter ip.db_addr = lim_eq
+   set limit ip.db_addr = db_addr
+   set persist ip 
+   request ip
+   get_c_value=ip.c_value
+   end
+end
+
+
+
+!
+******************************************************************
+* GET E VALUE                                                    *
+* This object reads the value of a real from a given server.     *
+******************************************************************
+!
+object get_e_value(db_addr=db_address,src=source)=real
+var ip = input  e_db_row_type
+begin
+if not get busy ip then
+   begin
+   set source ip = src
+   set filter ip.db_addr = lim_eq
+   set limit ip.db_addr = db_addr
+   set persist ip 
+   request ip
+   get_e_value=ip.e_value
+   end
+end
+
+
+
+object paw_grid (fg,bg)
+begin
+x=-500 y=-350 add
+x=500 add
+line
+clear
+x=-500 y=-300 add
+x=500 add
+line
+clear
+x=-500 y=-250 add
+x=500 add
+line
+clear
+x=-500 y=-300 add
+x=500 add
+line
+clear
+x=-500 y=-250 add
+x=500 add
+line
+clear
+x=-500 y=-200 add
+x=500 add
+line
+clear
+x=-500 y=-150 add
+x=500 add
+line
+clear
+x=-500 y=-100 add
+x=500 add
+line
+clear
+x=-500 y=-50 add
+x=500 add
+line
+clear
+x=-500 y=0 add
+x=500 add
+line
+clear
+x=-500 y=50 add
+x=500 add
+line
+clear
+x=-500 y=100 add
+x=500 add
+line
+clear
+x=-500 y=150 add
+x=500 add
+line
+clear
+x=-500 y=200 add
+x=500 add
+line
+clear
+x=-500 y=250 add
+x=500 add
+line
+clear
+x=-500 y=300 add
+x=500 add
+line
+clear
+x=-500 y=350 add
+x=500 add
+line
+clear
+x=-500 y=400 add
+x=500 add
+line
+clear
+
+x=-450 y=400 add
+y=-400 add
+line
+clear
+x=-400 y=400 add
+y=-400 add
+line
+clear
+x=-350 y=400 add
+y=-400 add
+line
+clear
+x=-300 y=400 add
+y=-400 add
+line
+clear
+x=-250 y=400 add
+y=-400 add
+line
+clear
+x=-200 y=400 add
+y=-400 add
+line
+clear
+x=-150 y=400 add
+y=-400 add
+line
+clear
+x=-100 y=400 add
+y=-400 add
+line
+clear
+x=-50 y=400 add
+y=-400 add
+line
+clear
+x=0 y=400 add
+y=-400 add
+line
+clear
+x=50 y=400 add
+y=-400 add
+line
+clear
+x=100 y=400 add
+y=-400 add
+line
+clear
+x=150 y=400 add
+y=-400 add
+line
+clear
+x=200 y=400 add
+y=-400 add
+line
+clear
+x=250 y=400 add
+y=-400 add
+line
+clear
+x=300 y=400 add
+y=-400 add
+line
+clear
+x=350 y=400 add
+y=-400 add
+line
+clear
+x=400 y=400 add
+y=-400 add
+line
+clear
+x=450 y=400 add
+y=-400 add
+line
+clear
+ch=10
+X=460 Y=-370  TEXT ("y=-350")
+Y=-320  TEXT ("y=-300")
+Y=-270  TEXT ("y=-250")
+Y=-220  TEXT ("y=-200")
+Y=-170  TEXT ("y=-150")
+y=-120  TEXT ("y=-100")
+y=-70  TEXT ("y=-50")
+Y=-20  TEXT ("y=0")
+Y=30  TEXT ("y=50")
+Y=80  TEXT ("y=100")
+Y=130  TEXT ("y=150")
+Y=180  TEXT ("y=200")
+Y=230  TEXT ("y=250")
+Y=280  TEXT ("y=300")
+Y=330  TEXT ("y=350")
+
+X=-450 Y=-390  TEXT ("x=-450")
+X=-400 TEXT ("x=-400")
+X=-350 TEXT ("x=-350")
+X=-300 TEXT ("x=-300")
+X=-250 TEXT ("x=-250")
+X=-200 TEXT ("x=-200")
+X=-150 TEXT ("x=-150")
+X=-100 TEXT ("x=-100")
+X=-50 TEXT ("x=-50")
+X=0 TEXT ("x=0")
+X=50 TEXT ("x=50")
+X=100 TEXT ("x=100")
+X=150 TEXT ("x=150")
+X=200 TEXT ("x=200")
+X=250 TEXT ("x=250")
+X=300 TEXT ("x=300")
+X=350 TEXT ("x=350")
+X=400 TEXT ("x=400")
+X=450 TEXT ("x=450")
+end
+
+
+object white_arrow(cl=colour,angle,scale)
+begin
+x=0 y=0 add
+x=-10 y=5 add
+y=-5 add
+x=0 y=0 add
+fill(fg=cl)
+clear
+end
+
+
+
+object main_object(bg,fg,w,h,tbg,tfg,just)
+begin
+
+x=0 y=-20
+text(tfg=red,"heathrow libutil")
+y=20
+text(tfg=yellow,"src = "+source(0))
+if selb then 
+  begin
+  message_text_box("setting b51 on")
+  end
+
+end
+
+mimic = main_object w=150,h=60,just=centrecentre,fg=white,bg=black,resizable

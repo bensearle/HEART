@@ -1,0 +1,194 @@
+load mimic_libutil
+
+
+!***************** DRAW ILLUMINTED SEGMENT *******************!
+
+
+object segment_on (fg,bg,angle)
+begin
+x = 0 y = 0 add
+x = 30 y = 0 add
+x = 35 y = 5 add
+x = -5 y = 5 add
+x = 0 y = 0 add fill polygon clear
+if fg == yellow then
+  fg = yellow3
+x = 0 y = 10 add
+x += 30 add 
+x += 5 y -= 5 add
+x -= 40 add
+x = 0 y = 10 add fill polygon clear
+fg=black
+x = 0 y = 0 add
+x = 30 y = 0 add
+x = 35 y = 5 add
+x = 30 y = 10 add
+x = 0 y = 10 add
+x = -5 y = 5 add
+x = 0 y = 0 add line
+end
+
+
+
+!********************* DRAW BLANK SEGMENT ***********************!
+
+
+object segment_off (fg,bg,angle)
+begin
+fg=decoroff
+x = 0 y = 0 add
+x = 30 y = 0 add
+x = 35 y = 5 add
+x = 30 y = 10 add
+x = 0 y = 10 add
+x = -5 y = 5 add
+x = 0 y = 0 add fill(fg=decoroff) line
+end
+
+
+
+!************* POSITIONING OF INDIVIDUAL SEGMENTS ****************!
+
+
+object seven_segment_1(fg,bg)
+begin
+segment_off (angle=0) clear                       !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_off (angle=0) clear            !A!
+x+=45 y+=15 segment_on (angle=90) clear           !B!
+y+=45 segment_on (angle=90) clear                 !C!
+x-=45 y-=12 segment_off (angle=0) clear           !G!
+end
+
+object seven_segment_2(fg,bg)
+begin
+segment_on (angle=0) clear                        !D!
+x-=5 y-=35 segment_on (angle=90) clear            !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_on (angle=0) clear             !A! 
+x+=45 y+=15 segment_on (angle=90) clear           !B!
+y+=45 segment_off (angle=90) clear                !C!
+x-=45 y-=12 segment_on (angle=0) clear            !G!
+end
+
+object seven_segment_3(fg,bg)
+begin
+segment_on (angle=0) clear                        !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_on (angle=0) clear             !A!
+x+=45 y+=15 segment_on (angle=90) clear           !B!
+y+=45 segment_on (angle=90) clear                 !C!
+x-=45 y-=12 segment_on (angle=0) clear            !G!
+end
+
+object seven_segment_4(fg,bg)
+begin
+segment_off (angle=0) clear                       !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_on (angle=90) clear                 !F!
+y-=15 x+=5 segment_off (angle=0) clear            !A!
+x+=45 y+=15 segment_on (angle=90) clear           !B!
+y+=45 segment_on (angle=90) clear                 !C!
+x-=45 y-=12 segment_on (angle=0) clear            !G!
+end
+
+object seven_segment_5(fg,bg)
+begin
+segment_on (angle=0) clear                        !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_on (angle=90) clear                 !F!
+y-=15 x+=5 segment_on (angle=0) clear             !A!
+x+=45 y+=15 segment_off (angle=90) clear          !B!
+y+=45 segment_on (angle=90) clear                 !C!
+x-=45 y-=12 segment_on (angle=0) clear            !G!
+end
+
+object seven_segment_6(fg,bg)
+begin
+segment_on (angle=0) clear                        !D!
+x-=5 y-=35 segment_on (angle=90) clear            !E!
+y-=45 segment_on (angle=90) clear                 !F!
+y-=15 x+=5 segment_on (angle=0) clear             !A!
+x+=45 y+=15 segment_off (angle=90) clear          !B!
+y+=45 segment_on (angle=90) clear                 !C!
+x-=45 y-=12 segment_on (angle=0) clear            !G!
+end
+
+object seven_segment_7(fg,bg)
+begin
+segment_off (angle=0) clear                       !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_on (angle=0) clear             !A!
+x+=45 y+=15 segment_on (angle=90) clear           !B!
+y+=45 segment_on (angle=90) clear                 !C!
+x-=45 y-=12 segment_off (angle=0) clear           !G!
+end
+
+object seven_segment_8(fg,bg)
+begin
+segment_on (angle=0) clear                        !D!
+x-=5 y-=35 segment_on (angle=90) clear            !E!
+y-=45 segment_on (angle=90) clear                 !F!
+y-=15 x+=5 segment_on (angle=0) clear             !A!
+x+=45 y+=15 segment_on (angle=90) clear           !B!
+y+=45 segment_on (angle=90) clear                 !C!
+x-=45 y-=12 segment_on (angle=0) clear            !G!
+end
+
+object seven_segment_9(fg,bg)
+begin
+segment_on (angle=0) clear                        !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_on (angle=90) clear                 !F!
+y-=15 x+=5 segment_on (angle=0) clear             !A!
+x+=45 y+=15 segment_on (angle=90) clear           !B!
+y+=45 segment_on (angle=90) clear                 !C!
+x-=45 y-=12 segment_on (angle=0) clear            !G!
+end
+
+object seven_segment_0(fg,bg)
+begin
+segment_on (angle=0) clear                        !D!
+x-=5 y-=35 segment_on (angle=90) clear            !E!
+y-=45 segment_on (angle=90) clear                 !F!
+y-=15 x+=5 segment_on (angle=0) clear             !A!
+x+=45 y+=15 segment_on (angle=90) clear           !B!
+y+=45 segment_on (angle=90) clear                 !C!
+x-=45 y-=12 segment_off (angle=0) clear           !G!
+end
+
+object seven_segment_blank(fg,bg)
+begin
+segment_off (angle=0) clear                       !D!
+x-=5 y-=35 segment_off (angle=90) clear           !E!
+y-=45 segment_off (angle=90) clear                !F!
+y-=15 x+=5 segment_off (angle=0) clear            !A!
+x+=45 y+=15 segment_off (angle=90) clear          !B!
+y+=45 segment_off (angle=90) clear                !C!
+x-=45 y-=12 segment_off (angle=0) clear           !G!
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+x =-350 seven_segment_1
+x += 75 seven_segment_2
+x += 75 seven_segment_3
+x += 75 seven_segment_4
+x += 75 seven_segment_5
+x += 75 seven_segment_6
+x += 75 seven_segment_7
+x += 75 seven_segment_8
+x += 75 seven_segment_9
+x += 75 seven_segment_0
+x += 75 seven_segment_blank
+
+end
+
+mimic = main_object w=900,h=400,just=centrecentre,fg=white,bg=decoroff
+,resizable

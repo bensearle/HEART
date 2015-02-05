@@ -1,0 +1,283 @@
+! HEATHROW CMS - OS DUTY STATUS
+
+loaded by: HIERARCHY 
+!
+
+load mimic_libutil
+load heathrow_libutil
+load hierarchy
+
+type duty_options = enum(adbs = "A - Duty / B - Standby",asbd = "A - Standby / B - Duty")
+
+type line_status_type = enum(duty_line="Duty",
+                             standby_line="Standby",
+                             failed_line="Failed")
+
+!
+*************************************************************
+* OUTSTATION OBJECT                                         *
+* this object is called from the Top Level variable (mimic) *
+*************************************************************
+!
+
+object outstation (
+                   src=source,
+                   ident=string(20),
+                   plc_offset=db_address,
+                   call_offset=db_address
+                  )
+
+var line_a_status = loopback  line_status_type
+var line_b_status = loopback  line_status_type
+
+var line_a_failed = input  b_db_row_type
+var line_b_failed = input  b_db_row_type
+var watchdog_bit = input  b_db_row_type
+!var watchdog_bit2 = input b_db_row_type!
+var line_a_is_duty = input  b_db_row_type
+var line_b_is_duty = input  b_db_row_type
+
+var line_a_call_failure = input  b_db_row_type
+var line_b_call_failure = input  b_db_row_type
+
+var line_a_text = string(20)
+var line_b_text = string(20)
+
+var alter_ds_panel = menu  duty_options
+
+begin 
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid line_a_failed.b_value then 
+
+   begin
+
+   set source  line_a_failed = src
+   set filter  line_a_failed.db_addr = lim_eq   
+   set limit   line_a_failed.db_addr = plc_offset
+   set persist line_a_failed
+   request     line_a_failed
+
+   set source  line_b_failed = src
+   set filter  line_b_failed.db_addr = lim_eq   
+   set limit   line_b_failed.db_addr = plc_offset+1
+   set persist line_b_failed
+   request     line_b_failed
+
+   set source  watchdog_bit = src
+   set filter  watchdog_bit.db_addr = lim_eq   
+   set limit   watchdog_bit.db_addr = plc_offset+2
+   set persist watchdog_bit
+   request     watchdog_bit
+
+ !  set source  watchdog_bit2 = src
+   set filter  watchdog_bit2.db_addr = lim_eq
+   set limit   watchdog_bit2.db_addr = plc_offset+11
+   set persist watchdog_bit2
+   request     watchdog_bit2
+!
+   set source  line_a_is_duty = src
+   set filter  line_a_is_duty.db_addr = lim_eq   
+   set limit   line_a_is_duty.db_addr = plc_offset+3
+   set persist line_a_is_duty
+   request     line_a_is_duty
+
+   set source  line_b_is_duty = src
+   set filter  line_b_is_duty.db_addr = lim_eq   
+   set limit   line_b_is_duty.db_addr = plc_offset+4
+   set persist line_b_is_duty
+   request     line_b_is_duty
+
+   set source  line_a_call_failure = src
+   set filter  line_a_call_failure.db_addr = lim_eq   
+   set limit   line_a_call_failure.db_addr = call_offset
+   set persist line_a_call_failure
+   request     line_a_call_failure
+
+   set source  line_b_call_failure = src
+   set filter  line_b_call_failure.db_addr = lim_eq   
+   set limit   line_b_call_failure.db_addr = call_offset+1
+   set persist line_b_call_failure
+   request     line_b_call_failure
+
+  
+   end
+
+
+! CONTROL MENU !
+
+if valid alter_ds_panel then
+   begin
+   case alter_ds_panel of
+
+   adbs
+      begin
+      set_b_value(plc_offset+6, src, off)
+      set_b_value(plc_offset+5, src, on)
+      end
+   
+   asbd   
+      begin
+      set_b_value(plc_offset+5, src, off)
+      set_b_value(plc_offset+6, src, on)
+      end
+    
+   default 
+      begin
+      end
+   
+   set invalid alter_ds_panel  
+
+   end
+
+
+! SELECT STATUS !
+
+if line_a_failed.b_value then
+   line_a_text = "FAILED"
+
+else
+if line_a_is_duty.b_value then
+   line_a_text = "DUTY"
+
+else
+   line_a_text = "STANDBY"
+
+
+if line_b_failed.b_value then
+   line_b_text = "FAILED"
+
+else
+if line_b_is_duty.b_value then
+   line_b_text = "DUTY"
+
+else
+   line_b_text = "STANDBY"
+
+
+! DRAW OUTSTAION !
+
+just=centrecentre
+fg = decoroff
+w=150 h=100
+x=0 y=0
+set rect alter_ds_panel 
+rect (h=100,w=160) CLEAR
+x += 80 y -= 50 add
+y += 100 add
+x -= 160 add line(fg=decorshadow) clear
+y -= 1 add
+y -= 99 add
+x += 160 add line (fg = decorlight) clear
+tfg = black
+x = 0 y = -35 add text (ident)
+x = -40 y = 30 add text (line_a_text)
+x = 40 add text (line_b_text) clear
+
+if line_a_call_failure.b_value then
+   fg = magenta
+
+else if line_a_failed.b_value then
+   fg = red
+
+else if line_a_is_duty.b_value then
+   fg = green 
+
+else
+   fg = Yellow
+
+x = -40 y = 0 add rect(h=40,w=46)
+add text ("LINE A") clear
+
+
+if line_b_call_failure.b_value then
+   fg = magenta
+
+else if line_b_failed.b_value then
+   fg = red 
+
+else if line_b_is_duty.b_value then
+   fg = green 
+
+else
+   fg = yellow
+
+x = 40 y = 0 add rect(h=40,w=46) 
+add text ("LINE B") clear
+
+if line_a_failed.b_value or line_a_is_duty.b_value then
+   begin
+   x = -17 y -= 20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorshadow) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorlight) clear
+   end
+else
+   begin
+   x = -17 y -= 20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorlight) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorshadow) clear
+   end
+
+
+if line_b_failed.b_value or line_b_is_duty.b_value then
+   begin
+   x = 63 y = -20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorshadow) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorlight) CLEAR
+   end
+else
+   begin
+   x = 63 y = -20 add
+   y += 40 add 
+   x -= 45 add line (fg=decorlight) clear
+   x -= 1 add
+   y -= 40 add
+   x += 46 add line (fg=decorshadow) CLEAR
+   end
+
+
+! Display watchdog bit status !
+
+CH=10
+x=0 y=0
+
+if watchdog_bit.b_value then tfg=red
+else tfg=green4
+text("WDOG")
+
+!x=0 y=10
+ if watchdog_bit2.b_value then tfg=red
+else tfg=green4
+text("WDOG")!
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg,just centrecentre)
+begin
+
+goto_menu
+
+X=450 Y=300
+command_button(990,heathro2)
+clear
+
+scale=175
+
+X=0 Y=0  outstation(heathro2,"O/S 17 : S/S 3",b1,b21)
+
+
+end
+
+mimic = main_object w=300,h=200,just=centrecentre,fg=white,bg=black,resizable
+

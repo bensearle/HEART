@@ -1,0 +1,8 @@
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+Object obj1(w,h,fg,bg)
+Begin
+End

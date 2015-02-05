@@ -1,0 +1,32 @@
+helptext TRANSFER_DISPLAY_HELP = "TRANSFER DISPLAY
+
+----------------
+
+This object displays both the enable and the abort levels of the West tank that the transfer pumps require. If the West tank falls below the abort level then the transfer pumps will stop regardless of the state of the East tank. If this situation arises then the object will go into alarm, the alarm background colours are as follows:
+
+
+Flashred Background - IN ALARM (WAITING FOR NOTE)
+
+
+Red Background - IN ALARM (WAITING FOR CLEAR)
+
+
+CONTROL MENU
+
+------------
+
+
+Alter Enable Level
+
+------------------
+
+By selecting this control option, a popup box is presented and the required percentage can be entered. This percentage is written to the PLC and the transfer pump control will be enabled when the water level reaches this level.
+
+
+Alter Abort Level
+
+-----------------
+
+By selecting this control option, a popup box is presented and the required percentage can be entered. This percentage is written to the PLC and the transfer pump controls will be aborted when the water level reaches this level.
+
+"

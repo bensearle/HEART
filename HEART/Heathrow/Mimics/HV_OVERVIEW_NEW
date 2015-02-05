@@ -1,0 +1,583 @@
+load mimic_libutil
+load hv_overview_intakes
+load hv_overview_intake_tests
+load hv_overview_line_tests
+load hv_overview_help
+load hv_overview_max_demand
+
+!****** INDICATING LINES ******!
+
+object lline_1 !*** NI P21 - EI P1&2 ***!
+begin
+x = 0 y = 0 add
+y += 40 add x += 130 add line(lw=2,fg=red) clear
+end
+
+object lline_2 !*** NI P20 - EI P5&6 ***!
+begin
+x = 0 y = 0 add
+y += 120 add x += 160 add line(lw=2,fg=red) clear
+end
+
+object lline_3 !*** NI P19 - EI P3&4 ***!
+begin
+x = 0 y = 0 add
+y += 80 add x += 27 add line(lw=2,fg=red) clear
+x = 33 y = 80 add x += 157 add line(lw=2,fg=red) clear
+end
+
+object lline_4 !*** EI P25&26 - SI P19 ***!
+begin
+x = 0 y = 0 add
+y -= 60 add x += 180 add line(lw=2,fg=orange) clear
+end
+
+object lline_5 !*** SI P17 - NI P1 ***!
+begin
+x = 0 y = 0 add
+y -= 97 add line(lw=2,fg=green4) clear
+x = 0 y = -103 add y -= 17 add x -= 390 add y -= 340 add x -= 100 add y -= 120 add line(lw=2,fg=green4) clear
+end
+
+object lline_6 !*** SI P8 - SUB 23 P3 ***!
+begin
+x = 0 y = 0 add
+y -= 80 add x += 97 add line(lw=2,fg=green4) clear
+x = 103 y = -80 add x += 174 add line(lw=2,fg=green4) clear
+x = 283 y = -80 add x += 27 add y -= 17 add line(lw=2,fg=green4) clear
+x = 310 y = -103 add y -= 317 add x -= 30 add line(lw=2,fg=green4) clear
+end
+
+object lline_7 !*** SI P2 - SUB 32 P16 ***!
+begin
+x = 0 y = 0 add y += 20 add y -= 20 add
+y -= 80 add x += 280 add y -= 17 add line(lw=2,fg=green4) clear
+x = 280 y = -103 add y -= 112 add x += 40 add line(lw=2,fg=green4) clear
+end
+
+object lline_8 !*** SI P13 - NI P2 ***!
+begin
+x = 0 y = 0 add y += 20 add y -= 20 add
+y -= 20 add x -= 37 add line(lw=2,fg=green4) clear
+x = -43 y = -20 add x -= 94 add line(lw=2,fg=green4) clear
+x = -143 y = -20 add x -= 157 add y -= 17 add line(lw=2,fg=green4) clear
+x = -300 y = -43 add y -= 34 add line(lw=2,fg=green4) clear
+x = -300 y = -83 add y -= 354 add line(lw=2,fg=green4) clear
+x = -300 y = -443 add y -= 17 add x -= 20 add y -= 97 add line(lw=2,fg=green4) clear
+end
+
+object lline_9 !*** SI P9 - SUB 62 P25 ***!
+begin
+x = 0 y = 0 add y += 20 add y -= 20 add
+y -= 17 add line(lw=2,fg=green4) clear
+y = -23 add y -= 14 add line(lw=2,fg=green4) clear
+y = -43 add y -= 14 add line(lw=2,fg=green4) clear
+y = -63 add y -= 14 add line(lw=2,fg=green4) clear
+y = -83 add y -= 14 add line(lw=2,fg=green4) clear
+y = -103 add y -= 17 add x -= 130 add y -= 100 add x += 40 add line(lw=2,fg=green4) clear
+end
+
+object lline_10 !*** SI P3 - SUB 62 P8 ***!
+begin
+x = 0 y = 0 add
+y -= 57 add line(lw=2,fg=green4) clear
+y = -63 add y -= 34 add line(lw=2,fg=green4) clear
+y = -103 add y -= 97 add x += 17 add line(lw=2,fg=green4) clear
+x = 23 y = -200 add x += 44 add line(lw=2,fg=green4) clear
+x = 73 y = -200 add x += 14 add line(lw=2,fg=green4) clear
+x = 93 y = -200 add x += 100 add y -= 160 add x -= 20 add line(lw=2,fg=green4) clear
+end
+
+object lline_11 !*** NI P13 - SUB 32 P2 ***!
+begin
+x = 0 y = 0 add
+y += 135 add x -= 30 add line(lw=2,fg=red) clear
+end
+
+object lline_12 !*** NI P11 - SUB 23 P17 ***!
+begin
+x = 0 y = 0 add
+y += 90  add x += 57 add line(lw=2,fg=red) clear
+x = 63 y = 90 add x += 37 add y += 250 add x += 30 add line(lw=2,fg=red) clear
+end
+
+object lline_13 !*** NI P6 - SUB 23 P19 ***!
+begin
+x = 0 y = 0 add
+y += 110 add x += 227 add line(lw=2,fg=red) clear
+x = 233 y = 110 add x += 17 add y += 290 add x += 50 add line(lw=2,fg=red) clear
+end
+
+object lline_14 !*** SI P4 - SUB 32 P17 ***!
+begin
+x = 0 y = 0 add y += 20 add y -= 20 add
+y -= 17 add line(lw=2,fg=green4) clear
+y = -23 add y -= 14 add line(lw=2,fg=green4) clear
+y = -43 add y -= 34 add line(lw=2,fg=green4) clear
+y = -83 add y -= 67 add x += 27 add line(lw=2,fg=green4) clear
+x = 33 y = -150 add x += 14 add line(lw=2,fg=green4) clear
+x = 53 y = -150 add x += 127 add y -= 35 add x += 17 add line(lw=2,fg=green4) clear
+x = 203 y = -185 add x += 37 add line(lw=2,fg=green4) clear
+end
+
+object lline_15 !*** WI P8 - WI P19 ***!
+begin
+x = 0 y = 0 add
+x += 54 add line(lw=2,fg=blue) clear
+x = 60 add x += 17 add y -= 220 add x -= 80 add line(lw=2,fg=blue) clear
+end
+
+object lline_16 !*** WI P5 - WI P17 ***!
+begin
+x = 0 y = 0 add
+x += 54 add line(lw=2,fg=blue) clear
+x = 60 add x += 14 add line(lw=2,fg=blue) clear
+x = 80 add x += 17 add y -= 240 add x -= 100 add line(lw=2,fg=blue) clear
+end
+
+object lline_17 !*** WI P14 - WI P3 ***!
+begin
+x =0 y = 0 add
+x += 74 add line(lw=2,fg=blue) clear
+x = 80 add x += 14 add line(lw=2,fg=blue) clear
+x = 100 add x += 17 add y -= 137 add line(lw=2,fg=blue) clear
+y = -143 add y -= 77 add x -= 120 add line(lw=2,fg=blue) clear
+end
+
+object lline_18 !***WI P9 - WI P13 ***!
+begin
+x = 0 y = 0 add
+x += 40 add y -= 80 add x -= 40 add line(lw=2,fg=blue) clear
+end
+
+object lline_20 !*** WEST-NORTH CHANGEOVER WI P2 & P20 - NI P16 ***!
+
+var airfield_ring_colour = loopback colour
+var airfield_ring_colour_2 = loopback colour
+
+begin
+
+if hv_line_20_test == 1 then
+   begin
+   airfield_ring_colour = flashred
+   airfield_ring_colour_2 = flashyellow
+   end
+
+else if hv_line_20_test == 2 then
+   begin
+   airfield_ring_colour = red
+   airfield_ring_colour_2 = yellow
+   end
+
+else
+   begin
+   airfield_ring_colour = yellow
+   airfield_ring_colour_2 = red
+   end
+
+
+x = 0 y = 0 add
+x += 100 add y -= 17 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = -23 add y -= 37 add x += 27 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 133 add x += 24 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 163 add x += 114 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 283 add x += 84 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 373 add x += 74 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 453 add x += 54 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 513 add x += 87 add y -= 20 add y+= 20 add x += 87 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 693 add x += 24 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 723 add x += 24 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 753 add x += 97 add y += 17 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = -37 add y += 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = 3 add y += 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = 43 add y += 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = 83 add y += 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = 123 add y += 194 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = 323 add y += 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = 363 add y += 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = 403 add y += 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = 443 add y += 37 add x -= 67 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 777 add x -= 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 737 add x -= 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 697 add x -= 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 657 add x -= 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 617 add x -= 134 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 477 add x -= 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 437 add x -= 54 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 377 add x -= 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 337 add x -= 134 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 197 add x -= 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 157 add x -= 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 117 add x -= 34 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+x = 77 add x -= 37 add y -= 97 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+y = 377 add y -= 17 add x -= 40 add line(ls=flocc5,bg=airfield_ring_colour_2,lw=2,fg=airfield_ring_colour) clear
+
+end
+
+object lline_21 !*** WI P22 - CHP ***!
+begin
+x = 0 y = 0 add
+x += 20 add y += 70 add x -= 30 add line(lw=2,fg=blue) clear
+x = -10 y = 70 circle(w=25,h=25,lw=2,fg=blue,just=centreright) clear
+arc(x=-30,y=65,w=9,h=12,lw=2,fg=red,sa=0,aa=-180) clear
+arc(x=-23,y=65,w=9,h=12,lw=2,fg=red,sa=0,aa=180) clear
+x = -35 y = 90 add text(tfg=black,ch=10,"CHP") clear
+end
+
+
+!******* INTERCONNECTING LINES ********!
+
+object lline_100 !*** EI P23&24 - SI P12 ***!
+begin
+x = 0 y = 0 add
+y -= 100 add x += 440 add line(lw=2,fg=orange) clear
+end
+
+object lline_101 !*** SI P20 - SUB 23 P0 ***!
+begin
+x = 0 y = 0 add y += 20 add y -= 20 add
+y -= 37 add line(lw=2,fg=green4) clear
+x = 0 y = -43 add y -= 34 add line(lw=2,fg=green4) clear
+x = 0 y = -83 add y -= 17 add x -= 70 add y -= 350 add x -= 50 add line(lw=2,fg=green4) clear
+end
+
+object lline_102 !*** SI P21 - NI P9 ***!
+begin
+x = 0 y = 0 add y += 20 add y -= 20 add
+y -= 37 add line(lw=2,fg=green4) clear
+x = 0 y = -43 add y -= 34 add line(lw=2,fg=green4) clear
+x = 0 y = -83 add y -= 37 add x -= 90 add y -= 350 add x -= 40 add y -= 40 add x -= 137 add line(lw=2,fg=green4) clear
+x = -273 add x -= 54 add line(lw=2,fg=green4) clear
+x = -333 add x -= 77 add y -= 50 add line(lw=2,fg=green4) clear
+end
+
+object lline_103 !*** SI P18 - WI P15 ***!
+begin
+x = 0 y = 0 add y += 20 add y -= 20 add
+y -= 40 add x -= 37 add line(lw=2,fg=blue) clear
+x = -43 y = -40 add x -= 174 add line(lw=2,fg=blue) clear
+x = -223 y = -40 add x -= 94 add line(lw=2,fg=blue) clear
+x = -323 y = -40 add x -= 214 add  line(lw=2,fg=blue) clear
+x = -543 y = -40 add x -= 60 add y -= 180 add x -= 55 add line(lw=2,fg=blue) clear
+end
+
+object lline_104 !*** SUB 32 P3 - SUB 23 P18 ***!
+begin
+x = 0 y = 0 add
+x += 30 add y += 205 add x += 17 add line(lw=2,fg=red) clear
+x = 53 add y = 205 add x += 47 add line(lw=2,fg=red) clear
+end
+
+object lline_105 !*** SUB 32 P15 - SUB 23 P5 ***!
+begin
+x = 0 y = 0 add
+x += 5 add y -= 105 add x += 22 add line(lw=2,fg=green4) clear
+x = 33 add x += 14 add line(lw=2,fg=green4) clear
+x = 53 add x += 14 add line(lw=2,fg=green4) clear
+x = 73 add x += 27 add line(lw=2,fg=green4) clear
+end
+
+object lline_106 !*** WI P1 - SUB 62 P15 ***!
+begin
+x = 0 y = 0 add x += 127 add line(lw=2,fg=blue) clear
+x = 133 add x += 24 add line(lw=2,fg=blue) clear
+x = 163 add x += 37 add y += 57 add line(lw=2,fg=blue) clear
+x = 200 y = 63 add y += 157 add x += 27 add line(lw=2,fg=blue) clear
+x = 233 y = 220 add x += 57 add line(lw=2,fg=blue) clear
+end
+
+object lline_107 !*** WI P21 - SUB 62 P18 ***!
+begin
+x = 0 y = 0 add
+x += 54 add line(lw=2,fg=blue) clear
+x = 60 add x += 80 add y -= 100 add x += 37 add line(lw=2,fg=blue) clear
+x = 183 y = -100 add x += 17 add y -= 50 add x += 27 add line(lw=2,fg=blue) clear
+x = 233 y = -150 add x += 57 add line(lw=2,fg=blue) clear
+end
+
+object lline_108 !*** SI P1 - SUB 62 P1 ***!
+begin
+x = 0 y = 0 add y += 20 add y -= 20 add
+y -= 37 add line(lw=2,fg=blue) clear
+y = -43 add y -= 54 add line(lw=2,fg=blue) clear
+y = -103 add y -= 17 add x += 40 add y -= 100 add x += 40 add y -= 180 add x += 17 add line(lw=2,fg=blue) clear
+x = 103 add x += 14 add line(lw=2,fg=blue) clear
+x = 123 add x += 24 add line(lw=2,fg=blue) clear 
+x = 153 add x += 57 add line(lw=2,fg=blue) clear
+end
+
+object lline_109 !*** WI P7 - SUB 62 P2 ***!
+begin
+x = 0 y = 0 add
+x += 94 add line(lw=2,fg=blue) clear
+x = 100 add x += 57 add line(lw=2,fg=blue) clear
+x = 163 add x += 14 add line(lw=2,fg=blue) clear
+x = 183 add x += 14 add line(lw=2,fg=blue) clear
+x = 203 add x += 24 add line(lw=2,fg=blue) clear
+x = 233 add x += 17 add y += 10 add x += 40 add line(lw=2,fg=blue) clear
+end
+
+object lline_110 !*** EI P7&8 - M1/9 P9 ***!
+begin
+x = 0 y = 0 add
+x -= 70 add y += 80 add x -= 50 add line(lw=2,fg=orange) clear
+end
+
+object lline_111 !*** EI P9&10 - M1/9 P10 ***!
+begin
+x = 0 y = 0 add
+x -= 50 add y += 70 add x -= 70 add line(lw=2,fg=orange) clear
+end
+
+object lline_112 !*** EI P19&20 - M1/9 P12 ***!
+begin
+x = 0 y = 0 add
+x -= 50 add y -= 70 add x -= 70 add line(lw=2,fg=orange) clear
+end
+
+object lline_113 !*** EI P21&22 - M1/9 P13 ***!
+begin
+x = 0 y = 0 add
+x -= 70 add y -= 80 add x -= 50 add line(lw=2,fg=orange) clear
+end
+
+
+object help_window
+
+var call_var = popup hv_overview_help
+
+begin
+x = 0 y = 0 command_button("","",100,"",ch=14)
+  set title call_var = ("HV Overview Help Page")
+
+   if anyb(w=100,h=20) then
+     begin
+       request call_var
+     end
+x = 50 y = 8 add text(just=centrecentre,
+                     ch=14,tfg=white,font=font_bold,"Help Text")
+
+end
+
+
+object max_demand_window
+
+var call_var = popup hv_overview_max_demand
+
+begin
+x = 0 y = 0 command_button("","",110,"",ch=14)
+  set title call_var = ("Maximum Demand Meter")
+
+   if anyb(w=100,h=20) then
+     begin
+       request call_var
+     end
+x = 52 y = 8 add text(just=centrecentre,
+                      ch=14,tfg=white,font=font_bold,"Max Demand")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+
+! DRAW INTAKES !
+
+x = -50 y = 50 south_intake clear
+x = -50 y = 370 south_intake_button clear
+!x = -50 y = -320 north_intake clear
+x = -50 y = -360 north_intake_button clear
+x = 440 y = 0 east_intake(angle=270) clear
+x = 460 y = 270 east_intake_button clear
+x = -480 y = -40 west_intake(angle=90) clear
+x = -480 y = -280 west_intake_button clear
+x = -150 y = -100 sub_62(angle=90) clear
+x = -150 y = -170 sub_stn_62_button clear
+x = 0 y = -95 sub_32(angle=90) clear
+x = 0 y = 105 sub_stn_32_button clear
+x = 140 y = -150 sub_23(angle=90) clear
+x = 140 y = -220 sub_stn_23_button clear
+x = 280 y = 0 m1_9(angle=90) clear!
+
+! DRAW LINE 1 !
+
+!x = 290 y = -300 lline_1 clear
+x = 350 y = -260 hv_line_1_button clear!
+
+! DRAW LINE 2 !
+
+!x = 260 y = -300 lline_2 clear
+x = 350 y = -180 hv_line_2_button clear!
+
+! DRAW LINE 3 !
+
+!x = 230 y = -300 lline_3 clear
+x = 350 y = -220 hv_line_3_button clear!
+
+! DRAW LINE 4 !
+
+!x = 240 y = 280 lline_4 clear
+x = 350 y = 220 hv_line_4_button clear!
+
+! DRAW LINE 5 !
+
+!x = 160 y = 280 lline_5 clear
+x = 0 y = 160 hv_line_5_button clear!
+
+! DRAW LINE 6 !
+
+!x = -120 y = 280 lline_6 clear
+x = 70 y = 200 hv_line_6_button clear!
+
+! DRAW LINE 7 !
+
+!x = -340 y = 260 lline_7 clear
+x = -190 y = 180 hv_line_7_button clear!
+
+! DRAW LINE 8 !
+
+!x = 20 y = 260 lline_8 clear
+x = -190 y = 240 hv_line_8_button clear!
+
+! DRAW LINE 9 !
+
+!x = -80 y = 260 lline_9 clear
+x = -150 y = 140 hv_line_9_button clear!
+
+! DRAW LINE 10 !
+
+!x = -300 y = 280 lline_10 clear
+x = -150 y = 80 hv_line_10_button clear!
+
+! DRAW LINE 11 !
+
+!x = 50 y = -300 lline_11 clear
+x = 50 y = -230 hv_line_11_button clear!
+
+! DRAW LINE 12 !
+
+!x = -10 y = -300 lline_12 clear
+x = -10 y = -230 hv_line_12_button clear!
+
+! DRAW LINE 13 !
+
+!x = -180 y = -300 lline_13 clear
+x = -70 y = -190 hv_line_13_button clear!
+
+! DRAW LINE 14 !
+
+!x = -260 y = 260 lline_14 clear
+x = -150 y = 110 hv_line_14_button clear!
+
+! DRAW LINE 15 !
+
+!x = -460 y = 120 lline_15 clear
+x = -420 y = -100 hv_line_15_button clear!
+
+! DRAW LINE 16 !
+
+!x = -460 y = 80 lline_16 clear
+x = -420 y = -160 hv_line_16_button clear!
+
+! DRAW LINE 17 !
+
+!x = -460 y = 20 lline_17 clear
+x = -420 y = 20 hv_line_17_button clear!
+
+! DRAW LINE 18 !
+
+!x = -460 y = 0 lline_18 clear
+x = -420 y = -40 hv_line_18_button clear!
+
+! DRAW LINE 20 - AIRFIELD RING !
+
+!x = -460 y = -220 lline_20 clear!
+
+
+! DRAW LINE 21 !
+
+!x = -460 y = 180 lline_21 clear!
+!x = -420 y = -40 hv_line_21_button clear!
+
+
+
+
+! DRAW LINE 100 !
+
+!x = -20 y = 280 lline_100 clear!
+
+! DRAW LINE 101 !
+
+!x = 280 y = 260 lline_101 clear!
+
+! DRAW LINE 102 !
+
+!x = 320 y = 260 lline_102 clear!
+
+! DRAW LINE 103 !
+
+!x = 200 y = 260 lline_103 clear!
+
+! DRAW LINE 104 !
+
+!x = 20 y = -135 lline_104 clear!
+
+! DRAW LINE 105 !
+
+!x = 20 y = 15 lline_105 clear!
+
+! DRAW LINE 106 !
+
+!x = -460 y = -240 lline_106 clear!
+
+! DRAW LINE 107 !
+
+!x = -460 y = 160 lline_107 clear!
+
+! DRAW LINE 108 !
+
+!x = -380 y = 260 lline_108 clear!
+
+! DRAW LINE 109 !
+
+!x = -460 y = -120 lline_109 clear!
+
+! DRAW LINE 110 !
+
+!x = 420 y = -140 lline_110 clear!
+
+! DRAW LINE 111 !
+
+!x = 420 y = -100 lline_111 clear!
+
+! DRAW LINE 112 !
+
+!x = 420 y = 100 lline_112 clear!
+
+! DRAW LINE 113 !
+
+!x = 420 y = 140 lline_113 clear!
+
+
+
+! ***** TRANSFORMERS *******!
+
+angle = 90
+x = -430 y = -180 tx_incomer(fg=blue)
+x = -430 y = 100 tx_incomer(fg=blue)
+
+
+rect(x=-458,y=-341,w=200,h=80,just=centrecentre,fg=decoroff) clear
+x = -558 y = -301 add x += 200 add y -= 80 add line(lw=1,fg=decorshadow) clear
+x = -558 y = -301 add y -= 80 add x += 200 add line(lw=1,fg=decorlight) clear
+!x = -505 y = -370 help_window
+x = -510 y = -330 max_demand_window
+x = -550 y = -350 mimic_replace_button("",heathrow,
+                                       "network_hv_overview",185,"")
+x = -460 y = -342 add text(just=centrecentre,tfg=white,font=font_bold,
+                           ch=14,"HV Network Switching")!
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable,zoom

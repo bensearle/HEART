@@ -1,0 +1,212 @@
+load mimic_libutil
+load xtel_read_write_library
+load main_hierarchy
+load wrkstn_libutil
+
+!------------------------------XARCHIVE TYPE DEFINITIONS ------------------------------------------------!
+
+TYPE arh_machine = ENUM (MACHINE_A = "A",MACHINE_B = "B" )
+TYPE dir_num = INT (1, 255)
+TYPE opt_name_type = STRING (30)
+TYPE name_type = STRING (30)
+
+type status = table(
+       name =string(30),
+       value = int,
+       s_value = string_50)
+TYPE WS_TABLE_TYPE =  WORKSTATIONS ( CURRENT_MASTERED_AREAS,
+                                     USER_NUMBER,
+                                     LOGIN_PASSWORD)
+CONST mastership_area = a55
+
+object debug(str = string)
+var op = filewrite string
+begin
+set reset op
+set console op
+set value op = str
+request op
+end
+
+! ======================== LOGON TO XTEL ========================= !
+
+object logon_to_xtel (src = string,
+                      logon_user_number = int,
+                      logon_user_password = string) = int
+
+var logon_row = output ws_table_type
+
+begin
+
+   if invalid logon_row then
+      begin
+      set source logon_row = src
+      set old_default logon_row
+      set old_off logon_row.user_number
+      set old_off logon_row.login_password
+      set old_off logon_row.current_mastered_areas
+
+      set default logon_row
+
+      set filter logon_row.wrkstn_is_me = lim_eq
+      set limit logon_row.wrkstn_is_me = yes
+
+      set value logon_row.current_mastered_areas = set(mastership_area)
+      set value logon_row.user_number = logon_user_number
+      set value logon_row.login_password = logon_user_password
+
+      request logon_row
+      end
+   
+   if valid logon_row and not get busy logon_row then
+      begin
+      logon_to_xtel = 1
+      end
+   else
+      begin
+      logon_to_xtel = 0
+      end
+      
+   end
+
+! =================== WRITE B VALUE TO DATABASE ================= !
+
+object write_b_value_to_database (	src = string, 
+                                  		db_row = db_address, 
+				new_value = loopback int) = int
+
+var op = output db_elements(b_value)
+
+begin
+
+   if invalid get source op then
+      begin
+      set source op = src
+      set old_default op
+      set old_off op.b_value
+      set default op
+      set filter op.db_addr = lim_eq
+      set limit op.db_addr = db_row
+      set value op.b_value = onoff(new_value)
+      request op
+     end
+
+if valid op and not get busy op then
+   begin
+   write_b_value_to_database = 1
+   end
+else
+   begin
+   write_b_value_to_database = 0
+   end
+
+end
+!
+********************ARCHIVER OBJECT *********************************************
+*               this object is called from the Top Level variable (mimic)                                                     *
+************************************************************************************************!
+object get_arch_status (src=source,arhsrc=arhsource,just,header_text=STRING,description_text=STRING, machine = string,fail_db = db_address) = int
+
+var arch_string =string
+VAR ip                   =input status (name,value,s_value)
+var ws_info = ws_info_row
+var arh_stat = loopback int
+var op_complete = loopback int
+var made_request = loopback int
+begin 
+
+! INITIALISATION REQUEST DATA FROM SERVER !
+if invalid made_request then
+   begin
+   made_request = 1
+   op_complete = 0
+   set source ip=arhsrc
+   set filter ip.name=lim_eq
+   set limit ip.name = "dual_mode"
+   set persist ip
+   request ip
+   end
+
+! SELECT STATUS !
+ws_info = get_ws_info(src)
+if valid ws_info and ws_info.user_name <> "" then
+   begin
+      if not get busy ip then
+         begin
+         if valid ip then
+            begin
+            arch_string = ip.s_value
+            if (getword(2,arch_string) == "SINGLE") and (getchar(nchars(getword(1,arch_string)),arch_string)== machine) then 
+               begin
+               arh_stat = 0
+	 end
+           else if (getword(2,arch_string) == "DUTY") and (getchar(nchars(getword(1,arch_string)),arch_string)== machine) then
+	 begin
+               arh_stat = 0
+ 	 end
+           else if (getword(2,arch_string) == "DUTY") and (getchar(nchars(getword(1,arch_string)),arch_string)<> machine) then
+	 begin
+               arh_stat = 0
+	 end
+           else
+	 begin
+               arh_stat = 1
+	 end
+           get_arch_status = write_b_value_to_database (src, fail_db, arh_stat)
+           end
+        else
+           begin
+           arh_stat = 1
+           get_arch_status = write_b_value_to_database (src, fail_db, arh_stat)
+           end
+        end
+   end
+!
+else
+   begin
+   if not get busy ws_info then
+      begin
+      get_arch_status = 1
+      end
+   end
+!
+end
+
+
+object arch_server_status(fg,bg, just,src=string,usernum=int,userpass=string)
+
+var logged_in = int
+var a_arch_done = int
+var b_arch_done = int
+
+begin
+
+if invalid logged_in then
+   begin
+   logged_in = 0
+   a_arch_done = 0
+   b_arch_done = 0
+   end
+
+if logged_in == 0 then
+   Begin
+      logged_in = logon_to_xtel (heathrow, 22,"reporter")
+   end
+
+if logged_in then
+   Begin
+      X=40 Y=59 a_arch_done = get_arch_status(heathrow,arhsource("arh13"),"Archiver","13A","a",b19992)
+      X=170 b_arch_done = get_arch_status(heathrow,arhsource("arh13"),"Archiver","13B","b",b19993)
+
+   if a_arch_done and b_arch_done then
+      begin
+      exit
+      end
+
+   end
+
+end
+
+
+mimic = arch_server_status w=300, h=150, SCALE=200, JUST=TOPLEFT, RESIZABLE
+

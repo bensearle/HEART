@@ -1,0 +1,473 @@
+! HEATHROW CMS - HIERARCHY
+
+loaded by: All mimics
+!
+
+load mimic_libutil
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type panel_row = table (str=string(79))
+
+type mimic_goto = table (str=string)
+
+type tunnel_opt = enum(s1="Main Tunnel",s2="Cargo Tunnel")
+
+type fegp_opt = enum(t2="FEGP Terminal 2",t3="FEGP Terminal 3",
+                     t4="FEGP Terminal 4")
+
+type key_opt = enum(k1="Key 1 - HV Objects",k2="Key 2 - Valves",
+                    k3="Key 3 - FEGP Objects",k4="Key 4 - Misc")
+
+
+type emergency_opt = enum(e1="Standby Set Status",
+                          e2="Sewage Status")
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,h=50,w=750,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string(100))
+var mss = popup  mss_m
+begin
+set x mss=0
+set y mss=0
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+
+!
+************************************************************
+* MENU OBJECT                                              *
+************************************************************
+!
+
+object goto_menu
+
+var m = toplevel  string_50
+var main_menu_panel = menu  string(80)
+var loading_mimic = loopback  yesno
+var first_run = loopback  int
+var i = loopback  int
+var fegp_options = panel  fegp_opt
+var tunnel_options = panel  tunnel_opt
+var key_options = panel  key_opt
+var emergency_options = panel emergency_opt
+
+begin
+if invalid first_run then
+  begin
+  loading_mimic=no
+  first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+  w = 1140 h = 800 
+  x = 0 y = 0
+  set rect main_menu_panel
+  end
+else
+  begin
+  w=0 h=0
+  x=0 y=0
+  set rect main_menu_panel
+  end
+
+if get busy m then 
+  loading_mimic=yes
+else if get busy fegp_options or get busy key_options or get busy tunnel_options or get busy emergency_options then loading_mimic=no
+
+if valid main_menu_panel then
+   begin
+   case main_menu_panel of
+
+   "Fire Main"
+      begin
+      set source m = "src(0)"
+      set mimic m = "fire_main"
+      loading_mimic=yes
+      end
+
+   "Potable Water"
+      begin
+      set source m = "src(0)"
+      set mimic m = "potable_water"
+      loading_mimic=yes
+      end
+
+   "Tunnels"
+      begin
+      set title tunnel_options = "Tunnel Screens"
+      set unpinned tunnel_options
+      x = 0 y = 0 request tunnel_options
+      end
+
+   "FEGP"
+      begin
+      set title fegp_options = "FEGP Screens"
+      set unpinned fegp_options
+      x = 0 y = 0 request fegp_options
+      end
+
+   "Communications / System"
+      begin
+      set source m = "src(0)"
+      set mimic m = "OS_DUTY_STATUS"
+      loading_mimic=yes
+      end
+   
+   "Object Keys"
+      begin
+      set title key_options = "Key Screens"
+      set unpinned key_options
+      x = 0 y = 0 request key_options
+      end
+
+   "Emergency / Misc"
+      begin
+      set title emergency_options = "Emergency Screens"
+      set unpinned emergency_options
+      x = 0 y = 0 request emergency_options
+      end
+
+
+
+   default
+      begin
+      end
+
+   set invalid main_menu_panel
+
+   end
+
+
+if valid tunnel_options then
+   begin
+   case tunnel_options of
+
+      s1
+         begin
+         set source m = "src(0)"
+         set mimic m = "MAIN_TUNNEL"
+         loading_mimic=yes
+         end
+      s2
+         begin
+         set source m = "src(0)"
+         set mimic m = "CARGO_TUNNEL"
+         loading_mimic=yes
+         end
+      default 
+         begin
+         end
+
+   set invalid tunnel_options
+   end
+
+if valid fegp_options then
+   begin
+   case fegp_options of
+
+      t2
+         begin
+         set source m = "src(0)"
+         set mimic m = "FEGP_T2"
+         loading_mimic=yes
+         end
+
+      t3
+         begin
+         set source m = "src(0)"
+         set mimic m = "FEGP_T3"
+         loading_mimic=yes
+         end
+
+      t4
+         begin
+         set source m = "src(0)"
+         set mimic m = "FEGP_T4"
+         loading_mimic=yes
+         end
+
+      default 
+         begin
+         end
+
+   set invalid fegp_options
+   end
+
+if valid key_options then
+   begin
+   case key_options of
+
+      k1
+         begin
+         set source m = "src(0)"
+         set mimic m = "KEY_1"
+         loading_mimic=yes
+         end
+
+      k2
+         begin
+         set source m = "src(0)"
+         set mimic m = "KEY_2"
+         loading_mimic=yes
+         end
+
+      k3
+         begin
+         set source m = "src(0)"
+         set mimic m = "KEY_3"
+         loading_mimic=yes
+         end
+
+      k4
+         begin
+         set source m = "src(0)"
+         set mimic m = "KEY_4"
+         loading_mimic=yes
+         end
+
+      default 
+         begin
+         end
+
+      set invalid key_options
+      end
+
+if valid emergency_options then 
+      begin
+      case emergency_options of
+
+      e1
+         begin
+         set source m = "src(0)"
+         set mimic m = "standby_set_status"
+         loading_mimic=yes
+         end
+
+      e2
+         begin
+         set source m = "src(0)"
+         set mimic m = "sewage_status"
+         loading_mimic=yes
+         end
+
+      default
+      begin
+      end
+
+      set invalid emergency_options
+      end
+
+
+if get mimic m <> "" and invalid i then
+      begin      
+      set source m = "heathrow"
+      set selfreplace m
+      request m
+      i = 1
+      end
+
+
+just = centrecentre
+if loading_mimic==no then
+  begin
+  w = 1140 h = 800 
+  x = 0 y = 0
+  set rect main_menu_panel
+  end
+else
+  begin
+  w=0 h=0
+  x=0 y=0
+  set rect main_menu_panel
+  end
+
+set title main_menu_panel = "Mimic View Menu"
+set remove main_menu_panel = "Fire Main"
+set remove main_menu_panel = "Potable Water"
+set remove main_menu_panel = "Tunnels"
+set remove main_menu_panel = "FEGP"
+set remove main_menu_panel = "Communications / System"
+set remove main_menu_panel = "Object Keys"
+set remove main_menu_panel = "Emergency / Misc"
+set add main_menu_panel = "Fire Main"
+set add main_menu_panel = "Potable Water"
+set add main_menu_panel = "Tunnels"
+set add main_menu_panel = "FEGP"
+set add main_menu_panel = "Communications / System"
+set add main_menu_panel = "Object Keys"
+set add main_menu_panel = "Emergency / Misc"
+
+end
+
+
+
+!
+****************************************************************
+* DISPLAY COMMAND BUTTON                                       *
+****************************************************************
+!
+
+object command_button(tag_offset = int,src = source)
+
+var tag_col = loopback  colour
+var tag_mes = input  c_db_row_type
+var tag_panel = panel  panel_row
+var tag_menu = menu  string
+
+begin
+just = centrecentre
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source tag_mes then
+   begin
+   set source tag_mes = src
+   set filter tag_mes.db_addr = lim_eq
+   set limit  tag_mes.db_addr = db_address(int(c1) + tag_offset - 1)
+   set persist tag_mes
+   request tag_mes
+   end
+
+
+! TAG MESSAGE BOX !
+
+x=0 y=25
+w=80 h=20
+if selb and tag_mes.c_value <> "" then
+   begin
+   message_text_box(tag_mes.c_value)
+   end
+
+
+! CASE MENU OPTIONS !
+
+if valid tag_menu then
+  begin
+  case tag_menu of
+       "Alter Screen Tag"
+       begin
+       set title tag_panel = "Alter Screen Tag"
+       set label tag_panel.str = "Tag Message: "
+       set unpinned tag_panel
+       request tag_panel
+       end
+ 
+       "Clear Screen Tag"
+       begin
+       set_c_value(db_address(int(c1) + tag_offset - 1), src, "") 
+       end
+
+       default
+       begin
+       end
+
+       set invalid tag_menu
+   end
+
+x=0 y=25
+w=80 h=20
+set rect tag_menu
+set title tag_menu = "Tag Menu"
+set remove tag_menu = "Alter Screen Tag"
+set remove tag_menu = "Clear Screen Tag"
+set add tag_menu = "Alter Screen Tag"
+set add tag_menu = "Clear Screen Tag"
+
+if valid tag_mes then
+   begin
+   if tag_mes.c_value <> "" then
+      tag_col = yellow
+   else
+      tag_col = decoroff
+   end
+
+if valid tag_panel then
+   begin
+   set_c_value( db_address(int(c1) + tag_offset - 1),src,tag_panel.str)
+   set invalid tag_panel
+   end
+
+
+! DRAW BUTTON !
+       
+x=0 y=0
+rect(h=30,w=80,fg=decoroff)
+text (tfg=black,ch=13,"COMMANDS")
+x -= 40 y += 15 add 
+y -= 30 add 
+x += 80 add 
+line(fg=decorlight,lw=1)
+clear add 
+y +=30 add  
+x -= 80 add 
+line(fg=decorshadow,lw=1)
+
+clear
+x=0 y=26
+rect(h=16,w=80,fg=tag_col)
+y+=8 x-=40 add
+y-=16 add
+x+=80 add
+line(fg=decorlight,lw=1)
+clear add
+y+=16 add
+x-= 80 add
+line(fg=decorshadow,lw=1)
+x=0 y=26
+text (tfg=red,ch=15,"Tag Screen")
+
+
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+
+goto_menu
+command_button(1,heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

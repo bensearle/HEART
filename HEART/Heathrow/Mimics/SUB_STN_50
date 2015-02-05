@@ -1,0 +1,42 @@
+load mimic_libutil
+load ocb_monitored
+
+
+!*********** BUSBAR 50 ***********!
+
+object busbar_50
+
+begin
+
+tfg = black x = -15 y = 0 add text ("50",ch = 25) clear
+
+x = -50 y = 0 add x = 50 add line(lw=4,fg=blue) clear
+
+lw=2
+x = -25  y =  0 add y -= 50 add line (fg=blue) clear
+x =  25  y =  0 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+
+x =   25 y = -25 ocb_mont(2500,2720,96,187,heathro2,8,"top")
+x =  -25 y = -25 ocb_mont(2500,2710,95,186,heathro2,7,"top")
+
+
+scale = 256 just = centrecentre
+tfg = black ch = 12
+x = -25 y = -75 text("SS74")
+x = -25 y = -60 text("P5")
+x = 25 y = -75 text("WI")
+x = 25 y = -60 text("P9")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y = 20 busbar_50
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=aquamarine3,resizable

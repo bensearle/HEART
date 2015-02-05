@@ -1,0 +1,52 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+!************* BUSBAR 46 ***************!
+
+object busbar_46
+begin
+tfg = black x = 45 y = -55 add text ("46",ch = 25) clear
+lw=2
+
+x = -125 y = -25 add x = 75 add line(lw=4,fg=green4) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=green4) clear
+x =  -50  y = -25 add y -= 50 add line (fg=green4) clear
+x =    0  y = -25 add y += 50 add line (fg=green4) clear
+x =   50  y = -25 add y += 50 add line (fg=green4) clear
+
+
+scale = 120
+
+x =   -100 y =  -50  ocb_mont(17600,17722,711,1405,heathro4,1,"top")
+x =   -50  y =  -50  ocb_mont(17600,17732,712,1406,heathro4,2,"top")
+x =     0  y =    0  ocb_mont(17600,17742,713,1407,heathro4,3,"btm")
+x =    50  y =    0  ocb_mont(17600,17752,714,1408,heathro4,4,"btm")
+
+
+scale = 100
+
+X =  0 Y = 45 transformer("LT 1","")
+X =  50   Y = 45 transformer("LT 2","")
+
+scale = 256
+just=centrecentre
+tfg = black ch = 12
+x = -100 y = -85 text("27 P5")
+x = -50 y = -85 text("SI P17")
+x = 25 y = 75 text("Cargo Tunnel")
+x = 25 y = 90 text("North End")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+x = 25 busbar_46
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

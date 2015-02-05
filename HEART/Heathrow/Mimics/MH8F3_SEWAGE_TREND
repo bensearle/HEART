@@ -1,0 +1,334 @@
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type e_test_row =  db_alarm_config(db_addr,config_number,test_value)
+
+type e_test_table =  e_test_row[6]
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type panel_row = table (str=string(79))
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type panel_item_row = table (str = string(40))
+
+type main_menu_row = table (main_menu_items= string(26))
+
+type time_base_opt = enum(p30m="30 Minutes",
+			  p1h="1 Hour",
+			  p2h="2 Hours",
+			  p4h="4 Hours",
+			  p6h="6 Hours",
+			  p8h="8 Hours",
+			  p10h="10 Hours",
+			  p12h="12 Hours")
+			 
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+object sewage_trend(w, h, font, ch, tfg, fg, bg, 
+              src=source,tag_offset=int,id=db_address,
+              time_now=yesno, 
+              lines=yesno, values=yesno, start_end=s_e_time_type,
+              program_col=colour, manual_col=colour,
+              outstn_col=colour, disabled_col=colour, trend_col=colour,
+              stats_col=colour,invalid_col=colour,ident=string)
+
+var i 			= loopback value_row_type
+var trend_span		= int
+var last_trend_span	= int
+var tmin		= dynam_time
+var tmax		= dynam_time
+var d_src		= string
+var interval 		= loopback  int
+var grats		= loopback  max_min_row_type
+var horiz 		= loopback  ta_sb_r_type
+var verti		= loopback  ta_sb_r_type
+var current_mode	= onoff
+var first_run		= loopback  int
+var first_run_2 	= loopback  int
+var first_run_3 	= loopback  int
+var v_max		= real
+var v_min 		= real
+var error_text		= string(80)
+
+var time_base_options	= panel time_base_opt
+var main_menu_panel 	= menu string(30)
+var time_base_panel 	= panel panel_item_row
+var tag_panel 		= panel panel_row
+var upper_limit_panel 	= panel real
+var lower_limit_panel 	= panel real
+var time_base_duration	= string
+var upper_limit		= int
+var lower_limit		= int
+
+
+begin
+
+
+x = 200 y = 100 rect(just=centrecentre,w=560,h=260,fg=white) clear
+lw=1 fg=black
+x = -80 y = 230 add
+x += 560 add
+y -= 260 add
+x -= 560 add
+y += 260 add line clear
+
+x = -80 y = -50 add
+x += 560 add line(lw=1,fg=decorshadow) clear
+x = -80  y += 1 add
+x += 560 add line(lw=1,fg=decorlight) clear
+
+x = -80 y = 250 add
+x += 560 add line(lw=1,fg=decorshadow) clear
+x = -80  y += 1 add
+x += 560 add line(lw=1,fg=decorlight) clear
+
+x = 0 y = 0
+w = 400 h = 200
+set rect main_menu_panel
+set title main_menu_panel = "Trend Menu"
+set remove main_menu_panel = "Alter Time Base"
+set remove main_menu_panel = "Alter Y-Axis Upper"
+set remove main_menu_panel = "Alter Y-Axis Lower"
+set remove main_menu_panel = "Alter Trend Tag"
+set remove main_menu_panel = "Clear Trend Tag"
+set add main_menu_panel = "Alter Time Base"
+set add main_menu_panel = "Alter Y-Axis Upper"
+set add main_menu_panel = "Alter Y-Axis Lower"
+set add main_menu_panel = "Alter Trend Tag"
+set add main_menu_panel = "Clear Trend Tag"
+
+if valid main_menu_panel then
+   begin
+	case main_menu_panel of
+
+	"Alter Time Base"
+
+		begin
+		set title time_base_options = "Time Base Options"
+	        set unpinned time_base_options
+	        request time_base_options
+		end
+
+	"Alter Y-Axis Upper"
+
+		begin
+		set title upper_limit_panel = "Y-Axis Upper Setpoint"
+		set apply upper_limit_panel
+		request upper_limit_panel
+		end
+
+	"Alter Y-Axis Lower"
+
+		begin
+		set title lower_limit_panel = "Y-Axis Lower Setpoint"
+		set apply lower_limit_panel
+		request lower_limit_panel
+		end
+
+	"Alter Trend Tag"
+
+		begin
+		set title tag_panel = "Alter Screen Tag"
+		set label tag_panel.str = "Tag Message: "
+		set unpinned tag_panel
+		request tag_panel
+		end
+ 
+	"Clear Trend Tag"
+		begin
+		set_c_value(db_address(int(c1) + tag_offset - 1), src, "") 
+		end
+
+
+	default
+	begin
+	end
+
+        set invalid main_menu_panel
+
+   end
+
+
+if invalid first_run_2 then
+   begin
+   v_max=100
+   first_run_2=1
+   end
+else if valid upper_limit_panel then
+   begin
+   v_max = upper_limit_panel
+   set invalid upper_limit_panel
+   end
+
+if invalid first_run_3 then
+   begin
+   v_min=0
+   first_run_3=1
+   end
+else if valid lower_limit_panel then
+   begin
+   v_min = lower_limit_panel
+   set invalid lower_limit_panel
+   end
+  
+
+if v_max > v_min then
+   begin
+   error_text=""
+   y+=h
+   d_src=string(src)
+   set default horiz
+   set default verti
+   set value horiz.offset = 0
+   set value horiz.units_displayed = 1 
+   set value verti.offset = 0
+   set value verti.units_displayed = 1
+   current_mode = on
+
+
+   case time_base_options of
+
+      p30m  begin trend_span = 1800 time_base_duration = "30 Minutes" end
+      p1h   begin trend_span = 3600 time_base_duration = "1 Hour" end
+      p2h   begin trend_span = 7200 time_base_duration = "2 Hours" end
+      p4h   begin trend_span = 14400 time_base_duration = "4 Hours" end
+      p6h   begin trend_span = 21600 time_base_duration = "6 Hours" end
+      p8h   begin trend_span = 28800 time_base_duration = "8 Hours" end
+      p10h  begin trend_span = 36000 time_base_duration = "10 Hours" end
+      p12h  begin trend_span = 43200 time_base_duration = "12 Hours" end
+          
+	default
+	begin
+	if invalid first_run then
+		begin
+		trend_span=43200
+		time_base_duration = "12 Hours"		
+		first_run=1
+		end
+	else
+		begin
+		end
+	end
+
+
+   if valid interval then
+      interval = grats.interval
+   else 
+      interval = 1
+
+   if time_now == yes then
+      tmax = current_time
+   else
+      tmax = current_time + (interval - (current_time % interval))
+
+   tmin = tmax - trend_span
+
+   if start_end <> none then
+      begin
+      case start_end of
+	   display_date      begin
+			     timef=local_dmy
+			     while length (string(tmax)) > w/3 and ch <> 0 do
+				ch --
+			     end
+	   display_datetime  begin
+			     timef=local_dmy_hms
+			     while length (string(tmax)) > w/2 and ch <> 0 do
+				ch --
+			     end
+	   display_time      begin
+			     timef=local_hms
+			     while length (string(tmax)) > w/5 and ch <> 0 do
+				ch --
+			     end
+	   default
+	      begin
+	      end
+      ch ++   
+
+      end
+
+   set default grats 
+   if lines == yes then
+     begin
+     grats = axis(tmin,tmax,v_min,v_max,on,off,horiz,verti,no,values,axis1)
+     end
+   else
+     begin  
+     grats = axis(tmin,tmax,v_min,v_max,off,off,horiz,verti,no,values,axis1)
+     end  
+
+   set default i
+
+   i=mimic_graph(tmin,tmax,v_min,v_max,d_src,
+		 id,no,yes,yes,current_mode,
+		 program_col,manual_col,outstn_col,disabled_col,
+		 trend_col,stats_col,invalid_col)
+
+  if start_end <> none then
+      begin
+      y += (ch+5)
+      text(just=centrecentre,tmin)
+      text(x=w,just=centrecentre,tmax)
+      end
+
+   end
+
+ else
+   error_text = "Please Re-enter Y-Axis Upper and Lower Limits"
+
+
+if error_text <> "" then 
+    
+begin
+y = 180
+xv_message
+(just=centrecentre,fg=decoroff,x = x + w/2,y=y-h/2,"Warning",error_text)
+end
+y = 260
+x = -20 add text(tfg=black,ch=15,"Time Base Duration :")
+x = 150 add text(tfg=blue,ch=15,time_base_duration)
+y = -70  
+x = 0 add text(tfg=black,just=centrecentre,ch=15,"Y-Axis Upper Limit :")
+x = 145 add text(tfg=blue,just=centreright,ch=15,v_max)
+x = 150 add text(tfg=blue,just=centreleft,ch=15,ident)
+  
+x = 300 add text(tfg=black,just=centrecentre,ch=15,"Y-Axis Lower Limit :")
+x = 445 add text(tfg=blue,just=centreright,ch=15,v_min)
+x = 450 add text(tfg=blue,just=centreleft,ch=15,ident)
+  
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+just=centrecentre
+x =-200 y =-80 sewage_trend(w=400,h=200,font=font_bold,ch=12,tfg=black,fg=white,bg=black,
+        heathrow,1209,e440,yes,yes,yes,display_datetime,blue,blue,
+        red,blue,green,cyan,flashred,"%")
+
+
+end
+
+mimic = main_object w=600,h=400,top=2,just=centrecentre,fg=white,bg=grey,resizable

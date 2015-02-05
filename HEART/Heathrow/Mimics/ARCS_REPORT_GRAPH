@@ -1,0 +1,174 @@
+LOAD mimic_libutil
+
+TYPE db_samples_arh = TABLE db_samples(stream_name=STRING(30),
+                                                                   db_addr=DB_ADDRESS,e_value=REAL,
+                                                                   time=TIME("centiseconds"))
+
+TYPE db_samples_row = db_samples_arh(db_addr,e_value)[40]
+
+
+!*****  GRAPH OBJECT *****!
+
+OBJECT arcs_graph(e_offset=INT,src=SOURCE)
+
+VAR ip = INPUT db_samples_row
+VAR j = INT
+VAR k = INT
+VAR x_axis_grats_small = INT
+VAR x_axis_grats_large = INT
+VAR y_axis_grats_small = INT
+VAR y_axis_grats_large = INT
+VAR x_grats = INT
+VAR y_grats = INT
+VAR x_numbers = INT
+VAR y_numbers = INT
+VAR line_fg = LOOPBACK COLOUR
+
+BEGIN
+
+!***** REQUEST VALUE FROM SERVER *****!
+
+IF INVALID GET SOURCE ip THEN
+
+BEGIN
+
+SET SOURCE ip = arhsource(SOURCE(src))
+SET FILTER ip.stream_name = LIM_EQ
+SET LIMIT ip.stream_name = src + " VALUE"
+SET PRIORITY ip.time = 9
+SET FILTER ip.time = LIM_LE
+SET LIMIT ip.time = MAX TIME
+SET PRIORITY ip.db_addr = 11
+SET FILTER ip.db_addr = LIM_EQ
+SET LIMIT ip.db_addr = db_address("E" + e_offset)
+SET DIR_DEC ip
+SET PERSIST ip
+REQUEST ip
+
+END
+
+
+X = 0 Y = 0 RECT(JUST=BOTTOMCENTRE,W=400,H=200,FG=WHITE) CLEAR
+
+!***** Plot Y-Axis Small Graticules *****!
+
+Y = 0
+FOR y_axis_grats_small FROM 1 TO 20 DO
+   BEGIN
+    X = -200
+    ADD X -= 5 ADD LINE(LW=1,FG=DECORSHADOW) CLEAR
+    Y -= 10
+   END
+
+!***** Plot Y-Axis Large Graticules *****!
+
+Y = 0
+FOR y_axis_grats_large FROM 1 TO 5 DO
+   BEGIN
+    X = -200
+    ADD X -= 10 ADD LINE(LW=1,FG=DECORSHADOW) CLEAR
+    Y -= 50
+   END
+
+!***** Plot X-Axis Small Graticules *****!
+
+X = -200
+FOR x_axis_grats_small FROM 1 TO 40 DO
+   BEGIN
+    Y = 0
+    ADD Y = 5 ADD LINE(LW=1,FG=DECORSHADOW) CLEAR
+    X += 10
+   END
+
+!***** Plot X-Axis Large Graticules *****!
+
+X = -200
+FOR x_axis_grats_large FROM 1 TO  9 DO
+   BEGIN
+    Y = 0
+    ADD Y = 10 ADD LINE(LW=1,FG=DECORSHADOW) CLEAR
+    X += 50
+   END
+
+!***** Plot X-Axis Graticules *****!
+
+X = -200
+FOR x_grats FROM 1 TO 20 DO
+   BEGIN
+    Y = 0
+    ADD Y = -200 ADD LINE(LW=1,FG=DECORLIGHT) CLEAR
+    X += 20
+   END
+
+!***** Plot Y-Axis Graticules *****!
+
+Y = 0
+FOR y_grats FROM 1 TO 10 DO
+   BEGIN
+    X = -200
+    ADD X += 400 ADD LINE(LW=1,FG=DECORLIGHT) CLEAR
+    Y -= 20
+   END
+
+!***** Draw X-Axis Numbers *****!
+
+X = 200
+FOR x_numbers FROM 0 TO 40 STEP 5 DO
+   BEGIN
+    Y = 15
+    ADD TEXT(TFG=BLACK,JUST=CENTRECENTRE,CH=10,x_numbers) CLEAR
+    X -= 50
+   END
+
+!***** Draw Y-Axis Numbers *****!
+
+Y = 0
+FOR y_numbers FROM 0 TO 1000 STEP 250 DO
+   BEGIN
+    X = -210
+    ADD TEXT(TFG=BLACK,JUST=CENTRERIGHT,CH=10,y_numbers) CLEAR
+    Y -= 50
+   END
+
+!***** Draw Black Outline *****!
+
+X = 200 Y = -200 ADD
+X -= 400 ADD Y += 200 ADD
+X += 400 ADD Y -= 200 ADD LINE(FG=BLACK,LW=1) CLEAR
+
+!***** Plot Blue Line on Graph *****!
+
+X = 200 Y = 0
+FOR j FROM 1 TO 40 DO
+   BEGIN
+      IF INT(ip[j].e_value) THEN
+      BEGIN
+      IF INT(ip[j].e_value) > 1000 THEN
+                 BEGIN
+                 line_fg=FLASHRED
+                 X = 200-(10*j) Y = -203 DISK(JUST=CENTRECENTRE,
+                                              FG=line_fg,W=5,H=5)
+                 Y = -200 ADD
+                 END
+      ELSE
+                 BEGIN
+                 line_fg=BLUE
+                 Y = -INT((ip[j].e_value)/5)
+                 X = 200-(10*j) ADD LINE(FG=line_fg)
+                 END
+      END
+
+   END 
+
+END
+
+
+OBJECT main_object (BG,FG,W,H,TBG,TFG)
+BEGIN
+
+Y = 100 arcs_graph(2300,heathrow)
+
+END
+
+MIMIC = main_object W=500,H=300,JUST=CENTRECENTRE,FG=WHITE,
+BG=DECOROFF,RESIZABLE

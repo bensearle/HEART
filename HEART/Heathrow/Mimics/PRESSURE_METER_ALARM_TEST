@@ -1,0 +1,81 @@
+load mimic_libutil
+
+
+type e_alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type e_test_row =  db_alarm_config(db_addr,
+			           config_number,
+			           test_value)
+
+type e_test_table =  e_test_row[6]
+
+type alarm_row_type =  db_elements(alarm_status)
+
+
+!
+************************************************************
+* PRES ALARM TEST                                          *
+* this object checks to see if the pressure is in alarm    *
+************************************************************
+!
+
+
+
+object pres_note_clr_alarm(e_offset=int,src=source)=int
+
+var pres_note_clr_status = int
+
+
+!********************* ALARMS *****************************!
+
+
+var pres_alarm = input  alarm_row_type
+
+begin
+
+   set source pres_alarm = src
+   set filter pres_alarm.db_addr = lim_eq
+   set limit pres_alarm.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist pres_alarm 
+   request pres_alarm
+
+
+if pres_alarm.alarm_status == w_note then
+
+   pres_note_clr_status = 1 
+
+else if pres_alarm.alarm_status == w_clr then
+
+   pres_note_clr_status = 2
+
+else
+
+   pres_note_clr_status = 0
+
+
+pres_note_clr_alarm = pres_note_clr_status
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+if pres_note_clr_alarm(2201,heathrow) == 1 then
+begin
+x = 0 y = 0
+add text(just=centrecentre,font=font_bold,ch=20,tfg=flashred,"WAITING FOR NOTE")
+end
+else if pres_note_clr_alarm(2201,heathrow) == 2 then
+begin
+x = 0 y = 0
+add text(just=centrecentre,font=font_bold,ch=20,tfg=red,"WAITING FOR CLEAR")
+end
+else
+begin
+x = 0 y = 0
+add text(just=centrecentre,font=font_bold,ch=20,tfg=decoroff,"NORMAL")
+end
+end
+mimic = main_object w=400,h=200,just=centrecentre,fg=white,bg=black,resizable

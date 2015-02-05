@@ -1,0 +1,71 @@
+load mimic_libutil
+load fuse_sw
+load oil_switch
+load transformer
+
+
+object highlight_box(fg,height=int,width=int)
+begin
+just=centrecentre
+x=0 y=0
+rect(w=width,h=height)
+end
+
+
+!************ BUSBAR 90 *************!
+
+object busbar_90
+
+begin
+
+fg = blue
+tfg = black x = 85 y = -30 add text ("90",ch = 25) clear
+
+x = -125 y = 0 add x = 125 add line(lw=4) clear
+lw=2
+x = -100 y = 0 add  y -= 50 add line clear
+x =    0 y =  0 add y += 50 add line clear
+x =   50 y =  0 add y += 50 add line clear
+x =  100 y =  0 add y += 50 add line clear
+
+scale = 120
+x =  -100 y = -25 oil_switch(25108,274,1386,heathrow,"c")
+
+x =   0 y = 25 hv_fuse(25109,275,1387,heathrow,"c")
+x =  50 y = 25 hv_fuse(25110,276,1388,heathrow,"c")
+x = 100 y = 25 hv_fuse(25111,277,1389,heathrow,"c")
+
+x = -50 y = 0 highlight_box(fg=decoroff,40,90)
+tfg=black
+
+scale=260
+text(just=centrecentre,"MTRG")
+
+scale = 100
+X =  0  Y = 70 add transformer("LT 1","")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = -100 y = -60  text("85 P3")
+x = 50 y = 60 text("HEX")
+x = 50 y = 75 text("SUB 1")
+x = 100 y = 60 text("Spare")
+
+x = -85 y = -25 text("1")
+x = -50 y = 20 text("2")
+x =  15  y = 25 text("3")
+x =  65  y = 25 text("4")
+x = 115  y = 25 text("5")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+y = -25 busbar_90
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

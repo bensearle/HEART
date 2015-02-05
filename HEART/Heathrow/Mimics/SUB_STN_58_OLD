@@ -1,0 +1,68 @@
+!**	HEATHROW\SUB_STN_58		**!
+!** 	Modified by ULTRA - 05 Aug 2009	**!
+!** 	Sub 58 P1 goes to Sub 58T P1	**!
+!** 					**!
+
+load mimic_libutil
+load ocb_monitored
+load transformer
+load lv_generator
+load lv_contactor
+
+
+!*************** BUSBAR 58 ***************!
+
+object busbar_58
+begin
+
+tfg = black x = 45  y = -55 add text ("58",ch = 25) clear
+
+scale = 260
+lw=2
+x = -125 y = -25 add x = 75 add line(lw=4,fg=green4) clear
+x = -100 y = -25 add y -= 50 add line (fg=green4) clear
+x = -50 y = -25 add y -= 50 add line (fg=green4) clear
+x = 50 y = -25 add y += 30 add line (fg=green4) clear
+
+x = 0 y = -25 add 
+y += 55 add
+x -= 55 add
+y += 100 add
+line (fg=green4) clear
+
+x =  -25 y = 100 add
+y -= 20 add
+line (fg=green4) clear
+
+scale = 120
+
+x = -100 y = -50 ocb_mont(7000,7100,239,500,heathro2,1,"top")
+x = -50  y = -50 ocb_mont(7000,7110,240,501,heathro2,2,"top")
+x = 0    y = 0   ocb_mont(7000,7120,241,502,heathro2,3,"btm")
+x = 50   y = 0   ocb_mont(7000,7130,242,503,heathro2,4,"btm")
+
+
+scale = 100
+X = -55 Y = 62 transformer("LT 1","")
+
+scale=260
+x = 33 y = 25 text("Spare",tfg=black,ch=12)
+x = 28 y = 40 text("Isolated",tfg=black,ch=12)
+ch = 12
+x = -120 y = -90 text("58T P1")
+x = -65 y = -90 text("SI P10")
+scale = 140
+x = -15 y = 65 lv_generator(7000,7200,249,0,heathro2)
+scale = 120
+x = -40 y = 120 lv_changeover(7000,7190,248,heathro2)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 25 y = -20 busbar_58
+
+end
+
+mimic = main_object w=400,h=300,just=centrecentre,fg=black,bg=aquamarine3,resizable

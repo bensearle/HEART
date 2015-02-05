@@ -1,0 +1,500 @@
+load mimic_libutil
+load ocb_alarm_test
+
+! HV 6 !
+load new_sub_stn_57
+load new_sub_stn_56
+load new_sub_stn_87
+load new_sub_stn_36
+load new_sub_stn_37
+load new_sub_stn_71
+load new_sub_stn_1
+load new_sub_stn_30
+load new_sub_stn_31
+load new_sub_stn_47
+load new_sub_stn_57
+
+
+!****************** SUB 57 ********************!
+
+object sub_symbol_57
+
+var call_var = popup new_sub_stn_57
+
+begin
+
+if sub_alarm(7000,7930,heathrow) == 1 
+or sub_alarm(7000,7940,heathrow) == 1 
+or sub_alarm(7000,7950,heathrow) == 1 
+or sub_alarm(7000,7960,heathrow) == 1
+or sub_alarm(7000,7970,heathrow) == 1
+or sub_alarm(7000,8360,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_alarm(7000,7930,heathrow) == 2
+or sub_alarm(7000,7940,heathrow) == 2 
+or sub_alarm(7000,7950,heathrow) == 2
+or sub_alarm(7000,7960,heathrow) == 2
+or sub_alarm(7000,7970,heathrow) == 2
+or sub_alarm(7000,8360,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_alarm(7000,7930,heathrow) == 3
+or sub_alarm(7000,7940,heathrow) == 3
+or sub_alarm(7000,7950,heathrow) == 3
+or sub_alarm(7000,7960,heathrow) == 3
+or sub_alarm(7000,7970,heathrow) == 3
+or sub_alarm(7000,8360,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 57",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 56 ********************!
+
+object sub_symbol_56
+
+var call_var = popup new_sub_stn_56
+
+begin
+if sub_barcis_alarm(23700,heathrow) == 1 
+or sub_barcis_alarm(23720,heathrow) == 1 
+or sub_barcis_alarm(23740,heathrow) == 1 
+or sub_barcis_alarm(23780,heathrow) == 1
+or sub_barcis_alarm(23760,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_barcis_alarm(23700,heathrow) == 2
+or sub_barcis_alarm(23720,heathrow) == 2 
+or sub_barcis_alarm(23740,heathrow) == 2
+or sub_barcis_alarm(23780,heathrow) == 2
+or sub_barcis_alarm(23760,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_barcis_alarm(23700,heathrow) == 3
+or sub_barcis_alarm(23720,heathrow) == 3
+or sub_barcis_alarm(23740,heathrow) == 3
+or sub_barcis_alarm(23780,heathrow) == 3
+or sub_barcis_alarm(23760,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 56",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 87 ********************!
+
+object sub_symbol_87
+
+var call_var = popup new_sub_stn_87
+
+begin
+
+if sub_alarm(7000,8330,heathrow) == 1 
+or sub_alarm(7000,8340,heathrow) == 1 
+or sub_alarm(7000,8350,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_alarm(7000,8330,heathrow) == 2
+or sub_alarm(7000,8340,heathrow) == 2 
+or sub_alarm(7000,8350,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_alarm(7000,8330,heathrow) == 3
+or sub_alarm(7000,8340,heathrow) == 3
+or sub_alarm(7000,8350,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 87",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 36 ********************!
+
+object sub_symbol_36
+
+var call_var = popup new_sub_stn_36
+
+begin
+
+if sub_alarm(7000,7470,heathrow) == 1 
+or sub_alarm(7000,7480,heathrow) == 1 
+or sub_alarm(7000,7490,heathrow) == 1 
+or sub_alarm(7000,7500,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_alarm(7000,7470,heathrow) == 2
+or sub_alarm(7000,7480,heathrow) == 2 
+or sub_alarm(7000,7490,heathrow) == 2 
+or sub_alarm(7000,7500,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_alarm(7000,7470,heathrow) == 3
+or sub_alarm(7000,7480,heathrow) == 3
+or sub_alarm(7000,7490,heathrow) == 3
+or sub_alarm(7000,7500,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 36",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 37 ********************!
+
+object sub_symbol_37
+
+var call_var = popup new_sub_stn_37
+
+begin
+if sub_alarm(7000,7510,heathrow) == 1 
+or sub_alarm(7000,7520,heathrow) == 1 
+or sub_alarm(7000,7530,heathrow) == 1 
+or sub_alarm(7000,7540,heathrow) == 1
+or sub_alarm(7000,7550,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_alarm(7000,7510,heathrow) == 2
+or sub_alarm(7000,7520,heathrow) == 2 
+or sub_alarm(7000,7530,heathrow) == 2
+or sub_alarm(7000,7540,heathrow) == 2
+or sub_alarm(7000,7550,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_alarm(7000,7510,heathrow) == 3
+or sub_alarm(7000,7520,heathrow) == 3
+or sub_alarm(7000,7530,heathrow) == 3
+or sub_alarm(7000,7540,heathrow) == 3
+or sub_alarm(7000,7550,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 37",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 71 ********************!
+
+object sub_symbol_71
+
+var call_var = popup new_sub_stn_71
+
+begin
+if sub_barcis_alarm(25020,heathrow) == 1 
+or sub_barcis_alarm(25020,heathrow) == 1 
+or sub_barcis_alarm(25020,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_barcis_alarm(25020,heathrow) == 2
+or sub_barcis_alarm(25020,heathrow) == 2 
+or sub_barcis_alarm(25020,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_barcis_alarm(25020,heathrow) == 3
+or sub_barcis_alarm(25020,heathrow) == 3
+or sub_barcis_alarm(25020,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 71",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 1 ********************!
+
+object sub_symbol_1
+
+var call_var = popup new_sub_stn_1
+
+begin
+if sub_barcis_alarm(23428,heathrow) == 1 
+or sub_barcis_alarm(23448,heathrow) == 1 
+or sub_barcis_alarm(23468,heathrow) == 1
+or sub_barcis_alarm(23488,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_barcis_alarm(23428,heathrow) == 2
+or sub_barcis_alarm(23448,heathrow) == 2
+or sub_barcis_alarm(23468,heathrow) == 2
+or sub_barcis_alarm(23488,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_barcis_alarm(23428,heathrow) == 3
+or sub_barcis_alarm(23448,heathrow) == 3
+or sub_barcis_alarm(23468,heathrow) == 3
+or sub_barcis_alarm(23488,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 1",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 30 ********************!
+
+object sub_symbol_30
+
+var call_var = popup new_sub_stn_30
+
+begin
+if sub_alarm(7000,7300,heathrow) == 1 
+or sub_alarm(7000,7310,heathrow) == 1 
+or sub_alarm(7000,7320,heathrow) == 1 
+or sub_alarm(7000,7330,heathrow) == 1
+or sub_alarm(7000,7340,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_alarm(7000,7300,heathrow) == 2
+or sub_alarm(7000,7310,heathrow) == 2 
+or sub_alarm(7000,7320,heathrow) == 2
+or sub_alarm(7000,7330,heathrow) == 2
+or sub_alarm(7000,7340,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_alarm(7000,7300,heathrow) == 3
+or sub_alarm(7000,7310,heathrow) == 3
+or sub_alarm(7000,7320,heathrow) == 3
+or sub_alarm(7000,7330,heathrow) == 3
+or sub_alarm(7000,7340,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 30",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 31 ********************!
+
+object sub_symbol_31
+
+var call_var = popup new_sub_stn_31
+
+begin
+if sub_alarm(7000,7350,heathrow) == 1 
+or sub_alarm(7000,7360,heathrow) == 1 
+or sub_alarm(7000,7370,heathrow) == 1 
+or sub_alarm(7000,7380,heathrow) == 1
+or sub_alarm(7000,7390,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_alarm(7000,7350,heathrow) == 2
+or sub_alarm(7000,7360,heathrow) == 2 
+or sub_alarm(7000,7370,heathrow) == 2
+or sub_alarm(7000,7380,heathrow) == 2
+or sub_alarm(7000,7390,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_alarm(7000,7350,heathrow) == 3
+or sub_alarm(7000,7360,heathrow) == 3
+or sub_alarm(7000,7370,heathrow) == 3
+or sub_alarm(7000,7380,heathrow) == 3
+or sub_alarm(7000,7390,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 31",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!****************** SUB 47 ********************!
+
+object sub_symbol_47
+
+var call_var = popup new_sub_stn_47
+
+begin
+if sub_barcis_alarm(20596,heathrow) == 1 
+or sub_barcis_alarm(20520,heathrow) == 1 
+or sub_barcis_alarm(20500,heathrow) == 1 
+or sub_barcis_alarm(20540,heathrow) == 1
+or sub_barcis_alarm(20560,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_barcis_alarm(20596,heathrow) == 2
+or sub_barcis_alarm(20520,heathrow) == 2 
+or sub_barcis_alarm(20500,heathrow) == 2
+or sub_barcis_alarm(20540,heathrow) == 2
+or sub_barcis_alarm(20560,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_barcis_alarm(20596,heathrow) == 3
+or sub_barcis_alarm(20520,heathrow) == 3
+or sub_barcis_alarm(20500,heathrow) == 3
+or sub_barcis_alarm(20540,heathrow) == 3
+or sub_barcis_alarm(20560,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 47",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

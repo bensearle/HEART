@@ -1,0 +1,119 @@
+load mimic_libutil
+
+
+!-----------------------------------------------------------------------------!
+!  CONFIRM / CANCEL                                                           !
+!-----------------------------------------------------------------------------!
+
+OBJECT confirm_popup(control_text=string(15)) = yesno
+
+BEGIN
+  X = 0 Y = 0
+
+  RECT(H=100,W=300,FG=decoroff)
+
+  x = 10 y = 35 ADD
+  x = 290 ADD
+  LINE(FG=white) CLEAR
+
+  x = 10 y = 36 ADD
+  x = 290 ADD
+  LINE(FG=grey40) CLEAR
+
+  X = 150 Y = 15
+  JUST=CENTRECENTRE
+
+  TEXT(TFG=BLACK,CH=20,"ARCS "+control_text)
+
+  !  CONFIRM  !
+  FG=DECOROFF
+  x = 15 y = 75 ADD
+  y -= 30 ADD
+  x += 120 ADD
+  LINE(FG=white) CLEAR
+  x = 15 y = 75 ADD
+  x += 120 ADD
+  y -= 30 ADD
+  LINE(FG=grey40) CLEAR
+  x = 75 y = 60
+  H=29 W=119 RECT(FG=decoroff)
+  TEXT(TFG=black,CH=15,"Confirm")
+  IF anyb THEN
+  BEGIN
+    x = 15 y = 75 ADD
+    y -= 30 ADD
+    x += 120 ADD
+    LINE(FG=grey40) CLEAR
+    x = 15 y = 75 ADD
+    x += 120 ADD
+    y -= 30 ADD
+    LINE(FG=white) CLEAR
+    x = 75 y = 60
+    H=29 W=119 RECT(FG=grey40)
+    TEXT(TFG=black,CH=15,"Confirm")
+    confirm_popup = yes
+    EXIT
+  END
+
+  !  CANCEL  !
+  FG=DECOROFF
+  x = 165 y = 75 ADD
+  y -= 30 ADD
+  x += 120 ADD
+  LINE(FG=white) CLEAR
+  x = 165 y = 75 ADD
+  x += 120 ADD
+  y -= 30 ADD
+  LINE(FG=grey40) CLEAR
+  x = 225 y = 60
+  H=29 W=119 RECT(FG=decoroff)
+  TEXT(TFG=black,CH=15,"Cancel")
+  IF anyb THEN
+  BEGIN
+    x = 165 y = 75 ADD
+    y -= 30 ADD
+    x += 120 ADD
+    LINE(FG=grey40) CLEAR
+    x = 165 y = 75 ADD
+    x += 120 ADD
+    y -= 30 ADD
+    LINE(FG=white) CLEAR
+    x = 225 y = 60
+    H=29 W=119 RECT(FG=grey40)
+    TEXT(TFG=black,CH=15,"Cancel")
+    confirm_popup = no
+    EXIT
+  END
+END 
+
+mimic confirm_popup = confirm_popup w = 300,h = 100
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+VAR confirm 	= yesno
+VAR popup_box	= popup		confirm_popup
+
+begin
+
+x = -350 y = 0 
+
+set unpinned popup_box
+set title popup_box = " "
+
+x = 0 y = 0 w = 100 h = 100 RECT(fg=green)
+IF anyb THEN
+  request popup_box("ENABLE")
+
+IF popup_box == YES THEN 
+BEGIN
+  X = 100 Y = 200 text(tfg=white,ch=15,"CONFIRM")
+END
+ELSE 
+BEGIN
+  X = 100 Y = 200 text(tfg=white,ch=15,"")
+END
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable
+

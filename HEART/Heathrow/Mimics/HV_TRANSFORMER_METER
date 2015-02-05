@@ -1,0 +1,876 @@
+
+load mimic_libutil
+
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+
+TYPE b_bool_type 	= db_elements(b_value)
+
+type c_db_row_type =  db_elements(db_addr,c_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type e_test_row =  db_alarm_config(db_addr,
+					   config_number,
+					   test_value)
+
+type e_test_table =  e_test_row[6]
+
+type panel_item_row = table(str=string(40))
+
+type menu_options_type = enum(
+           tag_message = "Alter Tagged Message",
+         untag_message = "Clear Tagged Message")
+
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op= output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=400,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+!
+************************************************************
+* AN ANALOGUE SENSOR OBJECT                                *
+* this object is called by the Top Level variable (mimic).
+* All these meter objects have an under/over range input from PLC
+************************************************************
+!
+
+object hv_meter(plc_comms=int,c_offset=int,
+                   e_offset=int,b_over=int,b_under=int,src=source,
+                   size=string,metname=string)
+VAR under_range		= input		b_bool_type
+VAR over_range		= input		b_bool_type
+
+var plc_comms_alarms = input b_db_row_type[2]
+
+var  current_alarm           = input alarm_row_type
+var  current_level_ip        = input e_db_row_type
+var  tag_message_ip          = input c_db_row_type
+
+var  input_setpoint          = input e_test_table
+var  output_setpoint         = output e_test_table
+var  temp_menu               = menu string
+var  stand_control_menu      = menu menu_options_type
+var  high_setpoint_panel     = panel int
+var  low_setpoint_panel      = panel int
+var  tag_message_panel       = panel panel_item_row
+var  main_menu               = menu string(30)
+var  items_added             = loopback int
+var  temp_sps                = loopback string
+
+var  sensor_bg               = loopback colour
+var  meter_bg                = loopback colour
+var  amp_scale_1             = real
+var  amp_scale_2             = real
+var  volt_scale_1            = real
+var  volt_scale_2            = real
+var  volt_scale_3            = real
+var  power_scale_1            = real
+var  power_scale_2            = real
+var  power_scale_3            = real
+var  scaler                  = real
+var  bar_length              = int
+var  bar_start               = int
+
+var  point_a                = loopback string
+var  point_b                = loopback string
+var  point_c                = loopback string
+var  point_d                = loopback string
+var  point_e                = loopback string
+var  point_f                = loopback int
+var  point_g                = loopback int
+var  point_h                = loopback int
+var  point_i                = loopback int
+
+
+begin
+! INITIALISATION !
+! REQUEST ENGINEERINGS FROM SCOPE !
+
+if invalid get source current_alarm then 
+
+   begin
+   set source plc_comms_alarms = src
+   set filter plc_comms_alarms.db_addr = lim_ge
+   set limit plc_comms_alarms.db_addr = db_address("b" + plc_comms)
+   set persist plc_comms_alarms
+   request plc_comms_alarms
+
+   SET SOURCE under_range = src
+   SET FILTER under_range.db_addr = lim_eq
+   SET LIMIT under_range.db_addr = db_address(int(b1) + b_under  -1)
+   SET PERSIST under_range
+   REQUEST under_range
+
+   SET SOURCE over_range = src
+   SET FILTER over_range.db_addr = lim_eq
+   SET LIMIT over_range.db_addr = db_address(int(b1) + b_over  -1)
+   SET PERSIST over_range
+   REQUEST over_range
+   
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   set source current_alarm = src
+   set filter current_alarm.db_addr = lim_eq
+   set limit current_alarm.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist current_alarm 
+   request current_alarm
+
+   set source current_level_ip = src
+   set filter current_level_ip.db_addr = lim_eq
+   set limit current_level_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist current_level_ip 
+   request current_level_ip
+
+   set source    input_setpoint = src
+   set filter    input_setpoint.db_addr = lim_eq
+   set limit     input_setpoint.db_addr = db_address(int(e1) + e_offset - 1)
+   set mayexist  input_setpoint
+   set mustexist input_setpoint.db_addr
+   set mustexist input_setpoint.config_number
+   set persist   input_setpoint
+   request       input_setpoint
+
+   end
+
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w=60 h=60 
+set rect main_menu
+set title main_menu="Meter Menu"
+set remove main_menu="Alter Tag Message"
+set remove main_menu="Clear Tag Message"
+set add main_menu="Alter Tag Message"
+set add main_menu="Clear Tag Message"
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+
+   case main_menu of
+        "Alter High Alarm Level"
+            begin
+            set title high_setpoint_panel = "Alter High Alarm Level"
+            set unpinned high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter Low Alarm Level"
+            begin
+            set title low_setpoint_panel = "Alter Low Alarm Level"
+            set unpinned low_setpoint_panel
+            request low_setpoint_panel
+            end
+ 
+        "Alter Tag Message"
+            begin
+            set title tag_message_panel = "Modify Tag Message"
+            set label tag_message_panel.str = "Tag Message :"
+            set unpinned tag_message_panel
+            request tag_message_panel
+            end
+
+        "Clear Tag Message"
+            begin
+            set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+            end
+       
+        default
+            begin
+            end
+
+   set invalid main_menu
+   end
+
+
+! SELECT METER SIZE/TYPE !
+
+! Ammeters !
+
+if size == "100A" or size=="" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "25"
+   point_c = "50"
+   point_d = "75"
+   point_e = "100"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/1)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+if size == "200A"  then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "50"
+   point_c = "100"
+   point_d = "150"
+   point_e = "200"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/2)  !divide by changed from 2!   
+   bar_start = point_h/2
+ end
+
+if size == "400A"  then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "100"
+   point_c = "200"
+   point_d = "300"
+   point_e = "400"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/4.15)  !divide by changed from 2!   
+   bar_start = point_h/2
+ end
+
+if size == "720A" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "180"
+   point_c = "360"
+   point_d = "540"
+   point_e = "720"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/7.06)  !divide by changed from 2! 
+   bar_start = point_h/2
+ end
+
+if size == "800A" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "200"
+   point_c = "400"
+   point_d = "600"
+   point_e = "800"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/7.8)  !divide by changed from 2! 
+   bar_start = point_h/2
+ end
+
+if size == "1200A" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "300"
+   point_c = "600"
+   point_d = "900"
+   point_e = "1200"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/12)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+if size == "1250A" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "312"
+   point_c = "625"
+   point_d = "938"
+   point_e = "1250"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/12.4)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+if size == "2400A" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "600"
+   point_c = "1200"
+   point_d = "1800"
+   point_e = "2400"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/23.53)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+
+if size == "2000A" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "500"
+   point_c = "1000"
+   point_d = "1500"
+   point_e = "2000"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/19.6)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+! Voltmeters !
+if size == "11KV" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "5"
+   point_c = "10"
+   point_d = "15"
+   point_e = "20"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   volt_scale_1 = current_level_ip.e_value
+   volt_scale_2 = volt_scale_1 * scaler
+   bar_length = int(volt_scale_2/0.2)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+if size == "11KV_2" then
+ begin
+   scaler = 1
+
+   point_a = "9.5"
+   point_b = "10.0"
+   point_c = "11.5"
+   point_d = "12.0"
+   point_e = "12.5"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   volt_scale_1 = current_level_ip.e_value
+   volt_scale_2 = volt_scale_1 * scaler
+   volt_scale_3 = volt_scale_2 - 9.5
+   bar_length   = int(volt_scale_2 * 3.5)
+   bar_start = point_h/2
+ end
+
+if size == "12_65KV" then
+ begin
+   scaler = 1
+
+   point_a = "9.35"
+   point_b = "10.18"
+   point_c = "11.0"
+   point_d = "11.83"
+   point_e = "12.65"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   volt_scale_1 = current_level_ip.e_value
+   volt_scale_2 = volt_scale_1 * scaler
+   volt_scale_3 = volt_scale_2 - 9.35
+   bar_length   = int(volt_scale_3 * 30.3)
+   bar_start = point_h/2
+ end
+
+if size == "13_2KV" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "3.3"
+   point_c = "6.6"
+   point_d = "9.9"
+   point_e = "13.2"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   volt_scale_1 = current_level_ip.e_value
+   volt_scale_2 = volt_scale_1 * scaler
+   bar_length = int(volt_scale_2/0.129)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+if size == "14KV" then
+ begin
+   scaler = 1
+
+   point_a = "9.00"
+   point_b = "10.25"
+   point_c = "11.50"
+   point_d = "12.75"
+   point_e = "14.00"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   volt_scale_1 = current_level_ip.e_value
+   volt_scale_2 = volt_scale_1 * scaler
+   volt_scale_3 = volt_scale_2 - 9
+   bar_length = int(volt_scale_3 * 20)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+if size == "33KV" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "10"
+   point_c = "20"
+   point_d = "30"
+   point_e = "40"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   volt_scale_1 = int(current_level_ip.e_value)
+   volt_scale_2 = volt_scale_1 * scaler
+   bar_length = int(volt_scale_2/0.42)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+if size == "33KV_2" then
+ begin
+   scaler = 1
+
+   point_a = "26.0"
+   point_b = "29.5"
+   point_c = "33.0"
+   point_d = "36.5"
+   point_e = "40.0"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   volt_scale_1 = current_level_ip.e_value
+   volt_scale_2 = volt_scale_1 * scaler
+   volt_scale_3 = volt_scale_2 - 28.05
+   bar_length   = int(volt_scale_3 * 9.9)
+   bar_start = point_h/2
+ end
+!*************************************** POWER METERS ***************************************!
+! Power Meters !
+if size == "KVARH" then
+ begin
+   scaler = 1
+
+   point_a = "0"
+   point_b = "5"
+   point_c = "10"
+   point_d = "15"
+   point_e = "20"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   power_scale_1 = current_level_ip.e_value
+   power_scale_2 = power_scale_1 * scaler
+   bar_length = int(power_scale_2/0.2)  !divide by changed from 2!
+   bar_start = point_h/2
+ end
+
+if size == "KWH" then
+ begin
+   scaler = 1
+
+   point_a = "9.5"
+   point_b = "10.0"
+   point_c = "11.5"
+   point_d = "12.0"
+   point_e = "12.5"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+   power_scale_1 = current_level_ip.e_value
+   power_scale_2 = power_scale_1 * scaler
+   power_scale_3 = power_scale_2 - 9.5
+   bar_length   = int(power_scale_2 * 3.5)
+   bar_start = point_h/2
+ end
+! ****************************************************** POWER METERS ****************************!
+
+! SELECT BAR COLOUR !
+
+if plc_comms_alarms[1].b_value==1 and plc_comms_alarms[2].b_value==1 then
+	begin
+   		   sensor_bg = magenta
+   		   bar_length = 150
+  		   bar_start = point_h/2
+	end
+	else if current_alarm.alarm_status == w_note then
+   		begin   
+   		   sensor_bg = flashred
+   		   bar_length = 150
+  		   bar_start = point_h/2
+   		end
+
+	else if bar_length > 150 or bar_length < 0 or 
+   	current_alarm.alarm_status == w_clr or  over_range.b_value==1 or under_range.b_value==1 then
+   		begin
+   		   sensor_bg = red
+   		   bar_start = point_h/2
+   		end
+
+	else if size=="33KV" or size=="33KV_2" or size=="11KV" or size=="11KV_2" or size=="12_65KV" or size=="13_2KV" or size=="14KV" then
+		sensor_bg = blue					! blue bar for voltage !
+	else if size=="KWH" or size=="KVARH" then
+		sensor_bg = green3				! green bar for power!
+	else 
+		sensor_bg = yellow				! yellow bar for current/other !
+
+! SELECT METER BG !
+
+if tag_message_ip.c_value <> "" then 
+  
+  meter_bg = yellow
+ 
+else
+  meter_bg = decoroff     
+
+
+
+! DRAW METER !
+
+
+
+just = centrecentre
+x = 0 y = 0 rect(fg=meter_bg,h=point_f,w=80)
+x -= 40 y += point_f/2 add y -= point_f add x += 80 add line(lw=1,fg=decorlight) clear
+x = 40 y = -point_f/2 add y += point_f add x -= 80 add line(lw=1,fg=decorshadow) clear
+
+if plc_comms_alarms[1].b_value==1 and plc_comms_alarms[2].b_value==1 then
+begin
+x = 0 y = 0 rect(fg=magenta,h=point_g,w=70)
+x = 35 y = -point_g/2 add x -= 70 add y +=point_g add line(lw=1,fg=decorlight) clear
+x = 35 y = -point_g/2 add y += point_g add x -= 70 add line(lw=1,fg=decorshadow) clear
+end
+
+else if  over_range.b_value==1 or under_range.b_value==1 then
+begin
+x = 0 y = 0 rect(fg=red,h=point_g,w=70)
+x = 35 y = -point_g/2 add x -= 70 add y +=point_g add line(lw=1,fg=decorlight) clear
+x = 35 y = -point_g/2 add y += point_g add x -= 70 add line(lw=1,fg=decorshadow) clear
+end
+else begin
+x = 0 y = 0 rect(fg=decoroff,h=point_g,w=70)
+x = 35 y = -point_g/2 add x -= 70 add y +=point_g add line(lw=1,fg=decorlight) clear
+x = 35 y = -point_g/2 add y += point_g add x -= 70 add line(lw=1,fg=decorshadow) clear
+end
+
+y = -point_h/2 x = 3 add x = -2 add y = -point_h/4 add x = 3 add x = -2 add 
+y = 0 add x = 3 add x = -2 add y = point_h/4 add x = 3 add x = -2 add
+y = point_h/2 add x = 2 add line(fg=black,lw=2) clear
+
+x = -18 y = point_h/2 text (tfg=black,ch=12,point_a)
+x = -18 y = point_h/4 text (tfg=black,ch=12,point_b)
+x = -18 y = 0 text (tfg=black,ch=12,point_c)
+x = -18 y = -point_h/4 text (tfg=black,ch=12,point_d)
+x = -18 y = -point_h/2 text (tfg=black,ch=12,point_e)
+x = 25 y = -100 add  
+y = -point_i x = 0 text(tfg=black,font=font_bold,ch=16,metname)
+
+!
+if size == "33KV" or size == "33KV_2" or
+   size == "11KV" or size == "11KV_2" or
+   size == "12_65KV" or size == "14KV" then 
+begin
+y = point_i x = 0 text(realf=Fixed1,tfg=black,ch=16,volt_scale_2+" kV")
+end
+if size == "KVARH"  then 
+begin
+y = point_i x = 0 text(realf=Fixed1,tfg=black,ch=16,volt_scale_2+" kVARh")
+end
+if size == "KWH"  then 
+begin
+y = point_i x = 0 text(realf=Fixed1,tfg=black,ch=16,volt_scale_2+" kWh")
+end
+else
+begin
+y = point_i x = 0 text(realf=fixed0,tfg=black,ch=16,amp_scale_2+" A")
+end!
+
+case size of
+	 "33KV","33KV_2","11KV","11KV_2","12_65KV","13_2KV","14KV"
+	begin
+		y = point_i x = 0 text(realf=Fixed1,tfg=black,ch=16,volt_scale_2+" kV")
+	end
+	"KVARH" 
+	begin
+		y = point_i x = 0 text(realf=Fixed0,tfg=black,ch=13,volt_scale_2+" kVARH")
+	end
+	"KWH"
+	begin
+		y = point_i x = 0 text(realf=Fixed1,tfg=black,ch=15,volt_scale_2+" kWH")
+	end
+     default
+	begin
+		y = point_i x = 0 text(realf=fixed0,tfg=black,ch=16,amp_scale_2+" A")
+	end
+clear
+
+! TAG MESSAGE BOX !
+x = 0 y = 0
+w = 80 h = point_f
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+
+
+! DRAW BAR !
+
+just=centrecentre
+y = -point_h/2 x = 25 add x -= 20 add y += point_h add line(lw=1,fg=decorshadow) clear
+y = point_h/2 x = 5 add x += 20 add y -= point_h add line(lw=1,fg=decorlight) clear
+just = bottomcentre
+
+if bar_length > 100 then bar_length = 95
+if bar_length < 0 then  bar_length = 0
+
+y = bar_start x = 15 rect(w=20,h=bar_length,fg=sensor_bg) clear
+
+
+
+! OVER RANGE MESSAGE !
+
+if  over_range.b_value==1 and under_range.b_value==0 then
+begin
+x = 0 y = -point_h/2+35 text (tfg=white,ch=19,font=font_bold,"OVER")
+x = 0 y = -point_h/2+75 text (tfg=white,ch=19,font=font_bold,"RANGE")
+end
+! UNER RANGE MESSAGE !
+
+if  under_range.b_value==1 and over_range.b_value==0 then
+begin
+x = 0 y = -point_h/2+35 text (tfg=white,ch=19,font=font_bold,"UNDER")
+x = 0 y = -point_h/2+75 text (tfg=white,ch=19,font=font_bold,"RANGE")
+end
+
+if  under_range.b_value==1 and over_range.b_value==1 then
+begin
+x = 0 y = -point_h/2+35 text (tfg=white,ch=19,font=font_bold," INVALID")
+x = 0 y = -point_h/2+75 text (tfg=white,ch=19,font=font_bold,"RANGE")
+end
+
+
+
+! CONFIGURE MENU !
+
+if valid input_setpoint then
+   temp_sps = "High = "+ int(input_setpoint[1].test_value) +"  Low = " +int(input_setpoint[2].test_value)
+x=0 y=90 
+w=75 h=170
+set rect main_menu
+set title main_menu = temp_sps
+
+if invalid items_added then
+  begin
+  set add main_menu   = "Alter High Alarm Level"
+  set add main_menu   = "Alter Low Alarm Level"
+  items_added = 1
+  end
+
+
+! WRITE INPUT TO SERVER !
+
+if valid high_setpoint_panel and high_setpoint_panel > input_setpoint[2].test_value then
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[1].test_value = high_setpoint_panel
+   request output_setpoint
+   set invalid high_setpoint_panel
+   end
+
+if valid low_setpoint_panel and low_setpoint_panel < input_setpoint[1].test_value then 
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[2].test_value = low_setpoint_panel
+   request output_setpoint
+   set invalid low_setpoint_panel
+   end
+
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=200
+
+!x = 275 hv_meter(5515,992,750,0,0,heathro3,"100A","TEST 1")
+x = 75 hv_meter(5515,992,155,0,0,heathro2,"33KV","TEST 2")
+x = 5 hv_meter(5515,992,155,0,0,heathrow,"400A","TEST 3")
+x = -70 hv_meter(5515,536,1526,0,0,heathro2,"33KV","TEST 4")
+x = -140 hv_meter(5515,746,1746,0,0,heathro2,"11KV","TEST 5")
+x = 140 hv_meter(5515,992,1525,0,0,heathro2,"2000A","TEST 6")
+x = 210 hv_meter(5515,992,1533,0,0,heathro2,"33KV_2","TEST 7")
+x = -210 hv_meter(5515,992,7,0,0,heathrow,"1200A","TEST 8")
+x = -285 hv_meter(5515,746,1746,0,0,heathro2,"11KV_2","TEST 9")
+x = -355 hv_meter(5515,746,1746,0,0,heathro2,"KWH","POWER")
+x = 355 hv_meter(5515,746,1746,0,0,heathro2,"KVARH","POWER")
+
+X=82 Y=-22 HV_METER(14001,621,423,14068,14098,heathro3,"12_65KV","PANEL 6")!
+x = 210 hv_meter(14001,622,424,14069,14099,heathro3,"12_65KV","TEST 7")
+X=-83 Y=-22 HV_METER(6000,156,2130,5947,5907,heathro3,"200A","PANEL 6")
+end
+
+mimic = main_object w=900,h=400,just=centrecentre,fg=white,bg=black,resizable
+
+

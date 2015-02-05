@@ -1,0 +1,57 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+load hv_lib
+
+!************* BUSBAR SUB 127 ***************!
+
+object busbar_127
+
+begin
+
+just = centrecentre
+tfg=black
+ch=12
+x = -125 y = -100 text("M1/12")
+x = -125 y = -85 text("P1")
+x = 175 y = -100 text("N I")
+x = 175 y = -85 text("P1")
+x = -25 y = 35 text("Spare")
+x = 125 y = 35 text("Spare")
+
+tfg = black x = -120 y = 0 add text ("127",ch = 25) clear
+x = -150 y = -25 add x = 200 add line(lw=4,fg=red) clear
+lw = 2
+x = -125 y = -25 add y -= 50 add line (fg=red) clear
+x = -75 y = -25 add y += 50 add line (fg=red) clear
+x = -25 y = -25 add y += 30 add line (fg=red) clear
+x =  75 y = -25 add y += 50 add line (fg=red) clear
+x =  125 y = -25 add y += 30 add line (fg=red) clear
+x =  175 y = -25 add y -= 50 add line (fg=red) clear
+
+scale = 315
+
+x = -125 y = -50   hv_lib_breaker("eclipse",1000,1320,69,75,int,HEATHROW,1,"TOP",int)
+x = -75  y = 0   hv_lib_breaker("eclipse",1000,1340,70,76,int,HEATHROW,2,"BTM",int)
+x = -25  y = 0 hv_lib_breaker("eclipse",1000,1360,71,77,int,HEATHROW,3,"BTM",int)
+x =  25  y = -25 hv_lib_breaker("eclipse",1000,1380,72,78,int,HEATHROW,4,"SECT",int)
+x =  75  y = 0   hv_lib_breaker("eclipse",1000,1400,73,79,int,HEATHROW,5,"BTM",int)
+x =  125 y = 0   hv_lib_breaker("eclipse",1000,1420,74,80,int,HEATHROW,6,"BTM",int)
+x =  175 y = -50   hv_lib_breaker("eclipse",1000,1440,75,81,int,HEATHROW,7,"TOP",int)
+
+scale = 100
+x = -75 y = 45 add transformer("L TX","LOCAL")
+x = 75 y = 45 add transformer("MT","LOCAL")
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -25 busbar_127
+
+end
+
+mimic = main_object w=450,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

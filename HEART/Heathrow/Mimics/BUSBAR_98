@@ -1,0 +1,48 @@
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ocb_barcis
+load ocb_hand_dressed
+
+!******************* BUSBAR 98 ******************!
+
+object busbar_98
+begin
+
+scale = 260
+tfg = white x = 0 y = -27 add text ("98",ch = 25) clear
+
+x = 0 y = 0 add x = 210 add line(fg=lightblue3,lw=4) clear
+lw=2
+x = 30 y = 0 add y += 50 add line (fg=lightblue3) clear
+x = 80 y = 0 add y -= 50 add line (fg=lightblue3) clear
+x = 130 y = 0 add y += 50 add line (fg=lightblue3) clear
+x = 180 y = 0 add y -= 50 add line (fg=lightblue3) clear
+
+scale = 120
+x = 30 y = 25 ocb_hand(26001,2001,heathrow,1,"btm")
+x = 80 y = -25 ocb_hand(26002,2002,heathrow,2,"top")
+x = 130 y = 25 ocb_hand(26003,2003,heathrow,3,"btm")
+x = 180 y = -25 ocb_hand(26004,2004,heathrow,4,"top")
+
+scale = 100
+x = 30 y = 70 add transformer("T 1","")
+x = 130 y = 70 add transformer("LT 2","")
+
+scale = 260
+just = centrecentre
+tfg=white
+ch=12
+x = 30 y = 100 text ("FEGP Tx")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -90 y = -35 busbar_98
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=black,resizable

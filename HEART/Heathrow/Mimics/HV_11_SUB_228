@@ -1,0 +1,1473 @@
+!********************************************************************************!
+!*** HV_11_Temp 						***!
+!*** 							***!
+!*** History						***!
+!***							***!
+!*** 7/6/03 - Carl Cheetham (PDS) - Added Sub 135 Hatton Cross	***!
+!****25/4/08 - Modified by Vijay Kara - Removal of Sub 119, Addition of M1/12 from HV2***!
+!****             also addition of OCB 4 at South Intake & OCB 23 at East Intake  *************!
+!** 22/10/09 - Asim Malik (CCS) - Added Sub 225 225 T2BN	**!
+!** 10/10/10 -  Andy Higham (CCS) - Added Sub 228		**!
+!** 22/11/10 -  Andy Higham (CCS) - Added Sub 294		**							   !
+!********************************************************************************!
+
+
+
+!*** Hv Ring 11 ***!
+load mimic_libutil
+load hv_11_sub_stations
+load hv_11_sub_stations_b
+!load ocb_119!
+load ocb
+load ocb_monitored
+load nse_ocb_4
+load m1_9_ocb
+load hv_cable_ident
+Load BROWSER
+load hv_lib
+load hv_2_sub_stations
+load dual_bus_objects
+
+
+
+
+
+
+
+
+
+
+!************************************************************************************************************************************************************************************!
+!********************************************************************LOCAL CIRCUIT BREAKER OBJECT*********************************************************************!
+!************************************************************************************************************************************************************************************!
+
+ OBJECT local_breaker(plc_offset=INT,b_offset=INT,c_offset=INT,e_offset=INT,cont_offset=INT,src=SOURCE, ident=INT,position=STRING(4),cont_code=INT,ANGLE)
+
+
+
+! VARIABLE DECLARATION !
+! PLC INPUTS
+var plc_inputs[1] = plca_comms_status
+var plc_inputs[2] = plcb_comms_status
+!
+var plc_inputs = input b_bool_type[2]
+
+! OCB INPUTS !
+var ocb_inputs = input b_bool_type[35]
+
+! ALARM INPUTS!
+var alarm_inputs = input alarm_row_type[35]
+
+! digital inputs defined !
+var plc_a_comms_flt 		= onoff
+var plc_b_comms_flt 		= onoff
+var prot_operated_ip		= onoff	!1!
+var prot_relay_faulty_ip		= onoff	!2!
+var disconnector_a_open_ip		= onoff	!3!
+var disconnector_a_closed_ip	= onoff	!4!
+var trip_cct_faulty_ip		= onoff  	!5!
+var local_control_ip			= onoff  	!6!
+var ocb_closed_ip	 		= onoff	!7!
+var ocb_open_ip	 		= onoff	!8!
+var ocb_circuit_earth_ip 		= onoff 	!9!
+var cct_earth_switch_open_ip	= onoff	!10!
+var ocb_sect_a_isolated_ip		= onoff 	!11!
+var control_fail_ip	 		= onoff 	!12!
+var ocb_ptw_ip	 		= onoff	!13!
+var ocb_sect_b_earth_ip 		= onoff 	!14!
+var spring_discharged_ip		= onoff 	!15!
+var ocb_sect_b_isolated_ip		= onoff 	!16!
+var spring_charged_ip		= onoff 	!17!
+var gas_low_ip	 		= onoff	!18!
+var gas_v_low_ip			= onoff	!19!
+var control_reset_ip		= onoff	!20!
+var gas_detect_relay_fail_ip		= onoff	!21!
+var disconnector_b_open_ip		= onoff	!22!
+var disconnector_b_closed_ip	= onoff	!23!
+var Intertrip_relay_faulty_ip		= onoff	!24!
+var bb1_loss_of_volts_ip		= onoff	!25!
+var bb1_alt_supply_2_unavail_ip	= onoff	!26!
+var bb1_alt_supply_1_unavail_ip	= onoff	!27!
+var bb1_pri_src_unavail_ip		= onoff	!28!
+var bb2_loss_of_volts_ip		= onoff	!29!
+var bb2_alt_supply_2_unavail_ip	= onoff	!30!
+var bb2_alt_supply_1_unavail_ip	= onoff	!31!
+var bb2_pri_src_unavail_ip		= onoff	!32!
+var spare_1_ip			= onoff	!33!
+var spare_2_ip			= onoff	!34!
+var spare_3_ip			= onoff	!35!
+
+
+
+!alarms defined!
+var prot_operated_al		=alarm_status !1!	
+var prot_relay_faulty_al		=alarm_status !2!
+var disconnector_a_open_al		=alarm_status !3!
+var disconnector_a_closed_al	=alarm_status !4!
+var trip_cct_faulty_al		=alarm_status !5!
+var local_control_al			=alarm_status !6!
+var ocb_closed_al	 		=alarm_status !7!
+var ocb_open_al	 		=alarm_status !8!
+var cct_earthed_al			=alarm_status !9!
+var cct_earth_switch_open_al	=alarm_status !10!
+var ocb_sect_a_isolated_al		=alarm_status !11!
+var control_fail_al	 		=alarm_status !12!
+var ocb_ptw_al	 		=alarm_status !13!
+var ocb_sect_b_earth_al 		=alarm_status !14!
+var spring_discharged_al		=alarm_status !15!
+var ocb_sect_b_isolated_al		=alarm_status !16!
+var spring_charged_al		=alarm_status !17!
+var gas_low_al	 		=alarm_status !18!
+var gas_v_low_al			=alarm_status !19!
+var control_reset_al		=alarm_status !20!
+var gas_detect_relay_fail_al		=alarm_status !21!
+var disconnector_b_open_al		=alarm_status !22!
+var disconnector_b_closed_al	=alarm_status !23!
+var Intertrip_relay_faulty_al		=alarm_status !24!
+var bb1_loss_of_volts_al		=alarm_status !25!
+var bb1_alt_supply_2_unavail_al	=alarm_status !26!
+var bb1_alt_supply_1_unavail_al	=alarm_status !27!
+var bb1_pri_src_unavail_al		=alarm_status !28!
+var bb2_loss_of_volts_al		=alarm_status !29!
+var bb2_alt_supply_2_unavail_al	=alarm_status !30!
+var bb2_alt_supply_1_unavail_al	=alarm_status !31!
+var bb2_pri_src_unavail_al		=alarm_status !32!
+var spare_1_al			=alarm_status !33!
+var spare_2_al			=alarm_status !34!
+var spare_3_al			=alarm_status !35!
+
+
+
+		
+! CONTROL CODES !
+VAR control_data		= input		e_db_row_type[4]
+VAR control_code		= int
+VAR checkback_code	= int
+VAR execute_code		= int
+VAR plc_execute_code	= int
+
+! MANUALLY DRESSED STATUS !
+VAR manual_dress	= input		e_db_row_type
+
+! TAG MESSAGE !
+VAR tag_message_ip2		= input		c_db_row_type
+
+! LOOPBACK VARIABLES !
+VAR ocb_foreground	= loopback	colour
+VAR ocb_background	= loopback	colour
+VAR confirm		= loopback	yesno
+VAR accept		= loopback 	yesno
+VAR close_ocb_control	= loopback	yesno
+VAR open_ocb_control	= loopback	yesno
+VAR plc_executed		= loopback	yesno
+
+! MENUS !
+VAR main_menu			= menu		string(40)
+VAR tag_message_panel 		= panel		panel_item_row
+VAR popup_box			= popup		confirm_popup
+VAR failure_box			= popup		control_status
+VAR local_control_in_progress	= popup		control_status
+	
+! GENERAL !
+VAR close_code		= INT
+VAR open_code		= INT
+VAR control_text		= STRING(10)
+VAR in_progress		= yesno
+VAR controllable_ocb	= yesno
+VAR num_alarms		= int
+BEGIN
+         if invalid get source plc_inputs then
+         begin
+
+   	! GET PLC INPUTS !
+   	set source plc_inputs = src
+   	set filter plc_inputs.db_addr = lim_ge
+   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+   	set priority plc_inputs.db_addr = 15
+   	set persist plc_inputs
+   	set mayexist plc_inputs
+   	request plc_inputs
+
+   	! GET OCB INPUTS !
+   	set source ocb_inputs = src
+   	set filter ocb_inputs.db_addr = lim_ge
+   	set limit ocb_inputs.db_addr = db_address(int(b1) + b_offset -1)
+   	set priority ocb_inputs.db_addr = 15
+   	set persist ocb_inputs
+   	set mayexist ocb_inputs
+   	request ocb_inputs
+
+   	! GET OCB ALARM INPUTS !
+   	set source alarm_inputs = src
+   	set filter alarm_inputs.db_addr = lim_ge
+   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+   	set priority alarm_inputs.db_addr = 15
+   	set persist alarm_inputs
+   	set mayexist alarm_inputs
+   	request alarm_inputs
+
+   	! GET OCB MANUAL DRESS STATUS !
+   	set source manual_dress = src
+   	set filter manual_dress.db_addr = lim_eq
+   	set limit manual_dress.db_addr = db_address(int(e1) + e_offset - 1)
+   	set persist manual_dress 
+   	request manual_dress
+
+   	! GET CONTROL CODE DATA !
+   	set source control_data = src
+   	set filter control_data.db_addr = lim_ge
+   	set limit control_data.db_addr = db_address(int(e1) + cont_offset-1)
+   	set persist control_data 
+   	request control_data
+	
+   	! GET OCB TAG MESSAGE !
+   	set source tag_message_ip2 = src
+   	set filter tag_message_ip2.db_addr = lim_eq
+   	set limit tag_message_ip2.db_addr = db_address(int(c1) + c_offset -1)
+   	set persist tag_message_ip2
+   	request tag_message_ip2
+
+ 
+        end
+
+	open_code = cont_code 
+	close_code = cont_code +  1
+	IF cont_offset<>INT AND cont_code<>INT then
+		controllable_ocb = yes
+	ELSE controllable_ocb = no
+
+	! OCB COLOUR SELECTION !
+	! OCB FOREGROUND !
+	plc_a_comms_flt = plc_inputs[1].b_value
+	plc_b_comms_flt = plc_inputs[2].b_value
+
+
+	prot_operated_ip			= ocb_inputs[1].b_value
+	prot_relay_faulty_ip		= ocb_inputs[2].b_value
+	disconnector_a_open_ip		= ocb_inputs[3].b_value
+	disconnector_a_closed_ip		= ocb_inputs[4].b_value
+	trip_cct_faulty_ip			= ocb_inputs[5].b_value
+	local_control_ip			= ocb_inputs[6].b_value
+	ocb_closed_ip	 		= ocb_inputs[7].b_value
+	ocb_open_ip	 		= ocb_inputs[8].b_value
+	ocb_circuit_earth_ip		= ocb_inputs[9].b_value
+	cct_earth_switch_open_ip		= ocb_inputs[10].b_value
+	ocb_sect_a_isolated_ip		= ocb_inputs[11].b_value
+	control_fail_ip	 		= ocb_inputs[12].b_value
+	ocb_ptw_ip	 		= ocb_inputs[13].b_value
+	ocb_sect_b_earth_ip 		= ocb_inputs[14].b_value
+	spring_discharged_ip		= ocb_inputs[15].b_value
+	ocb_sect_b_isolated_ip		= ocb_inputs[16].b_value
+	spring_charged_ip			= ocb_inputs[17].b_value
+	gas_low_ip	 		= ocb_inputs[18].b_value
+	gas_v_low_ip			= ocb_inputs[19].b_value
+	control_reset_ip			= ocb_inputs[20].b_value
+	gas_detect_relay_fail_ip		= ocb_inputs[21].b_value
+	disconnector_b_open_ip		= ocb_inputs[22].b_value
+	disconnector_b_closed_ip		= ocb_inputs[23].b_value
+	Intertrip_relay_faulty_ip		= ocb_inputs[24].b_value
+	bb1_loss_of_volts_ip		= ocb_inputs[25].b_value
+	bb1_alt_supply_2_unavail_ip		= ocb_inputs[26].b_value
+	bb1_alt_supply_1_unavail_ip		= ocb_inputs[27].b_value
+	bb1_pri_src_unavail_ip		= ocb_inputs[28].b_value
+	bb2_loss_of_volts_ip		= ocb_inputs[29].b_value
+	bb2_alt_supply_2_unavail_ip		= ocb_inputs[30].b_value
+	bb2_alt_supply_1_unavail_ip		= ocb_inputs[31].b_value
+	bb2_pri_src_unavail_ip		= ocb_inputs[32].b_value
+	spare_1_ip			= ocb_inputs[33].b_value
+	spare_2_ip			= ocb_inputs[34].b_value
+	spare_3_ip			= ocb_inputs[35].b_value
+
+
+	prot_operated_al			=alarm_inputs[1].alarm_status 
+	prot_relay_faulty_al		=alarm_inputs[2].alarm_status 
+	disconnector_a_open_al		=alarm_inputs[3].alarm_status 
+	disconnector_a_closed_al		=alarm_inputs[4].alarm_status 
+	trip_cct_faulty_al			=alarm_inputs[5].alarm_status 
+	local_control_al			=alarm_inputs[6].alarm_status 
+	ocb_closed_al	 		=alarm_inputs[7].alarm_status 
+	ocb_open_al	 		=alarm_inputs[8].alarm_status 
+	cct_earthed_al			=alarm_inputs[9].alarm_status 
+	cct_earth_switch_open_al		=alarm_inputs[10].alarm_status 
+	ocb_sect_a_isolated_al		=alarm_inputs[11].alarm_status 
+	control_fail_al	 		=alarm_inputs[12].alarm_status 
+	ocb_ptw_al	 		=alarm_inputs[13].alarm_status 
+	ocb_sect_b_earth_al 		=alarm_inputs[14].alarm_status 
+	spring_discharged_al		=alarm_inputs[15].alarm_status 
+	ocb_sect_b_isolated_al		=alarm_inputs[16].alarm_status 
+	spring_charged_al			=alarm_inputs[17].alarm_status 
+	gas_low_al	 		=alarm_inputs[18].alarm_status 
+	gas_v_low_al			=alarm_inputs[19].alarm_status 
+	control_reset_al			=alarm_inputs[20].alarm_status 
+	gas_detect_relay_fail_al		=alarm_inputs[21].alarm_status 
+	disconnector_b_open_al		=alarm_inputs[22].alarm_status 
+	disconnector_b_closed_al		=alarm_inputs[23].alarm_status 
+	Intertrip_relay_faulty_al		=alarm_inputs[24].alarm_status 
+	bb1_loss_of_volts_al		=alarm_inputs[25].alarm_status 
+	bb1_alt_supply_2_unavail_al		=alarm_inputs[26].alarm_status 
+	bb1_alt_supply_1_unavail_al		=alarm_inputs[27].alarm_status 
+	bb1_pri_src_unavail_al		=alarm_inputs[28].alarm_status 
+	bb2_loss_of_volts_al		=alarm_inputs[29].alarm_status 
+	bb2_alt_supply_2_unavail_al		=alarm_inputs[30].alarm_status 
+	bb2_alt_supply_1_unavail_al		=alarm_inputs[31].alarm_status 
+	bb2_pri_src_unavail_al		=alarm_inputs[32].alarm_status 
+	spare_1_al			=alarm_inputs[33].alarm_status 
+	spare_2_al			=alarm_inputs[34].alarm_status 
+	spare_3_al			=alarm_inputs[35].alarm_status 
+
+
+	control_code	= int(control_data[1].e_value)
+	checkback_code	= int(control_data[2].e_value)
+	execute_code	= int(control_data[3].e_value)
+	plc_execute_code	= int(control_data[4].e_value)
+
+	IF plc_a_comms_flt == on AND plc_b_comms_flt == on THEN
+		ocb_foreground = MAGENTA
+
+	ELSE IF 	
+	prot_operated_al			== w_note OR
+	prot_relay_faulty_al		== w_note OR 
+	disconnector_a_open_al		== w_note OR 
+	disconnector_a_closed_al		== w_note OR 
+	trip_cct_faulty_al			== w_note OR 
+	local_control_al			== w_note OR 
+	ocb_closed_al	 		== w_note OR 
+	ocb_open_al	 		== w_note OR 
+	cct_earthed_al			== w_note OR 
+	cct_earth_switch_open_al		== w_note OR
+	ocb_sect_a_isolated_al		== w_note OR 
+	control_fail_al	 		== w_note OR
+	ocb_ptw_al	 		== w_note OR
+	ocb_sect_b_earth_al 		== w_note OR 
+	spring_discharged_al		== w_note OR 
+	ocb_sect_b_isolated_al		== w_note OR
+	spring_charged_al			== w_note OR 
+	gas_low_al	 		== w_note OR 
+	gas_v_low_al			== w_note OR 
+	control_reset_al			== w_note OR 
+	gas_detect_relay_fail_al		== w_note OR 
+	disconnector_b_open_al		== w_note OR 
+	disconnector_b_closed_al		== w_note OR 
+	Intertrip_relay_faulty_al		== w_note OR 
+	bb1_loss_of_volts_al		== w_note OR 
+	bb1_alt_supply_2_unavail_al		== w_note OR 
+	bb1_alt_supply_1_unavail_al		== w_note OR 
+	bb1_pri_src_unavail_al		== w_note OR 
+	bb2_loss_of_volts_al		== w_note OR 
+	bb2_alt_supply_2_unavail_al		== w_note OR 
+	bb2_alt_supply_1_unavail_al		== w_note OR 
+	bb2_pri_src_unavail_al		== w_note OR 
+	spare_1_al			== w_note OR 
+	spare_2_al			== w_note OR
+	spare_3_al			== w_note THEN
+			ocb_foreground = FLASHRED
+
+	ELSE IF  
+	prot_operated_al			== w_clr OR
+	prot_relay_faulty_al		== w_clr OR 
+	disconnector_a_open_al		== w_clr OR
+	disconnector_a_closed_al		== w_clr OR 
+	trip_cct_faulty_al			== w_clr OR 
+	local_control_al			== w_clr OR 
+	ocb_closed_al	 		== w_clr OR 
+	ocb_open_al	 		== w_clr OR 
+	cct_earthed_al			== w_clr OR 
+	cct_earth_switch_open_al		== w_clr OR
+	ocb_sect_a_isolated_al		== w_clr OR 
+	control_fail_al	 		== w_clr OR
+	ocb_ptw_al	 		== w_clr OR
+	ocb_sect_b_earth_al 		== w_clr OR 
+	spring_discharged_al		== w_clr OR 
+	ocb_sect_b_isolated_al		== w_clr OR
+	spring_charged_al			== w_clr OR 
+	gas_low_al	 		== w_clr OR 
+	gas_v_low_al			== w_clr OR 
+	control_reset_al			== w_clr OR 
+	gas_detect_relay_fail_al		== w_clr OR 
+	disconnector_b_open_al		== w_clr OR 
+	disconnector_b_closed_al		== w_clr OR 
+	Intertrip_relay_faulty_al		== w_clr OR 
+	bb1_loss_of_volts_al		== w_clr OR 
+	bb1_alt_supply_2_unavail_al		== w_clr OR 
+	bb1_alt_supply_1_unavail_al		== w_clr OR 
+	bb1_pri_src_unavail_al		== w_clr OR 
+	bb2_loss_of_volts_al		== w_clr OR 
+	bb2_alt_supply_2_unavail_al		== w_clr OR 
+	bb2_alt_supply_1_unavail_al		== w_clr OR 
+	bb2_pri_src_unavail_al		== w_clr OR 
+	spare_1_al			== w_clr OR 
+	spare_2_al			== w_clr OR
+	spare_3_al			== w_clr THEN
+			ocb_foreground = RED
+
+	ELSE IF INT(manual_dress.e_value) >=1 AND INT(manual_dress.e_value) <= 7 THEN
+	   BEGIN
+		CASE INT(manual_dress.e_value) OF
+		1
+			ocb_foreground = WHITE
+		2
+			ocb_foreground = WHITE
+		3
+			ocb_foreground = WHITE
+		4
+			BEGIN
+			   IF ocb_closed_ip == on and ocb_open_ip == on THEN
+			   	ocb_foreground = BLACK
+			   ELSE
+			   	ocb_foreground = WHITE
+			END
+		5
+			ocb_foreground = WHITE
+		6
+			ocb_foreground = WHITE
+		7
+			ocb_foreground = WHITE
+		DEFAULT
+		   BEGIN
+		   END
+	   END
+	ELSE
+		ocb_foreground = GREEN4
+
+	! OCB BACKGROUND !
+	IF ocb_inputs[13].b_value THEN
+		ocb_background = ORANGE
+
+	ELSE IF INT(manual_dress.e_value) >= 1 AND INT(manual_dress.e_value) <= 7 THEN
+	   BEGIN
+		CASE INT(manual_dress.e_value) OF
+		1  ! Dressed to On !
+			IF ocb_closed_ip == on AND ocb_open_ip == off THEN
+			   	ocb_background = FLASHBLUE
+			ELSE
+			   	ocb_background = BLUE
+		2  ! Dressed to Off !
+			IF ocb_closed_ip == off and ocb_open_ip == on THEN
+			   	ocb_background = FLASHBLUE
+			ELSE
+			   	ocb_background = BLUE
+		3  ! Dressed to Isolate !
+			IF (ocb_sect_a_isolated_ip == on or ocb_sect_b_isolated_ip == on) AND 
+			ocb_circuit_earth_ip == off AND ocb_sect_b_earth_ip == off THEN 
+			   	ocb_background = FLASHBLUE
+			ELSE
+			   	ocb_background = BLUE
+		!4   Dressed to Feeder Earth Off							!
+ 		!	IF ocb_circuit_earth_ip == off AND ocb_sect_b_earth_ip == off  THEN		!
+	   	!	   	ocb_background = FLASHBLUE					!
+		!	ELSE									!
+	   	!	   	ocb_background = BLUE						!
+		!5   Dressed to Feeder Earth On 							!
+		!	IF ocb_circuit_earth_ip == on  THEN						!
+	  	!	   	ocb_background = FLASHBLUE					!
+		!	ELSE									!
+	  	!	   	ocb_background = BLUE						!
+		!6  Dressed to Left Hand Section Earth On 						!
+		!	IF ocb_circuit_earth_ip == on AND  ocb_sect_b_earth_ip == off THEN		!
+	  	!	   	ocb_background = FLASHBLUE					!
+		!	ELSE									!
+	  	!	  	ocb_background = BLUE						!
+		!7  Dressed to Right Hand Section Earth On 						!
+		!	IF ocb_circuit_earth_ip == off AND  ocb_sect_b_earth_ip == on THEN		!
+	  	!	   	ocb_background = FLASHBLUE					!
+		!	ELSE									!
+	  	!	   ocb_background = BLUE							!
+		DEFAULT
+		   BEGIN
+		   END
+	   END
+	ELSE IF tag_message_ip2.c_value <> "" THEN
+		ocb_background = YELLOW
+	ELSE
+		ocb_background = DECOROFF
+
+	! MAIN SYMBOL !
+
+	X = 0 Y = 0
+	JUST = CENTRECENTRE
+
+	IF position == "SECT" THEN
+	   BEGIN
+		IF controllable_ocb == yes THEN
+		   BEGIN
+ 			IF control_code == cont_code OR control_code == cont_code + 1 THEN
+  		   		RECT(W=110,H=100,FG=FLASHGREEN)
+		   END
+ 		IF manual_dress.e_value > 0 AND tag_message_ip2.c_value <> "" THEN
+  		   BEGIN
+    		 	RECT(W=89,H=75,FG=YELLOW) 
+  		   END
+  		ELSE IF ocb_ptw_ip == on AND tag_message_ip2.c_value <> "" THEN
+  		      BEGIN
+    			RECT(W=89,H=75,FG=YELLOW) 
+ 		      END
+
+  		IF manual_dress.e_value > 0 AND ocb_ptw_ip == on THEN
+  		   BEGIN
+    			IF tag_message_ip2.c_value <> "" THEN
+      			   	RECT(W=93,H=79,FG=YELLOW) 
+    			RECT(W=89,H=75,FG=BLUE) 
+  		   END
+  		ROTRECT(W=80,H=66,FG=OCB_BACKGROUND) CLEAR
+  		W=80 H=66 SET RECT MAIN_MENU
+  		CLEAR
+	   END
+	ELSE
+	   BEGIN
+		IF controllable_ocb == yes THEN
+		   BEGIN
+  			IF control_code == cont_code OR control_code == cont_code + 1 THEN
+    		   		RECT(W=81,H=97,FG=FLASHGREEN)
+		   END
+  		IF manual_dress.e_value > 0 AND tag_message_ip2.c_value <> "" THEN
+ 		   BEGIN
+    			RECT(W=75,H=89,FG=YELLOW) 
+  		   END
+  		ELSE IF ocb_ptw_ip == on AND tag_message_ip2.c_value <> "" THEN
+  		      BEGIN
+    			RECT(W=75,H=89,FG=YELLOW) 
+  		      END
+
+  		IF manual_dress.e_value > 0 AND ocb_ptw_ip == on THEN
+  		   BEGIN
+    			IF tag_message_ip2.c_value <> "" THEN
+      			   	RECT(W=79,H=93,FG=YELLOW) 
+    			RECT(W=75,H=89,FG=BLUE) 
+  	  	   END
+  		x = 0 y = 0 w = 66 h = 80 ROTRECT(fg=OCB_BACKGROUND) clear
+  		x = 0 y = 0 W = 66 H = 80 SET RECT MAIN_MENU
+  		CLEAR
+	   END
+
+	IF control_code == cont_code OR control_code == cont_code + 1 THEN 
+	   BEGIN
+		IF control_code == plc_execute_code THEN
+		   plc_executed = yes
+
+		IF plc_executed == yes AND plc_execute_code  == 0 AND controllable_ocb==yes THEN 
+		   BEGIN
+			set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+			set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+			plc_executed = no
+		   END
+	   END
+	ELSE plc_executed = no
+
+	! TAG MESSAGE BOX !
+	IF SELB AND tag_message_ip2.c_value <> "" THEN
+	BEGIN
+  	   MESSAGE_TEXT_BOX(tag_message_ip2.c_value)
+	END
+
+	IF position == "SECT" THEN
+	   BEGIN
+  	   	X -= 40 Y += 33 ADD
+  	   	Y -= 66 ADD
+  	   	X += 80 ADD LINE(FG=DECORLIGHT) CLEAR
+  	   	Y += 1 ADD
+  	   	Y += 66 ADD
+   	   	X -= 79 ADD LINE(FG=DECORSHADOW) CLEAR
+  	   	FG = OCB_FOREGROUND
+  	   	CLEAR
+	   END
+	ELSE
+	   BEGIN
+  		X -= 33 Y += 40 ADD
+  		Y -= 80 ADD
+  		X += 66 ADD LINE(FG=DECORLIGHT) CLEAR
+  		Y += 1 ADD
+  		Y += 79 ADD
+  		X -= 66 ADD LINE(FG=DECORSHADOW) CLEAR
+  		FG = OCB_FOREGROUND
+  		CLEAR
+	END
+
+	IF position == "SECT" THEN
+	   SET TITLE main_menu = "Bus Section Breaker"
+	ELSE
+	   SET TITLE main_menu = "Controllable OCB "+ident
+
+	SET EMPTY main_menu
+	SET REMOVE main_menu = "Alter Tag Message"
+	SET REMOVE main_menu = "Clear Tag Message"
+	SET REMOVE main_menu = "Alter Permit To Work"
+	SET REMOVE main_menu = "Undress OCB"
+	SET REMOVE main_menu = "Dress to Isolated"
+	!SET REMOVE main_menu = "Dress to Left Hand Section Earth"		!
+	!SET REMOVE main_menu = "Dress to Right Hand Section Earth"		!
+	!SET REMOVE main_menu = "Dress to Feeder Earth On"			!
+	SET REMOVE main_menu = "Dress to Off"
+	SET REMOVE main_menu = "Dress to On"
+	SET REMOVE main_menu = "Switch to Off"
+	SET REMOVE main_menu = "Switch to On"
+	SET ADD main_menu = "Alter Tag Message"
+	SET ADD main_menu = "Clear Tag Message"
+	SET ADD main_menu = "Alter Permit To Work"
+
+	X = 0 Y = 0
+
+	! EARTHED !
+!***	IF (((ocb_circuit_earth_ip == on AND ocb_closed_ip == on) AND manual_dress.e_value == 0) OR manual_dress.e_value == 5 OR manual_dress.e_value == 6) OR  
+	   (((ocb_sect_b_earth_ip == on AND ocb_closed_ip == on) AND manual_dress.e_value == 0) OR manual_dress.e_value == 7) THEN 
+       	   BEGIN
+        	      	IF position =="TOP" THEN
+	      	BEGIN
+  	   		earth_on_ocb_b(ocb_foreground)
+  	   		SET ADD main_menu = "Dress to Isolated"
+ 	   		IF manual_dress.e_value > 0 THEN
+    	   		SET ADD main_menu = "Undress OCB"
+	      	END
+
+        		IF position =="BTM" THEN
+		BEGIN
+ 		   earth_on_ocb_a(ocb_foreground)
+  		   SET ADD main_menu = "Dress to Isolated"
+  		   IF manual_dress.e_value > 0 THEN
+    		   SET ADD main_menu = "Undress OCB"
+		END
+	
+        		IF position =="SECT" THEN
+	         	BEGIN
+	      	   IF ((ocb_circuit_earth_ip == on AND manual_dress.e_value == 0) OR manual_dress.e_value == 6) THEN
+	         	      BEGIN
+  	  		earth_on_ocb_d(ocb_foreground)
+  	  		SET ADD main_menu = "Dress to Isolated"
+  	  		IF manual_dress.e_value > 0 THEN
+    	  		SET ADD main_menu = "Undress OCB"
+	      	      END
+	      	   ELSE IF ((ocb_sect_b_earth_ip == on AND manual_dress.e_value == 0) OR manual_dress.e_value == 7) THEN
+	         	      BEGIN
+  			  earth_on_ocb_c(ocb_foreground)
+  			  SET ADD main_menu = "Dress to Isolated"
+  			  IF manual_dress.e_value > 0 THEN
+    			  SET ADD main_menu = "Undress OCB"
+	   	      END
+	            	END
+	   END
+***!
+	! READY FOR EARTH !
+!***	ELSE IF
+	(cct_earth_switch_open_ip == off AND manual_dress.e_value == 0) OR
+	(cct_earth_switch_open_ip == off AND manual_dress.e_value == 0) THEN 
+       	   BEGIN
+        	      	IF position =="TOP" THEN
+	      	BEGIN
+  	   		earth_off_ocb_b(ocb_foreground)
+  	   		SET ADD main_menu = "Dress to Isolated"
+ 	   		IF manual_dress.e_value > 0 THEN
+    	   		SET ADD main_menu = "Undress OCB"
+	      	END
+
+        		IF position =="BTM" THEN
+		BEGIN
+ 		   earth_off_ocb_a(ocb_foreground)
+  		   SET ADD main_menu = "Dress to Isolated"
+  		   IF manual_dress.e_value > 0 THEN
+    		   SET ADD main_menu = "Undress OCB"
+		END
+	
+        		IF position =="SECT" THEN
+	         	BEGIN
+	      	   IF ((ocb_circuit_earth_ip == on AND manual_dress.e_value == 0) OR manual_dress.e_value == 6) THEN
+	         	      BEGIN
+  	  		earth_off_ocb_d(ocb_foreground)
+  	  		SET ADD main_menu = "Dress to Isolated"
+  	  		IF manual_dress.e_value > 0 THEN
+    	  		SET ADD main_menu = "Undress OCB"
+	      	      END
+	      	   ELSE IF ((ocb_sect_b_earth_ip == on AND manual_dress.e_value == 0) OR manual_dress.e_value == 7) THEN
+	         	      BEGIN
+  			  earth_off_ocb_c(ocb_foreground)
+  			  SET ADD main_menu = "Dress to Isolated"
+  			  IF manual_dress.e_value > 0 THEN
+    			  SET ADD main_menu = "Undress OCB"
+	   	      END
+	            	END
+	   END
+***!
+     	!***ELSE IF***! 	! ISOLATED !
+
+	! ISOLATED !
+     	IF (ocb_sect_a_isolated_ip == on AND manual_dress.e_value == 0) OR (ocb_inputs[16].b_value == on AND manual_dress.e_value == 0) OR 
+	   (ocb_closed_ip == off AND ocb_open_ip == off AND manual_dress.e_value == 0) OR manual_dress.e_value == 3 THEN
+	   BEGIN
+  	        IF position == "SECT" THEN
+	        	isolated_ocb_b(ocb_foreground)
+  	        ELSE
+    	        	isolated_ocb_a(ocb_foreground)
+
+	        SET ADD main_menu = "Dress to Off"
+
+!***  	        IF position == "SECT" THEN
+  	           BEGIN
+    	   	SET ADD main_menu = "Dress to Left Hand Section Earth"
+    	   	SET ADD main_menu = "Dress to Right Hand Section Earth"
+  	           END
+  	        ELSE
+    	       	SET ADD main_menu = "Dress to Feeder Earth On"  
+***!
+
+  	        IF manual_dress.e_value > 0 THEN
+       	        	SET ADD main_menu = "Undress OCB"
+	   END
+     	ELSE IF	! TRIPPED !
+	   (ocb_open_ip == on AND manual_dress.e_value == 0) OR manual_dress.e_value == 2 THEN
+	   BEGIN
+  	    	IF position == "SECT" THEN
+  		   tripped_ocb_b(ocb_foreground)
+  		ELSE
+    		   tripped_ocb_a(ocb_foreground)
+  	                
+                            ANGLE = 90
+		IF (ocb_open_ip == on AND ocb_closed_ip == on AND manual_dress.e_value == 0) THEN 
+		   SET ADD main_menu = "Dress to Off"
+
+  		SET ADD main_menu = "Dress to On"
+  		SET ADD main_menu = "Dress to Isolated"
+ 		IF manual_dress.e_value == 0 AND controllable_ocb == yes  THEN
+  		   BEGIN
+    		   	SET ADD main_menu = "Switch to Off"
+    		   	SET ADD main_menu = "Switch to On"
+  		   END
+  		IF manual_dress.e_value > 0 THEN
+    		   SET ADD main_menu = "Undress OCB"
+	   END
+     	ELSE IF	! CLOSED !
+	   (ocb_closed_ip == on AND manual_dress.e_value == 0) OR manual_dress.e_value == 1  THEN
+	   BEGIN
+  		IF position == "SECT" THEN
+	    	   closed_ocb_b(ocb_foreground)
+  		ELSE
+    		   closed_ocb_a(ocb_foreground)
+
+  		SET ADD main_menu = "Dress to Off"
+  		IF manual_dress.e_value == 0 AND cont_offset<>INT AND controllable_ocb == yes   THEN 
+  		    BEGIN
+    			SET ADD main_menu = "Switch to Off"
+    			SET ADD main_menu = "Switch to On"
+  		    END
+  		IF manual_dress.e_value > 0 THEN
+    		   SET ADD main_menu = "Undress OCB"
+	   END
+
+	! MENU CONTROL !
+	! MAIN MENU SELECTION !
+
+         IF VALID main_menu THEN
+            BEGIN
+	  CASE main_menu OF
+	
+	  "Alter Tag Message"
+	  BEGIN
+	     SET TITLE tag_message_panel 		= "Modify Tag Message"	
+	     SET LABEL tag_message_panel.str	= "Tag Message :"
+	     SET UNPINNED tag_message_panel
+	     REQUEST tag_message_panel
+	  END
+
+	  "Clear Tag Message"
+	     set_c_value(db_address(int(c1) +c_offset - 1),src,"")
+
+	  "Alter Permit To Work"
+	  BEGIN
+	     IF ocb_ptw_ip == on THEN
+	        set_b_value(db_address(int(b1) + b_offset +11),src,off)
+	     ELSE
+	        set_b_value(db_address(int(b1) + b_offset +11),src,on)
+	  END	
+
+	  "Undress OCB"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+	  "Dress to On"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+	  "Dress to Off"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+	  "Dress to Isolated"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+	  !"Dress to Feeder Earth Off"				!
+	  !   set_e_value(db_address(int(e1) + e_offset - 1),src, 4)		!
+	  !"Dress to Feeder Earth On"				!
+	  !   set_e_value(db_address(int(e1) + e_offset - 1),src, 5)		!
+	  !"Dress to Left Hand Section Earth"				!
+	  !   set_e_value(db_address(int(e1) + e_offset - 1),src, 6)		!
+	  !"Dress to Right Hand Section Earth"				!
+	  !   set_e_value(db_address(int(e1) + e_offset - 1),src, 7)		!
+
+	"Switch to On"
+	   BEGIN
+	      IF control_code == 0 THEN
+	  	BEGIN
+	    	   close_ocb_control = yes
+	    	   set_e_value(db_address(int(e1) + cont_offset-1),src, close_code)
+	  	END
+	      ELSE 
+    	   	in_progress = yes
+  	   END
+
+	"Switch to Off"
+  	   BEGIN
+     	      IF control_code == 0 THEN
+  		BEGIN
+    	   	   open_ocb_control = yes
+    	   	   set_e_value(db_address(int(e1) + cont_offset-1),src, open_code)
+  		END
+	      ELSE
+    	   	in_progress = yes
+  	   END
+
+  	"Control Cancel"
+    	   BEGIN
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 9999)
+		set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+		set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+    	   END
+  
+   	DEFAULT
+   	   BEGIN
+   	   END
+
+	SET INVALID main_menu
+            END
+
+	! CONTROL IN PROGRESS !
+	IF in_progress == YES THEN
+	BEGIN
+   	   set title local_control_in_progress = " "
+   	   set unpinned local_control_in_progress
+   	 request local_control_in_progress(ident,"CONTROL IN PROGRESS")						
+   	   in_progress = no
+	END
+
+	IF open_ocb_control THEN
+	   	control_text = ident+" Open"
+	ELSE IF close_ocb_control THEN
+	   	control_text = ident+" Close"
+	ELSE
+   		control_text = " "
+
+	! CONTROL CONFIRM / CANCEL !
+	IF INVALID popup_box AND control_code > 0 AND execute_code == 0 AND control_code == checkback_code THEN
+	   BEGIN  
+  	      IF control_code == open_code OR control_code == close_code THEN
+  	         BEGIN
+     		IF open_ocb_control == yes THEN
+     		   BEGIN
+      		   	set title popup_box = control_text
+      			set unpinned popup_box
+      			request popup_box(ident)
+     		   END 
+     		ELSE IF  close_ocb_control == yes THEN
+       		   BEGIN
+         			set title popup_box = control_text
+         			set unpinned popup_box
+         			request popup_box(ident)
+       		   END 
+     	         END
+	   END
+
+	IF popup_box == yes AND confirm == no AND controllable_ocb == yes THEN
+	   BEGIN
+  	      IF control_code == checkback_code THEN
+  	         BEGIN
+    		IF control_code == open_code OR control_code == close_code THEN 
+    		   BEGIN
+      			IF open_ocb_control == yes THEN
+      			   BEGIN
+     			   	set_e_value(db_address(int(e1) + cont_offset+1),src, open_code)
+        				open_ocb_control = no
+        				confirm = yes
+      			   END
+      			ELSE IF close_ocb_control == yes THEN
+      			   BEGIN
+        				set_e_value(db_address(int(e1) + cont_offset+1),src, close_code)
+        				close_ocb_control = no
+        				confirm = yes
+      			   END
+    			ELSE close_ocb_control = no
+      			confirm = yes
+    		   END
+  	         END
+	   END
+
+	IF popup_box == no AND confirm == no AND controllable_ocb == yes THEN
+	   BEGIN
+  	      IF open_ocb_control == yes THEN
+  	         BEGIN
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 9999)
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+    		set_e_value(db_address(int(e1) + cont_offset+1),src, 0)  
+    		close_ocb_control = no
+    		open_ocb_control = no
+   		confirm = yes
+  	         END
+  	      ELSE IF close_ocb_control == yes THEN
+  	         BEGIN
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 9999)  
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+    		set_e_value(db_address(int(e1) + cont_offset+1),src, 0) 
+    		close_ocb_control = no
+    		open_ocb_control = no
+    		confirm = yes
+  	         END
+	   END
+
+	IF execute_code == 0 THEN
+	   BEGIN
+  		confirm = no
+  		SET INVALID popup_box
+	   END
+
+	! CANCEL CONTROL !
+	IF (control_code == open_code OR control_code == close_code) AND control_code > 0 THEN
+	   SET ADD main_menu = "Control Cancel"
+
+	! CONTROL FAIL !
+	IF INVALID accept THEN
+	   accept = no
+
+	IF control_fail_ip == on  THEN
+	   BEGIN
+		IF  open_ocb_control==yes THEN
+		BEGIN
+  	   		IF INVALID failure_box AND accept == no THEN
+  	      		BEGIN
+    			     set title failure_box = " "
+    			     set unpinned failure_box
+    			     request failure_box(ident,"CONTROL FAILED")
+  	      		END
+		END
+		IF  close_ocb_control==yes THEN
+		BEGIN
+  	   		IF INVALID failure_box AND accept == no THEN
+  	      		BEGIN
+    			     set title failure_box = " "
+    			     set unpinned failure_box
+    			     request failure_box(ident,"CONTROL FAILED")
+  	      		END
+		END
+	   END
+
+	IF failure_box == YES AND accept == no THEN
+	   BEGIN
+                            set_b_value(db_address(int(b1) + b_offset + 18), src ,on)
+  	   	set_b_value(db_address(int(b1) + b_offset + 18), src ,off)
+  	   	accept = yes
+	   END
+
+	IF control_fail_ip == off THEN
+	BEGIN
+		SET INVALID failure_box
+  		accept = no
+	END
+
+	! TAG MESSAGE PANEL !
+	IF VALID tag_message_panel THEN
+	BEGIN
+		set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	END
+
+	IF position == "TOP" OR position == "BTM" THEN
+	BEGIN
+		x = 50 y = 0 TEXT(TFG=black,CH=25,IDENT)
+	END
+	ELSE IF position == "SECT" THEN
+	BEGIN
+  		x = 0 y = 50 TEXT(TFG=black,CH=25,IDENT)
+	END
+END
+
+
+
+
+
+!*** SUB M1/13 ***!
+!object sub_m1_13
+	begin
+		sub_symbol_m1_13
+
+		lw=2
+		x = 0  y = -25 add y += 50 add line (fg=orange3) clear
+		x = 50 y = -25 add y += 50 add line (fg=orange3) clear
+	
+		scale = 120
+	
+		x = 0   y = 0   ocb_mont(2000,2260,72,141,heathro2,7,"top")
+		x = 50  y = 0   ocb_mont(2000,2270,73,142,heathro2,8,"top")
+	end!
+
+
+
+!*** SUB M1/15 ***!
+!object sub_m1_15
+	begin
+		sub_symbol_m1_15
+
+		lw=2
+		x = 0 y = -25 add y += 50 add line (fg=orange3) clear
+		x = 50 y = -25 add y += 50 add line (fg=orange3) clear
+
+		scale = 120
+
+		x = 0  y = 0 ocb_mont(7000,7150,244,505,heathro2,2,"top")
+		x = 50 y = 0 ocb_mont(7000,7160,245,506,heathro2,3,"top")
+	end!
+
+!*** SUB M1/12 ***!
+object sub_m1_12
+	begin
+		sub_symbol_m1_12
+
+		lw=2
+		x = 5  y = -25 add y += 50 add line (fg=orange3) clear
+		x = 50 y = -25 add y += 50 add line (fg=orange3) clear
+	
+		scale = 120
+	
+		x = 5   y = 0   ocb_mont(1000,1210,63,61,heathrow,1,"top")
+		x = 50  y = 0   ocb_mont(1000,1220,64,62,heathrow,2,"top")
+	end
+
+
+!*** SUB 119 ***!
+
+object sub_119
+	begin
+		sub_symbol_119
+
+		lw=2
+		x = 0 y = 25 add y -= 50 add line(fg=orange3) clear
+		x = 100 y = 25 add y -= 50 add line(fg=orange3) clear
+
+		scale = 120
+		x = 0 y = 0 ocb_119(1536,1500,45,504,HEATHRO3,3,"TOP",5)
+		! ocb_mont(2000,2370,560,550,heathro2,3,"top")!
+		x = 100  y = 0  ocb_119(1536,1512,46,505,HEATHRO3,7,"TOP",5) 
+		!ocb_mont(2000,2390,562,552,heathro2,7,"top")!
+	end 
+
+
+
+
+!*** SUB 135 ***!
+object sub_135
+	begin
+		lw=2
+		x = 0 y = 25 add y -= 50 add line(fg=orange3) clear
+		x = 100 y = 25 add y -= 50 add line(fg=orange3) clear
+
+		x = 75 y = 35 sub_symbol_135
+
+		scale = 290
+		x = 0	y = 0	hv_lib_breaker("eclipse",41000,41060,1386,5767,INT,HEATHROW,1,"TOP",INT)
+		x = 100	y = 0	hv_lib_breaker("eclipse",41000,41380,1393,5775,INT,HEATHROW,8,"TOP",INT)
+	end
+
+
+
+!*** SUB M1/9 ***!
+object sub_m1_9
+	begin
+		sub_symbol_m1_9
+
+		lw=2
+		x = 0 y = 25 add y -= 80 add x += 50 add y += 80 add line (fg=orange3) clear
+		x = 100 y = 25 add y -= 80 add x += 50 add y += 80 add line (fg=orange3) clear
+		x = 200 y = 25 add y -= 80 add x += 50 add y += 80 add line (fg=orange3) clear
+		x = 300 y = 25 add y -= 80 add x += 50 add y += 80 add line (fg=orange3) clear
+	
+		scale = 120
+
+		x = 0  y = -25   m1_9_ocb(22000,22720,1205,1615,1800,HEATHRO2,9,"TOP",258) !** Panel 9 Rear **!
+		x = 50  y = 0   m1_9_ocb(22000,22720,1200,1610,1800,HEATHRO2,9,"TOP",258) !** Panel 9 Front**!
+
+		x = 100   y = -25   m1_9_ocb(22000,22740,1206,1616,1800,HEATHRO2,10,"TOP",259) !** Panel 10 Rear **!
+		x = 150   y = 0   m1_9_ocb(22000,22740,1201,1611,1800,HEATHRO2,10,"TOP",259) !** Panel 10 Front **!
+
+		x = 200   y = -25   m1_9_ocb(22000,22780,1207,1617,1800,HEATHRO2,12,"TOP",261) !** Panel 12 Rear **!
+		x = 250   y = 0   m1_9_ocb(22000,22780,1203,1613,1800,HEATHRO2,12,"TOP",261) !** Panel 12 Front **!
+
+		x = 350   y = 0   m1_9_ocb(22000,22800,1208,1618,1800,HEATHRO2,13,"TOP",262) !** Panel 13 Rear **!
+		x = 300   y = -25   m1_9_ocb(22000,22800,1204,1614,1800,HEATHRO2,13,"TOP",262) !** Panel 13 Front **!
+
+
+		!x = 0  y = -25   ocb(2000,2580,126,2005,heathrow,9,"top")!
+		!x = 50  y = 0   ocb(2000,2580,126,201,heathrow,9,"top")!
+
+		!x = 100   y = -25   ocb(2000,2600,127,2006,heathrow,10,"top")!
+		!x = 150   y = 0   ocb(2000,2600,127,202,heathrow,10,"top")!
+
+		!x = 200   y = -25   ocb(2000,2640,129,2007,heathrow,12,"top")!
+		!x = 250   y = 0   ocb(2000,2640,129,204,heathrow,12,"top")!
+
+		!x = 350   y = 0   ocb(2000,2660,130,205,heathrow,13,"top")!
+		!x = 300   y = -25   ocb(2000,2660,130,2008,heathrow,13,"top")!
+
+		scale = 256 just = centrecentre
+		tfg = orange3 ch = 20
+		x = 410 y = 5 text("Front")
+		x = 410 y = -40 text("Rear")
+	end
+
+
+
+!*** EAST INTAKE ***!
+object hv_11_east_intake
+var call_var = toplevel string
+	begin
+		set source call_var = heathro2
+		set selfreplace call_var
+		set mimic call_var = "east_intake"
+
+		w = 460 h = 25 x = -180 y = 25 rect(fg=decoroff)  !** Left Grey Box **!
+		w = 180 h = 25 x = 340 y = 25 rect(fg=decoroff)   !** Right Grey Box **!
+		
+		if anyb then
+   			begin
+    				request call_var
+   			end
+
+		x = 30 y = 38 text(tfg=white,ch=25,"East",just=centrecentre) clear
+		x = 430 y = 38 text(tfg=white,ch=25,"Intake",just=centrecentre) clear
+
+		x = 280 y = 25 add x -= 460 add y += 25 add line (fg=white) clear                 !** Left Grey Box Outline**!
+		x = 280 y = 25 add y += 25 add x -= 460 add line (fg=grey40) clear               !** Left Grey Box Outline**!
+
+		x = 520 y = 25 add x -= 180 add y += 25 add line (fg=white) clear                 !** Right Grey Box Outline**!
+		x = 520 y = 25 add y += 25 add x -= 180 add line (fg=grey40) clear               !** Right Grey Box Outline**!
+
+
+		lw=2
+
+		x = -165 y = 25 add y = -55 add line(fg=orange3) clear
+		x = -120 y = 25 add y = -55 add line(fg=orange3) clear
+		x = -75 y = 25 add y = -55 add line(fg=orange3) clear
+		x = -30 y = 25 add y = -55 add line(fg=orange3) clear
+		x = 119 y = 25 add y = -55 add line(fg=orange3) clear
+		x = 169 y = 25 add y = -55 add line(fg=orange3) clear
+		x = 220 y = 25 add y = -55 add line(fg=orange3) clear
+		x = 265 y = 25 add y = -55 add line(fg=orange3) clear
+		x = 480 y = 25 add y = -55 add line(fg=orange3) clear		
+		x = 390 y = 25 add y = -55 add line(fg=orange3) clear
+		x = 340 y = 37 add x -= 60 add line(fg=orange3) clear
+
+		scale = 120
+
+		x = -165 y = 0 nse_ocb_4(22000,22110,805,1807,1800,HEATHRO2,6,"TOP",208)
+		x = -120 y = 0 nse_ocb_4(22000,22150,807,1809,1800,HEATHRO2,8,"TOP",212)
+		x = -75 y = 0 nse_ocb_4(22000,22210,810,1812,1800,HEATHRO2,11,"TOP",218)
+		x = -30   y = 0 nse_ocb_4(22000,22230,811,1813,1800,HEATHRO2,12,"TOP",220)
+
+		x = 20   y = 0 nse_ocb_4(22000,22230,811,1813,1800,HEATHRO2,13,"TOP",220)
+		x = 70   y = 0 nse_ocb_4(22000,22230,811,1813,1800,HEATHRO2,16,"TOP",220)
+
+
+
+		x = 120  y = 0 nse_ocb_4(22000,22310,815,1817,1800,HEATHRO2,17,"TOP",228)
+		x = 170 y = 0 nse_ocb_4(22000,22330,816,1818,1800,HEATHRO2,18,"TOP",230)
+		x = 220 y = 0 nse_ocb_4(22000,22370,818,1820,1800,HEATHRO2,20,"TOP",234)
+		x = 265 y = 0 nse_ocb_4(22000,22390,819,1821,1800,HEATHRO2,21,"TOP",236)
+
+		x = 390 y = 0 nse_ocb_4(22000,22450,822,1824,1800,HEATHRO2,25,"TOP",242)
+		x = 480 y = 0 nse_ocb_4(22000,22470,823,1825,1800,HEATHRO2,26,"TOP",244)
+		x =310  y = 38 nse_ocb_4(22000,22430,821,1823,1800,HEATHRO2,23,"SECT",240)
+
+
+	end
+
+
+
+!*** HV 11 SOUTH INTAKE ***!
+object hv_11_south_intake
+var call_var = toplevel string
+	begin
+		set source call_var = heathro2
+		set selfreplace call_var
+		set mimic call_var = "south_intake_2"
+
+		W=100 H=25 X=-25 Y=25 RECT(fg=decoroff)
+		W=100 H=25 X=140 Y=25 RECT(fg=decoroff)
+		
+
+		if anyb then
+  			begin
+    				request call_var
+  			end
+
+		x = 25 y = 38 text(tfg=white,ch=25,"South",just=centrecentre) clear
+		x = 190 y = 38 text(tfg=white,ch=25,"Intake",just=centrecentre) clear
+
+	
+		x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+		x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+		x = 240 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+		x = 240 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+
+
+		lw=2
+		x = 0  y = 25 add y = -35 add line(fg=orange3) clear
+		x = 50 y = 25 add y = -35 add line(fg=orange3) clear
+		x = 75 y = 37 add x = 140 add line(fg=orange3) clear
+
+		SCALE=120
+		X = 0 Y = 0 NSE_OCB_4(21000,21030,701,1703,1700,HEATHRO2,1,"TOP",100)
+		X = 50 Y = 0 NSE_OCB_4(21000,21050,702,1704,1700,HEATHRO2,2,"TOP",102)
+
+		X = 105 Y = 37 NSE_OCB_4(21000,21090,704,1706,1700,HEATHRO2,4,"SECT",106)
+
+		X = 170 Y = 0 NSE_OCB_4(21000,21030,701,1703,1700,HEATHRO2,12,"TOP",100)
+		X = 220 Y = 0 NSE_OCB_4(21000,21050,702,1704,1700,HEATHRO2,14,"TOP",102)
+
+
+	end
+
+
+!*** HV 11 SUB 225 ***!
+object hv_11_sub_225
+var call_var = toplevel string
+begin
+	set source call_var = heathro4
+		set selfreplace call_var
+		set mimic call_var = "Sub_Stn_225"
+
+		w = 80 h = 25 x = -150 y = 25 rect(fg=sub_symbol_225_colour)  !** Left Grey Box **!
+		w = 80 h = 25 x = 40 y = 25 rect(fg=sub_symbol_225_colour)   !** Right Grey Box **!
+		
+		if anyb then
+   			begin
+    				request call_var
+   			end
+
+		x = -110 y = 38 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+		x = 80 y = 38 text(tfg=white,ch=25,"225",just=centrecentre) clear
+
+		x = -70 y = 25 add x -= 80 add y += 25 add line (fg=white) clear	            	!** Left Grey Box Outline**!
+		x = -70 y = 25 add y += 25 add x -= 80 add line (fg=grey40) clear 		!** Left Grey Box Outline**!
+
+		x = 120 y = 25 add x -= 80 add y += 25 add line (fg=white) clear  	              !** Right Grey Box Outline**!
+		x = 120 y = 25 add y += 25 add x -= 80 add line (fg=grey40) clear 		!** Right Grey Box Outline**!
+
+		!** Cables **!
+		lw=2
+		x = -85 y = 25 add y = -35 add line(fg=orange3) clear		
+		x = -10 y = 37 add x -= 60 add line(fg=orange3) clear
+		x = 40 y = 37 add x -= 60 add line(fg=orange3) clear
+		x = 55 y = 25 add y = -55 add line(fg=orange3) clear		
+
+		
+		!** OCBS **!
+		scale = 120
+		X=-85 Y= 0	modbus_cb(18400,18524,18723,877,2515,2502,heathro4,10,"top",100,int,"Siemens",int,int)
+		X=-135 Y= 0	modbus_cb(18400,18524,18723,877,2515,2502,heathro4,9,"top",100,int,"Siemens",int,int)
+		X=-40 Y= 38	modbus_cb(18400,18525,18743,878,2516,2502,heathro4,11,"sect",110,int,"Siemens",int,int)
+		X=10 Y= 38	modbus_cb(18400,18528,18808,881,2519,2502,heathro4,14,"sect",140,int,"Siemens",int,int)
+		X=55 Y= 0	modbus_cb(18400,18529,18833,882,2520,2502,heathro4,15,"top",150,int,"Siemens",int,int)
+		X=105 Y= 0	modbus_cb(18400,18529,18833,882,2520,2502,heathro4,16,"top",150,int,"Siemens",int,int)
+end
+
+!*** HV 11 SUB 228 ***!
+object hv_11_sub_228
+var call_var = toplevel string
+begin
+	set source call_var = heathro5
+		set selfreplace call_var
+		set mimic call_var = "Sub_Station_228"
+
+			
+
+		!** Cables **!
+		lw=2
+		x = -60 y = 60 add y = -49 add line(fg=orange3) clear
+		x = -60 y = 94 add y += 30 add x += 90  add y -= 30 add line(fg=orange3) clear
+		x = 30 y = 60 add y = -49 add line(fg=orange3) clear	
+
+
+		w = 60 h = 25 x = -92 y = 25 rect(fg=decoroff)  !** Left Grey Box **!
+		if anyb then
+   			begin
+    				request call_var
+   			end
+
+
+		w = 60 h = 25 x = 0 y = 25 rect(fg=decoroff)   !** Right Grey Box **!
+		if anyb then
+   			begin
+    				request call_var
+   			end
+
+		x = -63 y = 38 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+		x = 30 y = 38 text(tfg=white,ch=25,"228",just=centrecentre) clear
+
+		x = -32 y = 25 add x -= 60 add y += 25 add line (fg=white) clear	            	!** Left Grey Box Outline**!
+		x = -32 y = 25 add y += 25 add x -= 60 add line (fg=grey40) clear 		!** Left Grey Box Outline**!
+
+		x = 60 y = 25 add x -= 60 add y += 25 add line (fg=white) clear  	              !** Right Grey Box Outline**!
+		x = 60 y = 25 add y += 25 add x -= 60 add line (fg=grey40) clear 
+
+
+	
+
+		!**SUB 228 OCBS **!
+		scale = 300
+		X=-60 Y= 0	hv_lib_breaker(	"eclipse",3500,	3860,	646,	682,	640,	HEATHRO5,	4,	"TOP",	40)!H5!
+		X=-60 Y= 75	hv_lib_breaker(	"eclipse",3500,	3980,	659,	709,	640,	HEATHRO5,	10,	"BTM",	100)!H3!
+		X=30 Y= 75	hv_lib_breaker(	"eclipse",	3500,	4000,	663,	715,	640,	HEATHRO5,	13,	"BTM",	130)!H6!
+		X=30 Y= 0	hv_lib_breaker(	"eclipse",3500,	4040,	668,	726,	640,	HEATHRO5,	15,	"TOP",	150)!H5!
+	
+end
+
+
+!*** HV 11 SUB 294 ***!
+object hv_11_sub_294
+var call_var = toplevel string
+begin
+
+	set source call_var = heathro2
+	set selfreplace call_var
+	set mimic call_var = "Sub_Stn_294"
+
+	w = 200 h = 25 x = -132 y = 25 rect(fg=decoroff)  !** Left Grey Box **!
+
+			
+	if anyb then
+	begin
+		request call_var
+	end
+
+	x = -30 y = 38 text(tfg=white,ch=25,"Sub 294",just=centrecentre) clear
+		
+
+	x = 68 y = 25 add x -= 200 add y += 25 add line (fg=white) clear	            	!** Left Grey Box Outline**!
+	x = 68 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear 		!** Left Grey Box Outline**!
+		
+	!**SUB 228  LHS OCBS **!
+	scale = 300
+	X=-105 Y= 0	hv_lib_breaker(	"eclipse new",	31550,	31920,	2775,	7902,	7800,	HEATHRO2,	3,	"BTM",	30)!H3!
+	X=-55 Y= 0	hv_lib_breaker(	"eclipse new",	31550,	31955,	2777,	7903,	7800,	HEATHRO2,	4,	"BTM",	40)!H3!
+	X= -5 Y= 0	hv_lib_breaker(	"eclipse new",	31550,	32270,	2798,	7912,	7800,	HEATHRO2,	13,	"BTM",	130)!H6!
+	X=45 Y= -50	hv_lib_breaker(	"eclipse new",	31550,	32305,	2800,	7913,	7800,	HEATHRO2,	14,	"BTM",	140)!H6!
+
+
+
+
+
+
+!
+	x = -598	y = -100	hv_lib_breaker(	"eclipse new"	,31550,	31920,	2775,	7902,	7800,	HEATHRO2,	3,	"BTM",	30)
+	x = -538	y = -100	hv_lib_breaker(	"eclipse new"	,31550,	31955,	2777,	7903,	7800,	HEATHRO2,	4,	"BTM",	40)
+	
+	x = 238	y = -100	hv_lib_breaker(	"eclipse new",	31550,	32270,	2798,	7912,	7800,	HEATHRO2,	13,	"BTM",	130)
+	x = 313	y = -100	hv_lib_breaker(	"eclipse new",	31550,	32305,	2800,	7913,	7800,	HEATHRO2,	14,	"BTM",	140)
+!
+
+
+
+
+
+end
+
+
+
+
+
+!*** Main Object ***!
+object main_object (bg,fg,w,h,tbg,tfg)
+	begin
+		clear
+		lw = 2
+
+!*** DRAW CABLING ***!
+
+		!*** M1/9-9 TO EI-P11 ***!
+		x = -250 y = -100 add y -= 50 add x -= 75 add y += 225 add x += 176 add y += 75 add line(fg=orange3) clear
+		x = -300 y = 75 cable_ident("orange","maggot","5.6") clear
+		
+
+		!*** M1/9-10 TO EI-12 ***!
+		x = -150 y = -100 add y -= 100 add x -= 150 add y += 250 add x += 196 add y += 100 add line(fg=orange3) clear
+		x = -250 y = 50 cable_ident("orange","maggot","5.6") clear
+
+		!*** M1/9-12 TO EI-17 ***!
+		x = -50y = -100 add y -= 75 add x -= 295 add y += 200 add x += 389 add y += 125 add line(fg=orange3) clear
+		x = -200 y = 25 cable_ident("orange","maggot","5.6") clear
+
+		!*** M1/9-13 TO EI-P18 ***!
+		x = 49 y = -100 add y = -150 add x =200 add y += 210 add x -= 105 add y += 100 add line(fg=orange3) clear
+		x = 125 y = 60 cable_ident("orange","maggot","5.6") clear
+
+		!*** EI-P26 TO SI-P2 ***!
+		x = 405 y = 150 add y -= 25 add x += 150 add y -= 250 add x -= 254 add y += 70 add line(fg=orange3) clear
+		x = 450 y = 125 cable_ident("orange","maggot","5.6") clear
+
+		!*** M1/12-P2 TO SI-1 ***!
+		x = 50 y = -275 add y -= 100 add x += 200 add y += 290 add line(fg=orange3) clear
+		x = 150 y = -375 cable_ident("orange","maggot","5.6") clear
+
+		!*** M1/12-P1 TO EAST INTAKE P25 ***!
+		x =5 y = -275 add y -= 75 add x += 215 add y += 450 add x += 95 add y += 65 add line(fg=orange3) clear
+		x = 150 y = -350 cable_ident("orange","maggot","5.6") clear
+
+		!*** SS135-1 TO EI-6 ***!
+		x = -350 y = -275 add y -= 75 add x = -610 add y = 125 add x = -240 add y = 150 add line(fg = orange3) clear
+
+		!*** SS135-8 TO EI-20 ***!
+		x = -250 y = -275 add y -= 50 add x = 210 add y = 75 add x = 145 add y = 150 add line(fg = orange3) clear
+
+		!*** SS225-10 TO EI-21 ***!
+		x = -510 y =165 add x = -275 add y += 120 add x+= 740 add y-= 140 add x-= 275 add line(fg = orange3) clear
+
+		!*** SS225-15 TO EI-8 ***!
+		x = -370 y =145 add x += 175 add line(fg = orange3) clear
+
+		!*** SS228-4 TO SS225-9 ***!
+		x = -524 y =-100 add x -= 55 add y= 100 add x= -560 add y= 250 add line(fg = orange3) clear
+
+		!*** SS228-16 TO SS225-16 ***!
+		x = -435 y =-100 add x = -360 add y= 100 add x=-320 add y= 250 add line(fg = orange3) clear
+
+		!*** SS294-3 TO EI-13 ***!
+		x = 345 y =-250 add y=-300 add x-=155 add y=48 add x-=245 add y+=150 add line(fg = orange3) clear
+
+		!*** SS294-4 TO SI-12 ***!
+		x = 395 y =-250 add y=-325 add x-=95 add y+=180 add x+=121 add y+=90 add line(fg = orange3) clear
+
+		!*** SS294-13 TO EI-16 ***!
+		x = 445 y =-250 add y=-300 add x+=155 add y=90 add x-=605 add y+=90 add line(fg = orange3) clear
+
+		
+
+		!*** SS294-14 TO SI-14 ***!
+		x = 495 y =-250 add y=-325 add x+=80 add y+=180 add x-=105 add y+=90 add line(fg = orange3) clear
+
+
+
+
+!*** ADD SUBSTATIONS ***!
+
+		!x = 0 y = -250 sub_119!     !**Decommisioned***!
+
+		x = 0  y = -250 sub_m1_12
+
+		x = 250 y = -50 hv_11_south_intake
+
+		x = -250 y = -50 sub_m1_9
+
+		x = -75 y = 200 hv_11_east_intake
+
+		x = -350 y = -280 sub_135
+
+		x = -425 y = 200 hv_11_sub_225
+
+		x = -617 y = 310 browser(1080,heathrow,1240)
+
+		x =-465	y=-50  hv_11_sub_228	
+ 
+		 x= 450 y=-250 hv_11_sub_294
+
+end
+
+
+
+mimic = main_object w=1240,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

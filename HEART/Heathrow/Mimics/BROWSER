@@ -1,0 +1,3809 @@
+!*******************	                HEATHROW\BROWSER	              	*************************!
+
+!**	Modified by Firstco - Jim Taylor - 12 Sep 2013				**!
+!**	- Added Southern Outfall Pumping Station to Water menu.		**!
+
+!**	Modified by Core Control Solutions - Hasan Shah - 22/08/2013			**!
+!**	Modified sub search to remove sub 23				   		**!
+
+!**	Modified by Firstco - Jim Taylor - 11 Jun 2013				**!
+!**	- Added T3IB to Sewage menu.								**!
+!**	- Added T3IB to Water menu.									**!
+
+!**	Modified by Firstco - Jim Taylor - 24 May 2013				**!
+!**	- Added Sub 302 to Sub Search.								**!
+!**	- Removed Sub 52 from Sub Search.							**!
+
+!**                         Modified by SS/VK  - 22/04/2013                            **!
+!**            Addition of HAL Terminal Power Mimic   at HV  Icon               **!
+
+!**	Modified by Core Control Solutions - Hasan Shah - 22/01/2013			**!
+!**	Modified Sewage to add Energy Centre FWPS and T2A Stand 218 FWPS   		**!
+!**	Modified Water to add T2 Water Overview			   		**!
+
+
+!*******                         Modified by SS/VK  - 28/12/2012                                      *******!
+!*******           Addition of EC,  T5 MNO & UPMRS  Mimics at MISC Menu              *******!
+
+!**                         Modified by SS/VK  - 07/12/2012                            **!
+!**            Removal of Old  Main Tunnel Smoke Pushbutton Mimic               **!
+
+
+!**	Modified by Core Control Solutions - Hasan Shah - 30/10/2012			**!
+!**	Modified sub search to display sub 226 popup when 226 is searched   		**!
+!**	Added T2B Substations To Sub Search 					**!
+
+
+!**	Modified by Core Control Solutions - 25/04/2012					**!
+!**	Added T2 HV Overview To HV Popup  						**!
+!**	Added T2A Substations To Sub Search 					**!
+
+
+
+!**	Modified by Core Control Solutions - Carl Cheetham - 03/04/2012			**!
+!**	Temporarily making sub search display sub 262 popup when 262 is searched   	**!
+!**	This can be removed and replaced with a link to the T2 HV Overview once this 	**!
+!**	mimic has been developed							**!
+
+!**             Modified by SS/VK  - 07/02/2012          **!
+!**            Removal of  FEGP T2, T3 & T4              **!
+!**   Addition of new Main Tunnel Ventilation 2010   **!
+
+!**         Modified by Core Control Solutions - Carl Cheetham - 27/03/2012	**!
+!**         Addition of Sub 228 to HV11 Menu               			**!
+
+!**	Modified by Firstco - Stephen Roberts - 15 Dec 2011			**!
+!**	RSPCA Sewage - Source changed from Heathro4 to Heathro2.	**!
+
+!**         Modified By JM/CC  CCS   - 02/12/2011        **!
+!**         Removed SUB223 to SUBSEARCH Menu     **!
+!**         Addition of EAAR to Tunnels Menu               **!
+
+!**         Modified by JJM CCS - 30/09/2011     **!
+!**         Addition of Sub 260 to sub search  **!
+
+!**         Modified by CC CCS - 10/06/2011     **!
+!**         Addition of T5 Concourse C Subs to sub search  **!
+
+!**         Modified by MR/SB CCS - 03/06/2011     **!
+!**         Addition of T5C to T3 Baggage Tunnel  To tunnel pop up  **!
+
+
+!**         Modified by SS/VK  - 03/05/2011          **!
+!**        Addition of T3 & T4 PSE  Mimics        **!
+
+!**         Modified by SS/VK  - 28/04/2011          **!
+!**        Addition of T2B North Fwps  Mimic        **!
+
+!**         Modified by SS/VK  - 28/03/2011          **!
+!**        Removal of De-Commissioned Mimics   **!
+!**      Vivid Monitoring, T3 & T4 PSE Mimics    **!
+
+
+!** 	Modified by CCS - 24 Mar 2011   					   **!
+!** 	Inclusion of OS125 CIP Sewage, T4 Stand 408 Sewage, T4 Stand 409 Sewage  **!
+
+!**  	Modified by Katie Sayer - 28 Feb 2011 **!
+!**  	Inclusion of Meter Amalgamation Mimic **!
+
+!**	Modified by PDS - 13 Jan 2011	**!
+!**	Removal of ss140 and ss92 from 	**!
+!**	substation search			**!
+
+!** 	Modified by SS/VK - 3 Dec 2010	**!
+!** 	Inclusion of TRIAD Mimic       	**!
+
+!** 	Modified by PDS - 23 Nov 2010	**!
+!** 	Inclusion of OS136 Substation 296	**!
+
+!** 	Modified by CCS - 15 Dec 2009	**!
+!** 	Inclusion of OS126 Substation 225	**!
+!** 	Inclusion of Substation 229 & 230	**!
+!** 					**!
+!** 	Modified by ULTRA - 23 Dec 2008	**!
+!** 	Inclusion of OS73 Substation 141	**!
+!** 					**!
+!** 	Modified by ULTRA - 23 Oct 2008	**!
+!** 	Inclusion of OS50 Substation 191	**!
+!** 					**!
+!** 	Modified by ULTRA - 11 Sep 2008	**!
+!** 	Inclusion of OS105 Substation 223	**!
+!** 						**!
+!** 	Modified by ULTRA - 3 Jul 2008		**!
+!** 	Inclusion of OS77 10cm Radar Standby Set	**!
+!** 						**!
+!** 	Modified by ULTRA - 12 Mar 2008	**!
+!**	Inclusion of OS85 Sanitation Block and Foul Drainage System	**!
+!**					**!
+!** 	Modified by ULTRA - 29 Nov 2007	**!
+!**	Inclusion of OS78 NAA Subs		**!
+!**					**!
+!** 	Modified by ULTRA - 8 Nov 2007	**!
+!** 	Inclusion of Water Treatment Centre Overview	**!
+!**					**!
+!** 	Modified by ULTRA - 8 Aug 2007	**!
+!**	Inclusion of OS116 T5A Subs	**!
+!**					**!
+!** 	Modified by ULTRA - 25 Jul 2007	**!
+!**	Inclusion of OS87 Water Supply System	**!
+!**					**!
+!** 	Modified by ULTRA - 17 Jul 2007	**!
+!**	Inclusion of OS118 T5B Subs	**!
+!**					**!
+!** 	Modified by ULTRA - 04 Jun 2007	**!
+!**	Inclusion of Sub 11A		**!
+!**					**!
+!** 	Modified by ULTRA - 22 Nov 2006	**!
+!**	Inclusion of Sub 183 & Sub 184	**!
+!**	Inclusion of MSCP Subs		**!
+
+!****Updated by SS/VK ---5/9/2008*********!
+!*** Inclusion of Water Systems Mimic****!
+!****Updated by SS/VK ---22/9/2009*********!
+!*** Inclusion of T5 TTS Mimic****!
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!       Heathrow Airport Limited                                                 !
+!       Date: 11 April 2001                                                         !
+!                              !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!       Title: MENU MIMIC BROWSER                                       !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load MGL_BUTTONS
+Load MGL_DRAWLIB
+Load MGL_util
+
+type c_db_row_type = db_elements(db_addr,c_value)
+type panel_row = table (str=string(80))
+type panel_item_row = table (str=string(30))
+type mimic_goto = table (str=string)
+type sub_number=string(20)
+!***CALMU select options***!
+type calmu_opt = enum(c1="Sub112",
+                   c2="Sub113",
+                   c3="Sub114",
+                   c4="Sub115",
+                   c5="Sub116",
+                   c6="not used",
+                   c7="Sub118",
+                   c8="Sub119",
+                   c9= "Sub120",
+	     c10= "Sub128",
+	     c11= "HCW")
+!***CALMU select options END***!
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+
+!*** Loads the Bitmap images for each respective button ***!
+Object buttonimages
+begin
+	just=topleft w=60 h=48 clear
+	x=5 y=5 image("\\wrkstn\\Images\\back.bmp") clear
+	x=65 y=5 image("\\wrkstn\\Images\\home.bmp") clear
+	x=125 y=5 image("\\wrkstn\\Images\\hv.bmp") clear
+	x=185 y=5 image("\\wrkstn\\Images\\water.bmp") clear
+	x=245 y=5 image("\\wrkstn\\Images\\fegp.bmp") clear
+	x=305 y=5 image("\\wrkstn\\Images\\meter.bmp") clear
+	x=365 y=5 image("\\wrkstn\\Images\\sewage.bmp") clear
+	x=425 y=5 image("\\wrkstn\\Images\\tunnels.bmp") clear
+	x=485 y=5 image("\\wrkstn\\Images\\pax.bmp") clear
+	x=545 y=5 image("\\wrkstn\\Images\\misc.bmp") clear
+	x=605 y=5 image("\\wrkstn\\Images\\tts.bmp") clear
+	x=665 y=5 image("\\wrkstn\\Images\\blank.bmp") clear
+	x=725 y=5 image("\\wrkstn\\Images\\blank.bmp") clear
+		x=738 y=15 text(tfg=black,ch=30,"T3") clear
+	x=785 y=5 image("\\wrkstn\\Images\\blank.bmp") clear
+		x=798 y=15 text(tfg=black,ch=30,"T4") clear
+	x=845 y=5 image("\\wrkstn\\Images\\key.bmp") clear
+	x=930 y=5 image("\\wrkstn\\Images\\search.bmp") clear
+	x=1010 y=5 image("\\wrkstn\\Images\\tools.bmp") clear
+	x=1070 y=5 image("\\wrkstn\\Images\\new.bmp") clear
+end
+! *** End of Button Images *** !
+! *************************************************************************************************!
+! *** START of MainButtonsPressed *** !
+! *** Loads windows from HOME HV WATER FEGP METER SEWAGE TUNNEL PAX and MISC *** !
+object MainButtonsPressed 
+! *** declaration of variables used *** !
+var mm = toplevel  string_50
+var newwindow= toplevel  string_50
+var main_menu_panel = menu  string(80)
+var main_menu_panel2 = menu  string(80)
+var main_menu_panel3 = menu  string(80)
+var main_menu_panel4 = menu  string(80)
+var main_menu_panel5 = menu  string(80)
+var main_menu_panel6 = menu  string(80)
+var main_menu_panel7 = menu  string(80)
+var main_menu_panel8 = menu  string(80)
+var main_menu_panel9 = menu  string(80)
+var main_menu_panel10 = menu  string(80)
+var main_menu_panel11 = menu string(80)
+var loading_mimic = loopback  yesno
+var first_run = loopback  int
+var i = loopback  int
+var calmu_options = panel calmu_opt
+var sub_search = panel  sub_number
+var done = loopback  int 
+var get_mimic = toplevel  string
+var get_mimic_2 = toplevel string
+var initialise = loopback int
+var back= toplevel string_50
+var name= string(80)
+var temp=loopback int
+var initialise2=int
+var src=source
+var src1 =source
+var src2 =source
+var src3 =source
+var src4 =source
+var src5 =source
+var winsrc = source
+var winname=string(80)
+var name1 = string(80)
+var name2 = string(80)
+var name3 = string(80)
+var name4 = string(80)
+var name5 = string(80)
+var count=int
+var pointer=int
+var stackpointer=string(2)
+var dummy = int
+var tempflag=int
+var search_flag=int
+begin
+just=topleft
+  					! set area where mimics shall appear on the screen !
+  set y mm=130
+  set x mm=60
+  tempflag=0   				! sets initial flag to zero utilised by the back button select program !
+
+! *** HOME button select  *** !
+clear JUST=TOPLEFT
+X=65 Y=5 W=60 H=48			! area of button which is sensitive to button being selected	!
+if rotanyb then 				! for this button any click of the mouse will open the mimic!
+  begin
+      set source mm = "heathro2"		! location of server where mimic file is located 		!
+      set mimic mm = "system_availability"	! name of mimic file 				!
+      set selfreplace mm			! replace current mimic if already on screen 		!
+      request mm 				! with mimic m in this case heart_system_overview	!
+      src = heathro2				! utilised by the back button select program 		!
+      name ="heart_system_overview"		! utilised by the back button select program 		!
+      temp=temp+1  			! utilised by the back button select program 		!
+      tempflag=1
+  end
+!*** End of HOME button select ***!
+
+! ***  HV MENU button select   ***!
+clear JUST=TOPLEFT
+X=125 Y=5 W=60 H=48
+if  rotmenb then loading_mimic=no		! for this button right click of the mouse will open the mimic!
+else loading_mimic=yes
+
+if invalid first_run then
+  begin
+    loading_mimic=no
+    first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+
+    set rect main_menu_panel7
+  end
+else
+  begin
+
+    set rect main_menu_panel7
+  end
+
+if valid main_menu_panel7 then
+    begin
+     case main_menu_panel7 of
+
+    	"HV Overview"
+      	begin
+      	  set source mm = "heathro2"
+      	  set mimic mm =  "HV_overview"
+      	  set selfreplace mm
+      	  request mm
+      	  src = heathro2
+      	  name = "HV_overview"
+      	  temp=temp+1
+      	  tempflag=1
+      	end
+	
+	"T5 11kV Overview"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm =  "T5_11kV_Overview"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name = "T5_11kV_Overview"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+    	"North Intake"
+      	begin
+      	  set source mm = "heathrow"
+      	  set mimic mm =  "North_Intake"
+       	  set selfreplace mm
+      	  request mm
+      	  src = heathrow
+      	  name ="North_Intake"
+      	  temp=temp+1
+      	  tempflag=1
+      	end
+
+   	"South Intake"
+      	begin
+      	  set source mm = "heathro2"
+      	  set mimic mm = "South_Intake_2"
+      	  set selfreplace mm
+      	  request mm
+       	  src =heathro2
+      	  name ="South_Intake_2"
+      	  temp=temp+1
+      	  tempflag=1
+      	end
+
+   	"East Intake"
+      	begin
+      	  set source mm = "heathro2"
+      	  set mimic mm = "East_Intake"
+      	  set selfreplace mm
+      	  request mm
+      	  src =heathro2
+      	  name ="East_Intake"
+      	  temp=temp+1
+      	  tempflag=1
+      	end
+
+  	"West Intake"
+      	begin
+      	  set source mm = "heathrow"
+      	  set mimic mm = "West_Intake"
+      	  set selfreplace mm
+      	  request mm
+      	  src = heathrow
+      	  name ="West_Intake"
+      	  temp=temp+1
+      	  tempflag=1
+      	end
+
+ 	"Sub Station 32"
+      	begin
+      	  set source mm = "heathrow"
+      	  set mimic mm =  "Sub_Stn_32"
+      	  set selfreplace mm
+      	  request mm
+      	  src = heathrow
+      	  name = "Sub_Stn_32"
+       	  temp=temp+1
+      	  tempflag=1
+      	end
+
+  	"Sub Station 62"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm =  "Sub_Stn_62"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name = "Sub_Stn_62"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"Sub Station 121"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm =  "sub_station_121"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro3
+    	  name = "sub_station_121"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"Sub Station 151"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm =  "sub_stn_151"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name = "sub_stn_151"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"Sub Station 152"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm =  "sub_stn_152"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name = "sub_stn_152"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"Sub Station 182"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm =  "sub_stn_182"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name = "sub_stn_182"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+  	"33kV BSP North"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm =  "North_Intake_2"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro2
+    	  name = "North_Intake_2"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+  	"33kV BSP Heathrow Central"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm =  "cta_33kv_bsp_central"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro3
+    	  name = "cta_33kv_bsp_central"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	 "33kV BSP Sub Station 150"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm =  "sub_stn_150"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name = "sub_stn_150"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+  	"T5 Sub Station A"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm =  "sub_stn_a"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro3
+    	  name = "sub_stn_a"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"T5 Temp Overview"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm =  "t5_temp_overview"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name = "t5_temp_overview"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"Sial Hv"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm =  "sial_hv"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name = "sial_hv"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"Triad"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm =  "triad"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro2
+    	  name = "triad"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+		
+	"HAL Terminal Power"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm =  "Hal_terminal_power"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro2
+    	  name = "Hal_terminal_power"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"T2 HV Overview"
+      	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm =  "T2_HV_Overview"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro5
+    	  name = "T2_HV_Overview"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+
+ 	"Sub Station Search"
+     	begin
+	  set title sub_search = "Substation Search "
+	  set label sub_search = "Number : "
+	  set x sub_search = 0
+	  set y sub_search = 0
+	  request sub_search 
+	end
+  
+	default
+      	begin
+      	end
+
+	set invalid main_menu_panel7
+
+   end
+
+search_flag=0
+
+! OPTIONS FOR SUB SEARCH !
+  if valid sub_search then
+  begin
+     case sub_search of
+     "1","30","31","36", "37", "47", "56","57", "87", "108", "122", "HV6", "HV 6", "129", "263", "264", "296" , "27"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_6"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_6"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+!     "136","HV10", "HV 10"!
+      "32","53","96","97","114","115","121","128","136","143","147","148","HV10", "HV 10"
+
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_10"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_10"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "33","34","46", "58", "89", "95","HV7", "HV 7"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_7"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_7"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "60","61","85","93", "104", "105", "116","HV5", "HV 5"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_5"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_5"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+!     "29","38","39", "52", "53", "84","96", "97","114","115","118","120","121","128","132","HV9","HV 9","137","139","147"!
+      "29","38","84","118","120","121","132","HV9","HV 9","137","139","302"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_9"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_9"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "63","76","100","127","126", "133", "M1/12", "HV2", "HV 2"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_2"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_2"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "3","4","5","6", "7", "8", "9","10", "11","11A","14","20","26A","26","45","M1/10","M1/14","HV4","HV 4"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_4"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_4"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "55","59","64","75", "77", "78", "79","80", "81","88","99","110","111","117","145","134","SEB","HV14","HV 14"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_14"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_14"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+   "51","138","HV15","HV 15"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_15"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_15"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "54","54A","82","98","103", "HV1", "HV 1","130","141"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_1"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_1"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "41","42","43","HV13","HV 13"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_13"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_13"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "44","49","50","72", "74", "83","HV12","HV 12"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_12"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_12"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "M1/2","M1/6","HV8","HV 8"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_8"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_8"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "119","M1/9","M1/15","HV11","HV 11","135","225"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "HV_11"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name ="HV_11"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "NSE","NORTHSIDE ELECTRICAL","NORTH INTAKE 2"
+     begin
+         set source mm = "heathro2"
+         set mimic mm = "north_intake_2"
+         set selfreplace mm
+         request mm
+         src = heathro2
+         name ="north_intake_2"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "32"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "sub_stn_32"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "sub_stn_32"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "62"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "sub_stn_62"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "sub_stn_62"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "150"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "sub_stn_150"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "sub_stn_150"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "151"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "sub_stn_151"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "sub_stn_151"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "152"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "sub_stn_152"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "sub_stn_152"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "155","156","162","164","183","184","191"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "T5_11kV_Overview"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "T5_11kV_Overview"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "153"
+     begin
+         set source mm = "heathro3"
+         set mimic mm = "sub_station_153"
+         set selfreplace mm
+         request mm
+         src = heathro3
+         name = "sub_station_153"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "154"
+     begin
+         set source mm = "heathro3"
+         set mimic mm = "sub_station_154"
+         set selfreplace mm
+         request mm
+         src = heathro3
+         name = "sub_station_154"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "182"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "sub_stn_182"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "sub_stn_182"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "185"
+     begin
+         set source mm = "heathro3"
+         set mimic mm = "sub_station_185"
+         set selfreplace mm
+         request mm
+         src = heathro3
+         name = "sub_station_185"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "186"
+     begin
+         set source mm = "heathro3"
+         set mimic mm = "sub_station_186"
+         set selfreplace mm
+         request mm
+         src = heathro3
+         name = "sub_station_186"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "40","WEST INTAKE","WI"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "west_intake"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "west_intake"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "73","HV3","HV 3"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "hv_3"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "hv_3"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "112","113","bawccms"
+     begin
+         set source mm = "heathro2"
+         set mimic mm = "bawccms_hv"
+         set selfreplace mm
+         request mm
+         src = heathro2
+         name = "bawccms_hv"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "121"
+     begin
+         set source mm = "heathro3"
+         set mimic mm = "sub_station_121"
+         set selfreplace mm
+         request mm
+         src = heathro3
+         name = "sub_station_121"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "CTA","BSP CTA","BSP CENTRAL"
+     begin
+         set source mm = "heathro3"
+         set mimic mm = "cta_33kv_bsp_central"
+         set selfreplace mm
+         request mm
+         src = heathro3
+         name = "cta_33kv_bsp_central"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+    "sub a", "a"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "sub_stn_a"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "sub_stn_a"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+
+ "t5"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "t5_temp_overview"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "t5_temp_overview"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "157","158","159", "160", "161","163","165","187","188","189","190","193"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "T5_HV_OTHER_AREAS"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "T5_HV_OTHER_AREAS"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+    "139"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "SUB_STATION_139"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "SUB_STATION_139"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+"147"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "SUB_STATION_147"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "SUB_STATION_147"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+    "166","167","168","169","170","171","172","173","174","175","EWC1"
+     begin
+         set source mm = "heathro2"
+         set mimic mm = "t5_hv_concourse_a"
+         set selfreplace mm
+         request mm
+         src = heathro2
+         name = "t5_hv_concourse_a"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "EWC2"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "fegp_t5"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "fegp_t5"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "176","177","178","179","180","181","TTS"
+     begin
+         set source mm = "heathro2"
+         set mimic mm = "t5_hv_concourse_b"
+         set selfreplace mm
+         request mm
+         src = heathro2
+         name = "t5_hv_concourse_b"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "201","202","205","206","207","208","209","211","212","213","214","215","216","218","219"
+     begin
+         set source mm = "heathro2"
+         set mimic mm = "t5_hv_concourse_c"
+         set selfreplace mm
+         request mm
+         src = heathro2
+         name = "t5_hv_concourse_c"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "143", "148"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "hv_10"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "t5_11kv_overview"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+      "229"
+     begin
+         set source mm = "heathro4"
+         set mimic mm = "SUB_STN_229"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "SUB_STN_229"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+      "230"
+     begin
+         set source mm = "heathro4"
+         set mimic mm = "SUB_STN_230"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "SUB_STN_230"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "293"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "Hv_9_Sub_293"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "HV_9_Sub_293"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+     "294"
+     begin
+         set source mm = "heathro2"
+         set mimic mm = "Sub_Stn_294"
+         set selfreplace mm
+         request mm
+         src = heathro2
+         name = "Sub_Stn_294"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+"260"
+     begin
+         set source mm = "heathro5"
+         set mimic mm = "Sub_Stn_260"
+         set selfreplace mm
+         request mm
+         src = heathro5
+         name = "Sub_Stn_260"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+"279"
+     begin
+         set source mm = "heathrow"
+         set mimic mm = "Hv_12"
+         set selfreplace mm
+         request mm
+         src = heathrow
+         name = "Hv_12"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+ "262"
+     begin
+         set source mm = "heathro5"
+         set mimic mm = "T2_HV_Overview"
+         set selfreplace mm
+         request mm
+         src = heathro5
+         name = "T2_HV_Overview"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+ "280","281","282","286","287","288","289"
+     begin
+         set source mm = "heathro5"
+         set mimic mm = "T2A_Substations"
+         set selfreplace mm
+         request mm
+         src = heathro5
+         name = "T2_Substations"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+"273","274","275","276","277","300"
+     begin
+         set source mm = "heathro5"
+         set mimic mm = "T2A_Sub_Stns_Other_Areas"
+         set selfreplace mm
+         request mm
+         src = heathro5
+         name = "T2A_Sub_Stns_Other_Areas"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end     	
+
+     default 
+       begin
+  !     x = 940 y = 63 text(tfg=red,ch=12,"Failed to find Substation "+sub_search)!
+       end
+
+!     set invalid sub_search!
+  end
+
+search_flag=0
+
+! OPTIONS FOR SUB SEARCH !
+  if valid sub_search then
+  begin
+     case sub_search of
+
+"278","298","299"
+     begin
+         set source mm = "heathro5"
+         set mimic mm = "T2A_Sub_Stns_Other_Areas"
+         set selfreplace mm
+         request mm
+         src = heathro5
+         name = "T2A_Sub_Stns_Other_Areas"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end   
+
+ "226"
+     begin
+         set source mm = "heathro5"
+         set mimic mm = "Sub_Stn_226"
+         set selfreplace mm
+         request mm
+         src = heathro5
+         name = "Sub_Stn_226"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+
+ "228"
+     begin
+         set source mm = "heathro5"
+         set mimic mm = "Sub_Station_228"
+         set selfreplace mm
+         request mm
+         src = heathro5
+         name = "Sub_Station_228"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+
+ "227","237","240","241","242","243","246","247","248","249","258"
+     begin
+         set source mm = "heathro5"
+         set mimic mm = "T2b_Substations_Mimic2"
+         set selfreplace mm
+         request mm
+         src = heathro5
+         name = "T2b_Substations_Mimic2"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+
+ "231","232","233","234","235","236","238","239","244","250","254","255"
+     begin
+         set source mm = "heathro5"
+         set mimic mm = "T2b_Substations_Mimic1"
+         set selfreplace mm
+         request mm
+         src = heathro5
+         name = "T2b_Substations_Mimic1"
+         temp=temp+1
+         search_flag=1
+         tempflag=1
+         x = 940 y = 63 text(tfg=blue,ch=12,"Displaying Substation "+sub_search)
+     end
+
+   default 
+       begin
+   !    x = 940 y = 63 text(tfg=red,ch=12,"Failed to find Substation "+sub_search)!
+       end
+ 
+     set invalid sub_search
+  end
+!***END OPTIONS FOR SUB SEARCH***!
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel7
+  end
+  else
+    begin
+
+       set rect main_menu_panel7
+    end
+
+set title main_menu_panel7 = "HV View Menu"
+
+set remove main_menu_panel7 = "HV Overview"
+set remove main_menu_panel7 = "T5 11kV Overview"
+set remove main_menu_panel7 = "North Intake"
+set remove main_menu_panel7 = "South Intake"
+set remove main_menu_panel7 = "East Intake"
+set remove main_menu_panel7 = "West Intake"
+set remove main_menu_panel7 = "Sub Station 32"
+set remove main_menu_panel7 = "Sub Station 62"
+set remove main_menu_panel7 = "Sub Station 121"
+set remove main_menu_panel7 = "Sub Station 151"
+set remove main_menu_panel7 = "Sub Station 152"
+set remove main_menu_panel7 = "Sub Station 182"
+set remove main_menu_panel7 = "33kV BSP North"
+set remove main_menu_panel7 = "33kV BSP Heathrow Central"
+set remove main_menu_panel7 = "33kV BSP Sub Station 150"
+set remove main_menu_panel7 = "T5 Sub Station A"
+set remove main_menu_panel7 = "T5 Temp Overview"
+set remove main_menu_panel7 = "SIAL HV"
+set remove main_menu_panel7 = "TRIAD"
+set remove main_menu_panel7 = "HAL Terminal Power"
+set remove main_menu_panel7 = "T2 HV Overview"
+set remove main_menu_panel7 ="Sub Station Search"
+
+set add main_menu_panel7 = "HV Overview"
+set add main_menu_panel7 = "T5 11kV Overview"
+set add main_menu_panel7 = "North Intake"
+set add main_menu_panel7 = "South Intake"
+set add main_menu_panel7 = "East Intake"
+set add main_menu_panel7 = "West Intake"
+set add main_menu_panel7 = "Sub Station 32"
+set add main_menu_panel7 = "Sub Station 62"
+set add main_menu_panel7 = "Sub Station 121"
+set add main_menu_panel7 = "Sub Station 151"
+set add main_menu_panel7 = "Sub Station 152"
+set add main_menu_panel7 = "Sub Station 182"
+set add main_menu_panel7 = "33kV BSP North"
+set add main_menu_panel7 = "33kV BSP Heathrow Central"
+set add main_menu_panel7 = "33kV BSP Sub Station 150"
+set add main_menu_panel7 = "T5 Sub Station A"
+set add main_menu_panel7 = "T5 Temp Overview"
+set add main_menu_panel7 = "SIAL HV"
+set add main_menu_panel7 = "TRIAD"
+set add main_menu_panel7 = "HAL Terminal Power"
+set add main_menu_panel7 = "T2 HV Overview"
+set add main_menu_panel7 = "Sub Station Search"
+!***    End of HV button select   ***!
+
+! *** SUB SEARCH ***!
+
+clear
+just=topleft
+X=930 Y=5 W=60 H=48
+if rotselb then
+begin
+	  set title sub_search = "Substation Search "
+	  set label sub_search = "Number : "
+	  set x sub_search = 0
+	  set y sub_search = 0
+	  request sub_search 
+end
+
+
+! ***    WATER  button select   *** !
+clear
+just=topleft
+X=185 Y=5 W=60 H=48
+if rotmenb then loading_mimic=no
+else loading_mimic=yes
+
+if invalid first_run then
+  begin
+    loading_mimic=no
+    first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+
+    set rect main_menu_panel5
+  end
+  else
+  begin
+
+    set rect main_menu_panel5
+  end
+
+if valid main_menu_panel5 then
+   begin
+     case main_menu_panel5 of
+
+   	"Fire Main"
+	begin
+      	  set source mm = "heathrow"
+      	  set mimic mm = "firemain"
+      	  set selfreplace mm
+      	  request mm
+      	  src = heathrow
+      	  name = "firemain"
+      	  temp=temp+1
+      	  tempflag=1
+      	end
+
+   	"CTA Ringmain"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "cta_ringmain"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathrow
+    	  name =  "cta_ringmain"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+   	 "Firemain & Eastern Reservoir"
+      	 begin
+    	   set source mm = "heathro3"
+    	   set mimic mm = "fp_eastern_res"
+    	   set selfreplace mm
+    	   request mm 
+    	   src = heathrow
+    	   name = "fp_eastern_res"
+    	   temp=temp+1
+    	   tempflag=1
+	end
+   	
+	"Mayfield Farm"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "mayfield_farm"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathrow
+    	  name =  "mayfield_farm"
+    	  temp=temp+1
+    	  tempflag=1
+	end
+
+	"Heathrow Constructed Wetlands"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "hcw_overview"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathrow
+    	  name =  "hcw_overview"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+ 	"T5 - Pollution Control System"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_pcs"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_pcs"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T5 - PCS Overview"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_pcs_overview"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_pcs_overview"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T5 - Non Potable Water"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_non_potable_water"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_non_potable_water"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T5 - Longford River Offtake"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_lor_offtake"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_lor_offtake"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"T5 - Duke of Northumberland River Offtake"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_dor_offtake"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_dor_offtake"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"T5 - Water Treatment Centre Overview"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_wtc_overview"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_wtc_overview"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"T5 - Borehole Station"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_wss_borehole_stn"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_wss_borehole_stn"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"T5 - Booster Station"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_wss_booster_stn"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_wss_booster_stn"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+	"Fuel Farm Fire Water Pumping Station"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_fffwps"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_fffwps"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"Water Systems"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm = "water_systems"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathrow
+    	  name = "water_systems"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"Meter Amalgamation"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "meter_amalgamation"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "meter_amalgamation"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T2 Water Overview"
+      	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm = "T2_Water_Overview"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro5
+    	  name = "T2_Water_Overview"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T2B Sprinkler System"
+      	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm = "T2B_Sprinkler_System"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro5
+    	  name = "T2B_Sprinkler_System"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T3 Integrated Baggage Sprinkler System"
+      	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm = "t3ib_sprinkler"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro5
+    	  name = "t3ib_sprinkler"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+		
+	"Southern Outfall Pumping Station"
+      	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "southern_outfall"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro5
+    	  name = "southern_outfall"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+   	default
+      	  begin
+      	  end
+
+
+     set invalid main_menu_panel5
+   end
+   
+
+if get mimic mm <> "" and invalid i then
+      begin   
+        set source mm = "heathrow"
+        set selfreplace mm
+        request mm
+        i = 1
+      end
+
+if loading_mimic==no then
+  begin
+
+    set rect main_menu_panel5
+  end
+  else
+  begin
+
+    set rect main_menu_panel5
+  end
+
+set title main_menu_panel5 = "Water Menu"
+set remove main_menu_panel5 = "Fire Main"
+set remove main_menu_panel5 = "CTA Ringmain"
+set remove main_menu_panel5 = "Firemain & Eastern Reservoir"
+set remove main_menu_panel5 = "Mayfield Farm"
+set remove main_menu_panel5 = "Heathrow Constructed Wetlands"
+set remove main_menu_panel5 = "T5 - PCS Overview"
+set remove main_menu_panel5 = "T5 - Pollution Control System"
+set remove main_menu_panel5 = "T5 - Non Potable Water"
+set remove main_menu_panel5 = "T5 - Longford River Offtake"
+set remove main_menu_panel5 = "T5 - Duke of Northumberland River Offtake"
+set remove main_menu_panel5 = "T5 - Water Treatment Centre Overview"
+set remove main_menu_panel5 = "T5 - Borehole Station"
+set remove main_menu_panel5 = "T5 - Booster Station"
+set remove main_menu_panel5 = "Fuel Farm Fire Water Pumping Station"
+set remove main_menu_panel5 = "Water Systems"
+set remove main_menu_panel5 = "Meter Amalgamation"
+set remove main_menu_panel5 = "T2B Sprinkler System"
+set remove main_menu_panel5 = "T2 Water Overview"
+set remove main_menu_panel5 = "T3 Integrated Baggage Sprinkler System"
+set remove main_menu_panel5 = "Southern Outfall Pumping Station"
+
+set add main_menu_panel5 = "Fire Main"
+set add main_menu_panel5 = "CTA Ringmain"
+set add main_menu_panel5 = "Firemain & Eastern Reservoir"
+set add main_menu_panel5 = "Mayfield Farm"
+set add main_menu_panel5 = "Heathrow Constructed Wetlands"
+set add main_menu_panel5 = "T5 - PCS Overview"
+set add main_menu_panel5 = "T5 - Pollution Control System"
+set add main_menu_panel5 = "T5 - Non Potable Water"
+set add main_menu_panel5 = "T5 - Longford River Offtake"
+set add main_menu_panel5 = "T5 - Duke of Northumberland River Offtake"
+set add main_menu_panel5 = "T5 - Water Treatment Centre Overview"
+set add main_menu_panel5 = "T5 - Borehole Station"
+set add main_menu_panel5 = "T5 - Booster Station"
+set add main_menu_panel5 = "Fuel Farm Fire Water Pumping Station"
+set add main_menu_panel5 = "Water Systems"
+set add main_menu_panel5 = "Meter Amalgamation"
+set add main_menu_panel5 = "T2B Sprinkler System"
+set add main_menu_panel5 = "T2 Water Overview"
+set add main_menu_panel5 = "T3 Integrated Baggage Sprinkler System"
+set add main_menu_panel5 = "Southern Outfall Pumping Station"
+
+
+! *** End of WATER *** !
+
+! ***      FEGP         *** !
+clear
+just=topleft
+X=245 Y=5 W=60 H=48
+if rotmenb then loading_mimic=no
+else loading_mimic=yes
+
+if invalid first_run then
+  begin
+    loading_mimic=no
+    first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+
+    set rect main_menu_panel2
+  end
+  else
+  begin
+
+    set rect main_menu_panel2
+  end
+
+if valid main_menu_panel2 then
+   begin
+     case main_menu_panel2 of
+
+   	"FEGP Terminal 5"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm = "FEGP_T5"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathrow
+    	  name =  "FEGP_T5"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+   	"FEGP BAWCC"
+      	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "BAWCCMS_FEGP"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro4
+    	  name = "BAWCCMS_FEGP"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+   	default
+    	  begin
+    	  end
+
+     set invalid main_menu_panel2
+   end
+   
+ if get mimic mm <> "" and invalid i then
+      begin   
+        set source mm = "heathrow"
+        set selfreplace mm
+        request mm
+        i = 1
+      end
+
+
+ if loading_mimic==no then
+  begin
+
+    set rect main_menu_panel2
+  end
+  else
+  begin
+
+    set rect main_menu_panel2
+  end
+
+set title main_menu_panel2 = "FEGP Menu"
+set remove main_menu_panel2 = "FEGP Terminal 5"
+set remove main_menu_panel2 = "FEGP BAWCC"
+
+set add main_menu_panel2 = "FEGP Terminal 5"
+set add main_menu_panel2 = "FEGP BAWCC"
+
+! *** End of FEGP ***!
+
+! ***    METER     *** !
+clear
+just=topleft
+X=305 Y=5 W=60 H=48
+if rotmenb then loading_mimic=no
+else loading_mimic=yes
+
+if invalid first_run then
+  begin
+    loading_mimic=no
+    first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel6
+  end
+  else
+  begin
+
+     set rect main_menu_panel6
+  end
+
+if valid main_menu_panel6 then
+   begin
+     case main_menu_panel6 of
+   
+   	"Max Airport Power"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "max_airport_power"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro2
+    	  name =  "max_airport_power"
+    	  temp=temp+1
+    	  tempflag=1
+       	end
+
+    	"Calmu Metering"
+      	begin
+    	  set title calmu_options = "Calmu Screens"
+    	  set unpinned calmu_options
+    	  x = 0 y = 0 request calmu_options
+       	end
+
+   	default
+    	  begin
+    	  end
+
+     set invalid main_menu_panel6
+   end
+   if valid calmu_options then
+   begin
+      case calmu_options of
+
+      	c1
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = "ba_calmu_overview_ss112"
+       	  set selfreplace mm
+       	  request mm
+       	  src = heathrow
+       	  name = "ba_calmu_overview_ss112"
+       	  temp=temp+1
+       	  tempflag=1
+       	end
+      	c2
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = "ba_calmu_overview_ss113"
+       	  set selfreplace mm
+       	  request mm
+       	  src = heathrow
+       	  name = "ba_calmu_overview_ss113"
+       	  temp=temp+1
+       	  tempflag=1
+         	end
+      	c3
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = "hex_calmu_overview_ss114"
+       	  set selfreplace mm
+       	  request mm
+       	  src = heathrow
+       	  name = "hex_calmu_overview_ss114"
+       	  temp=temp+1
+       	  tempflag=1
+         	end
+      	c4
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = "hex_calmu_overview_ss115"
+       	  set selfreplace mm
+       	  request mm 
+       	  src = heathrow
+       	  name = "hex_calmu_overview_ss115"
+       	  temp=temp+1   
+       	  tempflag=1
+         	end
+      	c5
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = "hex_calmu_overview_ss116"
+       	  set selfreplace mm
+       	  request mm 
+       	  src = heathrow
+       	  name = "hex_calmu_overview_ss116"
+       	  temp=temp+1
+       	  tempflag=1
+         	end
+      	c6
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = ""
+       	  set selfreplace mm
+       	  request mm 
+         	end
+      	c7
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = "hex_calmu_overview_ss118"
+       	  set selfreplace mm
+       	  request mm  
+       	  src = heathrow
+       	  name = "hex_calmu_overview_ss118"
+       	  temp=temp+1     
+       	  tempflag=1
+         	end
+      	c8
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = "hex_calmu_overview_ss119"
+       	  set selfreplace mm
+       	  request mm 
+       	  src = heathrow
+       	  name = "hex_calmu_overview_ss119"
+       	  temp=temp+1
+       	  tempflag=1
+       	end
+      	c9
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = "FAS_calmu_overview_ss120"
+       	  set selfreplace mm
+       	  request mm 
+       	  src = heathrow
+       	  name ="FAS_calmu_overview_ss120"
+       	  temp=temp+1     
+       	  tempflag=1
+         	end
+              c10
+         	begin
+       	  set source mm = "heathrow"
+       	  set mimic mm = "calmu_overview_ss128"
+       	  set selfreplace mm
+       	  request mm 
+       	  src = heathrow
+       	  name ="calmu_overview_ss128"
+       	  temp=temp+1     
+       	  tempflag=1
+         	end
+              c11
+         	begin
+       	  set source mm = "heathro3"
+       	  set mimic mm = "mayfield_farm_calmu"
+       	  set selfreplace mm
+       	  request mm 
+       	  src = heathrow
+       	  name ="mayfield_farm_calmu"
+       	  temp=temp+1     
+       	  tempflag=1
+         	end
+
+      	default 
+       	  begin
+       	  end
+
+     set invalid calmu_options
+   end
+
+
+ if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel6
+  end
+  else
+  begin
+
+     set rect main_menu_panel6
+  end
+
+set title main_menu_panel6 = "METER Menu"
+set remove main_menu_panel6 = "Max Airport Power"
+set remove main_menu_panel6 = "CALMU Metering"
+
+set add main_menu_panel6 = "Max Airport Power"
+set add main_menu_panel6 = "CALMU Metering"
+
+! *** End of METER***!
+
+! ***  SEWAGE    *** !
+clear
+just=topleft
+X=365 Y=5 W=60 H=48
+if rotmenb then loading_mimic=no
+else loading_mimic=yes
+
+if invalid first_run then
+  begin
+     loading_mimic=no
+     first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel
+  end
+  else
+  begin
+
+     set rect main_menu_panel
+  end
+
+if valid main_menu_panel then
+   begin
+      case main_menu_panel of
+
+   	"Sewage Status"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm = "Sewage_Status"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name =  "Sewage_Status"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+   	"Terminal Two Sewage"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "terminal_2_sewage_system"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro2
+    	  name = "terminal_2_sewage_system"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+   	"Terminal One Sewage Study"
+     	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm = "terminal_1_sewage_study"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathrow
+    	  name = "terminal_1_sewage_study"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+	"Sub 60 Sewage"
+     	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "Sub_60_Sewage"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro4
+    	  name = "Sub_60_Sewage"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+	"RSPCA Sewage"
+     	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "RSPCA_Sewage"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro2
+    	  name = "RSPCA_Sewage"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+	"CTA Sewage"
+     	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "cta_sewage_overview"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro4
+    	  name = "cta_sewage_overview"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+	"T2B North FWPS"
+     	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "t2b_north_fwps"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro4
+    	  name = "t2b_north_fwps"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+	"T3 Integrated Baggage Foul Water"
+      	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm = "t3ib_sewage_system"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro5
+    	  name = "t3ib_sewage_system"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T5 Foul Drainage System"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_foul_drainage"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_foul_drainage"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T5 Sanitation Block"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "t5_sanitation_block"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "t5_sanitation_block"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T4 CIP Sewage"
+     	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "T4_CIP_Sewage"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro4
+    	  name = "T4_CIP_Sewage"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+	"T4 Stand 408 Sewage"
+     	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "T4_Stand_408_Sewage"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro4
+    	  name = "T4_Stand_408_Sewage"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+	"T4 Stand 409 Sewage"
+     	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "T4_Stand_409_Sewage"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro4
+    	  name = "T4_Stand_409_Sewage"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+
+	"Energy Centre FWPS"
+     	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm = "Energy_Centre_FWPS"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro5
+    	  name = "Energy_Centre_FWPS"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+	"T2A Stand 218 FWPS"
+     	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm = "T2A_Stand_218_FWPS"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro5
+    	  name = "T2A_Stand218_FWPS"
+    	  temp=temp+1  
+    	  tempflag=1
+    	end
+
+   	default
+    	  begin
+    	  end
+
+     set invalid main_menu_panel
+  end
+
+if get mimic mm <> "" and invalid i then
+      begin   
+         set source mm = "heathrow"
+         set selfreplace mm
+         request mm
+         i = 1
+      end
+
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel
+  end
+  else
+  begin
+
+     set rect main_menu_panel
+  end
+
+set title main_menu_panel = "Sewage Menu"
+
+set remove main_menu_panel = "Sewage Status"
+set remove main_menu_panel ="Terminal One Sewage Study"
+set remove main_menu_panel = "Terminal Two Sewage"
+set remove main_menu_panel ="Sub 60 Sewage"
+set remove main_menu_panel ="RSPCA Sewage"
+set remove main_menu_panel ="CTA Sewage"
+set remove main_menu_panel ="T2B North FWPS"
+set remove main_menu_panel ="T3 Integrated Baggage Foul Water"
+set remove main_menu_panel = "T5 Foul Drainage System"
+set remove main_menu_panel = "T5 Sanitation Block"
+set remove main_menu_panel = "T4 CIP Sewage"
+set remove main_menu_panel = "T4 Stand 408 Sewage"
+set remove main_menu_panel = "T4 Stand 409 Sewage"
+set remove main_menu_panel = "Energy Centre FWPS"
+set remove main_menu_panel = "T2A Stand 218 FWPS"
+
+set add main_menu_panel = "Sewage Status"
+set add main_menu_panel = "Terminal One Sewage Study"
+set add main_menu_panel = "Terminal Two Sewage"
+set add main_menu_panel = "Sub 60 Sewage"
+set add main_menu_panel = "RSPCA Sewage"
+set add main_menu_panel ="CTA Sewage"
+set add main_menu_panel ="T2B North FWPS"
+set add main_menu_panel ="T3 Integrated Baggage Foul Water"
+set add main_menu_panel = "T5 Foul Drainage System"
+set add main_menu_panel = "T5 Sanitation Block"
+set add main_menu_panel = "T4 CIP Sewage"
+set add main_menu_panel = "T4 Stand 408 Sewage"
+set add main_menu_panel = "T4 Stand 409 Sewage"
+set add main_menu_panel = "Energy Centre FWPS"
+set add main_menu_panel = "T2A Stand 218 FWPS"
+
+! *** End of Sewage select button*** !
+
+! ***       TUNNEL select button   *** !
+clear
+just=topleft
+X=425 Y=5 W=60 H=48
+if rotmenb then loading_mimic=no
+else loading_mimic=yes
+
+if invalid first_run then
+  begin
+     loading_mimic=no
+     first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel3
+  end
+  else
+  begin
+
+     set rect main_menu_panel3
+  end
+
+if valid main_menu_panel3 then
+   begin
+       case main_menu_panel3 of
+
+  	"Cargo Tunnel"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "CARGO_TUNNEL"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro2
+    	  name ="CARGO_TUNNEL"
+    	  temp=temp+1  
+    	  tempflag=1
+       	end
+
+  	"Cargo Tunnel Parameters"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "CARGO_TUNNEL_PARAMETERS"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro2
+    	  name ="CARGO_TUNNEL_PARAMETERS"
+    	  temp=temp+1  
+    	  tempflag=1
+       	end
+
+  	"Cargo Tunnel Traffic Control"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "CARGO_TUNNEL_TRAFFIC_CONTROL"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro2
+    	  name ="CARGO_TUNNEL_TRAFFIC_CONTROL"
+    	  temp=temp+1  
+    	  tempflag=1
+       	end
+
+   	"Main Tunnel Ventilation"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "main_tunnel_ventilation"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro2
+    	  name = "main_tunnel_ventilation"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"Main Tunnel Ventilation 2010"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "main_tunnel_ventilation_2010"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro2
+    	  name = "main_tunnel_ventilation_2010"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+
+   	"Main Tunnel Lighting"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "main_tunnel_lighting"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro2
+    	  name = "main_tunnel_lighting"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+   	"Main Tunnel Power Distribution"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "main_tunnel_power_distribution"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro2
+    	  name = "main_tunnel_power_distribution"
+    	  temp=temp+1   
+    	  tempflag=1
+      	end
+	
+	"ART Tunnel"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "art_mimic_nav_popup"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "art_mimic_nav_popup"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+
+   	"Main Tunnel Sump & Pump Control"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "main_tunnel_sump_control"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro2
+    	  name = "main_tunnel_sump_control"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	
+
+	"T5C to T3 Baggage Tunnel"
+      	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm = "PT5TBS_Navigation"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro5
+    	  name = "PT5TBS_Navigation"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"EAAR Tunnels"
+      	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm = "EAAR_Navigation"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro5
+    	  name = "EAAR_Navigation"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+  	default
+    	  begin
+    	  end
+
+    set invalid main_menu_panel3
+  end
+   
+if get mimic mm <> "" and invalid i then
+      begin   
+         set source mm = "heathrow"
+         set selfreplace mm
+         request mm
+         i = 1
+      end
+
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel3
+  end
+  else
+  begin
+
+     set rect main_menu_panel3
+  end
+
+set title main_menu_panel3 = "Tunnel Menu"
+
+set remove main_menu_panel3 = "Cargo Tunnel"
+set remove main_menu_panel3 = "Cargo Tunnel Parameters"
+set remove main_menu_panel3 = "Cargo Tunnel Traffic Control"
+set remove main_menu_panel3 = "Main Tunnel Ventilation"
+set remove main_menu_panel3 = "Main Tunnel Ventilation 2010"
+set remove main_menu_panel3 = "Main Tunnel Lighting"
+set remove main_menu_panel3 = "Main Tunnel Power Distribution"
+set remove main_menu_panel3 = "Main Tunnel Sump & Pump Control"
+set remove main_menu_panel3 = "ART Tunnel"
+set remove main_menu_panel3 = "T5C to T3 Baggage Tunnel"
+set remove main_menu_panel3 = "EAAR Tunnels"
+
+
+set add main_menu_panel3 = "Cargo Tunnel"
+set add main_menu_panel3 = "Cargo Tunnel Parameters"
+set add main_menu_panel3 = "Cargo Tunnel Traffic Control"
+set add main_menu_panel3 = "Main Tunnel Ventilation"
+set add main_menu_panel3 = "Main Tunnel Ventilation 2010"
+set add main_menu_panel3 = "Main Tunnel Lighting"
+set add main_menu_panel3 = "Main Tunnel Power Distribution"
+set add main_menu_panel3 = "Main Tunnel Sump & Pump Control"
+set add main_menu_panel3 = "ART Tunnel"
+set add main_menu_panel3 = "T5C to T3 Baggage Tunnel"
+set add main_menu_panel3 = "EAAR Tunnels"
+
+! ***  End of TUNNEL    *** !
+
+! *** PAX Button *** !
+clear
+just=topleft
+X=485 Y=5 W=60 H=48
+if rotmenb then loading_mimic=no
+else loading_mimic=yes
+
+if invalid first_run then
+  begin
+     loading_mimic=no
+     first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel9
+  end
+  else
+  begin
+
+     set rect main_menu_panel9
+  end
+
+if valid main_menu_panel9 then
+   begin
+      case main_menu_panel9 of
+
+    	"Subway Overview"
+      	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "subway_overview"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro4
+    	  name ="subway_overview"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+   	"Subway Hot Smoke Extract Fans"
+      	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "subway_hot_smoke_extract_fans"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro4
+    	  name = "subway_hot_smoke_extract_fans"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	default
+    	  begin
+    	  end
+   	
+     set invalid main_menu_panel9
+   end
+
+if get mimic mm <> "" and invalid i then
+      begin   
+         set source mm = "heathrow"
+         set selfreplace mm
+         request mm
+         i = 1
+      end
+
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel9
+  end
+  else
+  begin
+
+     set rect main_menu_panel9
+  end
+
+set title main_menu_panel9 = "PAX Menu"
+
+set remove main_menu_panel9 = "Subway Overview"
+set remove main_menu_panel9 = "Subway Hot Smoke Extract Fans"
+
+set add main_menu_panel9 = "Subway Overview"
+set add main_menu_panel9 = "Subway Hot Smoke Extract Fans"
+
+
+! *** End of PAX Button *** !
+
+! *** MISCELLANEOUS*** !
+
+clear
+just=topleft
+X=545 Y=5 W=60 H=48
+if rotmenb then loading_mimic=no
+else loading_mimic=yes
+
+if invalid first_run then
+  begin
+     loading_mimic=no
+     first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel8
+  end
+  else
+  begin
+
+     set rect main_menu_panel8
+  end
+
+if valid main_menu_panel8 then
+   begin
+      case main_menu_panel8 of
+
+   	"HV Trial - Breakers"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm = "hv_trial"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathrow
+    	  name = "hv_trial"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+   	"HV Trial - Modbus"
+      	begin
+    	  set source mm = "heathrow"
+    	  set mimic mm = "hv_trial_modbus"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathrow
+    	  name = "hv_trial_modbus"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"T5 MNO Monitoring"
+      	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "t5_mno_monitoring"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro4
+    	  name = "t5_mno_monitoring"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"EC MNO Monitoring"
+      	begin
+    	  set source mm = "heathro4"
+    	  set mimic mm = "ec_mno_monitoring"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro4
+    	  name = "ec_mno_monitoring"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"UPMRS"
+      	begin
+    	  set source mm = "heathro5"
+    	  set mimic mm = "upmrs"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro5
+    	  name = "upmrs"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+	"Revertive Run Status"
+      	begin
+    	  set source mm = "heathro2"
+    	  set mimic mm = "standby_set_status"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro2
+    	  name = "standby_set_status"
+    	  temp=temp+1  
+    	  tempflag=1
+      	end
+
+   	default
+    	  begin
+    	  end
+
+     set invalid main_menu_panel8
+   end
+
+if get mimic mm <> "" and invalid i then
+      begin   
+         set source mm = "heathrow"
+         set selfreplace mm
+         request mm
+         i = 1
+      end
+
+
+if loading_mimic==no then
+  begin
+
+     set rect main_menu_panel8
+  end
+  else
+  begin
+
+     set rect main_menu_panel8
+  end
+
+set title main_menu_panel8 = "Misc Menu"
+
+set remove main_menu_panel8 = "HV Trial - Breakers"
+set remove main_menu_panel8 = "HV Trial - Modbus"
+set remove main_menu_panel8 = "T5 MNO Monitoring"
+set remove main_menu_panel8 = "EC MNO Monitoring"
+set remove main_menu_panel8 = "UPMRS"
+set remove main_menu_panel8 = "Revertive Run Status"
+
+set add main_menu_panel8 = "HV Trial - Breakers"
+set add main_menu_panel8 = "HV Trial - Modbus"
+set add main_menu_panel8 = "T5 MNO Monitoring"
+set add main_menu_panel8 = "EC MNO Monitoring"
+set add main_menu_panel8 = "UPMRS"
+set add main_menu_panel8 = "Revertive Run Status"
+
+! ***   End of MISC   *** !
+
+! *** TTS mimic *** !
+	clear just=topleft
+	X=605 Y=5 W=60 H=48
+	if rotmenb then
+	      	begin
+	    	    set source mm = "heathrow"
+    	  	    set mimic mm = "t5_tts"
+    	  	    set selfreplace mm
+    	   	    request mm 
+    	  	    src = heathrow
+    	  	    name = "t5_tts"
+    	  	    temp=temp+1  
+    	  	    tempflag=1
+      		end
+
+		! *** TERMINAL 3 PSE *** !
+
+	clear just=topleft
+	X=725 Y=5 W=60 H=48
+	if rotanyb then
+	      	begin
+	    	    set source mm = "heathro3"
+    	  	    set mimic mm = "t3_pse_project"
+    	  	    set selfreplace mm
+    	   	    request mm 
+    	  	    src = heathro3
+    	  	    name = "keypages"
+    	  	    temp=temp+1  
+    	  	    tempflag=1
+      		end
+
+! *** TERMINAL 4 PSE *** !
+	
+clear
+just=topleft
+X=785 Y=5 W=60 H=48
+if rotmenb then loading_mimic=no
+else loading_mimic=yes
+
+if invalid first_run then
+  begin
+    loading_mimic=no
+    first_run=1
+  end
+
+if loading_mimic==no then
+  begin
+
+    set rect main_menu_panel11
+  end
+  else
+  begin
+
+    set rect main_menu_panel11
+  end
+
+if valid main_menu_panel11 then
+   begin
+     case main_menu_panel11 of
+
+   	"T4 PSE OVERVIEW"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_PSE_OVERVIEW"
+    	  set selfreplace mm
+    	  request mm
+    	  src = heathro3
+    	  name =  "T4_PSE_OVERVIEW"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+   	"T4 LIFTS"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_LIFTS"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name =   "T4_LIFTS"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+   	"T4 SECURITY"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_EEXITS"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name =  "T4_EEXITS"
+    	  temp=temp+1
+    	  tempflag=1
+      	end
+
+   	"T4 LB OVERVIEW"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_LB_OVERVIEW"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_LB_OVERVIEW"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+	"T4 DISABLED TOILETS"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_DTOILETS"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_DTOILETS"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+	"T4 SPRINKLERS PAGE1"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_SPRKS_1"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_SPRKS_1"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+	"T4 SPRINKLERS PAGE2"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_SPRKS_2"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_SPRKS_1"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+
+	"T4 LIGHTING CONTACTORS PAGE1"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_LGT_CON_1"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_LGT_CON_1"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+	"T4 LIGHTING CONTACTORS PAGE2"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_LGT_CON_2"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_LGT_CON_2"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+	"T4 LIGHTING CONTACTORS PAGE3"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_LGT_CON_3"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_LGT_CON_3"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+	"T4 LIGHTING CONTACTORS PAGE4"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_LGT_CON_4"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_LGT_CON_4"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+
+	"T4 LIGHTING CONTACTORS PAGE5"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_LGT_CON_5"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_LGT_CON_5"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+
+	"T4 LIGHTING CONTACTORS PAGE6"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_LGT_CON_6"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_LGT_CON_6"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+	"T4 LIGHTING CONTACTORS PAGE7"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_LGT_CON_7"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_LGT_CON_7"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+
+	"T4 EMG LIGHTING BATTERY CHARGERS"
+      	begin
+    	  set source mm = "heathro3"
+    	  set mimic mm = "T4_BS_OVERVIEW"
+    	  set selfreplace mm
+    	  request mm 
+    	  src = heathro3
+    	  name = "T4_BS_OVERVIEW"
+    	  temp=temp+1
+    	  tempflag=1
+    	end
+
+
+
+   	default
+    	  begin
+    	  end
+
+     set invalid main_menu_panel11
+   end
+   
+ if get mimic mm <> "" and invalid i then
+      begin   
+        set source mm = "heathro3"
+        set selfreplace mm
+        request mm
+        i = 1
+      end
+
+
+ if loading_mimic==no then
+  begin
+
+    set rect main_menu_panel11
+  end
+  else
+  begin
+
+    set rect main_menu_panel11
+  end
+
+set title main_menu_panel11 = "T4 PSE Menu"
+set remove main_menu_panel11 = "T4 PSE OVERVIEW"
+set remove main_menu_panel11 = "T4 LIFTS"
+set remove main_menu_panel11 = "T4 SECURITY"
+set remove main_menu_panel11 = "T4 LB OVERVIEW"
+set remove main_menu_panel11 = "T4 DISABLED TOILETS"
+set remove main_menu_panel11 = "T4 SPRINKLERS PAGE1"
+set remove main_menu_panel11 = "T4 SPRINKLERS PAGE2"
+set remove main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE1"
+set remove main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE2"
+set remove main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE3"
+set remove main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE4"
+set remove main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE5"
+set remove main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE6"
+set remove main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE7"
+set remove main_menu_panel11 = "T4 EMG LIGHTING BATTERY CHARGERS"
+
+
+
+set add main_menu_panel11 = "T4 PSE OVERVIEW"
+set add main_menu_panel11 = "T4 LIFTS"
+set add main_menu_panel11 = "T4 SECURITY"
+set add main_menu_panel11 = "T4 LB OVERVIEW"
+set add main_menu_panel11 = "T4 DISABLED TOILETS"
+set add main_menu_panel11 = "T4 SPRINKLERS PAGE1"
+set add main_menu_panel11 = "T4 SPRINKLERS PAGE2"
+set add main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE1"
+set add main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE2"
+set add main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE3"
+set add main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE4"
+set add main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE5"
+set add main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE6"
+set add main_menu_panel11 = "T4 LIGHTING CONTACTORS PAGE7"
+set add main_menu_panel11 = "T4 EMG LIGHTING BATTERY CHARGERS"
+
+
+! *** End of T4 ***!
+
+
+
+! *** KEY PAGES *** !
+
+	clear just=topleft
+	X=845 Y=5 W=60 H=48
+	if rotmenb then
+	      	begin
+	    	    set source mm = "heathro3"
+    	  	    set mimic mm = "keypages"
+    	  	    set selfreplace mm
+    	   	    request mm 
+    	  	    src = heathro3
+    	  	    name = "keypages"
+    	  	    temp=temp+1  
+    	  	    tempflag=1
+      		end
+
+! *** End of KEY PAGES *** !
+
+
+! *** NEW mimic window *** !
+clear
+just=topleft
+X=1070 Y=5 W=60 H=48
+if rotanyb then 
+  begin
+     set y newwindow=130
+     set x newwindow=100
+     set source newwindow=heathrow
+     set mimic  newwindow="hv_1"
+     set noreplace newwindow
+     request  newwindow
+  end
+
+! *** BACK BUTTON *** !
+if invalid initialise2 then begin
+   set temp=0
+   initialise2=1
+   pointer=0
+end
+if temp==6 then temp=1
+if temp==1 and tempflag==1  then
+ begin
+   src1 = src
+   name1 = name
+   tempflag=0
+ end
+if temp==2 and tempflag==1 then
+ begin
+   src2 = src
+   name2 = name
+   tempflag=0
+ end
+if temp==3 and tempflag==1 then
+ begin
+   src3 = src
+   name3 = name
+   tempflag=0
+ end
+if temp==4 and tempflag==1 then 
+ begin
+   src4 = src
+   name4 = name
+   tempflag=0
+ end
+if temp==5 and tempflag==1 then
+ begin
+   src5 = src
+   name5 = name
+   tempflag=0
+ end
+
+if dummy < temp then pointer=0
+dummy=temp
+if temp ==0 then stackpointer="5"
+if temp ==1 then stackpointer="1"
+if temp ==2 then stackpointer="2"
+if temp ==3 then stackpointer="3"
+if temp ==4 then stackpointer="4"
+if temp ==5 then stackpointer="5"
+
+clear
+just=topleft
+X=5 Y=5 W=60 H=48
+if   ROTanyb then begin
+
+if stackpointer=="0" then
+	begin  
+	end
+
+if stackpointer=="5" then
+	begin
+   	   if pointer==0 then 
+	   begin
+   	       set source mm= src4
+   	       set mimic mm= name4
+   	       set selfreplace mm
+   	       request mm
+   	       src=src4
+   	       name=name4
+   	   end
+   	   if pointer==1 then 
+	   begin
+   	       set source mm= src3
+   	       set mimic mm= name3
+   	       set selfreplace mm
+   	       request mm
+   	       src=src3
+   	       name=name3
+   	   end
+   	   if pointer==2 then 
+	   begin
+   	       set source mm= src2
+   	       set mimic mm= name2
+   	       set selfreplace mm
+   	       request mm
+    	       src=src2
+   	       name=name2
+   	   end
+   	   if pointer==3 then 
+	   begin
+   	       set source mm= src1
+   	       set mimic mm= name1
+   	       set selfreplace mm
+   	       request mm
+   	       src=src1
+   	       name=name1
+            	   end
+   	   if pointer==4 then 
+	   begin
+   	       set source mm= src5
+   	       set mimic mm= name5
+   	       set selfreplace mm
+   	       request mm
+   	       src=src5
+   	       name=name5
+   	   end
+  	end
+
+if stackpointer=="4" then
+	begin
+   	    if pointer==0 then 
+	    begin
+   		set source mm= src3
+   		set mimic mm= name3
+   		set selfreplace mm
+   		src=src3
+   		name=name3
+   		request mm
+   	    end
+   	    if pointer==1 then 
+	    begin
+   		set source mm= src2
+   		set mimic mm= name2
+  	 	set selfreplace mm
+   		request mm
+   		src=src2
+   		name=name2
+   	    end
+   	    if pointer==2 then 
+	    begin
+   		set source mm= src1
+   		set mimic mm= name1
+   		set selfreplace mm
+   		request mm
+   		src=src1
+   		name=name1
+   	    end
+   	    if pointer==3 then 
+	    begin
+   		set source mm= src5
+   		set mimic mm= name5
+   		set selfreplace mm
+   		request mm
+   		src=src5
+   		name=name5
+   	    end
+   	    if pointer==4 then 
+	    begin
+   		set source mm= src4
+   		set mimic mm= name4
+   		set selfreplace mm
+   		request mm
+   		src=src4
+  		name=name4
+   	    end
+	end
+if stackpointer=="3" then
+	begin
+   	   if pointer==0 then 
+	   begin
+   		set source mm= src2
+   		set mimic mm= name2
+   		set selfreplace mm
+   		request mm
+   		src=src2
+   		name=name2
+   	   end
+   	   if pointer==1 then 
+	   begin
+   		set source mm= src1
+   		set mimic mm= name1
+   		set selfreplace mm
+   		request mm
+   		src=src1
+   		name=name1
+   	   end
+   	   if pointer==2 then 
+	   begin
+   		set source mm= src5
+   		set mimic mm= name5
+   		set selfreplace mm
+   		request mm
+   		src=src5
+   		name=name5
+   	   end
+   	   if pointer==3 then 
+	   begin
+   		set source mm= src4
+   		set mimic mm= name4
+   		set selfreplace mm
+   		request mm
+   		src=src4
+   		name=name4
+   	   end
+   	   if pointer==4 then 
+	   begin
+   		set source mm= src3
+   		set mimic mm= name3
+   		set selfreplace mm
+   		request mm
+   		src=src3
+   		name=name3
+   	   end
+	end
+if stackpointer=="2" then
+	begin
+   	   if pointer==0 then 
+	   begin
+    		set source mm= src1
+   		set mimic mm= name1
+   		set selfreplace mm
+   		request mm
+   		src=src1
+   		name=name1
+   	   end
+   	   if pointer==1 then 
+	   begin
+   		set source mm= src5
+   		set mimic mm= name5
+   		set selfreplace mm
+   		request mm
+   		src=src5
+   		name=name5
+   	   end
+  	   if pointer==2 then 
+	   begin
+   		set source mm= src4
+   		set mimic mm= name4
+   		set selfreplace mm
+   		request mm
+   		src=src4
+   		name=name4
+   	   end
+  	   if pointer==3 then 
+	   begin
+   		set source mm= src3
+   		set mimic mm= name3
+   		set selfreplace mm
+   		request mm
+   		src=src3
+   		name=name3
+   	   end
+   	   if pointer==4 then 
+	   begin
+   		set source mm= src2
+   		set mimic mm= name2
+   		set selfreplace mm
+   		request mm
+   		src=src2
+   		name=name2
+   	   end
+	end
+if stackpointer=="1" then
+  	begin
+   	   if pointer==0 then 
+	   begin
+   	   	set source mm= src5
+   		set mimic mm= name5
+   		set selfreplace mm
+   		request mm
+   		src=src5
+   		name=name5
+   	   end
+   	   if pointer==1 then 
+	   begin
+   		set source mm= src4
+   		set mimic mm= name4
+   		set selfreplace mm
+   		request mm
+   		src=src4
+   		name=name4
+   	   end
+   	   if pointer==2 then 
+	   begin
+   		set source mm= src3
+   		set mimic mm= name3
+   		set selfreplace mm
+   		request mm
+   		src=src3
+  	 	name=name3
+   	   end
+   	   if pointer==3 then 
+	   begin
+   		set source mm= src2
+   		set mimic mm= name2
+   		set selfreplace mm
+   		request mm
+   		src=src2
+   		name=name2
+   	   end
+  	   if pointer==4 then 
+	   begin
+   		set source mm= src1
+   		set mimic mm= name1
+   		set selfreplace mm
+   		request mm
+   		src=src1
+   		name=name1
+   	   end
+  	end
+   pointer=pointer+1
+   if pointer==5 then pointer=0
+end
+! *** End of BACK BUTTON *** !
+
+end
+! *** End of MainButtons Pressed *** !
+! *************************************************************************************************!
+
+! *** TOOLS *** !
+object TOOLS
+var n = toplevel  string_50
+var main_menu_panel4 = menu  string(80)
+var loading_mimic2 = loopback  yesno
+var first_run2 = loopback  int
+var j = loopback  int
+var get_mimic = toplevel  string
+var get_mimic_2 = toplevel string
+begin
+   set y n=130
+   set x n=250
+   clear just=topleft
+   W=68 H=70 X=1010 Y=5
+   if   ROTmenb then 
+   begin 
+      loading_mimic2=no
+   end
+   else 
+     begin 
+        loading_mimic2=yes
+     end
+   if invalid first_run2 then
+   begin
+      loading_mimic2=no
+      first_run2=1
+   end
+
+   if loading_mimic2==no then
+   begin
+
+       set rect main_menu_panel4
+   end
+   else
+    begin
+
+       set rect main_menu_panel4
+    end
+
+   if valid main_menu_panel4 then
+   begin
+      case main_menu_panel4 of
+	"Alarm View"
+      	begin
+      		set source n = "heathro3"
+      		set mimic n = "alarm_view"
+      		set noreplace n
+      		request n
+      	end
+   	"Trend View"
+      	begin
+      		set source n = "heathrow"
+      		set mimic n = "Trend_view"
+      		set noreplace n
+      		request n 
+      	end
+   	"Alarm Historical View"
+      	begin
+      		set source n = "heathrow"
+      		set mimic n = "alarm_history_view"
+      		set noreplace n
+      		request n
+      	end
+   	"Mimic Directory"
+      	begin
+      		set source n= "heathrow"
+      		set mimic n= "mimic_directory_util"
+     	 	set noreplace n
+      		request n
+      	end
+   	"System Control"
+      	begin
+      		set source n= "heathrow"
+      		set mimic n= "system_control"
+     	 	set noreplace n
+      		request n
+      	end
+   	default
+      	begin
+      	end
+
+   	set invalid main_menu_panel4
+   end
+
+   if get mimic n<> "" and invalid j then
+   begin   
+      set source n= "heathrow"
+      set selfreplace n
+      request n
+      j = 1
+   end
+
+
+   if loading_mimic2==no then
+   begin
+
+      set rect main_menu_panel4
+  end
+  else
+  begin
+
+      set rect main_menu_panel4
+  end
+
+set title main_menu_panel4 = "TOOLS Menu"
+
+set remove main_menu_panel4 = "Alarm View"
+set remove main_menu_panel4 = "Trend View"
+set remove main_menu_panel4 = "Alarm Historical View"
+set remove main_menu_panel4 = "Mimic Directory"
+set remove main_menu_panel4 = "System Control"
+
+set add main_menu_panel4 = "Alarm View"
+set add main_menu_panel4 = "Trend View"
+set add main_menu_panel4 = "Alarm Historical View"
+set add main_menu_panel4 = "Mimic Directory"
+set add main_menu_panel4 = "System Control"
+
+
+end
+! *** End of TOOLS*** !
+! *************************************************************************************************!
+
+
+
+! *** BROWSER OBJECT *** !
+Object browser(mimic_offset=int,src=source,browser_width=int)
+
+VAR helpstr = help string(30)
+
+var tag_colour = loopback colour
+var mimic_information = input  c_db_row_type
+var mimic_information_menu = menu string
+var mimic_information_panel = panel  panel_row
+
+Begin
+
+if invalid get source mimic_information then
+   begin
+   set source mimic_information = src
+   set filter mimic_information.db_addr = lim_eq
+   set limit mimic_information.db_addr = db_address("C"+ mimic_offset)
+   set persist mimic_information
+   request mimic_information
+   end
+
+
+JUST=TOPLEFT
+
+x = 0 y = 0 rect(w=browser_width,h=90,fg=grey80)
+x = 0 y = 90 add y -= 90 add x += browser_width add line(fg=decorlight,lw=1) clear
+x = 0 y = 90 add x += browser_width add y -= 90 add line(fg=decorshadow,lw=1) clear
+
+! ** call subroutine for button images ** !
+X=0 Y=0 buttonimages
+! ** call subroutine for buttons pressed ** !
+MainButtonsPressed 
+! ** call subroutine for tools menu ** !
+tools
+
+
+! *** Button Pressed Images *** !
+	W=60 H=48 X=5 Y=5
+	if   ROTanyb then 
+	begin
+  		x=5 y=5 image("\\wrkstn\\Images\\back_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=65 Y=5
+	if   ROTanyb then
+	begin
+  		x=65 y=5 image("\\wrkstn\\Images\\home_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=125 Y=5
+	if   ROTanyb then 
+	begin
+  		x=125 y=5 image("\\wrkstn\\Images\\hv_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=185 Y=5
+	if   ROTanyb then 
+	begin
+  		x=185 y=5 image("\\wrkstn\\Images\\water_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=245 Y=5
+	if   ROTanyb then 
+	begin
+  		x=245 y=5 image("\\wrkstn\\Images\\fegp_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=305 Y=5
+	if   ROTanyb then 
+	begin
+		x=305 y=5 image("\\wrkstn\\Images\\meter_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=365 Y=5
+	if   ROTanyb then 
+	begin
+  		x=365 y=5 image("\\wrkstn\\Images\\sewage_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=425 Y=5
+	if   ROTanyb then 
+	begin
+  		x=425 y=5 image("\\wrkstn\\Images\\tunnels_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=485 Y=5
+	if   ROTanyb then 
+	begin
+  		x=485 y=5 image("\\wrkstn\\Images\\pax_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=545 Y=5
+	if   ROTanyb then 
+	begin
+  		x=545 y=5 image("\\wrkstn\\Images\\misc_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=605 Y=5
+	if   ROTanyb then 
+	begin
+  		x=605 y=5 image("\\wrkstn\\Images\\tts_pressed.bmp")    !******* TTS *******!
+	end
+	clear
+
+	W=60 H=48 X=665 Y=5
+	if   ROTanyb then 
+	begin
+  		x=665 y=5 image("\\wrkstn\\Images\\blank_pressed.bmp")
+	end
+	clear
+
+	W=60 H=48 X=725 Y=5
+	if   ROTanyb then 
+	begin
+  		x=725 y=5 image("\\wrkstn\\Images\\blank_pressed.bmp")
+	end
+
+	clear
+	W=60 H=48 X=845 Y=5
+	if   ROTanyb then 
+	begin
+  		x=845 y=5 image("\\wrkstn\\Images\\key_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=930 Y=5
+	if   ROTanyb then 
+	begin
+  		x=930 y=5 image("\\wrkstn\\Images\\search_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=1010 Y=5
+	if   ROTanyb then 
+	begin
+  		x=1010 y=5 image("\\wrkstn\\Images\\tools_pressed.bmp")
+	end
+	clear
+	W=60 H=48 X=1070 Y=5
+	if   ROTanyb then 
+	begin
+  		x=1070 y=5 image("\\wrkstn\\Images\\new_pressed.bmp")
+	end
+! *** End of Button Pressed Images *** !
+
+
+just=topleft
+x=5 y=60
+w=120 h=20
+set rect mimic_information_menu
+set title mimic_information_menu = "Mimic Information"
+set remove mimic_information_menu = "Alter Mimic Information"
+set remove mimic_information_menu = "Clear Mimic Information"
+set add mimic_information_menu = "Alter Mimic Information"
+set add mimic_information_menu = "Clear Mimic Information"
+
+! CASE MENU OPTIONS !
+
+if valid mimic_information_menu then
+  begin
+  case mimic_information_menu of
+       "Alter Mimic Information"
+       begin
+       set title mimic_information_panel = "Alter Mimic Information"
+       set label mimic_information_panel.str = "Tag Message: "
+       set unpinned mimic_information_panel
+       request mimic_information_panel
+       end
+ 
+       "Clear Mimic Information"
+       begin
+       set_c_value(db_address("C" + mimic_offset), src, "") 
+       end
+
+       default
+       begin
+       end
+
+       set invalid mimic_information_menu
+   end
+
+if valid mimic_information_panel then
+   begin
+   set_c_value(db_address("C" + mimic_offset),src,mimic_information_panel.str)
+   set invalid mimic_information_panel
+   end
+
+if valid mimic_information then
+   begin
+   if mimic_information.c_value <> "" then
+      tag_colour = yellow
+   else
+      tag_colour = grey80
+   end
+
+
+if mimic_information.c_value <> "" then
+   begin
+   x = 5 y = 60 rect(w=119,h=20,fg=tag_colour) clear
+   x = 135 y = 62 text(tfg=blue,just=topleft,mimic_information.c_value) clear
+   end
+
+
+x = 5 y = 80 add y -= 20 add x += 119 add line(fg=decorlight,lw=1) clear
+x = 5 y = 80 add x += 119 add y -= 20 add line(fg=decorshadow,lw=1) clear
+
+x = 10 y = 70 text(just=centreleft,tfg=black,ch=12,"Mimic Information:") clear
+
+x = 125 y = 80 add y -= 20 add x += 804 add line(fg=decorlight,lw=1) clear
+x = 125 y = 80 add x += 804 add y -= 20 add line(fg=decorshadow,lw=1) clear
+
+x = 930 y = 80 add y -= 20 add x += 199 add line(fg=decorlight,lw=1) clear
+x = 930 y = 80 add x += 199 add y -= 20 add line(fg=decorshadow,lw=1) clear
+
+!*** Mimic Help***!
+clear
+just = topleft
+x=0 y=0
+w=browser_width h=90
+set text helpstr = "fas_browser_help"
+clear
+End
+
+Object main_object(w,h,fg,bg)
+begin
+
+browser(1050,heathrow,1140)
+
+end
+
+mimic = MAIN_OBJECT bg=pink, W=1200, H=100, x=0, y=1050
+
+
+

@@ -1,0 +1,69 @@
+! HEATHROW CMS - VCB ALARM
+
+loaded by: FIRE_MAIN
+!
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+
+! 
+****************************************************************
+* VCB ALARM OBJECT                                             *
+* this object is called from the Top Level variable (mimic)    *
+****************************************************************
+!
+
+object vcb_alarm(offset=int,src=source,ident=int)
+
+var vcb_alarm = input  alarm_row_type
+var sensor_bg = loopback  colour
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source vcb_alarm then 
+   begin
+
+   set source vcb_alarm = src
+   set filter vcb_alarm.db_addr = lim_eq
+   set limit vcb_alarm.db_addr = db_address(int(b1) + offset - 1)
+   set persist vcb_alarm 
+   request vcb_alarm
+
+   end
+
+
+! SELECT BG COLOUR !
+
+if vcb_alarm.alarm_status == w_note then
+   
+   sensor_bg = flashred
+
+else if vcb_alarm.alarm_status == w_clr then
+
+   sensor_bg = red
+
+else sensor_bg = decoroff
+
+
+! DRAW SYMBOL !
+
+just = centrecentre
+rect(fg=sensor_bg,h=20,w=100) 
+x -= 50 y += 10 add y -= 20 add x += 100 add line(lw=1,fg=decorlight) clear
+x = 50 y = -10 add y += 20 add x -= 100 add line(lw=1,fg=decorshadow) clear
+x = 0 y = 0 text (tfg=black,ch=15,"VCB"+ident+"  Alarm")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+vcb_alarm(100,heathrow,2)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

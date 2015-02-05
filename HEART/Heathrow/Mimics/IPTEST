@@ -1,0 +1,91 @@
+load mimic_libutil
+type arow = table (scale = int(1,1000),angle=int(0,360))
+
+object A_REASONABLE_SHAPE_NAME(fg,bg,x,y,just,scale,angle,
+			      bg_colour = colour,fg_colour = colour)
+begin
+rotrect(fg = bg_colour,just=topcentre,w=80,h=115)
+fg=fg_colour
+lw = 5
+add y += 10 add line clear
+x-=10 add x+=20 add line clear
+y+=20
+add x-=20 add line clear
+y+=10 
+x-=5 add x+=30 add line clear
+y +=10 
+x+=5  add x-=40 add line clear
+x=0 add y+=13 add line clear
+disk(w = 12,h = 12)
+lw = 7
+add y+=40 add line clear
+disk(w = 12,h = 12)
+lw=5
+add y+=13 add line clear
+
+end
+
+type b_db_value_type =  db_elements(b_value)
+
+object get_b_db_value(b_id = db_address) = onoff
+var ip = input  b_db_value_type
+begin
+
+   set source ip = source(0)
+   set filter ip.db_addr = lim_eq
+   set limit ip.db_addr = b_id
+   set persist ip
+   request ip
+
+   get_b_db_value = ip.b_value
+
+end
+
+type e_db_value_type =  db_elements(e_value)
+
+object get_e_db_value(e_id = db_address) = real
+var ip = input  e_db_value_type
+begin
+
+   set source ip = source(0)
+   set filter ip.db_addr = lim_eq
+   set limit ip.db_addr = e_id
+   set persist ip
+   request ip
+
+   get_e_db_value = ip.e_value
+
+end
+
+!##                 !
+!##                 !
+!##                 !
+!## Test bed object !
+!##                 !
+!##                 !
+!##                 !
+
+object a_testobject(x,y,just,fg_colour = colour,bg_colour = colour,di = db_address,ai = db_address,ao = db_address)
+var di_value = loopback  onoff
+var ai_value = loopback  real
+begin
+   di_value = get_b_db_value(di)
+   text(y = y + 200,di_value)
+   ai_value = get_e_db_value(ai)
+   text(y = y + 240,ai_value)
+   if valid ai_value then
+      angle = int(ai_value)
+   A_REASONABLE_SHAPE_NAME(bg_colour,fg_colour)
+   if di_value == on then
+      set_analogue(x = x - 40,w = 80,h = 115,source(0),ao," ")
+end
+
+object main_object
+begin
+
+just = centrecentre
+A_TESTOBJECT(yellow,black,b1,e1,e1)
+
+end
+
+mimic=main_object w = 600,h = 600,just = centrecentre

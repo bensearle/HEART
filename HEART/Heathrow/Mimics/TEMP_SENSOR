@@ -1,0 +1,70 @@
+! HEATHROW CMS - TEMP SENSOR
+
+loaded by: FEGP_T2, FEGP_T3, FEGP_T4
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+
+! 
+***********************************************************
+* TEMP SENSOR OBJECT                                      *
+* this object is called by the Top Level variable (mimic) *
+***********************************************************
+! 
+
+object temp_sensor(offset=int,src=source)
+
+var high_temp_alarm = input  alarm_row_type
+var sensor_bg = loopback  colour
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source high_temp_alarm then 
+   begin
+
+   set source high_temp_alarm = src
+   set filter high_temp_alarm.db_addr = lim_eq
+   set limit high_temp_alarm.db_addr = db_address(int(b1) + offset - 1)
+   set persist high_temp_alarm 
+   request high_temp_alarm
+
+   end
+
+
+! SELECT BG COLOUR !
+
+if high_temp_alarm.alarm_status == w_note then
+   
+   sensor_bg = flashred
+
+else if high_temp_alarm.alarm_status == w_clr then
+
+   sensor_bg = red
+
+else sensor_bg = decoroff
+
+
+! DRAW SENSOR !
+
+just = centrecentre
+rect(fg=sensor_bg,h=30,w=150) 
+x -= 75 y += 15 add y -= 30 add x += 150 add line(lw=1,fg=decorlight) clear
+x = 75 y = -15 add y += 30 add x -= 150 add line(lw=1,fg=decorshadow) clear
+x = 0 y = 0 text (tfg=black,ch=15,"High Temp Sensor")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+temp_sensor(100,heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

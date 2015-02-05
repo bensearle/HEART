@@ -1,0 +1,702 @@
+! HEATHROW CMS - INTAKES
+
+loaded by: EAST_INTAKE, HV_1, HV_2, HV_3, HV_4, HV_5, HV_6, HV_7,
+           HV_8, HV_9, HV_10, HV_11, HV_12, HV_13, HV_14, HV_15,
+           NORTH_INTAKE, SOUTH_INTAKE, SUB_STN_23, SUB_STN_32, 
+           SUB_STN_64, WEST_INTAKE
+!
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+
+!
+************************************************************
+* NORTH INTAKE OBJECT                                      *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object north_intake(lw,angle)
+begin
+just = centrecentre
+lw=4
+scale = 260
+fg = red
+x = 520 y = 0 add
+x = -520 add line clear
+!********************************lines*********************************!
+scale=120
+lw =5 
+x = -500  
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,100,1,25,heathrow,1,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,120,2,26,heathrow,2,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,160,4,28,heathrow,4,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,180,5,29,heathrow,6,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,200,6,30,heathrow,7,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,220,7,31,heathrow,9,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,260,9,33,heathrow,11,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,280,10,34,heathrow,13,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,300,11,35,heathrow,14,"top")
+
+
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,320,12,36,heathrow,16,"top")
+
+x += 50 y = 0 
+y -= 70 add
+y += 70 add line(lw=5) clear
+y -= 25 add
+ocb(1,340,13,37,heathrow,17,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,380,15,39,heathrow,19,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,400,16,40,heathrow,20,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,420,17,41,heathrow,21,"top")
+
+
+x = -300 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb_mont(1,440,18,42,heathrow,5,"btm")
+
+x = -150 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb_mont(1,450,19,43,heathrow,8,"btm")
+
+x = 50 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb_mont(1,460,20,44,heathrow,12,"btm")
+
+x = 200 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb_mont(1,470,21,45,heathrow,15,"btm")
+
+angle = 90
+x = -400 y = 0
+ocb(1,140,3,27,heathrow,3,"sect")
+angle = 0
+
+angle = 90
+x = -50 y = 0
+ocb(1,240,8,32,heathrow,10,"sect")
+angle = 0
+
+angle = 90
+x = 350 y = 0
+ocb(1,360,14,38,heathrow,18,"sect")
+angle = 0
+
+scale = 100
+y = 70 x = -300 add transformer("Tx 4","SEB")
+
+y = 70 x = -150 add transformer("Tx 3","SEB")
+
+y = 70 x = 50 add transformer("Tx 1","SEB")
+
+y = 70 x = 200 add transformer("Tx 2","SEB")
+
+y = -70 x = 300 add transformer("LT","TFR")
+
+x = -50 y = 40 add text(scale=260,ch=20,tfg=red,"NORTH INTAKE") clear
+scale =260
+x = -200 y = -53 text ("Spare",ch=12,tfg=white)
+x = 0 y = -53   text ("Spare",ch=12,tfg=white)
+
+end
+
+
+
+!
+************************************************************
+* SER EAST INTAKE OBJECT                                   *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object ser_east_intake(lw,scale,angle)
+begin
+just = centrecentre
+lw=2
+x = -140 y = 65 add text(scale=260,ch=20,tfg=orange,"EAST INTAKE") clear
+
+fg = orange
+x = 250 y = -25 add
+x = -460 add line(lw=4) clear
+y = 25 add 
+x = 250 add line(lw=4) clear
+!********************************lines*********************************!
+lw =2 
+
+x = -420 y = 25  add y = -100 add line(fg=orange,lw=2) clear
+x = -370 y = 25 add y = -100 add line(fg=orange,lw=2) clear
+x = -320 y = 25 add y = -100 add line(fg=orange,lw=2) clear
+x = -270 y = 25 add y = -100 add line(fg=orange,lw=2) clear
+x = 10 y = 25 add y = -100 add line(fg=orange,lw=2) clear
+x = 60 y = 25 add y = -100 add line(fg=orange,lw=2) clear
+x = 110 y = 25 add y = -100 add line(fg=orange,lw=2) clear
+x = 160 y = 25 add y = -100 add line(fg=orange,lw=2) clear
+x = 210 y = 25 add y = -100 add line(fg=orange,lw=2) clear
+
+x = -210 y = 25 add
+y = -25 add 
+line clear
+
+x = -65 y = 25 add
+y = -25 add 
+line clear
+
+
+X=-350 Y = -25  Add 
+Y += 105  Add 
+X=-300  Add 
+Y=25  Add LINE(fg=orange) clear
+X -= 25 Y=80  Add 
+Y=95  Add line (fg=orange) clear
+
+X= 75 Y = -25  Add 
+Y += 105  Add 
+X=125  Add 
+Y=25  Add LINE(fg=orange) clear
+X -= 25 Y=80  Add 
+Y=95  Add line (fg=orange) clear
+
+scale = 120
+x = -420 y = -55 add ocb(1,100,1,25,heathrow,26,"top")
+x = -420 y = -0 add ocb(1,100,1,25,heathrow,25,"top")
+x = -370 y = -55 add ocb(1,100,1,25,heathrow,24,"top")
+x = -370 y = -0 add ocb(1,100,1,25,heathrow,23,"top")
+x = -320 y = -55 add ocb(1,100,1,25,heathrow,22,"top")
+x = -320 y = -0 add ocb(1,100,1,25,heathrow,21,"top")
+x = -270 y = -55 add ocb(1,100,1,25,heathrow,20,"top")
+x = -270 y = -0 add ocb(1,100,1,25,heathrow,19,"top")
+x = -350 y = 55 add ocb(1,100,1,25,heathrow,17,"btm")
+x = -300 y = 55 add ocb(1,100,1,25,heathrow,18,"btm")
+x = -210 y = 0 add ocb(1,100,1,25,heathrow,16,"sect")
+
+angle = 90
+x = -140 y = -25 add ocb(1,100,1,25,heathrow,15,"sect")
+x = -140 y = 25 add ocb(1,100,1,25,heathrow,14,"sect")
+angle = 0
+
+x = -65 y = 0 add ocb(1,100,1,25,heathrow,13,"sect")
+x = 10 y = -55 add ocb(1,100,1,25,heathrow,10,"top")
+x = 10 y = -0 add ocb(1,100,1,25,heathrow,9,"top")
+x = 60 y = -55 add ocb(1,100,1,25,heathrow,8,"top")
+x = 60 y = -0 add ocb(1,100,1,25,heathrow,7,"top")
+x = 110 y = -55 add ocb(1,100,1,25,heathrow,6,"top")
+x = 110 y = -0 add ocb(1,100,1,25,heathrow,5,"top")
+x = 160 y = -55 add ocb(1,100,1,25,heathrow,4,"top")
+x = 160 y = -0 add ocb(1,100,1,25,heathrow,3,"top")
+x = 210 y = -55 add ocb(1,100,1,25,heathrow,2,"top")
+x = 210 y = -0 add ocb(1,100,1,25,heathrow,1,"top")
+
+x = 75 y = 55 add ocb(1,100,1,25,heathrow,11,"btm")
+x = 125 y = 55 add ocb(1,100,1,25,heathrow,12,"btm")
+
+scale = 100
+y = 110 
+x = -325
+transformer("Tx 2","SEB")
+
+x = 100
+transformer("Tx 1","SEB")
+
+end
+
+
+!
+************************************************************
+* EAST INTAKE OBJECT                                       *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object east_intake(lw,scale,angle)
+begin
+just = centrecentre
+scale=260
+
+x = 85 y = -75 add text(scale=260,ch=21,tfg=orange,"EAST INTAKE") clear
+fg = orange
+lw=4
+x = 570 y = -25 add
+x = -480 add line clear
+y = 25 add 
+x = 570 add line clear
+
+!front and rear!
+tfg=orange
+x = 540
+y =-13
+text(ch=18,"Rear")
+y = 37
+text(ch=18,"Front")
+!********************************lines*********************************!
+
+lw =2
+
+y = 0
+x = 510 y += 25 add
+y -= 150 add 
+x += 40 add
+y += 100 add
+line clear
+
+y = 0
+x = 430 y += 25 add
+y -= 150 add 
+x += 40 add
+y += 100 add
+line clear
+
+y = 0
+x = 350 y += 25 add
+y -= 150 add 
+x += 40 add
+y += 100 add
+line clear
+
+y = 0
+x = 270 y += 25 add
+y -= 150 add 
+x += 40 add
+y += 100 add
+line clear
+
+y = 0
+x = -140 y += 25 add
+y -= 150 add 
+x += 40 add
+y += 100 add
+line clear
+
+y = 0
+x = -220 y += 25 add
+y -= 150 add 
+x += 40 add
+y += 100 add
+line clear
+
+y = 0
+x = -300 y += 25 add
+y -= 150 add 
+x += 40 add
+y += 100 add
+line clear
+
+y = 0
+x = -380 y += 25 add
+y -= 150 add 
+x += 40 add
+y += 100 add
+line clear
+
+y = 0
+x = -460 y += 25 add
+y -= 150 add 
+x += 40 add
+y += 100 add
+line clear
+
+
+x = 130 y = 25 add
+y = -25 add 
+line clear
+
+x = 30 y = 25 add
+y = -25 add 
+line clear
+
+
+X=175 Y = 25  Add 
+Y += 55  Add 
+X=225  Add 
+Y=-25  Add LINE(fg=orange) clear
+X -= 25 Y=80  Add 
+Y=95  Add line (fg=orange) clear
+
+X= -65 Y = 25  Add 
+Y += 55  Add 
+X=-15  Add 
+Y=-25  Add LINE(fg=orange) clear
+X -= 25 Y=80  Add 
+Y=95  Add line (fg=orange) clear
+
+scale=120
+x = 550 y = -100   add ocb(2000,2520,125,200,heathrow,26,"top")
+x = 510 y = -55  add ocb(2000,2500,124,199,heathrow,25,"top")
+x = 470 y = -100   add ocb(2000,2480,123,198,heathrow,24,"top")
+x = 430 y = -55  add ocb(2000,2460,122,197,heathrow,23,"top")
+x = 390 y = -100   add ocb(2000,2440,121,196,heathrow,22,"top")
+x = 350 y = -55  add ocb(2000,2420,120,195,heathrow,21,"top")
+x = 310 y = -100   add ocb(2000,2400,119,194,heathrow,20,"top")
+x = 270 y = -55  add ocb(2000,2380,118,193,heathrow,19,"top")
+x = 175 y = 55    add ocb_mont(2000,2560,116,191,heathrow,17,"top")
+x = 225 y = 55    add ocb_mont(2000,2570,117,192,heathrow,18,"top")
+x = 130 y = 0     add ocb(2000,2360,115,190,heathrow,16,"top")
+x = 80 y = 25   add ocb(2000,2340,114,189,heathrow,15,"sect",angle=90)
+x = 80 y = -25    add ocb(2000,2320,113,188,heathrow,14,"sect",angle=90)
+x = 30   y = 0    add ocb(2000,2300,112,187,heathrow,13,"top")
+x = -100 y = -100  add ocb(2000,2280,109,184,heathrow,10,"top")
+x = -140 y = -55 add ocb(2000,2260,108,183,heathrow,9,"top")
+x = -180 y = -100  add ocb(2000,2240,107,182,heathrow,8,"top")
+x = -220 y = -55 add ocb(2000,2220,106,181,heathrow,7,"top")
+x = -260 y = -100  add ocb(2000,2200,105,180,heathrow,6,"top")
+x = -300 y = -55 add ocb(2000,2180,104,179,heathrow,5,"top")
+x = -340 y = -100  add ocb(2000,2160,103,178,heathrow,4,"top")
+x = -380 y = -55 add ocb(2000,2140,102,177,heathrow,3,"top")
+x = -420 y = -100  add ocb(2000,2120,101,176,heathrow,2,"top")
+x = -460 y = -55 add ocb(2000,2100,100,175,heathrow,1,"top")
+
+x = -65 y = 55 add ocb_mont(2000,2540,110,185,heathrow,11,"top")
+x = -15 y = 55 add ocb_mont(2000,2550,111,186,heathrow,12,"top")
+
+scale = 100
+y = 110 x = 200 transformer("Tx 2","SEB")
+x = -40 transformer("Tx 1","SEB")
+
+end
+
+
+!
+************************************************************
+* SOUTH INTAKE OBJECT                                      *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object south_intake(fg,bg,just,lw,angle)
+begin
+
+just = centrecentre
+scale = 260
+fg=gold4
+lw=4
+x = -500 y = -35  add
+x = 510 add line clear
+
+x = -500 y = 15  add
+x = 510 add line clear
+
+lw=2
+
+x =-475 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =-425 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =-375 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =-325 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =-125 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =-75 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =25 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =75 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =275 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =325 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =375 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =425 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+x =475 y=-35 add y=-95 add x+=25 add y+=20 add line clear
+y=-55 add y=15 add line clear
+
+x =-275 y =15 add y =75 add y =70 add x +=25 add y =53 add line clear
+y = 38 add y = -35 add line clear
+x =-175 y =15 add y =75 add y =70 add x +=25 add y =53 add line clear
+y = 38 add y = -35 add line clear
+x = 125 y =15 add y =75 add y =70 add x +=25 add y =53 add line clear
+y = 38 add y = -35 add line clear
+x = 225 y =15 add y =75 add y =70 add x +=25 add y =53 add line clear
+y = 38 add y = -35 add line clear
+
+x = -200 y = 15 add y = -35 add line clear 
+x = 200 y = 15 add y = -35 add line clear
+
+scale=120
+X=-450 Y=-10  add ocb(1000,1100,50,75,heathrow,1,"top") clear
+X=-475 Y=-65  add ocb(1000,1120,51,76,heathrow,1,"top") clear
+X=-400 Y=-10  add ocb(1000,1140,52,77,heathrow,2,"top") clear
+X=-425 Y=-65  add ocb(1000,1160,53,78,heathrow,2,"top") clear
+X=-350 Y=-10  add ocb(1000,1180,54,79,heathrow,3,"top") clear
+X=-375 Y=-65  add ocb(1000,1200,55,80,heathrow,3,"top") clear
+X=-300 Y=-10  add ocb(1000,1220,56,81,heathrow,4,"top") clear
+X=-325 Y=-65  add ocb(1000,1240,57,82,heathrow,4,"top") clear
+X=-275 Y=45   add ocb_mont(1000,1700,58,83,heathrow,5,"btm") clear
+X=-250 Y=-10  add ocb_mont(1000,1710,59,84,heathrow,5,"btm") clear
+X=-200 Y=-10  add ocb(1000,1260,60,85,heathrow,6,"top") clear
+X=-175 Y=45   add ocb_mont(1000,1720,61,86,heathrow,7,"btm") clear
+X=-150 Y=-10  add ocb_mont(1000,1730,62,87,heathrow,7,"btm") clear
+X=-100 Y=-10  add ocb(1000,1280,63,88,heathrow,8,"top") clear
+X=-125 Y=-65  add ocb(1000,1300,64,89,heathrow,8,"top") clear
+X=-50  Y=-10  add ocb(1000,1320,65,90,heathrow,9,"top") clear
+X=-75  Y=-65  add ocb(1000,1340,66,91,heathrow,9,"top") clear
+X=-12  Y=15   add ocb(1000,1360,67,92,heathrow,10,"sect",angle=90) clear
+X=-12 Y= -35  add ocb(1000,1380,68,93,heathrow,11,"sect",angle=90) clear
+X=50   Y=-10  add ocb(1000,1400,69,94,heathrow,12,"top") clear
+X=25   Y=-65  add ocb(1000,1420,70,95,heathrow,12,"top") clear
+X=100   Y=-10 add ocb(1000,1440,71,96,heathrow,13,"top") clear
+X=75   Y=-65  add ocb(1000,1460,72,97,heathrow,13,"top") clear
+X=125  Y=45   add ocb_mont(1000,1740,73,98,heathrow,14,"btm") clear
+X=150  Y=-10  add ocb_mont(1000,1750,74,99,heathrow,14,"btm") clear
+X=200  Y=-10  add ocb(1000,1480,75,100,heathrow,15,"top") clear
+X=225  Y=45   add ocb_mont(1000,1760,76,101,heathrow,16,"btm") clear
+X=250  Y=-10  add ocb_mont(1000,1770,77,102,heathrow,16,"btm") clear
+X=300  Y=-10  add ocb(1000,1500,78,103,heathrow,17,"top") clear
+X=275  Y=-65  add ocb(1000,1520,79,104,heathrow,17,"top") clear
+X=350  Y=-10  add ocb(1000,1540,80,105,heathrow,18,"top") clear
+X=325  Y=-65  add ocb(1000,1560,81,106,heathrow,18,"top") clear
+X=400  Y=-10  add ocb(1000,1580,82,107,heathrow,19,"top") clear
+X=375  Y=-65  add ocb(1000,1600,83,108,heathrow,19,"top") clear
+X=450  Y=-10  add ocb(1000,1620,84,109,heathrow,20,"top") clear
+X=425  Y=-65  add ocb(1000,1640,85,110,heathrow,20,"top") clear
+X=500  Y=-10  add ocb(1000,1660,86,111,heathrow,21,"top") clear
+X=475  Y=-65  add ocb(1000,1680,87,112,heathrow,21,"top") clear
+
+
+scale = 100
+x= -275 y = 95 transformer("Tx 4","SEB")
+x= -175 y = 95 transformer("Tx 3","SEB")
+x= 125 y = 95 transformer("Tx 1","SEB")
+x= 225 y = 95 transformer("Tx 2","SEB")
+
+scale=260
+x = -25 y = 60 add text(scale=260,ch=21,tfg=gold4,"SOUTH INTAKE")
+x = -520 y = 15 add text(scale=260,ch=16,tfg=gold4,"Front")
+x = -520 y = -35 add text(scale=260,ch=16,tfg=gold4,"Rear")
+
+clear
+
+!x =  425 y = -105 text ("Spare",ch=12,tfg=white)!
+x =  475 y = -105 text ("Spare",ch=12,tfg=white)
+
+end
+
+
+!
+************************************************************
+* WEST INTAKE OBJECT                                       *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object west_intake(lw,angle)
+begin
+just = centrecentre
+scale=260
+lw=4
+fg = lightblue3
+
+x = 520 y = 0 add
+x = -470 add line clear
+!********************************lines*********************************!
+scale=120
+lw =5
+x = -500  
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3100,150,275,heathrow,1,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3120,151,276,heathrow,2,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3140,152,277,heathrow,3,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3160,153,278,heathrow,4,"top")
+x += 50  y = 0
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3180,154,279,heathrow,5,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3200,156,281,heathrow,7,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3220,157,282,heathrow,8,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3240,158,283,heathrow,9,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3260,159,284,heathrow,10,"top")
+
+x = 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3300,161,286,heathrow,12,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3320,162,287,heathrow,13,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3340,163,288,heathrow,14,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3360,164,289,heathrow,15,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3380,166,291,heathrow,17,"top")
+x += 50  y = 0
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3400,167,292,heathrow,18,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3420,168,293,heathrow,19,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3440,169,294,heathrow,20,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3460,170,295,heathrow,21,"top")
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line clear
+y -= 25 add
+ocb(3000,3480,171,296,heathrow,22,"top")
+
+x = -225 y = 0 add 
+y += 60 add
+y -= 60 add line clear
+y += 25 add
+ocb_mont(3000,3500,155,280,heathrow,6,"btm")
+
+x = 225 y = 0 add 
+y += 60 add
+y -= 60 add line clear
+y += 25 add
+ocb_mont(3000,3510,165,290,heathrow,16,"btm")
+
+x = 0 y = 0
+ocb(3000,3280,160,285,heathrow,11,"sect",ANGLE=90)
+
+scale = 100
+y = 70 x = -225 add transformer("Tx 1","SEB")
+x = 225 transformer("Tx 2","SEB")
+
+x = -100 y = 20 text(scale=260,ch=20,tfg=lightblue3,"WEST")
+x = 100 y = 20 text(scale=260,ch=20,tfg=lightblue3,"INTAKE")
+clear
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+north_intake
+
+end
+mimic = main_object w=1140,h=540,just=centrecentre,fg=white,bg=black,resizable

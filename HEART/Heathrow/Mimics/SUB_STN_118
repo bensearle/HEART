@@ -1,0 +1,159 @@
+!Load SUB_STATION_118_HELP!
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load ocb_118
+load ril_small_meter
+load transformer
+load ocb_monitored
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+!
+object Calmu_118
+
+var call_var = popup  hex_calmu_overview_ss118
+
+begin
+
+w=150 h= 25 x = -25 y = 25 rect(fg=decoroff)
+
+set title call_var = "Calmu Meters Sub Stn 118"
+
+if anyb(x=-25,y=25,w=50,h=25)  then
+  begin
+    request call_var
+  end
+
+x = -20 y = 27 text(tfg=white,ch=20,"Calmu Meters") clear
+
+scale = 256
+angle = 0
+x =125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x =125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+end
+!
+Object main_object(w,h,fg,bg)
+Begin
+!
+goto_menu
+x = 500 y = 270 command_button(231,heathrow)
+!
+clear
+
+Clear
+X=-300 Y=0 Add
+X=350 Y=0 Add
+FG=magenta3 LS=SOLID LW=4 CS=CAPROUND LINE
+
+CLEAR
+X=-150 Y=0 add
+X=-150 Y=170 add   LW=2 LINE
+
+CLEAR
+X=-250 Y=0 add
+X=-250 Y=170 add line
+
+CLEAR
+X=150 Y=0 add
+X=150 Y=170 add  LINE
+
+CLEAR
+X=250 Y=0 add
+X=250 Y=170 add  LINE
+
+CLEAR
+X=100 Y=0 add
+X=100 Y=-170 add  LINE
+
+CLEAR
+X=-100 Y=0 add
+X=-100 Y=-170 add  LINE
+
+CLEAR
+X=300 Y=0 add
+X=300 Y=-60 add  LINE
+
+Clear
+
+SCALE = 140
+X=-250 Y=30
+ocb_118(2080,2000,52,710,HEATHRO3,1,"BOTTOM",1)
+
+X=-150 Y=30
+ocb_118(2080,2010,53,711,HEATHRO3,2,"BOTTOM",2) 
+
+X=-100 Y=-30
+ocb_118(2080,2020,54,712,HEATHRO3,3,"TOP",3) 
+!
+X=0 Y=0                  Breaker 4 now not fitted
+ocb_118(2080,2030,55,713,HEATHRO3,4,"TOP",4) 
+!
+X=0 Y=0
+ocb_118(2080,2040,56,714,HEATHRO3,5,"SECT",5) 
+
+X=100 Y=-30
+ocb_118(2080,2050,57,715,HEATHRO3,6,"TOP",6) 
+
+X=150 Y=30
+ocb_118(2080,2060,58,716,HEATHRO3,7,"BOTTOM",7) 
+
+X=250 Y=30
+ocb_118(2080,2070,59,717,HEATHRO3,8,"BOTTOM",8)
+
+X=300 Y=-30
+ocb_mont(0,0,66,718,HEATHRO3,9,"TOP") 
+
+scale = 150
+x = -250 y=110
+hv_17_meter(60,700,heathro3,"0to400Amps","B 1")
+
+x = -150 y=110
+hv_17_meter(61,701,heathro3,"0to400Amps","B 2")
+
+x = -100 y = -110
+hv_17_meter(62,702,heathro3,"0to400Amps","B 3")
+
+x = 100 y =-110
+hv_17_meter(63,703,heathro3,"0to400Amps","B 6")
+
+x = 150 y = 110
+hv_17_meter(64,704,heathro3,"0to400Amps","B 7")
+
+x = 250 y= 110
+hv_17_meter(65,705,heathro3,"0to400Amps","B 8")
+
+scale = 100
+x = -250 y = 185  transformer("T 1","LOCAL")
+x = -150 y = 185  transformer("T 1","LOCAL")
+x = 150 y = 185  transformer("T 2","LOCAL")
+x = 250 y = 185  transformer("T 2","LOCAL")
+!
+scale = 200
+x = 200 y = -100 calmu_118
+!
+scale = 100
+FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT 
+X=-30 Y=-170 CH=96 TEXT("118")
+
+X = -280 Y = 210  CH=32 TEXT("Departures")
+
+X = -160 Y = 210  CH=32 TEXT("CIP")
+
+X = -127 Y = -200 CH=32 TEXT("Sub 38")
+X = -109 Y = -185  CH=32 TEXT("P2")
+
+X = 215 Y = 210  CH=32 TEXT("Departures")
+
+X = 140 Y = 210  CH=32 TEXT("CIP")
+
+x = -15  y = 19 ch=32 text ("4/")
+
+X = 73 Y = -200  CH=32 TEXT("Sub 29")
+X = 91 Y = -185  CH=32 TEXT("P7")
+
+X = 270 Y = -95  CH=32 TEXT("BLDG 919")
+X = 270 Y = -80  CH=32 TEXT("FEGP TX2")
+
+End
+
+mimic = MAIN_OBJECT w=750, h=500, RESIZABLE, bg=AQUAMARINE3, just=CENTRECENTRE

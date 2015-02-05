@@ -1,0 +1,34 @@
+
+object MAIN_OBJECT
+begin
+end
+
+helptext SUB_STN_A_HELP = "TEMP SUB A HELP
+
+__________________________________________
+
+
+=== T5 Sub A -Mimic ===
+
+This Object displays information on the Temp Substation A to T5 Site Supplies
+The Mimic consists of PLANT equipment (displayed as Objects) which may be monitored by the ADEM.
+
+
+Objects Displayed:
+HV Circuit Breaker Objects
+Current/Voltage/Power Meter Objects
+Transformer Object
+
+
+
+Menu Mimic Object - Enable Navigation through the H.E.A.R.T. system
+
+Menu Mimic Object SUB SEARCH -  Enter  SUB A or A to display this mimic using the sub search icon.
+
+
+
+
+__________________________________________
+"
+
+

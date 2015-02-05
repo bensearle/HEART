@@ -1,0 +1,31 @@
+load mimic_libutil
+load fuse_sw
+load transformer
+
+object sub_65
+begin
+
+tfg = black x = 25 y = 0 add text ("65",ch = 25) clear
+
+lw=2
+x = 0 y = -25 add y += 75 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 hv_fuse(25102,43,1351,heathrow,"c")
+
+scale = 100
+X = 0 Y = 50 add transformer("T1","")
+
+scale=260 tfg=black ch=12 just=centrecentre
+x = 0 y = -35 text("M1/14 P9")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = -25 sub_65
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=aquamarine3,resizable

@@ -1,0 +1,197 @@
+load mimic_libutil
+load ocb_alarm_test_fp
+load sub_stn_135
+
+
+
+object call_box(height=int,width=int,rect_bg=colour,title=string)
+begin
+	x=0 y=0 rect(just=centrecentre,w=width,h=height,fg=rect_bg)
+	text(tfg=white,ch=25,title,just=centrecentre) clear
+
+	x=0 y=0
+	x -= width/2 y += height/2 add
+	y -= height add x += width
+	add line (fg=white) clear
+
+	x=0 y=0 
+	x -= width/2 y += height/2 add
+	x += width add y -= height
+	add line (fg=grey40) clear
+end
+
+
+
+!*** SUB 135 ***!
+
+object sub_symbol_135
+
+var call_var = popup  sub_stn_135
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_5A = int
+var return_6 = int
+var return_7 = int
+var return_8 = int
+var rect_bg = loopback colour
+var line_col=colour
+begin
+	line_col=magenta3
+
+	return_1 	= fp_sub_ctrl_alarm(41000,41072,heathrow)
+	return_2 	= fp_sub_ctrl_alarm(41000,41112,heathrow)
+	return_3 	= fp_sub_ctrl_alarm(41000,41152,heathrow)
+	return_4 	= fp_sub_ctrl_alarm(41000,41192,heathrow)
+	return_5 	= fp_sub_ctrl_alarm(41000,41272,heathrow)
+	return_5A= fp_sub_ctrl_alarm(41000,41123,heathrow)
+	return_6 	= fp_sub_ctrl_alarm(41000,41312,heathrow)
+	return_7 	= fp_sub_ctrl_alarm(41000,41352,heathrow)
+	return_8 	= fp_sub_ctrl_alarm(41000,41392,heathrow)
+
+   if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1 or return_5 == 1 or return_5A == 1 or return_6 == 1
+	or return_7 == 1 or return_8 == 1 then
+      begin
+    	rect_bg = magenta
+      end
+   else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2 or return_5 == 2 or return_5A == 2 or return_6 == 2
+	or return_7 == 2 or return_8 == 2 then
+      begin
+      	rect_bg = flashred
+      end
+   else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3 or return_5 == 3 or return_5A == 3  or return_6 == 3
+	or return_7 == 3 or return_8 == 3 then
+      begin
+       	rect_bg = red
+      end
+   else
+      begin
+ 	rect_bg = decoroff
+      end
+
+	just=centrecentre
+
+   	clear x =-80 y = 0 add x += 160 add line(fg=line_col,lw=4) clear
+
+	w=60 h=25 x=-75 y=0 call_box(25,60,rect_bg,"Sub")
+	set title call_var = "Sub Station 135"
+	if anyb then
+	      begin
+	    	request call_var
+	      end
+
+	w=100 h=25 x=48 y=0 call_box(25,90,rect_bg,"135")
+	set title call_var = "Sub Station 135"
+	if anyb then
+	      begin
+	    	request call_var
+	      end
+
+	scale=310
+	x = -22	y = 0	hv_lib_breaker("eclipse",41000,41260,1390,5772,INT,HEATHROW,5,"SECT",INT)
+end
+
+!*** SUB 225 ***!
+
+object sub_symbol_225_colour = colour
+
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+var return_8 = int
+var return_9 = int
+var return_10 = int
+var return_11 = int
+var return_12 = int
+var return_13 = int
+var return_14 = int
+var return_15 = int
+var return_16 = int
+var return_17 = int
+var return_18 = int
+var return_19 = int
+var return_20 = int
+var return_21 = int
+var return_22 = int
+var return_23 = int
+var return_24 = int
+var rect_bg = loopback colour
+var line_col=colour
+
+begin
+	line_col=orange3
+
+	return_1 	= fp_sub_ctrl_alarm(18400,18543,heathro4)
+	return_2 	= fp_sub_ctrl_alarm(18400,18653,heathro4)
+	return_3 	= fp_sub_ctrl_alarm(18400,18583,heathro4)
+	return_4 	= fp_sub_ctrl_alarm(18400,18603,heathro4)
+	return_5 	= fp_sub_ctrl_alarm(18400,18623,heathro4)
+	return_6 	= fp_sub_ctrl_alarm(18400,18643,heathro4)
+	return_7 	= fp_sub_ctrl_alarm(18400,18663,heathro4)
+	return_8 	= fp_sub_ctrl_alarm(18400,18683,heathro4)
+	return_9 	= fp_sub_ctrl_alarm(18400,18703,heathro4)
+	return_10	= fp_sub_ctrl_alarm(18400,18723,heathro4)
+	return_11	= fp_sub_ctrl_alarm(18400,18743,heathro4)
+	return_12	= fp_sub_ctrl_alarm(18400,18768,heathro4)
+	return_13	= fp_sub_ctrl_alarm(18400,18788,heathro4)
+	return_14	= fp_sub_ctrl_alarm(18400,18808,heathro4)
+	return_15	= fp_sub_ctrl_alarm(18400,18833,heathro4)
+	return_16	= fp_sub_ctrl_alarm(18400,18853,heathro4)
+	return_17	= fp_sub_ctrl_alarm(18400,18873,heathro4)
+	return_18	= fp_sub_ctrl_alarm(18400,18893,heathro4)
+	return_19	= fp_sub_ctrl_alarm(18400,18913,heathro4)
+	return_20	= fp_sub_ctrl_alarm(18400,18933,heathro4)
+	return_21	= fp_sub_ctrl_alarm(18400,18953,heathro4)
+	return_22	= fp_sub_ctrl_alarm(18400,18973,heathro4)
+	return_23	= fp_sub_ctrl_alarm(18400,18993,heathro4)
+	return_24	= fp_sub_ctrl_alarm(18400,19013,heathro4)
+
+ 	if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1 or return_5 == 1
+	  or return_6 == 1 or return_7 == 1 or return_8 == 1 or return_9 == 1 or return_10 == 1
+	  or return_11 == 1 or return_12 == 1 or return_13 == 1 or return_14 == 1 or return_15 == 1
+	  or return_16 == 1 or return_17 == 1 or return_18 == 1 or return_19 == 1 or return_20 == 1
+	  or return_21 == 1 or return_22 == 1 or return_23 == 1 or return_24 == 1 then
+      	 begin
+    		rect_bg = magenta
+      	end
+
+	else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2 or return_5 == 2
+	  or return_6 == 2 or return_7 == 2 or return_8 == 2 or return_9 == 2 or return_10 == 2
+	  or return_11 == 2 or return_12 == 2 or return_13 == 2 or return_14 == 2 or return_15 == 2
+	  or return_16 == 2 or return_17 == 2 or return_18 == 2 or return_19 == 2 or return_20 == 2
+	  or return_21 == 2 or return_22 == 2 or return_23 == 2 or return_24 == 2 then
+      	begin
+      		rect_bg = flashred
+	end
+   
+	else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3 or return_5 == 3
+	  or return_6 == 3 or return_7 == 3 or return_8 == 3 or return_9 == 3 or return_10 == 3
+	  or return_11 == 3 or return_12 == 3 or return_13 == 3 or return_14 == 3 or return_15 == 3
+	  or return_16 == 3 or return_17 == 3 or return_18 == 3 or return_19 == 3 or return_20 == 3
+	  or return_21 == 3 or return_22 == 3 or return_23 == 3 or return_24 == 3 then
+      	begin
+       		rect_bg = red
+      	end
+   	
+	else
+     	begin
+ 		rect_bg = decoroff
+      	end
+
+	sub_symbol_225_colour = rect_bg
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	sub_symbol_135
+end
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=aquamarine3,resizable

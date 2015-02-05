@@ -1,0 +1,93 @@
+load ss103_breaker
+load breaker_meter
+load earth_switch
+load hv_hierarchy
+load transformer
+!load SUB_STN_103_HELP!
+
+const x_spacing = 50
+const y_cb = 50
+const y_feeder = 100
+const y_tx = 250
+const y_meter = 100
+const y_busbar= 0 
+const CB_scale=120
+
+!*************** SUBSTATION 103 *****************!
+
+object ss_103(bg,fg,w,h,tbg,tfg)
+begin
+! breaker_meter(address,tag_address,src,min_range,max_range, units=string(8), meter_name, help_name=string(30),realf)!
+scale = 260
+tfg = black x = -50 y = -27 add text ("103",ch = 25) clear
+
+x = -50 y = 0 add x = 250 add line(fg=blue,lw=4) clear
+! Feeder lines!
+lw=2
+x = -25 y = 0 add y += 50 add line (fg=blue) clear
+x = 25 y = 0 add y -= 50 add line (fg=blue) clear
+x = 75 y = 0 add y = 40 add line (fg=blue) clear
+x = 175 y = 0 add y -= 50 add line (fg=blue) clear
+x = 225 y = 0 add y += 50 add line (fg=blue) clear
+
+! Earth Symbol
+x = 60 y = 70 add x = 90 add line (fg=blue) clear
+x = 65 y = 75 add x = 85 add line (fg=blue) clear
+x = 70 y = 80 add x = 80 add line (fg=blue) clear
+x = 73 y = 85 add x = 77 add line (fg=blue) clear
+!
+! Panel 1 CB Transformer TX1 !
+x = -25 y = 25 ss103_breaker(1070,1000,36,300,HEATHRO3,1,"btm",0,scale=CB_scale)
+
+! Panel 2 CB !
+x = 25 y = -25 ss103_breaker(1070,1010,37,301,HEATHRO3,2,"top",0,scale=CB_scale)
+
+! Section 1 Earth Switch !
+x = 75 y = 25 earth_switch(1070,1023,38,HEATHRO3,"BTM",scale=CB_scale)
+x=94 y = 20 text(TFG=black,CH=12,"3")
+
+! CB Panel 4 Busbar Section !
+x = 125 y = 0 ss103_breaker(1070,1030,39,302,HEATHRO3,4,"sect",0,scale=CB_scale)
+
+! CB Panel 5  !
+x = 175 y = -25 ss103_breaker(1070,1040,40,303,HEATHRO3,5,"top",0,scale=CB_scale)
+
+! CB Panel 6 Transformer TX2 !
+x = 225 y = 25 ss103_breaker(1070,1050,41,304,HEATHRO3,6,"btm",0,scale=CB_scale)
+
+scale =100
+x = -25 y = 70 add transformer("T 1","")
+x = 225 y = 70 add transformer("T 2","")
+
+
+scale = 260
+just = centrecentre
+tfg=black
+ch=12
+x = 25 y = -60 text ("WI P7")
+x = 175 y = -75 text ("SUB 141") y+=15 text("P13")
+x = 70 y = 60 text (" 'Left Hand")
+x = 75 y = 75 text ("Earth Switch' ")
+
+end
+
+object help_area (h,w,just,angle,help_keytext=string)
+var help_variable = help string
+begin
+set rotrect help_variable
+set key help_variable = help_keytext
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+
+help_area("mimic_help")
+goto_menu
+!command_button(571, heathrow, x=450, y=200)!
+x = -100 y = -25 ss_103
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

@@ -1,0 +1,39 @@
+Load BROWSER
+load hex_calmu_meter
+load hex_calmu_config_ss113
+Load HEX_CALMU_OVERVIEW_SS116_HELP
+
+object main_object(w,h,fg,bg)
+begin
+
+X=-400 Y=-280  CALMU_METER(heathro2,200,4500,E4542,13700,13732,1,113,4901,100,-100)
+X=-108 Y=-280  CALMU_METER(heathro2,200,4550,E4592,13701,13733,2,113,4901,100,-100)
+X=194 Y=-280 CALMU_METER(heathro2,200,4600,E4642,13702,13734,3,113,4901,100,-100)
+
+X=-400 Y=-80  CALMU_METER(heathro2,200,4650,E4692,13703,13735,4,113,4901,100,-100)
+X=-108 Y=-80  CALMU_METER(heathro2,200,4700,E4742,13704,13736,5,113,4901,100,-100)
+X=194 Y=-80  CALMU_METER(heathro2,200,4750,E4792,13705,13737,6,113,4901,100,-100)
+
+X=-400 Y=130  CALMU_METER(heathro2,200,4800,E4842,13706,13738,7,113,4901,100,-100)
+X=-108 Y=130  CALMU_METER(heathro2,200,4850,E4892,13707,13739,8,113,4901,100,-100)
+X=194 Y=130  CALMU_METER(heathro2,200,4950,E4992,13708,13740,9,113,4901,100,-100)
+
+
+Y = -290
+x = -300 text ("MODULE 4 TRANFORMER B",just=bottomcentre)
+x =  0 text ("MODULE 5 TRANFORMER B",just=bottomcentre)
+x = 300 text ("FUTURE TRANSFORMER",just=bottomcentre)
+Y = -90
+x = -300 text ("STAFF BUSINESS CENTRE TRANS B",just=bottomcentre)
+x = 0 text ("SPARE",just=bottomcentre)
+x =    300 text ("MODULE 4 TRANSFORMER A",just=bottomcentre)
+Y = 120 
+x =  -300 text ("MODULE 5 TRANFORMER A",just=bottomcentre)
+Y = 120 x = 0 text ("GFS FACILITY 500KVA TRANS",just=bottomcentre)
+Y = 120 x = 300 text ("STAFF BUSINESS CENTRE TRANS A",just=bottomcentre)
+clear
+x = -570 y = 310 browser(1051,heathrow,1140)
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

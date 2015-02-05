@@ -1,0 +1,50 @@
+! HEATHROW CMS - HV OVERVIEW
+
+loaded by: HIERARCHY
+!
+
+load mimic_libutil
+load hv_incl2
+load hv_west
+load hv_east
+load hv_north
+load hv_south
+load hv_bath
+load hv_incl1
+load hv_incl3
+load main_hierarchy
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+! CALL HIERARCHY !
+
+goto_menu
+x = 470 
+y = -350 
+command_button(236,heathrow)
+
+
+x = 0 y = 0
+odds
+clear
+west_intake
+clear
+east_intake
+clear
+north_intake
+clear
+south_intake
+clear
+bath_intake
+clear
+contact_trans
+clear
+text
+clear
+
+
+END
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=black,bg=black,resizable

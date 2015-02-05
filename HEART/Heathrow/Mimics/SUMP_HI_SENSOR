@@ -1,0 +1,81 @@
+! HEATHROW CMS - SUMP HI SENSOR
+
+loaded by: CARGO_TUNNEL, FIRE_MAIN, MAIN_TUNNEL, POTABLE_WATER
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+
+
+! 
+**************************************************************
+* SUMP HI SENSOR OBJECT                                      *
+* this object is called by the Top Level variable (mimic)    *
+**************************************************************
+!
+
+object sump_sensor(offset=int,src=source,ident=string)
+
+var sump_sensor_alarm = input  alarm_row_type
+var sensor_bg = loopback  colour
+var box_width = loopback  int
+var box_text = loopback  string
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source sump_sensor_alarm then 
+   begin
+
+   set source sump_sensor_alarm = src
+   set filter sump_sensor_alarm.db_addr = lim_eq
+   set limit sump_sensor_alarm.db_addr = db_address(int(b1) + offset - 1)
+   set persist sump_sensor_alarm 
+   request sump_sensor_alarm
+
+   end
+
+
+! SELECT BG COLOUR !
+
+if sump_sensor_alarm.alarm_status == w_note then
+   
+   sensor_bg = flashred
+
+else if sump_sensor_alarm.alarm_status == w_clr then
+
+   sensor_bg = red
+
+else sensor_bg = decoroff
+
+
+! DRAW SYMBOL !
+
+just = centrecentre
+box_text = ident
+box_width = length(box_text)+36
+rect(fg=sensor_bg,h=20,w=box_width) 
+x = -box_width/2 y += 10 add 
+y -= 20 add 
+x += box_width add 
+line(lw=1,fg=decorlight) clear
+x = box_width/2 y = -10 add 
+y += 20 add 
+x -= box_width add 
+line(lw=1,fg=decorshadow) clear
+x = 0 y = 0 text (tfg=black,ch=17,ident)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=200
+sump_sensor(100,heathrow,"Lagoon High Level")
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=lightblue,resizable

@@ -1,0 +1,216 @@
+!**	HEATHROW\SUB_STN_159			**!
+!** 	Modified by ULTRA - 04 Apr 2007		**!
+!** 	Updated panel designations			**!
+
+Load SUB_STN_159_HELP
+load mimic_libutil
+load fp_ocb_monitored
+load transformer
+load hv_switch
+load lv_breaker
+load transformer
+load transformer_types
+
+!************** Sub 159 LV ****************!
+
+
+object lv_159_popup(bg)
+begin
+	tfg=white
+	clear lw=3
+	X=-125 Y=45 Add X=125 Y=45 Add line(fg=white) clear
+	X=-100 Y=45 Add X=-100 Y=-140 Add line(fg=white) clear
+	X=100 Y=45 Add X=100 Y=-140 Add line(fg=white) clear
+
+	! ** LHS ** !
+	scale=200
+	x=-100 y=10	lv_breaker("",27000,27080,2001,6103,heathro3,"  ","top",int,int,int)
+	y-=100 		transformer_select("TYPE1",27000,6,27135,2010,INT,heathro3,"TX1","Local",1,INT,white,green,scale=100)
+
+	x=100 y=10	lv_breaker("",27000,27085,2002,6104,heathro3," ","top",int,int,int)
+	y-=100		transformer_select("TYPE1",27000,6,27157,2011,INT,heathro3,"TX2","Local",2,INT,white,green,scale=100)
+
+	x=0 y=45 	lv_breaker("",27000,27090,2003,6105,heathro3,"  ","sect",int,int,int)
+
+	ch=14 just=centrecentre
+	X=-100 Y=-160	text("RMU 159/1")
+	Y+=12		text("P3")
+	X=100 Y=-160	text("RMU 159/2")
+	Y+=12		text("P6")
+	ch=14 just=centrecentre
+	X=-160 Y=-90 	TEXT("Local Tx1")
+	X=160 		TEXT("Local Tx2")
+	ch=18 font = font_bold
+	X=0 Y=100 	TEXT("Low Voltage Panels")
+	Y+=15		text("from Sub 159")
+
+	ch=14 just=topleft
+	x=-81 y=0 text("ACB1")
+	x=119 y=0 text("ACB2")
+	x=-10 y=60 text("BUS")
+end
+mimic lv_159_popup = lv_159_popup w=380,h=380,just=centrecentre, bg=lightblue4
+
+object lv_159_status(plc_offset=int,src=source,txt_id=string,res2=string,res1=int)
+var plc_inputs = input b_bool_type[2]
+var lv_pop = popup	lv_159_popup
+var alarm1_col = colour
+var alarm2_col = colour
+var alarm3_col = colour
+var alarm4_col = colour
+var alarm5_col = colour
+begin
+	alarm1_col = lv_alarm_test(27080,5,heathro3)
+	alarm2_col =lv_alarm_test(27085,5,heathro3)
+	alarm3_col =lv_alarm_test(27090,5,heathro3)
+	alarm4_col =lv_alarm_test(27135,6,heathro3)
+	alarm5_col =lv_alarm_test(27157,6,heathro3)
+		
+	if alarm1_col == flashred or
+	alarm2_col == flashred or
+	alarm3_col == flashred or
+	alarm4_col == flashred or
+	alarm5_col == flashred then
+		fg = flashred
+	else if alarm1_col ==red or
+	alarm2_col ==red or
+	alarm3_col ==red or
+	alarm4_col ==red or
+	alarm5_col == red then
+		fg = red
+	else
+		fg = grey80
+
+	   if invalid get source plc_inputs then 
+	   begin
+		! GET PLC INPUTS !
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+	  end
+
+
+	X=0 Y=0 W=50 H=50 ANGLE=0 JUST=centrecentre FS=FILLSOLID rotrect
+	if selb then
+	begin
+		rect(fg=darkgrey)
+		request lv_pop
+	end
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on
+	then
+		tfg=magenta
+	else
+		tfg=white
+	lw=1
+	X=-25 Y=25 Add Y=-25 Add X=25 Y=-25 Add line(fg=white) clear
+	X=-25 Y=25 Add X=25 Add Y=-25 Add line(fg=black) clear
+
+	ch=18 font=font_bold just=centrecentre
+	X=0 Y=16  text(txt_id) clear
+
+	X=-20 Y=-20 W=20 H=20 just=topleft fg=green4 ls=solid lw=3 sa=0 circle
+	X=0 Y=-20 W=20 H=20 circle clear
+end
+
+
+!************** Sub 159 ****************!
+
+object busbar_159
+var RMU1_EFPA_col = colour
+var RMU2_EFPA_col = colour
+
+begin
+
+just = centrecentre
+
+tfg = black x = -25 y = 10 add text ("159",ch = 25) clear
+
+tfg = black x = -225 y = 40 add text (font=font_bold,"LH BUS",ch = 14) clear
+tfg = black x = 175 y = 40 add text (font=font_bold,"RH BUS",ch = 14) clear
+
+x = -200 y = 25 add x +=150 add line(lw=4,fg=white) clear
+x = 0 y = 25 add x +=150 add line(lw=4,fg=white) clear
+
+lw=2
+x =  -175 y = -25 add y += 50 add line (fg=white) clear
+x =  -125 y = 25 add y += 50 add line (fg=white) clear
+x =  -75 y = -25 add y += 50 add line (fg=white) clear
+
+x =   25  y = -25 add y += 50 add line (fg=white) clear
+x =   75 y = 25 add y += 50 add line (fg=white) clear
+x =   125 y = -25 add y += 50 add line (fg=white) clear
+
+scale = 140
+!			(sw_type=string,	plc_offset=int,	b_offset=int,	c_offset=int,	e_offset=int,	src=source,	ident=string,	position=string(4),	num_alarms=int,	cont_offset=int	cont_code=int,	res2=int,	res1=int,	angle)	!
+x= -175 y=-5 hv_switch_obj(	"RMU",		27000,		27095,		2004,		6106,		heathro3,		"1",		"top",		int,		int,		int,		int	,int)
+x= -75 y=-5 hv_switch_obj(	"RMU",		27000,		27700,		2005,		6107,		heathro3,		"2",		"top",		int,		int,		int,		int	,int)
+x = -125 y = 50 fp_ocb_mont(27000,27115,2008,6110,heathro3,3,"btm",scale=130)
+x= 25 y=-5 hv_switch_obj(	"RMU",		27000,		27105,		2006,		6108,		heathro3,		"4",		"top",		int,		int,		int,		int	,int)
+x= 125 y=-5 hv_switch_obj(	"RMU",		27000,		27710,		2007,		6109,		heathro3,		"5",		"top",		int,		int,		int,		int	,int)
+x =  75 y = 50 fp_ocb_mont(27000,27125,2009,6111,heathro3,6,"btm",scale=130)
+
+
+
+scale = 200
+x = -125 y = 95 lv_159_status(27000,heathro3,"TX1",string,int)
+x = 75 y = 95 lv_159_status(27000,heathro3,"TX2",string,int)	
+
+scale=260
+tfg=black ch=12
+	x = -175 y = -50 text("SS157")
+	x = -175 y = -35 text("P2")
+
+	x = -75 y = -50 text("SS151")
+	x = -75 y = -35 text("P32")
+
+	x = 25 y = -50 text("SS158")
+	x = 25 y = -35 text("P2")
+
+	x = 125 y = -50 text("SS151")
+	x = 125 y = -35 text("P5")
+
+
+!************** RMU EARTH FAULT PASSAGE ALARMS ****************!
+
+	RMU1_EFPA_col = lv_alarm_test(27141,1,heathro3)
+
+	if RMU1_EFPA_col == flashred then
+		tfg = flashred
+	else if RMU1_EFPA_col == red then
+		tfg = red
+	else
+		tfg = aquamarine3
+
+	x = -125 y = -90 text("RMU 159-1 EARTH FLT")
+	y+= 15 text("PASSAGE ALARM")
+
+	RMU2_EFPA_col = lv_alarm_test(27163,1,heathro3)
+
+	if RMU2_EFPA_col == flashred then
+		tfg = flashred
+	else if RMU2_EFPA_col == red then
+		tfg = red
+	else
+		tfg = aquamarine3
+	x = 75 y = -90 text("RMU 159-2 EARTH FLT")
+	y+= 15 text("PASSAGE ALARM")	
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	x = 25 y = -50 busbar_159
+
+	X=-111 Y=-47 CH=10 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 1")
+	X=88 Y=-47 CH=10 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 2")
+
+	clear
+
+end
+
+mimic = main_object w=500,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable, x=600, y=150

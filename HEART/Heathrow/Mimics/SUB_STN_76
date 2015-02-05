@@ -1,0 +1,71 @@
+load mimic_libutil
+load ocb_barcis
+load ocb_monitored
+load transformer
+
+
+!************* BUSBAR 76 *************!
+
+object busbar_76
+
+begin
+
+tfg = black x = 170 y = -55 add text ("76",ch = 25) clear
+
+x = -150 y = -25 add x = 200 add line(lw=4,fg=red) clear
+lw = 2
+x = -125 y = -25 add y -= 50 add line (fg=red) clear
+x = -75 y = -25 add y += 50 add line (fg=red) clear
+x = -25 y = -25 add y -= 50 add line (fg=red) clear
+x =  25 y = -25 add y -= 50 add line (fg=red) clear
+x =  75 y = -25 add y -= 50 add line (fg=red) clear
+x =  125 y = -25 add y += 50 add line (fg=red) clear
+x =  175 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = -125 y = -50 ocb_mont(500,650,20,30,heathro2,1,"top")
+x = -75  y = 0 ocb_mont(500,660,21,31,heathro2,2,"btm")
+x = -25  y = -50 ocb_mont(500,670,22,32,heathro2,3,"top")
+x =  25  y = -50 ocb_mont(500,680,23,33,heathro2,4,"top")
+x =  75  y = -50 ocb_mont(500,690,24,34,heathro2,5,"top")
+x =  125  y = 0  ocb_mont(500,700,25,35,heathro2,6,"btm")
+x =  175  y = 0  ocb_mont(500,710,26,36,heathro2,7,"btm")
+
+
+scale = 100
+X =  125 Y = 45 add transformer("LT 1","")
+X =  175 Y = 45 add transformer("LT 2","") 
+
+
+scale = 256
+just=centrecentre
+tfg = black
+ch = 12
+x = -125 y = -80 text("P3")
+x = -125 y = -95 text("SS100")
+x = -75 y = 35 text("Spare")
+x = -35 y = -95 text("SS126")
+x = -25 y = -80 text("P1")
+x = 25 y = -95 text("SS M1/12")
+x = 25 y = -80 text("P2")
+x = 25 y = -85 text(" ")
+x = 85 y = -95 text("SS133")
+x = 75 y = -80 text("P2")
+
+x = 150 y = 80 add text("British Midlands")
+x = 150 y = 90 add text("Hangar")
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+x = -25 y = 0 busbar_76
+
+end
+
+mimic = main_object w=500,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

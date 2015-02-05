@@ -1,0 +1,464 @@
+! HEATHROW CMS - TRANSFORMER METER 
+
+loaded by: EAST_INTAKE, NORTH_INTAKE, SOUTH_INTAKE, 
+           SUB_STN_62, WEST_INTAKE
+!
+
+load mimic_libutil
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type e_test_row =  db_alarm_config(db_addr,
+					   config_number,
+					   test_value)
+
+type e_test_table =  e_test_row[6]
+
+type panel_item_row = table(str=string(40))
+
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+object arrow
+begin
+fg=red
+x = 0 y = 0 add
+x -= 3 y -= 6 add
+x += 6 add 
+x -= 3 y += 6 add fill clear
+end
+
+
+!
+*************************************************************
+* TRANSFORMER METER OBJECT                                  *
+* this object is called from the Top Level variable (mimic) *
+*************************************************************
+!
+
+object transformer_meter(e_offset_kv=int,e_offset_a=int,
+                         src=source,sub=string,ident=string,range=string(10))
+
+var current_alarm = input  alarm_row_type
+var voltage_alarm = input  alarm_row_type
+
+var current_level_ip = input  e_db_row_type
+var voltage_level_ip = input  e_db_row_type
+
+var input_setpoint_a = input e_test_table
+var output_setpoint_a = output e_test_table
+
+var input_setpoint_kv = input e_test_table
+var output_setpoint_kv = output e_test_table
+
+var high_setpoint_panel_a = panel int
+var low_setpoint_panel_a = panel int
+
+var high_setpoint_panel_kv = panel real
+var low_setpoint_panel_kv = panel real
+
+var  main_menu = menu string(80)
+var  temp_sps = loopback string
+
+var amp_sensor_bg = loopback  colour
+var volt_sensor_bg = loopback  colour
+
+var  items_added = loopback int
+
+var point_a = loopback  string
+var point_b = loopback  string
+var point_c = loopback  string
+var point_d = loopback  string
+var point_e = loopback  string
+
+
+var amp_scale_1 = real
+var amp_scale_2 = real
+var amp_scaler = real
+var volt_scale_1 = real
+var volt_scale_2 = real
+var volt_scaler = real
+var amp_bar_length = int
+var volt_bar_length = int
+var setpoint_scaler = int
+
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source current_alarm then 
+   begin
+
+   set source current_alarm = src
+   set filter current_alarm.db_addr = lim_eq
+   set limit current_alarm.db_addr = db_address(int(e1) + e_offset_a - 1)
+   set persist current_alarm 
+   request current_alarm
+
+   set source voltage_alarm = src
+   set filter voltage_alarm.db_addr = lim_eq
+   set limit voltage_alarm.db_addr = db_address(int(e1) + e_offset_kv -1)
+   set persist voltage_alarm 
+   request voltage_alarm
+
+   set source current_level_ip = src
+   set filter current_level_ip.db_addr = lim_eq
+   set limit current_level_ip.db_addr = db_address(int(e1) + e_offset_a - 1)
+   set persist current_level_ip 
+   request current_level_ip
+
+   set source voltage_level_ip = src
+   set filter voltage_level_ip.db_addr = lim_eq
+   set limit voltage_level_ip.db_addr = db_address(int(e1) + e_offset_kv -1)
+   set persist voltage_level_ip 
+   request voltage_level_ip
+
+   set source    input_setpoint_a = src
+   set filter    input_setpoint_a.db_addr = lim_eq
+   set limit     input_setpoint_a.db_addr = db_address(int(e1) + e_offset_a - 1)
+   set mayexist  input_setpoint_a
+   set mustexist input_setpoint_a.db_addr
+   set mustexist input_setpoint_a.config_number
+   set persist   input_setpoint_a
+   request       input_setpoint_a
+
+   set source    input_setpoint_kv = src
+   set filter    input_setpoint_kv.db_addr = lim_eq
+   set limit     input_setpoint_kv.db_addr = db_address(int(e1) + e_offset_kv - 1)
+   set mayexist  input_setpoint_kv
+   set mustexist input_setpoint_kv.db_addr
+   set mustexist input_setpoint_kv.config_number
+   set persist   input_setpoint_kv
+   request       input_setpoint_kv
+
+
+   end
+
+! MAIN MENU !
+
+just = centrecentre
+w=60 h=60 
+set rect main_menu
+set title main_menu="Meter Menu"
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+
+   case main_menu of
+        "Alter High Current Alarm Level"
+            begin
+            set title high_setpoint_panel_a = "Alter High Alarm Level"
+            set unpinned high_setpoint_panel_a
+            request high_setpoint_panel_a
+            end
+
+        "Alter Low Current Alarm Level"
+            begin
+            set title low_setpoint_panel_a = "Alter Low Alarm Level"
+            set unpinned low_setpoint_panel_a
+            request low_setpoint_panel_a
+            end
+
+        "Alter High Voltage Alarm Level"
+            begin
+            set title high_setpoint_panel_kv = "Alter High Alarm Level"
+            set unpinned high_setpoint_panel_kv
+            request high_setpoint_panel_kv
+            end
+
+        "Alter Low Voltage Alarm Level"
+            begin
+            set title low_setpoint_panel_kv = "Alter Low Alarm Level"
+            set unpinned low_setpoint_panel_kv
+            request low_setpoint_panel_kv
+            end
+
+        default
+            begin
+            end
+
+   set invalid main_menu
+   end
+
+
+
+! SELECT BG COLOUR !
+
+if current_alarm.alarm_status == w_note then
+
+   amp_sensor_bg = flashred
+
+else if current_alarm.alarm_status == w_clr then
+
+   amp_sensor_bg = red
+
+else amp_sensor_bg = yellow
+
+
+if voltage_alarm.alarm_status == w_note then
+   
+   volt_sensor_bg = flashred
+
+else if voltage_alarm.alarm_status == w_clr then
+   
+   volt_sensor_bg = red
+
+else volt_sensor_bg = blue
+
+
+!SELECT SCALE !
+
+if range == "0-400A" then
+   begin
+   point_a = "0"
+   point_b = "100"
+   point_c = "200"
+   point_d = "300"
+   point_e = "400"
+   amp_scale_1 = current_level_ip.e_value
+   amp_bar_length = int(amp_scale_1/2)
+   end
+
+if range == "0-800A" then
+   begin
+   point_a = "0"
+   point_b = "200"
+   point_c = "400"
+   point_d = "600"
+   point_e = "800"
+   amp_scale_1 = current_level_ip.e_value
+   amp_bar_length = int(amp_scale_1/4)
+   setpoint_scaler = 4
+   end
+
+if range == "0-1200A" then
+   begin
+   point_a = "0"
+   point_b = "300"
+   point_c = "600"
+   point_d = "900"
+   point_e = "1200 "
+   amp_scale_1 = current_level_ip.e_value
+   amp_bar_length = int(amp_scale_1/5.7)
+   end
+
+if range == "0-2000A" then
+   begin
+   point_a = "0"
+   point_b = "500"
+   point_c = "1000"
+   point_d = "1500"
+   point_e = "2000 "
+   amp_scale_1 = current_level_ip.e_value
+   amp_bar_length = int(amp_scale_1/10)
+   end
+
+
+
+volt_scaler = 1
+volt_scale_1 = voltage_level_ip.e_value
+volt_scale_2 = volt_scale_1 - 9.5
+volt_bar_length = int((volt_scale_2)*66.67)
+
+
+! DRAW METER !
+
+just = centrecentre
+rect(fg=decoroff,h=200,w=220)
+x -= 110 y += 100 add y -= 200 add x += 220 add line(lw=1,fg=decorlight) clear
+x = 110 y = -100 add y += 200 add x -= 220 add line(lw=1,fg=decorshadow) clear
+x = -0   y = -85 text (ch=20,tfg=black,ident)
+x = -0   y = -65 text (ch=20,tfg=black,sub)
+
+x = -100 y = 42 text (point_a,tfg=black,ch=10)
+x = -50  y = 42 text (point_b,tfg=black,ch=10)
+x =   0  y = 42 text (point_c,tfg=black,ch=10)
+x =  50  y = 42 text (point_d,tfg=black,ch=10)
+x =  98 y = 42 text (point_e,tfg=black,ch=10)
+x = 0   y = 90  text ("Current (A)",tfg=black,ch=12)
+
+x = -100 y = -20 text ("9.5",tfg=black,ch=10)
+x = -50  y = -20 text ("10.25",tfg=black,ch=10)
+x =   0  y = -20 text ("11",tfg=black,ch=10)
+x =  50  y = -20 text ("11.75",tfg=black,ch=10)
+x =  98 y = -20 text ("12.5",tfg=black,ch=10)
+x = 0   y = 28 text ("Voltage (KV)",tfg=black,ch=12)
+
+x = 0 y = -45 text (realf=Fixed1,tfg=black,ch=20,amp_scale_1+
+                    " A at "+volt_scale_1+" KV")
+
+x = -100 y = 55 add y = 50 add x = -50 add y = 55 add y = 50 add 
+x = 0 add y = 55 add y = 50 add x = 50 add y = 55 add y = 50 add
+x = 100 add y = 55 add line(fg=black,lw=2) clear
+
+
+x = -100 y = -5 add y = -10 add x = -50 add y = -5 add y = -10 add 
+x = 0 add y = -5 add y = -10 add x = 50 add y = -5 add y = -10 add
+x = 100 add y = -5 add line(fg=black,lw=2)
+
+
+if current_alarm.alarm_status == w_note then
+   begin
+   amp_sensor_bg = flashred
+   amp_bar_length = 200
+   end
+
+else if current_alarm.alarm_status == w_clr then
+   begin
+   amp_sensor_bg = red
+   amp_bar_length = 200
+   end
+
+else amp_sensor_bg = yellow
+
+
+if voltage_alarm.alarm_status == w_note then
+   begin   
+   volt_sensor_bg = flashred
+   volt_bar_length = 200
+   end
+
+else if voltage_alarm.alarm_status == w_clr then
+   begin   
+   volt_sensor_bg = red
+   volt_bar_length = 200
+   end
+
+else volt_sensor_bg = blue
+
+
+if amp_bar_length > 200 then amp_bar_length = 200
+if amp_bar_length < 0 then  amp_bar_length = 0
+ 
+just = centreleft
+x = -100 y = 70 rect(w=amp_bar_length,h=20,fg=amp_sensor_bg) clear
+x = -100 y = 80 add y -= 20 add x += 200 add line(lw=1,fg=decorshadow) clear
+x = 100 y = 60 add y += 20 add x -= 200 add line(lw=1,fg=decorlight) clear
+
+if volt_bar_length > 200 then volt_bar_length = 200
+if volt_bar_length < 0 then   volt_bar_length = 0
+
+just = centreleft
+x = -100 y = 10 rect(w=volt_bar_length,h=20,fg=volt_sensor_bg) clear
+x = -100 y = 20 add y -= 20 add x += 200 add line(lw=1,fg=decorshadow) clear
+x = 100 y = 0 add y += 20 add x -= 200 add line(lw=1,fg=decorlight) clear
+
+
+! HIGH AND LOW LEVEL INDICATORS !
+
+! High Level Current Indication !
+x = -100 
+x += int(input_setpoint_a[1].test_value)/setpoint_scaler y = 60 arrow
+
+! Low Level Current Indication !
+x = -100
+x += int(input_setpoint_a[2].test_value)/setpoint_scaler y = 60 arrow
+
+! High Level Voltage Indication !
+x = -100
+x += int(input_setpoint_kv[1].test_value*12.5)-int(12.5*9.5) y = 0 arrow
+
+! Low Level Voltage Indication !
+
+
+
+! CONFIGURE MENU !
+
+if valid input_setpoint_a and valid input_setpoint_kv then
+   temp_sps = "Voltage and Current High and Low Inputs"
+x=0 y=90 
+w=75 h=170
+set rect main_menu
+set title main_menu = temp_sps
+
+if invalid items_added then
+  begin
+  set add main_menu   = "Alter High Current Alarm Level"
+  set add main_menu   = "Alter Low Current Alarm Level"
+  set add main_menu   = "Alter High Voltage Alarm Level"
+  set add main_menu   = "Alter Low Voltage Alarm Level"
+  items_added = 1
+  end
+
+
+! WRITE INPUT TO SERVER !
+
+if valid high_setpoint_panel_a and high_setpoint_panel_a > input_setpoint_a[2].test_value then
+   begin
+   set source output_setpoint_a = src
+   set old_value output_setpoint_a = input_setpoint_a
+   set value output_setpoint_a = input_setpoint_a
+   set value output_setpoint_a[1].test_value = high_setpoint_panel_a
+   request output_setpoint_a
+   set invalid high_setpoint_panel_a
+   end
+
+if valid low_setpoint_panel_a and low_setpoint_panel_a < input_setpoint_a[1].test_value then 
+   begin
+   set source output_setpoint_a = src
+   set old_value output_setpoint_a = input_setpoint_a
+   set value output_setpoint_a = input_setpoint_a
+   set value output_setpoint_a[2].test_value = low_setpoint_panel_a
+   request output_setpoint_a
+   set invalid low_setpoint_panel_a
+   end
+
+if valid high_setpoint_panel_kv and high_setpoint_panel_kv > input_setpoint_kv[2].test_value then
+   begin
+   set source output_setpoint_kv = src
+   set old_value output_setpoint_kv = input_setpoint_kv
+   set value output_setpoint_kv = input_setpoint_kv
+   set value output_setpoint_kv[1].test_value = high_setpoint_panel_kv
+   request output_setpoint_kv
+   set invalid high_setpoint_panel_kv
+   end
+
+if valid low_setpoint_panel_kv and low_setpoint_panel_kv < input_setpoint_kv[1].test_value then 
+   begin
+   set source output_setpoint_kv = src
+   set old_value output_setpoint_kv = input_setpoint_kv
+   set value output_setpoint_kv = input_setpoint_kv
+   set value output_setpoint_kv[2].test_value = low_setpoint_panel_kv
+   request output_setpoint_kv
+   set invalid low_setpoint_panel_kv
+   end
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+y = -50 transformer_meter(161,155,heathrow,"EAST","1","0-800A")
+
+
+
+end
+
+mimic = main_object w=400,h=400,just=centrecentre,bg=gold,resizable

@@ -1,0 +1,83 @@
+load mimic_libutil
+load SUB_STN_120_HELP
+load hv_lib
+
+
+!*********** BUSBAR 120 ************!
+
+object busbar_120
+var helpstr = help string(30)
+var line_col=colour
+begin
+   	scale=256
+   	just=centrecentre
+   	x=20 y=20  w=500 h=500
+   	set text helpstr = "sub_stn_120_help"
+
+	line_col=magenta3
+	just = centrecentre
+
+	tfg = black x =175 y -= 35 add text ("120",ch = 25) clear
+	x = -175 y = 0 add x += 350 add line(lw=4,fg=line_col) clear
+
+	lw=2
+
+	x =   -150 y = 0 add y += 65 add line (fg=line_col) clear	
+	x =  -100 y = 0 add y += 65 add line (fg=line_col) clear
+	x =   -50 y = 0 add y -= 65 add line (fg=line_col) clear
+	x =     0 y = 0 add y += 50 add line (fg=line_col) clear
+	x =   100 y = 0 add y -= 65 add line (fg=line_col) clear
+	x =   150 y = 0 add y += 65 add line (fg=line_col) clear
+	x =    -15 y = 50 add x +=30 add line line (fg=line_col) clear
+	x =    -10 y = 55 add x +=20 add line line (fg=line_col) clear
+	x =    -5   y = 60 add x +=10 add line line (fg=line_col) clear
+
+	x =   -150 y =155 add y +=25 add line (fg=line_col) clear	
+	x =  -100 y = 155 add y += 25 add line (fg=line_col) clear
+	x =   150 y = 155 add y += 25 add line (fg=line_col) clear
+	!scale = 120!
+	x  = -150 y = 25 ocb_mont_lib(2600,2500,100,1010,heathro3,1,"btm")
+	x = -100 y = 25 ocb_mont_lib(2600,2510,101,1011,heathro3,2,"btm")
+	x = -50 y = -25 ocb_mont_lib(2600,2520,102,1012,heathro3,3,"top")
+	x = 0 y = 25 ocb_mont_lib(2600,2530,103,1013,heathro3,4,"sect",angle=180)
+	!scale=130
+	x = 0 y = 25 hv_lib_earth_switch(2600,2530,103,heathro3,"btm")!
+	
+	scale=256
+	x = 50 y =0 ocb_mont_lib(2600,2540,104,1014,heathro3,5,"sect",angle=90)
+	x = 100 y = -25 ocb_mont_lib(2600,2550,105,1015,heathro3,6,"top")
+	x = 150 y = 25 ocb_mont_lib(2600,2560,106,1016,heathro3,7,"btm")
+
+	scale = 350
+	x = -150 y=110 hv_lib_meter(2600,110,1001,2583,2582,heathro3,"400A","PANEL 1")
+	x = -100 y= 110 hv_lib_meter(2600,111,1002,2585,2584,heathro3,"400A","PANEL 2")
+	x = -50 y =-110 hv_lib_meter(2600,112,1003,2587,2586,heathro3,"400A","PANEL 3")
+	x = 100 y =-110 hv_lib_meter(2600,115,1004,2589,2588,heathro3,"400A","PANEL 6")
+	x = 150 y = 110 hv_lib_meter(2600,116,1005,2591,2590,heathro3,"400A","PANEL 7")
+
+	scale = 256
+	x = -150 y = 200  transformer_lib("T3","LOCAL")
+	x = - 100 y = 200  transformer_lib("T 1","LOCAL")
+	x = 150 y = 200  transformer_lib("T 2","")
+
+	scale = 260
+	tfg = black ch =12
+	x = -150 y = 235 text("Pier 5 ")
+	x = -100 y = 235 text("Pier 5")
+	x = -88y = 248 text("Extension")
+	x = -50 y = -170 text("SS121 P8")
+	x = 100 y =-170 text("SS38 P1")
+	x = 150 y = 235 text("Pier 5")
+	x = 162 y =248 text("Extension")
+	x = 5 y =70 text("L.Hand")
+	x = 5 y =82 text("Bus Sect")
+	x = 5 y =94 text("Earth Switch")
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=-10 Y=-44 busbar_120
+end
+
+mimic = MAIN_OBJECT W=500, h=500, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE

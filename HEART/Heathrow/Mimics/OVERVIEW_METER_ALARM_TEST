@@ -1,0 +1,88 @@
+! Heathrow CMS :- OVERVIEW METER ALARM TEST 
+
+  Loaded by :- HV_OVERVIEW_METERS
+!
+
+
+load mimic_libutil
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(alarm_status)
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+!
+************************************************************
+* METER ALARM TEST                                         *
+* this object checks to see if an METER is in alarm        *
+************************************************************
+!
+
+object meter_test(e_offset=int,src=source)=int
+
+var meter_status = int
+var meter_alarm = input alarm_row_type
+
+
+begin
+
+! ************* GET INFORMATION FROM SERVER **************** !
+
+
+if invalid get source meter_alarm then
+
+   begin
+
+   set source meter_alarm = src
+   set filter meter_alarm.db_addr = lim_eq
+   set limit meter_alarm.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist meter_alarm 
+   request meter_alarm
+
+   end
+
+! ************** METER STATUS VARIABLE DECISION **************** !
+
+if meter_alarm.alarm_status == w_note then
+
+        meter_status = 1
+
+else if meter_alarm.alarm_status == w_clr then
+
+        meter_status = 2
+
+else
+        meter_status = 0
+
+meter_test = meter_status
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=100,h=100,just=centrecentre,fg=white,bg=black,resizable

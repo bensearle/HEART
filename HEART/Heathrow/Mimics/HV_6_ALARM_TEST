@@ -1,0 +1,64 @@
+load mimic_libutil
+load ocb_alarm_test
+
+
+object hv_6_alarm_status = int
+begin
+
+if sub_alarm(7000,7930,heathrow) > 0 
+or sub_alarm(7000,7940,heathrow) > 0  
+or sub_alarm(7000,7950,heathrow) > 0  
+or sub_alarm(7000,7960,heathrow) > 0 
+or sub_alarm(7000,7970,heathrow) > 0 
+or sub_alarm(7000,8360,heathrow) > 0 
+or sub_barcis_alarm(23700,heathrow) > 0  
+or sub_barcis_alarm(23720,heathrow) > 0 
+or sub_barcis_alarm(23740,heathrow) > 0  
+or sub_barcis_alarm(23780,heathrow) > 0 
+or sub_barcis_alarm(23760,heathrow) > 0 
+or sub_alarm(7000,8330,heathrow) > 0 
+or sub_alarm(7000,8340,heathrow) > 0  
+or sub_alarm(7000,8350,heathrow) > 0  
+or sub_alarm(7000,7470,heathrow) > 0  
+or sub_alarm(7000,7480,heathrow) > 0  
+or sub_alarm(7000,7490,heathrow) > 0  
+or sub_alarm(7000,7500,heathrow) > 0  
+or sub_alarm(7000,7510,heathrow) > 0  
+or sub_alarm(7000,7520,heathrow) > 0  
+or sub_alarm(7000,7530,heathrow) > 0  
+or sub_alarm(7000,7540,heathrow) > 0 
+or sub_alarm(7000,7550,heathrow) > 0 
+or sub_barcis_alarm(25020,heathrow) > 0  
+or sub_barcis_alarm(25020,heathrow) > 0  
+or sub_barcis_alarm(25020,heathrow) > 0 
+or sub_barcis_alarm(23428,heathrow) > 0  
+or sub_barcis_alarm(23448,heathrow) > 0  
+or sub_barcis_alarm(23468,heathrow) > 0 
+or sub_barcis_alarm(23488,heathrow) > 0  
+or sub_alarm(7000,7300,heathrow) > 0  
+or sub_alarm(7000,7310,heathrow) > 0  
+or sub_alarm(7000,7320,heathrow) > 0  
+or sub_alarm(7000,7330,heathrow) > 0 
+or sub_alarm(7000,7340,heathrow) > 0  
+or sub_alarm(7000,7350,heathrow) > 0  
+or sub_alarm(7000,7360,heathrow) > 0  
+or sub_alarm(7000,7370,heathrow) > 0  
+or sub_alarm(7000,7380,heathrow) > 0 
+or sub_alarm(7000,7390,heathrow) > 0  
+or sub_barcis_alarm(20596,heathrow) > 0  
+or sub_barcis_alarm(20520,heathrow) > 0  
+or sub_barcis_alarm(20500,heathrow) > 0  
+or sub_barcis_alarm(20540,heathrow) > 0 
+or sub_barcis_alarm(20560,heathrow) > 0 
+then
+  hv_6_alarm_status = 1
+else
+  hv_6_alarm_status = 0
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

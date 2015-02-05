@@ -1,0 +1,124 @@
+
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: SUB_STN_29                               **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 3.0 (For OS08 SAT)                  **!
+!** Date: 24/05/13                                       **!
+!** Changes made:                                        **!
+!**  - No changes from FAT (renumbering only).           **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.1 (For OS08 FAT)                  **!
+!** Date: 23/11/12                                       **!
+!** Changes made:                                        **!
+!**  - Label text update for panel 0, now connected to   **!
+!**    Sub 302                                           **!
+!**  - Change made as part of T3IB project.              **!
+!**                                                      **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 08/05/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 1.0 (For RTU29-02 FAT)              **!
+!** Date: 02/04/12                                       **!
+!** Changes made:                                        **!
+!**  - Points re-mapped from old OS08 to new OS29.       **!
+!**  - These changes have been made as part of the A1    **!
+!**    Centre decommissioning project.                   **!
+!**********************************************************!
+
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!************** BUSBAR 29 ****************!
+
+object busbar_29
+
+
+begin
+
+just = centrecentre
+
+tfg = black x = -250 y = 10 add text ("29",ch = 25) clear
+x = -325 y = 25 add x +=600 add line(lw=4,fg=magenta3) clear
+
+lw=2
+x =  -250 y = 25 add y += 50 add line (fg=magenta3) clear
+x =  -200 y = 25 add y += 50 add line (fg=magenta3) clear
+x =  -150 y = 25 add y += 50 add line (fg=magenta3) clear
+x =   -50 y = -25 add y += 50 add line (fg=magenta3) clear
+
+x =  -300 y = -25 add y += 50 add line (fg=magenta3) clear
+x =   -50 y = -25 add y += 50 add line (fg=magenta3) clear
+x =   50  y = -25 add y += 50 add line (fg=magenta3) clear
+
+x =   100 y = -25 add y += 50 add line (fg=magenta3) clear
+x =   150 y = 25 add y += 50 add line (fg=magenta3) clear
+x =   200 y = 25 add y += 50 add line (fg=magenta3) clear
+x =   250 y = 25 add y += 50 add line (fg=magenta3) clear
+
+scale = 120
+x = -300 y =  0 ocb_mont(32700,33230,2910,8056,heathro2,0,"top")
+x = -250 y = 50 ocb_mont(32700,33240,2911,8057,heathro2,1,"btm")
+x = -200 y = 50 ocb_mont(32700,33250,2912,8058,heathro2,2,"btm")
+x = -150 y = 50 ocb_mont(32700,33260,2913,8059,heathro2,3,"btm")
+x = -100 y = 50 ocb_mont(32700,33270,2914,8060,heathro2,4,"btm")
+x =  -50 y =  0 ocb_mont(32700,33280,2915,8061,heathro2,5,"top")
+x =    0 y = 25 ocb_mont(32700,33290,2916,8062,heathro2,6,"btm",angle=90)
+x =   50 y =  0 ocb_mont(32700,33300,2917,8063,heathro2,7,"top")
+x =  100 y =  0 ocb_mont(32700,33310,2918,8064,heathro2,8,"top")
+x =  150 y = 50 ocb_mont(32700,33320,2919,8065,heathro2,9,"btm")
+x =  200 y = 50 ocb_mont(32700,33330,2920,8066,heathro2,10,"btm")
+x =  250 y = 50 ocb_mont(32700,33340,2921,8067,heathro2,11,"btm")
+
+scale = 100
+x = -250 y = 95  transformer("T 1","")
+x = -200 y = 95  transformer("LT 3","")
+x = -150 y = 95  transformer("LT 2","")
+x = -100 y = 95  transformer("T 1","")
+!x =  100 y = 95  transformer("T 2","") Removed By Carl Cheetham PDS Ltd As Part Of T3 Pier 6 - Sub137 - 5021 -Project!
+x =  150 y = 95  transformer("LT 4","")
+x =  200 y = 95  transformer("LT 1","")
+x =  250 y = 95  transformer("T 2","")
+
+scale=260
+tfg=black ch=12
+x = -250 y = 125 text("Spare")
+x = -100 y = 125 text("HBS")
+!x = 100  y = 125  text("Spare")Removed By Carl Cheetham PDS Ltd As Part Of T3 Pier 6 - Sub137 - 5021 -Project!
+x = 250  y = 125 text("HBS")
+
+x = -300 y = -50 text("SS302")
+x = -300 y = -35 text("P10")
+
+x = -50 y = -50 text("SS132")
+x = -50 y = -35 text("P1")
+
+x = 50 y = -50 text("SS118")
+x = 50 y = -35 text("P6")
+
+x = 100 y = -50 text("SS137")
+x = 100 y = -35 text("P5")
+
+
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 25 y = -50 busbar_29
+
+
+end
+
+mimic = main_object w=650,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable

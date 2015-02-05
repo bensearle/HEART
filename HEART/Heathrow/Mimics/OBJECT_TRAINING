@@ -1,0 +1,583 @@
+!**** OBJECT TRAINING MIMIC ****!
+
+load pmv_with_group_enable
+load ocb
+load transfer_pump
+load lv_generator
+load lv_contactor
+load transformer
+load hand_valve
+load mimic_libutil
+load OBJECT_TRAINING_HELP
+
+!**** SET B VALUE - Writes Boolean to Server ****!
+
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+!**** MIMIC INFO POPUP ****!
+
+object mimic_info_o(bg)
+begin
+
+just = centrecentre
+x = 0 y = -50 text(font=font_bold,ch=15,tfg=decorlight,"Mimic Information") clear
+x = -1 y = -51 text(font=font_bold,ch=15,tfg=black,"Mimic Information") clear
+
+x = -70 y = -40 add x += 140 add line(fg=black,lw=1) clear
+x = -70 y = -39 add x += 140 add line(fg=decorlight,lw=1) clear
+
+just = centreleft
+tfg = black
+ch = 12
+x = -115
+y = -10 text("Mimic Designed by Simon Williams")
+y += 15 text("specifically for Ray Edwards Training")
+y += 15 text("sessions!!!!!!!!")
+end
+
+mimic mimic_info_m = mimic_info_o just=centrecentre,w=400,h=150,bg=decoroff
+
+object mimic_info_popup
+var mimic_info = popup mimic_info_m
+begin
+set title mimic_info = "Copyright!"
+request mimic_info
+end
+
+!**** BOX OUTLINE OBJECT ****!
+
+object outline(ident=string,b_width=int,b_height=int,mask_width=int)
+begin
+just=centrecentre
+x = 0 y = 0 box(w=b_width,h=b_height,fg=decorshadow,lw=1) clear
+x = 1 y = 1 box(w=b_width,h=b_height,fg=decorlight,lw=1) clear
+x = 0 y = -b_height/2 rect(w=mask_width,h=10,fg=decoroff) clear
+x = 1 y = -b_height/2+1 text(font=font_bold,ch=12,tfg=decorlight,ident) clear
+x = 0 y = -b_height/2 text(font=font_bold,ch=12,tfg=black,ident) clear
+end
+
+!**** OBJECT VALVE INDICATION SELECT BUTTONS ****!
+
+object valve_indication_selects
+begin
+
+command_button(x=20,y=0,ch=10,"Open","",50,"")
+if selb(x=20,y=0,w=50,h=14) then
+   begin
+   set_b_value(b23005,heathro2,on)
+   set_b_value(b23006,heathro2,off)
+   end
+command_button(x=20,y=20,ch=10,"Close","",50,"")
+if selb(x=20,y=20,w=50,h=14) then
+   begin
+   set_b_value(b23006,heathro2,on)
+   set_b_value(b23005,heathro2,off)
+   end
+command_button(x=20,y=40,ch=10,"Travel","",50,"")
+if selb(x=20,y=40,w=50,h=14) then
+   begin
+   set_b_value(b23006,heathro2,off)
+   set_b_value(b23005,heathro2,off)
+   end
+command_button(x=20,y=60,ch=10,"Error","",50,"")
+if selb(x=20,y=60,w=100,h=14) then
+   begin
+   set_b_value(b23006,heathro2,on)
+   set_b_value(b23005,heathro2,on)
+   end
+command_button(x=10,y=80,ch=10,"Set","",25,"")
+if selb(x=10,y=80,w=25,h=14) then
+   begin
+   set_b_value(b23014,heathro2,on)
+   end
+command_button(x=40,y=80,ch=10,"Reset","",40,"")
+if selb(x=40,y=80,w=40,h=14) then
+   begin
+   set_b_value(b23014,heathro2,off)
+   end
+command_button(x=10,y=100,ch=10,"Set","",25,"")
+if selb(x=10,y=100,w=25,h=14) then
+   begin
+   set_b_value(b23015,heathro2,on)
+   end
+command_button(x=40,y=100,ch=10,"Reset","",40,"")
+if selb(x=40,y=100,w=40,h=14) then
+   begin
+   set_b_value(b23015,heathro2,off)
+   end
+command_button(x=10,y=120,ch=10,"Set","",25,"")
+if selb(x=10,y=120,w=25,h=14) then
+   begin
+   set_b_value(b23000,heathro2,on)
+   end
+command_button(x=40,y=120,ch=10,"Reset","",40,"")
+if selb(x=40,y=120,w=40,h=14) then
+   begin
+   set_b_value(b23000,heathro2,off)
+   end
+command_button(x=10,y=140,ch=10,"Set","",25,"")
+if selb(x=10,y=140,w=25,h=14) then
+   begin
+   set_b_value(b23001,heathro2,on)
+   end
+command_button(x=40,y=140,ch=10,"Reset","",40,"")
+if selb(x=40,y=140,w=40,h=14) then
+   begin
+   set_b_value(b23001,heathro2,off)
+   end
+end
+
+!**** OBJECT OCB INDICATION SELECT BUTTONS ****!
+
+object ocb_indication_selects
+begin
+
+command_button(x=20,y=0,ch=10,"Closed","",50,"")
+if selb(x=20,y=0,w=50,h=14) then
+   begin
+   set_b_value(b23027,heathro2,on)
+   set_b_value(b23028,heathro2,off)
+   end
+command_button(x=20,y=20,ch=10,"Tripped","",50,"")
+if selb(x=20,y=20,w=50,h=14) then
+   begin
+   set_b_value(b23028,heathro2,on)
+   set_b_value(b23027,heathro2,off)
+   end
+command_button(x=10,y=40,ch=10,"Unavailable","",70,"")
+if selb(x=10,y=40,w=50,h=14) then
+   begin
+   set_b_value(b23027,heathro2,off)
+   set_b_value(b23028,heathro2,off)
+   end
+command_button(x=10,y=80,ch=10,"Set","",25,"")
+if selb(x=10,y=80,w=25,h=14) then
+   begin
+   set_b_value(b23038,heathro2,on)
+   end
+command_button(x=40,y=80,ch=10,"Reset","",40,"")
+if selb(x=40,y=80,w=40,h=14) then
+   begin
+   set_b_value(b23038,heathro2,off)
+   end
+command_button(x=10,y=100,ch=10,"Set","",25,"")
+if selb(x=10,y=100,w=25,h=14) then
+   begin
+   set_b_value(b23039,heathro2,on)
+   end
+command_button(x=40,y=100,ch=10,"Reset","",40,"")
+if selb(x=40,y=100,w=40,h=14) then
+   begin
+   set_b_value(b23039,heathro2,off)
+   end
+command_button(x=10,y=120,ch=10,"Set","",25,"")
+if selb(x=10,y=120,w=25,h=14) then
+   begin
+   set_b_value(b23029,heathro2,on)
+   end
+command_button(x=40,y=120,ch=10,"Reset","",40,"")
+if selb(x=40,y=120,w=40,h=14) then
+   begin
+   set_b_value(b23029,heathro2,off)
+   end
+command_button(x=10,y=140,ch=10,"Set","",25,"")
+if selb(x=10,y=140,w=25,h=14) then
+   begin
+   set_b_value(b23030,heathro2,on)
+   end
+command_button(x=40,y=140,ch=10,"Reset","",40,"")
+if selb(x=40,y=140,w=40,h=14) then
+   begin
+   set_b_value(b23030,heathro2,off)
+   end
+command_button(x=10,y=160,ch=10,"Set","",25,"")
+if selb(x=10,y=160,w=25,h=14) then
+   begin
+   set_b_value(b23020,heathro2,on)
+   end
+command_button(x=40,y=160,ch=10,"Reset","",40,"")
+if selb(x=40,y=160,w=40,h=14) then
+   begin
+   set_b_value(b23020,heathro2,off)
+   end
+command_button(x=10,y=180,ch=10,"Set","",25,"")
+if selb(x=10,y=180,w=25,h=14) then
+   begin
+   set_b_value(b23021,heathro2,on)
+   end
+command_button(x=40,y=180,ch=10,"Reset","",40,"")
+if selb(x=40,y=180,w=40,h=14) then
+   begin
+   set_b_value(b23021,heathro2,off)
+   end
+end
+
+!**** OBJECT PUMP INDICATION SELECT BUTTONS ****!
+
+object pump_indication_selects
+begin
+
+command_button(x=20,y=0,ch=10,"Running","",50,"")
+if selb(x=20,y=0,w=50,h=14) then
+   begin
+   set_b_value(b23044,heathro2,on)
+   end
+command_button(x=20,y=20,ch=10,"Stopped","",50,"")
+if selb(x=20,y=20,w=50,h=14) then
+   begin
+   set_b_value(b23044,heathro2,off)
+   end
+command_button(x=10,y=80,ch=10,"Set","",25,"")
+if selb(x=10,y=80,w=25,h=14) then
+   begin
+   set_b_value(b23047,heathro2,on)
+   end
+command_button(x=40,y=80,ch=10,"Reset","",40,"")
+if selb(x=40,y=80,w=40,h=14) then
+   begin
+   set_b_value(b23047,heathro2,off)
+   end
+command_button(x=10,y=100,ch=10,"Set","",25,"")
+if selb(x=10,y=100,w=25,h=14) then
+   begin
+   set_b_value(b23051,heathro2,on)
+   end
+command_button(x=40,y=100,ch=10,"Reset","",40,"")
+if selb(x=40,y=100,w=40,h=14) then
+   begin
+   set_b_value(b23051,heathro2,off)
+   end
+command_button(x=10,y=120,ch=10,"Set","",25,"")
+if selb(x=10,y=120,w=25,h=14) then
+   begin
+   set_b_value(b23040,heathro2,on)
+   end
+command_button(x=40,y=120,ch=10,"Reset","",40,"")
+if selb(x=40,y=120,w=40,h=14) then
+   begin
+   set_b_value(b23040,heathro2,off)
+   end
+command_button(x=10,y=140,ch=10,"Set","",25,"")
+if selb(x=10,y=140,w=25,h=14) then
+   begin
+   set_b_value(b23041,heathro2,on)
+   end
+command_button(x=40,y=140,ch=10,"Reset","",40,"")
+if selb(x=40,y=140,w=40,h=14) then
+   begin
+   set_b_value(b23041,heathro2,off)
+   end
+end
+
+!**** OBJECT STANDBY SET INDICATION SELECT BUTTONS ****!
+
+object standby_set_indication_selects
+begin
+
+command_button(x=20,y=0,ch=10,"Mains On","",60,"")
+if selb(x=20,y=0,w=50,h=14) then
+   begin
+   set_b_value(b23060,heathro2,on)
+   set_b_value(b23061,heathro2,off)
+   end
+command_button(x=15,y=20,ch=10,"Standby On","",70,"")
+if selb(x=15,y=20,w=50,h=14) then
+   begin
+   set_b_value(b23060,heathro2,off)
+   set_b_value(b23061,heathro2,on)
+   end
+command_button(x=10,y=120,ch=10,"Set","",25,"")
+if selb(x=10,y=120,w=25,h=14) then
+   begin
+   set_b_value(b23071,heathro2,on)
+   end
+command_button(x=40,y=120,ch=10,"Reset","",40,"")
+if selb(x=40,y=120,w=40,h=14) then
+   begin
+   set_b_value(b23071,heathro2,off)
+   end
+command_button(x=10,y=140,ch=10,"Set","",25,"")
+if selb(x=10,y=140,w=25,h=14) then
+   begin
+   set_b_value(b23072,heathro2,on)
+   end
+command_button(x=40,y=140,ch=10,"Reset","",40,"")
+if selb(x=40,y=140,w=40,h=14) then
+   begin
+   set_b_value(b23072,heathro2,off)
+   end
+command_button(x=10,y=160,ch=10,"Set","",25,"")
+if selb(x=10,y=160,w=25,h=14) then
+   begin
+   set_b_value(b23073,heathro2,on)
+   end
+command_button(x=40,y=160,ch=10,"Reset","",40,"")
+if selb(x=40,y=160,w=40,h=14) then
+   begin
+   set_b_value(b23073,heathro2,off)
+   end
+command_button(x=10,y=180,ch=10,"Set","",25,"")
+if selb(x=10,y=180,w=25,h=14) then
+   begin
+   set_b_value(b23074,heathro2,on)
+   end
+command_button(x=40,y=180,ch=10,"Reset","",40,"")
+if selb(x=40,y=180,w=40,h=14) then
+   begin
+   set_b_value(b23074,heathro2,off)
+   end
+command_button(x=10,y=200,ch=10,"Set","",25,"")
+if selb(x=10,y=200,w=25,h=14) then
+   begin
+   set_b_value(b23075,heathro2,on)
+   end
+command_button(x=40,y=200,ch=10,"Reset","",40,"")
+if selb(x=40,y=200,w=40,h=14) then
+   begin
+   set_b_value(b23075,heathro2,off)
+   end
+command_button(x=10,y=220,ch=10,"Set","",25,"")
+if selb(x=10,y=220,w=25,h=14) then
+   begin
+   set_b_value(b23057,heathro2,on)
+   end
+command_button(x=40,y=220,ch=10,"Reset","",40,"")
+if selb(x=40,y=220,w=40,h=14) then
+   begin
+   set_b_value(b23057,heathro2,off)
+   end
+command_button(x=10,y=240,ch=10,"Set","",25,"")
+if selb(x=10,y=240,w=25,h=14) then
+   begin
+   set_b_value(b23058,heathro2,on)
+   end
+command_button(x=40,y=240,ch=10,"Reset","",40,"")
+if selb(x=40,y=240,w=40,h=14) then
+   begin
+   set_b_value(b23058,heathro2,off)
+   end
+end
+
+!**** OBJECT ACTIONABLE ALARM ****!
+
+object actionable_alarm_selects
+begin
+
+command_button(x=10,y=0,ch=10,"Set","",25,"")
+if selb(x=10,y=0,w=25,h=14) then
+   begin
+   set_b_value(b23081,heathro2,on)
+   end
+command_button(x=40,y=0,ch=10,"Reset","",40,"")
+if selb(x=40,y=0,w=40,h=14) then
+   begin
+   set_b_value(b23081,heathro2,off)
+   end
+end
+
+
+!**** DRAW VALVE, BUTTONS ETC... ****!
+
+object valve_drawing
+begin
+x = 0 y = 0
+just=centrecentre
+outline("Motorised Valve",200,180,110) clear
+
+x = -90 y = -35 add x += 80 add line(fg=blue,lw=4) clear
+x = 0 y = -70 valve_indication_selects clear
+
+tfg=black
+ch=10
+font=font_bold
+just=centreleft
+x = -90
+y = 15 add text("Failed to Open") clear
+y += 20 add text("Failed to Close") clear
+y += 20 add text("PLC A Failed") clear
+y += 20 add text("PLC B Failed") clear
+
+just=centrecentre
+scale = 180
+x = -50 y = -35 pmv_with_group_enable(23000,23002,23004,890,heathro2,"y","MV 1")
+end
+
+!****  DRAW OCB, BUTTONS ETC... ***!
+
+object ocb_drawing
+begin
+x = 0 y = 0
+just=centrecentre
+y = 20 outline("Circuit Breaker",200,220,105) clear
+
+x = -50 y = -75 add y += 70 add line(lw=3,fg=red) clear
+x = - 75 y = -5 add x += 50 add line(lw=6,fg=red) clear
+x = 0 y = -70 ocb_indication_selects clear
+
+tfg=black
+ch=10
+font=font_bold
+just=centreleft
+x = -90
+y = 15 add text("Close Selected") clear
+y += 20 add text("Trip Selected") clear
+y += 20 add text("Failed to Close") clear
+y += 20 add text("Failed to Trip") clear
+y += 20 add text("PLC A Failed") clear
+y += 20 add text("PLC B Failed") clear
+
+scale = 150
+x = -50 y = -40 ocb(23020,23025,891,800,heathro2,1,"top")
+end
+
+!**** DRAW PUMP, BUTTONS ETC... ****!
+
+object pump_drawing
+begin
+x = 0 y = 0
+just=centrecentre
+outline("Pump",200,180,50) clear
+
+x = -90 y = -38 add x += 80 add line(fg=blue,lw=4) clear
+x = 0 y = -70 pump_indication_selects clear
+
+tfg=black
+ch=10
+font=font_bold
+just=centreleft
+x = -90
+y = 15 add text("Failed to Start") clear
+y += 20 add text("Failed to Stop") clear
+y += 20 add text("PLC A Failed") clear
+y += 20 add text("PLC B Failed") clear
+
+just=centrecentre
+scale = 200
+x = -50 y = -40 transfer_pump(23040,23042,892,heathro2)
+end
+
+!**** DRAW STANDBY SET, BUTTONS ETC... ****!
+
+object standby_set_drawing
+begin
+x = 0 y = 0
+just=centrecentre
+y = 50 outline("Standby Set",200,280,85) clear
+
+x = -60 y = -80 add y += 115 add line(fg=blue,lw=2) clear
+x = -30 y = -60 add y += 95 add line(fg=blue,lw=2) clear
+x = -70 y =35 add x += 50 add line(fg=blue,lw=4) clear
+x = 0 y = -70 standby_set_indication_selects clear
+
+tfg=black
+ch=10
+font=font_bold
+just=centreleft
+x = -90
+y = 55 add text("Common Alarm") clear
+y += 20 add text("Oil Low") clear
+y += 20 add text("Water Hot") clear
+y += 20 add text("Overload") clear
+y += 20 add text("Start Fail") clear
+y += 20 add text("PLC A Failed") clear
+y += 20 add text("PLC B Failed") clear
+
+just=centrecentre
+scale = 140
+x = -25 y = -50 lv_generator(23057,23070,893,0,heathro2)
+scale = 100
+x =  -65 y = -50 transformer("LT 1","") 
+scale = 120
+x = -45 y = 0 lv_changeover(23057,23060,894,heathro2)
+end
+
+!**** DRAW HAND VALVE ****!
+
+object hand_valve_drawing
+begin
+x = 0 y = 0
+just=centrecentre
+outline("Hand Valve",200,100,80) clear
+
+y = 25
+x = -70 add x += 140 add line(fg=blue,lw=4) clear
+
+scale = 180
+x = 0 y = 25 hand_valve(angle=0,23080,"1",heathro2)
+end
+
+!**** DRAW ACTION ALARM BUTTONS ****!
+
+object actionable_alarm_drawing
+begin
+x = 0 y = 0
+just=centrecentre
+outline("Actionable Alarm",200,100,115) clear
+
+actionable_alarm_selects
+
+tfg=black
+ch=10
+font=font_bold
+just=centreleft
+x = -90
+y = 5 add text("Request Alarm") clear
+
+end
+
+!**** MIMIC INFO POPUP REQUEST ****!
+
+object mimic_info_popup_drawing
+begin
+
+command_button(x=20,y=0,ch=10,"Mimic Info","",80,"")
+if selb(x=20,y=0,w=50,h=14) then
+   begin
+   mimic_info_popup
+   end
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -280 y = -140 valve_drawing clear
+x = -280 y = 100 ocb_drawing clear
+x = 0 y = -140 pump_drawing clear
+x = 0 y = 100 standby_set_drawing clear
+x = 280 y = -180 hand_valve_drawing clear
+x = 280 y = 60 actionable_alarm_drawing clear
+x = 280 y = 280 mimic_info_popup_drawing clear
+
+tfg=black
+just=centreleft
+ch=10
+font=font_bold
+x = 181 y = 181 text(tfg=decorlight,"NOTE")
+x = 180
+y = 180 text("NOTE")
+y += 15 text("All Set / Reset bits have alarms associated")
+y += 15 text("with them, except the OCB close and trip")
+y += 15 text("selected bits.")
+
+x = 1 y = -279 text(just=centrecentre,ch=20,tfg=decorlight,"Training Mimic")
+x = 0 y = -280 text(just=centrecentre,ch=20,tfg=black,"Training Mimic")
+
+x = -70 y = -265 add x += 140 add line(lw=1,fg=black) clear
+x = -70 y = -264 add x += 140 add line(lw=1,fg=decorlight) clear
+end
+
+mimic = main_object w=860,h=640,just=centrecentre,fg=white,bg=decoroff,resizable

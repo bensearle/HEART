@@ -1,0 +1,223 @@
+load mimic_libutil
+load ocb
+load ocb_monitored
+load ocb_barcis
+load ocb_barcis
+load transformer
+load lv_generator
+load lv_generator_nrc
+load lv_contactor
+load lv_contactor_nrc
+load fuse_sw
+load oil_switch
+
+
+!***************** BUSBAR 37 *****************!
+
+object bar_37
+begin
+tfg = white x = -100 y = -55 add text ("37",ch =25) clear
+lw=2
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+x =  100  y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x =   -100 y =  0    ocb_mont(7000,7510,441,691,heathrow,1,"btm")
+x =   -50  y =  0    ocb_mont(7000,7520,442,692,heathrow,2,"btm")
+x =     0  y =  -50  ocb_mont(7000,7530,443,693,heathrow,3,"top")
+x =    50  y =  -50  ocb_mont(7000,7540,444,694,heathrow,4,"top")
+x =    100 y =  0    ocb_mont(7000,7550,445,695,heathrow,5,"btm")
+
+scale = 100
+
+X =  -100  Y = 45 transformer("BA","FEGP")
+X =  -50   Y = 45 transformer("LT 2","LOCAL")
+X =   100  Y = 45 transformer("LT 1","LOCAL")
+
+scale = 260
+x = -100 y = 70 text(tfg=white,ch=12,just=centrecentre,"HAL")
+x = -100 y = 85 text(tfg=white,ch=12,just=centrecentre,"FEGP")
+end
+
+
+!***************** BUSBAR 56 ******************!
+
+object bar_56
+begin
+tfg = white x = 45 y = -20 add text ("56",ch =25) clear
+
+lw=2
+scale = 260
+X=100 Y=50  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=129 Y=50  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=95 Y=135  ADD
+x=135  ADD
+line (fg=red,lw=2) clear
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+x =  100  y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x =   -100 y = -50 ocb_barcis(23700,973,1248,heathrow,1,"top")
+x =   -50  y =  0  ocb_barcis(23720,974,1249,heathrow,2,"btm")
+x =     0  y =  0  ocb_barcis(23740,975,1250,heathrow,3,"btm")
+x =    50  y = -50 ocb_barcis(23780,977,1252,heathrow,4,"top")
+x =   100  y =   0 ocb_barcis(23760,976,1251,heathrow,5,"btm")
+
+scale = 100
+
+X =  -50 Y = 45 transformer("BA","FEGP")
+X =  0   Y = 45 transformer("LT 1","LOCAL")
+X =  100 Y = 45 transformer("LT 2","LOCAL")
+
+scale = 140
+x = 140 y = 45 lv_generator_nrc(25212,23806,23802,241,heathrow,"common")
+scale = 120
+x = 115 y = 100 lv_changeover_nrc(23806,242,heathrow)
+
+end
+
+
+!*************** BUSBAR 57 ****************!
+
+object bar_57
+begin
+tfg = white x = 20 y = -55 text ("57",ch =25) clear
+
+X = 50 Y = 25 text("Spare",tfg=white,ch=12,just=centrecentre)
+x = 110 y = 25 text("E/Pier",tfg=white,ch=12,just=centrecentre)
+!x = 110 y = 35 text("Site Supply",tfg=white,ch=12,just=centrecentre)!
+
+lw=2
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   50  y = -25 add y += 30 add line (fg=red) clear
+x =   80  y = -25 add y -= 50 add line (fg=red) clear
+x =  110  y = -25 add y += 30 add line (fg=red) clear
+
+scale = 120
+x =   -100 y = -50 ocb_mont(7000,7930,483,733,heathrow,1,"top")
+x =   -50  y =  0  ocb_mont(7000,7940,484,734,heathrow,2,"btm")
+x =     0  y =  0  ocb_mont(7000,7950,485,735,heathrow,3,"btm")
+x =    50  y =  0  ocb_mont(7000,7960,486,736,heathrow,4,"btm")
+x =    80  y = -50 ocb_mont(7000,7970,487,737,heathrow,5,"top")
+x =   110  y =  0  ocb_mont(7000,8360,579,1370,heathrow,6,"btm")
+
+scale = 100
+
+X =  -50 Y = 45 transformer("LT 1","LOCAL")
+X =  0   Y = 45 transformer("LT 2","LOCAL")
+
+end
+
+
+!**************** BUSBAR 87 *****************!
+
+object bar_87
+begin
+lw=2
+tfg = white x = 35 y = -20 add text ("87",ch =25) clear
+x = -50 y = -25 add x = 50 add line(lw=4,fg=red) clear
+x =  -30  y = -25 add y -= 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   30  y = -25 add y -= 50 add line (fg=red) clear
+
+scale=120
+x =   -30  y =  -50  ocb_mont(7000,8330,576,1367,heathrow,1,"top")
+x =     0  y =  0    ocb_mont(7000,8340,577,1368,heathrow,2,"btm")
+x =    30  y =  -50  ocb_mont(7000,8350,578,1369,heathrow,3,"top")
+
+scale=100
+X =  0   Y = 45 transformer("LT 1","")
+
+end
+
+
+!**************** BUSBAR 71 *******************!
+
+object bar_71
+begin
+lw=2
+tfg = white x = 100 y = -5 add text ("71",ch =25) clear
+x = -25 y = 25 add x = 125 add line(lw=4,fg=red) clear
+
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+
+x =  50 y = 25 add y += 30 add line (fg=red) clear
+x =  100 y = 25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25020,40,1310,heathrow,"c")
+
+x = 50 y = 50 hv_fuse(25022,41,1311,heathrow,"o")
+x = 100 y = 50 hv_fuse(25024,42,1312,heathrow,"c")
+
+scale = 100
+X =  100  Y = 95 add transformer("LT 1","LOCAL")
+
+scale=260
+tfg=white ch=12
+x = 10 y = -5 text("1")
+x = 60 y = 45 text("2")
+x = 110 y = 45 text("3")
+end
+
+
+!**************** BUSBAR 1 ****************!
+
+object bar_1
+begin
+lw=2
+tfg = white x = 65 y = -55 add text ("1",ch = 25) clear
+
+
+x = -125 y = -25 add x = 75 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =  -50  y = -25 add y -= 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   50  y = -25 add y += 50 add line (fg=red) clear
+
+
+scale = 120
+x =   -100 y =  -50  ocb_barcis(23428,961,1236,heathrow,1,"top")
+x =   -50  y =  -50  ocb_barcis(23448,962,1237,heathrow,2,"top")
+x =     0  y =    0  ocb_barcis(23468,963,1238,heathrow,3,"btm")
+x =    50  y =    0  ocb_barcis(23488,964,1239,heathrow,4,"btm")
+
+
+scale = 100
+
+X =  0 Y = 45 transformer("LT 2","LOCAL")
+X =  50   Y = 45 transformer("LT 1","LOCAL")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,52 @@
+! HEATHROW CMS - TRANSFORMER
+
+loaded by: HV_1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+           EAST_INTAKE, INTAKES, NORTH_INTAKE, SOUTH_INTAKE, 
+           SUB_STN_23, SUB_STN_32, SUB_STN_62, WEST_INTAKE
+!
+
+load mimic_libutil
+
+! 
+*****************************************************************
+* TRANSFORMER OBJECT                                            *
+* this object is called from the Top Level variable (mimic)     *
+*****************************************************************
+!
+
+object transformer(lline_1=string,lline_2=string)
+begin
+
+! DRAW TRANSFORMER !
+
+just = centrecentre
+rect(w=100,h=100,fg=decoroFF)
+clear
+x -= 50 y += 50 add
+y -= 100 add
+x += 100 add line(lw=1,fg=DECORLIGHT) clear
+y += 1 add
+y += 99 add
+x -= 99 add line(lw=1,fg=DECORSHADOW) clear
+y = -24 x = 0
+    x -=15 add circle(h=40,w=40,lw=6,fg = green4)
+    x +=30 circle(h=40,w=40,lw=6,fg=green4)
+x = 0 y = 0
+
+
+
+tfg= black
+ch = 35
+y = 22 add text (lline_1)
+clear
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+just = centrecentre
+scale = 100
+x = 50 transformer("Tx 1","500KVA") 
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,bg=grey,resizable

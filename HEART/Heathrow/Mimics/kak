@@ -1,0 +1,12 @@
+VAR pump_started_alarm = input  alarm_row_type
+VAR pump_stopped_alarm = input  alarm_row_type
+VAR pump_alarm = input  alarm_row_type
+VAR common_alarm = input  alarm_row_type
+VAR start_pump_discr = input  alarm_row_type
+VAR pump_started_discr = input  alarm_row_type
+VAR pump_stopped_discr = input  alarm_row_type
+VAR pump_alarm_discr = input  alarm_row_type
+VAR common_alarm_discr = input  alarm_row_type
+VAR failed_to_start = input  alarm_row_type
+VAR failed_to_stop = input  alarm_row_type
+

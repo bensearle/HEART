@@ -1,0 +1,448 @@
+! HEATHROW CMS - HV OVERVIEW
+ 
+loaded by:HV_OVERVIEW
+!
+
+load mimic_libutil
+
+type b_db_row_type = db_elements(db_addr,b_value)
+
+type c_db_row_type =  db_elements(db_addr,c_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type e_test_row =  db_alarm_config(db_addr,
+					   config_number,
+					   test_value)
+
+type e_test_table =  e_test_row[6]
+
+type panel_item_row = table(str=string(40))
+
+type menu_options_type = enum(
+           tag_message = "Alter Tagged Message",
+         untag_message = "Clear Tagged Message")
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var output op=b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var output op=c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=400,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var popup mss = mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+!
+************************************************************
+* METER OBJECT                                             *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object hv_overview_meter(b_offset=int,c_offset=int,
+                         e_offset=int,src=source,
+                         size=string,metname=string)
+
+var  current_alarm           = input alarm_row_type
+var  current_level_ip        = input e_db_row_type
+var  tag_message_ip          = input c_db_row_type
+var  transfer_of_service     = input b_db_row_type
+
+var  input_setpoint          = input e_test_table
+var  output_setpoint         = output e_test_table
+var  temp_menu               = menu string
+var  stand_control_menu      = menu menu_options_type
+var  high_setpoint_panel     = panel int
+var  low_setpoint_panel      = panel int
+var  tag_message_panel       = panel panel_item_row
+var  main_menu               = menu string(30)
+var  items_added             = loopback int
+var  temp_sps                = loopback string
+
+var  sensor_bg               = loopback colour
+var  meter_bg                = loopback colour
+var  amp_scale_1             = real
+var  amp_scale_2             = real
+var  scaler                  = real
+var  bar_length              = int
+var  bar_start               = int
+
+var  point_a                = loopback string
+var  point_b                = loopback string
+var  point_c                = loopback string
+var  point_d                = loopback string
+var  point_e                = loopback string
+var  point_f                = loopback int
+var  point_g                = loopback int
+var  point_h                = loopback int
+var  point_i                = loopback int
+
+
+begin
+! INITIALISATION !
+! REQUEST ENGINEERINGS FROM SCOPE !
+
+if invalid get source current_alarm then 
+
+   begin
+   
+   set source transfer_of_service = src
+   set filter transfer_of_service.db_addr = lim_eq
+   set limit transfer_of_service.db_addr = db_address(int(b1) + b_offset -1)
+   set persist transfer_of_service 
+   request transfer_of_service
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   set source current_alarm = src
+   set filter current_alarm.db_addr = lim_eq
+   set limit current_alarm.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist current_alarm 
+   request current_alarm
+
+   set source current_level_ip = src
+   set filter current_level_ip.db_addr = lim_eq
+   set limit current_level_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist current_level_ip 
+   request current_level_ip
+
+   set source    input_setpoint = src
+   set filter    input_setpoint.db_addr = lim_eq
+   set limit     input_setpoint.db_addr = db_address(int(e1) + e_offset - 1)
+   set mayexist  input_setpoint
+   set mustexist input_setpoint.db_addr
+   set mustexist input_setpoint.config_number
+   set persist   input_setpoint
+   request       input_setpoint
+
+   end
+
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w=60 h=60 
+set rect main_menu
+set title main_menu="Meter Menu"
+set remove main_menu="Alter Transfer of Service"
+set remove main_menu="Alter Tag Message"
+set remove main_menu="Clear Tag Message"
+set add main_menu="Alter Transfer of Service"
+set add main_menu="Alter Tag Message"
+set add main_menu="Clear Tag Message"
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+
+   case main_menu of
+        "Alter High Alarm Level"
+            begin
+            set title high_setpoint_panel = "Alter High Alarm Level"
+            set unpinned high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter Low Alarm Level"
+            begin
+            set title low_setpoint_panel = "Alter Low Alarm Level"
+            set unpinned low_setpoint_panel
+            request low_setpoint_panel
+            end
+ 
+        "Alter Transfer of Service"
+            begin
+            if transfer_of_service.b_value then
+               begin
+               set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+               end
+            else
+               set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+            end
+
+        "Alter Tag Message"
+            begin
+            set title tag_message_panel = "Modify Tag Message"
+            set label tag_message_panel.str = "Tag Message :"
+            set unpinned tag_message_panel
+            request tag_message_panel
+            end
+
+        "Clear Tag Message"
+            begin
+            set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+            end
+       
+        default
+            begin
+            end
+
+   set invalid main_menu
+   end
+
+
+
+
+! SELECT METER SIZE/TYPE !
+
+if size == "big_ammeter" then
+   begin
+
+   scaler = 1
+
+   point_a = "0"
+   point_b = "200"
+   point_c = "400"
+   point_d = "600"
+   point_e = "800"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/7.8)  !divide by changed from 2!
+   
+   bar_start = point_h/2
+
+
+   end
+
+
+if size == "small_ammeter" then
+   begin
+
+   scaler = 1
+
+   point_a = "0"
+   point_b = "100"
+   point_c = "200"
+   point_d = "300"
+   point_e = "400"
+   point_f = 160
+   point_g = 110
+   point_h = 96
+   point_i = 68
+
+   amp_scale_1 = int(current_level_ip.e_value)
+   amp_scale_2 = amp_scale_1 * scaler
+   bar_length = int(amp_scale_2/4.15)  !divide by changed from 2!
+   
+   bar_start = point_h/2
+
+
+   end
+
+
+! SELECT BAR COLOUR !
+
+if current_alarm.alarm_status == w_note then
+   begin   
+   sensor_bg = flashred
+   bar_length = 150
+   bar_start = point_h/2
+   end
+
+else if bar_length > 150 or bar_length < 0 or 
+   current_alarm.alarm_status == w_clr then
+   begin
+   sensor_bg = red
+   !bar_length = 150!
+   bar_start = point_h/2
+   end
+
+else if amp_scale_1 < 0 then sensor_bg = green
+
+else sensor_bg = yellow
+
+! SELECT METER BG !
+
+if transfer_of_service.b_value then
+  
+  meter_bg = orange
+
+else if tag_message_ip.c_value <> "" then 
+  
+  meter_bg = yellow
+ 
+else
+  meter_bg = decoroff     
+
+
+
+! DRAW METER !
+
+just = centrecentre
+x = 0 y = 0 rect(fg=meter_bg,h=point_f,w=80)
+x -= 40 y += point_f/2 add y -= point_f add x += 80 add line(lw=1,fg=decorlight) clear
+x = 40 y = -point_f/2 add y += point_f add x -= 80 add line(lw=1,fg=decorshadow) clear
+
+x = 0 y = 0 rect(fg=decoroff,h=point_g,w=70)
+x = 35 y = -point_g/2 add x -= 70 add y +=point_g add line(lw=1,fg=decorlight) clear
+x = 35 y = -point_g/2 add y += point_g add x -= 70 add line(lw=1,fg=decorshadow) clear
+
+y = -point_h/2 x = 3 add x = -2 add y = -point_h/4 add x = 3 add x = -2 add 
+y = 0 add x = 3 add x = -2 add y = point_h/4 add x = 3 add x = -2 add
+y = point_h/2 add x = 2 add line(fg=black,lw=2) clear
+
+x = -18 y = point_h/2 text (tfg=black,ch=12,point_a)
+x = -18 y = point_h/4 text (tfg=black,ch=12,point_b)
+x = -18 y = 0 text (tfg=black,ch=12,point_c)
+x = -18 y = -point_h/4 text (tfg=black,ch=12,point_d)
+x = -18 y = -point_h/2 text (tfg=black,ch=12,point_e)
+x = 25 y = -100 add  
+y = -point_i x = 0 text(tfg=black,font=font_bold,ch=16,metname)
+y = point_i x = 0 text(realf=fixed0,tfg=black,ch=16,amp_scale_2+" A")
+clear
+
+! TAG MESSAGE BOX !
+x = 0 y = 0
+w = 80 h = point_f
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+
+
+! DRAW BAR !
+
+just=centrecentre
+y = -point_h/2 x = 25 add x -= 20 add y += point_h add line(lw=1,fg=decorshadow) clear
+y = point_h/2 x = 5 add x += 20 add y -= point_h add line(lw=1,fg=decorlight) clear
+just = bottomcentre
+
+if bar_length > 100 then bar_length = 95
+if bar_length < 0 then  bar_length = 0
+
+y = bar_start x = 15 rect(w=20,h=bar_length,fg=sensor_bg) clear
+
+! CONFIGURE MENU !
+
+if valid input_setpoint then
+   temp_sps = "High = "+ int(input_setpoint[1].test_value) +"  Low = " +int(input_setpoint[2].test_value)
+x=0 y=90 
+w=75 h=170
+set rect main_menu
+set title main_menu = temp_sps
+
+if invalid items_added then
+  begin
+  set add main_menu   = "Alter High Alarm Level"
+  set add main_menu   = "Alter Low Alarm Level"
+  items_added = 1
+  end
+
+
+! WRITE INPUT TO SERVER !
+
+if valid high_setpoint_panel and high_setpoint_panel > input_setpoint[2].test_value then
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[1].test_value = high_setpoint_panel
+   request output_setpoint
+   set invalid high_setpoint_panel
+   end
+
+if valid low_setpoint_panel and low_setpoint_panel < input_setpoint[1].test_value then 
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[2].test_value = low_setpoint_panel
+   request output_setpoint
+   set invalid low_setpoint_panel
+   end
+
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=200
+
+x = 75 hv_overview_meter(18500,992,155,heathrow,"big_ammeter","Tx 1")
+x = 5 hv_overview_meter(18500,992,155,heathrow,"small_ammeter","Tx 1")
+
+end
+
+mimic = main_object w=300,h=300,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,185 @@
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: HV_15_SUB_STATIONS_B                     **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 07/05/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 1.0 (For RTU29-03 FAT)              **!
+!** Date: 02/04/12                                       **!
+!** Changes made:                                        **!
+!**  - Sub 51 re-mapped from old OS08 (heathrow) to new  **!
+!**    OS29 (heathro2).                                  **!
+!**  - These changes have been made as part of the A1    **!
+!**    Centre decommissioning project.                   **!
+!**********************************************************!
+
+load mimic_libutil
+load ocb_alarm_test
+load ocb_alarm_test_fp
+load sub_stn_51
+load sub_stn_138
+
+object call_box(height=int,width=int,rect_bg=colour,title=string)
+begin
+	x=0 y=0 rect(just=centrecentre,w=width,h=height,fg=rect_bg)
+	text(tfg=white,ch=25,title,just=centrecentre) clear
+
+	x=0 y=0
+	x -= width/2 y += height/2 add
+	y -= height add x += width
+	add line (fg=white) clear
+
+	x=0 y=0 
+	x -= width/2 y += height/2 add
+	x += width add y -= height
+	add line (fg=grey40) clear
+end
+
+
+!****************** SUB 51 ********************!
+
+object sub_symbol_51
+
+var call_var = popup  sub_stn_51
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+var return_8 = int
+ 
+begin
+return_1 = sub_alarm(32700,33630,heathro2)
+return_2 = sub_alarm(32700,33640,heathro2)
+return_3 = sub_alarm(32700,33650,heathro2)
+return_4 = sub_alarm(32700,33660,heathro2)
+return_5 = sub_alarm(32700,33670,heathro2)
+return_6 = sub_alarm(32700,33680,heathro2)
+return_7 = sub_alarm(32700,33690,heathro2)
+return_8 = sub_alarm(32700,33700,heathro2)
+ 
+if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_4 == 1
+or return_5 == 1 or return_6 == 1 or return_7 == 1 or return_8 == 1 then
+   begin
+     W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+   end
+else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_4 == 2
+or return_5 == 2 or return_6 == 2 or return_7 == 2 or return_8 == 2 then
+     begin
+       W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+     end
+else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_4 == 3
+or return_5 == 3 or return_6 == 3 or return_7 == 3 or return_8 == 3 then
+     begin
+       W=100 H=25 X=-25 Y=25 RECT(fg=red)
+     end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 51"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 51",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+!****************** SUB 138 HATCT ********************!
+
+object sub_symbol_138
+
+var call_var = popup  sub_stn_138
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+var rect_bg = loopback colour
+var line_col=colour
+begin
+
+
+! ** the return values are commented out until back indications are used
+	return_1 = fp_sub_ctrl_alarm(int,int,heathro2)
+	return_2 = fp_sub_ctrl_alarm(int,int,heathro2)
+	return_3 = fp_sub_ctrl_alarm(int,int,heathro2)
+	return_4 = fp_sub_ctrl_alarm(int,int,heathro2)
+	return_5 = fp_sub_ctrl_alarm(int,int,heathro2)
+	return_6 = fp_sub_ctrl_alarm(int,int,heathro2)
+	return_7 = fp_sub_ctrl_alarm(int,int,heathro2)
+
+
+	if 	return_1 == 1 or return_2 == 1 or return_3 == 1 or 
+		return_4 == 1 or return_5 == 1 or return_6 == 1 or 
+		return_7 == 1 then
+      	begin
+		rect_bg = magenta
+	end
+	else if 	return_1 == 2 or return_2 == 2 or return_3 == 2 or 
+		return_4 == 2 or return_5 == 2 or return_6 == 2 or 
+		return_7 == 2 then
+	begin
+		rect_bg = flashred
+	end
+	else if 	return_1 == 3 or return_2 == 3 or return_3 == 3 or 
+		return_4 == 3 or return_5 == 3 or return_6 == 3 or 
+		return_7 == 3 then
+	begin
+		rect_bg = red
+	end
+	else
+	begin
+		rect_bg = decoroff
+	end
+** !
+
+! ** remove the following line when back indications are used: ** !
+	rect_bg = decoroff
+
+	just=centrecentre
+	line_col = blue
+   	clear x =-60 y = 0 add x += 120 add line(fg=line_col,lw=4) clear
+
+	w=60 h=25 x=-55 y=0 call_box(25,60,rect_bg,"Sub")
+	set title call_var = "Sub Station 138"
+	if anyb then
+	      begin
+	    	request call_var
+	      end
+
+	w=60 h=25 x=55 y=0 call_box(25,60,rect_bg,"138")
+	set title call_var = "Sub Station 138"
+	if anyb then
+	      begin
+	    	request call_var
+	      end
+
+	scale=120
+	x = 0 y = 0	breaker("eclipse",29000,29160,1844,6154,int,HEATHRO2,4,"SECT",int)
+	scale=256
+	x = 10 y = 24	text("/5")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+sub_symbol_138
+end
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=aquamarine3,resizable

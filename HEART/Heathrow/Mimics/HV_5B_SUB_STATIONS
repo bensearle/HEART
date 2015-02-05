@@ -1,0 +1,65 @@
+load mimic_libutil
+load ocb_alarm_test
+load sub_stn_104
+load sub_stn_109
+
+!************** SUB 104 **************!
+
+object sub_symbol_104
+
+var call_var = popup  sub_stn_104
+
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+
+set title call_var = "Sub Station 104"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 104",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+!************** SUB 109 **************!
+
+object sub_symbol_109
+
+var call_var = popup  sub_stn_109
+
+begin
+  w=120 h=25 x=-25 y=25 rect(fg=decoroff)
+
+set title call_var = "Sub Station 109"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 35 y = 38 text(tfg=white,ch=25,"Sub 109",just=centrecentre) clear
+
+x = 95 y = 25 add x -= 120 add y += 25 add line (fg=white) clear
+x = 95 y = 25 add y += 25 add x -= 120 add line (fg=grey40) clear
+
+end
+
+
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+sub_symbol_104
+y+=100 sub_symbol_109
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,165 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!***********HV Ring 1***********!
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ocb_barcis
+load busbar_98
+load hv_1_sub_stations_test
+load hv_menu_bar
+load hv_hierarchy
+
+
+!********************** SUB 54 ********************!
+
+object sub_54
+
+begin
+
+sub_symbol_54
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=lightblue3) clear
+x = 50 y = -25 add y += 50 add line (fg=lightblue3) clear
+
+scale = 120
+x = 0 y = 0 ocb_barcis(23234,952,1227,heathrow,5,"top")
+x = 50 y = 0 ocb_barcis(23314,956,1231,heathrow,7,"top")
+
+scale = 260
+just = centrecentre
+tfg=white
+ch=12
+
+end
+
+
+!****************** SUB 82 *******************!
+
+object sub_82
+
+begin
+
+sub_symbol_82
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=lightblue3) clear
+x = 50 y = -25 add y += 50 add line (fg=lightblue3) clear
+
+scale = 120
+x = 0 y = 0 ocb_barcis(8260,568,1360,heathrow,2,"top")
+x = 50 y = 0 ocb_barcis(8280,570,1362,heathrow,4,"top")
+
+end
+
+
+!****************** SUB 98 *******************!
+
+object sub_98
+
+begin
+
+sub_symbol_98
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=lightblue3) clear
+x = 50 y = -25 add y += 50 add line (fg=lightblue3) clear
+
+scale = 120
+x = 0 y = 0 ocb_hand(26002,2002,heathrow,2,"top")
+x = 50 y = 0 ocb_hand(26004,2004,heathrow,4,"top")
+
+end
+
+
+!****************** WEST INTAKE *******************!
+
+object hv_1_west_intake
+
+var call_var = toplevel string
+
+begin
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var="new_west_intake"
+
+W=150 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"West Intake",just=centrecentre) clear
+
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 0  y = 25 add y = -25 add line (fg=lightblue3) clear
+x = 50  y = 25 add y = -25 add line (fg=lightblue3) clear
+
+scale = 120
+x = 0 y = 0 ocb(3000,3140,152,277,heathrow,3,"top")
+x = 50 y = 0 ocb(3000,3340,163,288,heathrow,14,"top")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+goto_menu
+x = 500 y = 270 command_button(220,heathrow)
+clear
+
+lw = 2
+
+! SS82-2 TO WI-14 !
+x = 200 y = -50 add
+y -= 15 add
+x -= 200 add
+y += 265 add
+line(fg=lightblue3) clear
+
+! SS82-2 TO SS98-4 !
+x = 200 y = -225 add
+y -= 15 add
+x += 100 add
+y += 175 add
+x -= 50 add
+y += 15 add
+line(fg=lightblue3) clear
+
+! SS82-4 TO SS54-7 !
+x = 250 y = -225 add
+y -= 30 add
+x -= 500 add
+y += 30 add
+line(fg=lightblue3) clear
+
+! SS54-5 TO WI-3 !
+x = -300 y = -225 add
+y -= 15 add
+x -= 50 add
+y += 350 add
+x += 300 add
+y += 15 add
+line(fg=lightblue3) clear
+
+x = -300 y = -200 sub_54
+x = 200 y = -200 sub_82
+x = -50 y = 150 hv_1_west_intake
+x = 200 y = -25 sub_98
+
+x = 0 y = 322 menu_bar
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

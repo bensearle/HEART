@@ -1,0 +1,30 @@
+load mimic_libutil
+load north_ocb_1_meter
+
+
+
+object hv_overview_meter_button
+var alarm_colour = loopback colour
+begin
+
+
+alarm_colour = flashred
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 500
+x = 0 y = 0 hv_overview_meter_button
+
+end
+
+mimic = main_object w=250,h=200,just=centrecentre,fg=white,bg=black,resizable

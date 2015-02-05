@@ -1,0 +1,224 @@
+! HEATHROW CMS - NORTH_WEST CHANGEOVER
+
+loaded by:- WEST INTAKE
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server.   *
+******************************************************************
+!
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+!
+************************************************************
+* NORTH WEST CHANGEOVER OBJECT                             *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object west_north_changeover(b_offset=int,src=source,fg)
+
+var title_text = loopback string(30)
+var changeover_status_text = loopback string(30)
+var changeover_colour = loopback colour
+var changeover_status = input b_db_row_type
+var ss5_ocb_status = input b_db_row_type
+var north_ocb_status = input b_db_row_type
+var west_ocb_20_status = input b_db_row_type
+var west_ocb_2_status = input b_db_row_type
+var ss9_ocb_status = input b_db_row_type
+var ss45_ocb_status = input b_db_row_type
+
+
+var changeover_control_menu = menu string(30)
+
+begin
+
+if invalid get source changeover_status then
+
+    begin
+    set source changeover_status = src
+    set filter changeover_status.db_addr = lim_eq
+    set limit changeover_status.db_addr = db_address(int(b1) + b_offset-1)
+    set persist changeover_status
+    request changeover_status
+
+    set source ss5_ocb_status = src
+    set filter ss5_ocb_status.db_addr = lim_eq
+    set limit ss5_ocb_status.db_addr = B20955
+    set persist ss5_ocb_status
+    request ss5_ocb_status
+
+    set source north_ocb_status = src
+    set filter north_ocb_status.db_addr = lim_eq
+    set limit north_ocb_status.db_addr = B322
+    set persist north_ocb_status
+    request north_ocb_status
+
+    set source west_ocb_20_status = src
+    set filter west_ocb_20_status.db_addr = lim_eq
+    set limit west_ocb_20_status.db_addr = B3442
+    set persist west_ocb_20_status
+    request west_ocb_20_status
+
+    set source west_ocb_2_status = src
+    set filter west_ocb_2_status.db_addr = lim_eq
+    set limit west_ocb_2_status.db_addr = B3122
+    set persist west_ocb_2_status
+    request west_ocb_2_status
+
+    set source ss9_ocb_status = src
+    set filter ss9_ocb_status.db_addr = lim_eq
+    set limit ss9_ocb_status.db_addr = B22427
+    set persist ss9_ocb_status
+    request ss9_ocb_status
+
+    set source ss45_ocb_status = src
+    set filter ss45_ocb_status.db_addr = lim_eq
+    set limit ss45_ocb_status.db_addr = B22139
+    set persist ss45_ocb_status
+    request ss45_ocb_status
+
+    end
+
+set remove changeover_control_menu = "Enable Changeover"
+set remove changeover_control_menu = "Disable Changeover"
+
+if valid changeover_control_menu then
+begin
+case changeover_control_menu of
+  "Enable Changeover"
+   begin
+      set title_text = "Enable Changeover"
+   end
+  "Disable Changeover"
+   begin
+      set title_text = "Disable Changeover"
+   end
+
+   default
+   begin
+   end
+  set invalid changeover_control_menu
+
+end
+
+if changeover_status.b_value == on then
+   begin
+   changeover_status_text = "Disabled"
+   changeover_colour = red
+   set add changeover_control_menu = "Enable Changeover"
+   end
+
+else
+   begin
+   changeover_status_text = "Enabled"
+   changeover_colour = blue
+   set add changeover_control_menu = "Disable Changeover"
+   end
+
+just = centrecentre
+w = 250 h = 70
+x = 0 y = 0
+set rect changeover_control_menu
+set title changeover_control_menu = "West-North Changeover Menu"
+
+just = centrecentre
+x = 0 y = 0 rect(w=250,h=70,fg=decoroff)
+x += 125 y -=35 add y += 70 add x-=250 add line(lw=1,fg=decorshadow) clear
+y = 35 add y -=70 add x+= 250 add line(lw=1,fg=decorlight) clear
+x = 0 y = -20 text(title_text,ch=20,tfg=black)
+
+x = 0 y = -60 rect(w=250,h=30,fg=decoroff)
+x -=125 y =-45 add y -= 300 add x += 250 add line(lw=1,fg=decorlight) clear
+y = -75 add y += 30 add x -=250 add line(lw=1,fg=decorshadow) clear
+
+if ss5_ocb_status.b_value and north_ocb_status.b_value then
+  begin
+  x = 0 y =-60 text("Ring 4 Feed From North Intake")
+  end
+
+else if west_ocb_2_status.b_value and west_ocb_20_status.b_value and        ss9_ocb_status.b_value and ss9_ocb_status.b_value then
+  begin
+  x = 0 y =-60 text("Ring 4 Feed From West Intake")
+  end
+ 
+else
+  begin
+  x = 0 y = -60 text("No Feed For Ring 4",tfg=flashred,ch=25)
+  end
+
+if title_text == "Enable Changeover" then
+  begin
+  just=centrecentre
+  x = -105 y = 0 command_button("Cancel","",100,"",ch=20) clear
+  if anyb(x=-53,y=13,w=100,h=25) then
+     begin
+     set title_text = "West - North Changeover"
+     end
+  x = 5 y = 0 command_button("Confirm","",100,"",ch=20) clear
+  if anyb(x=53,y=13,w=100,h=25) then
+     begin
+     set_b_value(db_address(int(b1) + b_offset +1),src,on)
+     set title_text = "West - North Changeover"
+     end
+
+  end
+
+else if title_text == "Disable Changeover" then
+  begin
+  just=centrecentre
+  x = -105 y = 0 command_button("Cancel","",100,"",ch=20) clear
+  if anyb(x=-53,y=13,w=100,h=25) then
+     begin
+     set title_text = "West - North Changeover"
+     end
+  x = 5 y = 0 command_button("Confirm","",100,"",ch=20) clear
+  if anyb(x=53,y=13,w=100,h=25) then
+     begin
+     set_b_value(db_address(int(b1) + b_offset),src,on)
+     set title_text = "West - North Changeover"
+     end
+
+  end
+else
+  begin
+  x =-100 y =20 add x +=200 add y -=25 add line(lw=1,fg=decorlight) clear
+  y = -5 add x -=200 add y +=25 add line(lw=1,fg=decorshadow) clear
+  x = 0 y = 10 text(changeover_status_text,ch=20,tfg=changeover_colour) clear
+  if invalid changeover_control_menu then
+   title_text = "West - North Changeover"
+  end
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y =30 west_north_changeover(38,heathrow)
+
+end
+
+mimic = main_object w=300,h=200,just=centrecentre,fg=white,bg=green,resizable

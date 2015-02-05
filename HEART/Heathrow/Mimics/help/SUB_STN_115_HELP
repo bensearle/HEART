@@ -1,0 +1,16 @@
+
+helptext ammeter_8 = "\t\tAmmeter 8\n
+This is the help for Ammeter 8.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+

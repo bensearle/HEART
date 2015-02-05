@@ -1,0 +1,64 @@
+load aerator2                                        !reservoir aerators !
+load o2_display                               ! displays oxygen contents ! 
+
+object reservoir_popup (h,w,fg,bg)
+
+begin
+
+! Reservoir shape !
+X=15  y = 15 move
+Y+=110 Add 
+X+=575 Add 
+Y-= 55 Add 
+X+= 20 Add 
+Y+= 55 Add 
+X+=200 Add 
+Y-=110 Add 
+X-=200 Add 
+Y+= 50 Add 
+X-= 20 Add 
+Y-= 50 Add
+fill(fg=blue)
+polygon (fg=white)
+clear
+
+x = 64 y = 100 o2_display(1050,heathrow)
+x = 484 o2_display(1051,heathrow)
+x = 710 o2_display(1052,heathrow)
+
+! Aerators !
+scale=160
+x = 50 y = 55 aerator2(15000,15100,750,heathrow)
+x +=  56 aerator2(15000,15110,751,heathrow)
+x +=  56 aerator2(15000,15120,752,heathrow)
+x +=  56 aerator2(15000,15130,753,heathrow)
+x +=  56 aerator2(15000,15140,754,heathrow)
+x +=  56 aerator2(15000,15150,755,heathrow)
+x +=  56 aerator2(15000,15160,756,heathrow)
+x +=  56 aerator2(15000,15170,757,heathrow)
+x +=  56 aerator2(15000,15180,758,heathrow)
+x += 156 aerator2(15000,15190,759,heathrow)
+x +=  56 aerator2(15000,15200,760,heathrow)
+x +=  56 aerator2(15000,15210,761,heathrow)
+
+! Aerator numbers !
+y=25 tfg = white ch = 12 scale = 256 just = centrecentre
+x=50 text("AR 1")
+x+=56  text("AR 2")
+x+=56  text("AR 3")
+x+=56  text("AR 4")
+x+=56  text("AR 5")
+x+=56  text("AR 6")
+x+=56  text("AR 7")
+x+=56  text("AR 8")
+x+=56  text("AR 9")
+x+=156  text("AR 10")
+x+=56  text("AR 11")
+x+=56  text("AR 12")
+
+x = 280 y = 100 text ("RESERVOIR",CH=16)
+
+end
+
+mimic = reservoir_popup h=140,w=825,bg=grey
+

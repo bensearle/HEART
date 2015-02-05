@@ -1,0 +1,414 @@
+! HEATHROW CMS - FEGP FCB
+
+loaded by: FEGP_T2, FEGP_T3, FEGP_T4
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type panel_item_row = table (str=string(20))
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+
+ 
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+************************************************************
+* FEGP FEEDER CIRCUIT BREAKER                              *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object fegp_fcb(fg,bg,angle,plc_offset=int,
+	       b_offset=int,c_offset=int,
+               src=source,ident=int) = onoff
+
+! INPUTS!
+VAR tripped_ip = input  b_db_row_type
+VAR earthed_ip = input  b_db_row_type
+VAR permit_to_work_ip = input  b_db_row_type
+VAR plca_comms_ip = input  b_db_row_type
+VAR plcb_comms_ip = input  b_db_row_type
+VAR tag_message_ip = input  c_db_row_type
+
+! ALARMS !
+VAR tripped_alarm = input  alarm_row_type
+VAR tripped_discr = input  alarm_row_type
+
+! LOOPBACKS !
+VAR symbol_bg = loopback  colour
+VAR symbol_fg = loopback  colour
+VAR menu_count = loopback  int 
+
+! MENUS !
+VAR stand_control_menu = menu  string(20)
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+
+begin
+
+! INITIALISATION !
+if invalid get source tripped_ip then 
+   begin
+
+   set source permit_to_work_ip = src
+   set filter permit_to_work_ip.db_addr = lim_eq
+   set limit permit_to_work_ip.db_addr = db_address(int(b1) + b_offset - 1)
+   set persist permit_to_work_ip 
+   request permit_to_work_ip
+
+   set source tripped_ip = src
+   set filter tripped_ip.db_addr = lim_eq
+   set limit tripped_ip.db_addr = db_address(int(b1) + b_offset)
+   set persist tripped_ip 
+   request tripped_ip
+
+   set source earthed_ip = src
+   set filter earthed_ip.db_addr = lim_eq
+   set limit earthed_ip.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist earthed_ip 
+   request earthed_ip
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   set source plca_comms_ip = src
+   set filter plca_comms_ip.db_addr = lim_eq
+   set limit plca_comms_ip.db_addr = db_address(int(b1) + plc_offset - 1)
+   set persist plca_comms_ip 
+   request plca_comms_ip
+
+   set source plcb_comms_ip = src
+   set filter plcb_comms_ip.db_addr = lim_eq
+   set limit plcb_comms_ip.db_addr = db_address(int(b1) + plc_offset)
+   set persist plcb_comms_ip 
+   request plcb_comms_ip
+
+   set source tripped_alarm = src
+   set filter tripped_alarm.db_addr = lim_eq
+   set limit tripped_alarm.db_addr = db_address(int(b1) + b_offset)
+   set persist tripped_alarm 
+   request tripped_alarm
+
+   set source tripped_discr = src
+   set filter tripped_discr.db_addr = lim_eq
+   set limit tripped_discr.db_addr = db_address(int(b1) + b_offset + 2)
+   set persist tripped_discr 
+   request tripped_discr
+  
+   end
+
+
+! SELECT FCB BG COLOUR ! 
+
+if permit_to_work_ip.b_value then
+  begin
+  symbol_bg = orange
+  end
+
+else if tag_message_ip.c_value <> "" then 
+  begin
+  symbol_bg = yellow
+  end
+
+else
+  symbol_bg = decoroff     
+
+
+! SELECT FCB FG COLOUR !
+
+if plca_comms_ip.b_value and plcb_comms_ip.b_value then
+  begin
+  symbol_fg = magenta
+  end
+
+
+else if tripped_alarm.alarm_status == w_note or
+        tripped_discr.alarm_status == w_note then
+  symbol_fg = flashred
+
+
+else if tripped_alarm.alarm_status == w_clr or
+        tripped_discr.alarm_status == w_clr then
+  symbol_fg = red
+
+ else if tripped_ip.b_value and earthed_ip.b_value == off then
+   symbol_fg = red
+ 
+else if tripped_ip.b_value and earthed_ip.b_value == 1 then
+   symbol_fg = white
+
+else if tripped_ip.b_value == off then
+   symbol_fg = green4
+
+else
+   symbol_fg = decoroff
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! CONTROL MENU !
+
+if valid stand_control_menu then
+   begin
+   case stand_control_menu of
+      "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Permit To Work"
+         begin
+         if permit_to_work_ip.b_value then
+            begin
+            set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+            end
+         else
+            set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+         end
+
+       "Alter Earthed Status"
+          begin
+          if earthed_ip.b_value then
+             begin
+             set_b_value(db_address(int(b1) + b_offset +1), src, off)
+             end
+          else
+             set_b_value(db_address(int(b1) + b_offset +1), src, on)
+          end
+   default
+      begin
+      end
+   set invalid stand_control_menu
+   end
+
+
+! CONTROL MENU !
+
+just=centrecentre
+w=90 h=48
+x=0 y=0
+set rect stand_control_menu 
+set title stand_control_menu = "Control Menu"
+set remove stand_control_menu = "Alter Tagged Message"
+set remove stand_control_menu = "Clear Tagged Message"
+set remove stand_control_menu = "Alter Permit To Work"
+set remove stand_control_menu = "Alter Earthed Status"
+set add stand_control_menu = "Alter Tagged Message"
+set add stand_control_menu = "Clear Tagged Message"
+set add stand_control_menu = "Alter Permit To Work"
+
+! TAG MESSAGE BOX !
+
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+! DRAW FCB !
+
+bg=symbol_bg
+fg=symbol_fg
+just = centrecentre
+rotrect (w=40,h=80,fg=bg)
+clear
+x=0 y=0
+x -= 20 y += 40 add
+y -= 80 add
+x += 40 add line (fg=decorlight) clear 
+add
+y += 80 add
+x -= 40 add line (fg=decorshadow) clear
+x =0 y = 0 clear
+
+if tripped_ip.b_value and earthed_ip.b_value == off then
+   begin
+   lw=2
+   y -= 40 add
+   y += 80 add line clear
+   y -= 30 x -= 10 add
+   y -= 20 x += 20 add line clear
+   y += 20 add
+   x -= 20 y -= 20 add line clear
+   x += 10 y += 10 add
+   circle(h=30,w=30) clear
+   set add stand_control_menu = "Alter Earthed Status"
+   end
+
+else if tripped_ip.b_value == off and earthed_ip.b_value == off then
+   begin
+   lw=2
+   y -= 40 add
+   y += 80 add line clear
+   y -= 26 x -= 13 add
+   y -= 26 x += 26 add line clear
+   y += 26 add
+   x -= 26 y -= 26 add line clear
+   x += 13 y += 13 add clear
+   end
+
+else if earthed_ip.b_value then
+   begin
+   lw=2
+   y -= 40 add
+   y += 8 add line clear
+   disk (w=8,h=8)
+   lw=4
+   y += 1 add
+   y += 20 add line clear
+   disk (w=8,h=8)
+   lw=2
+   y += 1 add
+   y += 8 add line 
+   x -= 11 add
+   x += 22 add line clear
+   x -= 4 y += 5 add
+   x -= 14 add line clear
+   x += 4 y += 5 add
+
+   x += 6 add line clear
+   y += 24 add
+   x -= 6 add line clear
+   x += 3 add
+   y += 8 add line clear
+   set add stand_control_menu = "Alter Earthed Status"
+   
+
+   end
+
+ch = 15
+x = 11 y =-30 add text (ident)
+clear
+fegp_fcb = earthed_ip.b_value
+end
+
+
+object main_object(bg,fg,just)
+var tmp = onoff
+begin
+
+
+angle = 0
+scale = 350
+tmp=fegp_fcb(14000,14390,728,heathrow,5)
+
+
+
+end
+mimic = main_object w = 200,h = 200,just = centrecentre, bg=white,fg=white
+

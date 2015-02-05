@@ -1,0 +1,100 @@
+load mimic_libutil
+load fuse_sw
+load oil_switch
+load transformer
+
+
+!*********** BUSBAR 75 *************!
+!
+object busbar_75
+
+begin
+
+tfg = black x = 85 y = -5 add text ("75",ch = 25) clear
+x = -75 y = 25 add x = 175 add line(lw=4,fg=yellow) clear
+
+lw=2
+x = -50 y = -25 add y += 50 add line (fg=yellow) clear
+x = 0 y = -25 add y += 50 add line (fg=yellow) clear
+x = 50  y = 25 add y -= 50 add line (fg=yellow) clear
+x = 100 y = 25 add y += 50 add line (fg=yellow) clear
+x = 150 y = -25 add y += 50 add line (fg=yellow) clear
+
+scale = 120
+x = -50 y = 0 oil_switch(26041,88,2041,heathrow,"o")
+x = 0 y = 0 oil_switch(25026,90,1313,heathrow,"c")
+x = 50 y = 0  oil_switch(25030,92,1315,heathrow,"c")
+x = 100 y = 50 hv_fuse(25032,93,1316,heathrow,"c")
+x = 150 y = 0 oil_switch(25028,91,1314,heathrow,"c")
+
+scale=260
+tfg=black ch=12
+just=centrecentre
+x = -35 y = 0 text("0")
+x = 15 y = 0 text("1")
+x = 65 y = 0 text("2")
+x = 115 y = 50 text("3")
+x = 165 y = 0 text("4")
+x = 50 y = -35 text("Spare")
+x = -50 y = -35 text("Spare")
+x = 0 y = -35 text("NI P4")
+x = 100 y = 85 text("Spare")
+end
+
+
+!
+
+!*********** BUSBAR 75 R.M.U. *************!
+
+object busbar_75_rmu
+
+begin
+
+tfg = black x = 55 y = -25 add text ("75",ch = 25) clear
+!tfg = black x = 35 y = -5 add text ("RMU",ch = 25) clear!
+x = -75 y = 25 add x = 75 add line(lw=4,fg=yellow) clear
+
+lw=2
+x = -50 y = -25 add y += 50 add line (fg=yellow) clear
+x = 0 y = -25 add y += 50 add line (fg=yellow) clear
+x = 50  y = 25 add y += 50 add line (fg=yellow) clear
+
+scale = 120
+x = -50 y = 0 oil_switch(26100,100,2046,heathrow,"c")
+x = 0 y = 0 oil_switch(26102,101,2047,heathrow,"c")
+x = 50 y = 50 hv_fuse(26104,102,2048,heathrow,"c")
+
+scale = 100
+X =  50  Y = 95 add transformer("LT 1","LOCAL")
+
+
+scale=260
+tfg=black ch=12
+just=centrecentre
+x = -35 y = 0 text("1")
+x = 15 y = 0 text("2")
+x = 65 y = 50 text("3")
+x = 0 y = -35 text("S/S 64 P1")
+x = -60 y = -35 text("NI P4")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+!SS126-8 TO NI-21!
+
+!x = 0 y =-20 add
+y -= 60 add
+x = 100 add
+y += 15 add
+line(fg=yellow, lw = 2) clear!
+
+!x = -150 y = -40 busbar_75!
+
+x = 0 y = -40 busbar_75_rmu
+
+
+
+end
+
+mimic = main_object w=250,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

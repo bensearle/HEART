@@ -1,0 +1,176 @@
+! HEATHROW CMS - AIRFIELD LIGHTING RING 
+
+loaded by: HV_WEST  which is loaded by: HV_OVERVIEW
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+!
+************************************************************
+* AIRFIELD LIGHTING RING OBJECT                            *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object air_lights(north_ocb=int,west_ocb=int)
+var ss5_ocb_status = input  b_db_row_type
+var north_ocb_status = input  b_db_row_type
+var west_ocb_20_status = input  b_db_row_type
+var west_ocb_2_status = input  b_db_row_type
+var ss9_ocb_status = input  b_db_row_type
+var ss45_ocb_status = input  b_db_row_type
+
+
+
+begin
+
+! INITIALISATION !
+! REQUEST BOOLEANS FROM SCOPE !
+
+if invalid get source north_ocb_status then
+
+   begin
+   
+   set source ss5_ocb_status = heathrow
+   set filter ss5_ocb_status.db_addr = lim_eq
+   set limit ss5_ocb_status.db_addr = B20955
+   set persist ss5_ocb_status 
+   request ss5_ocb_status
+
+   set source north_ocb_status = heathrow
+   set filter north_ocb_status.db_addr = lim_eq
+   set limit north_ocb_status.db_addr = B322
+   set persist north_ocb_status 
+   request north_ocb_status
+
+   set source west_ocb_20_status = heathrow
+   set filter west_ocb_20_status.db_addr = lim_eq
+   set limit west_ocb_20_status.db_addr = B3442 
+   set persist west_ocb_20_status
+   request west_ocb_20_status
+
+   set source west_ocb_2_status = heathrow
+   set filter west_ocb_2_status.db_addr = lim_eq
+   set limit west_ocb_2_status.db_addr = B3122 
+   set persist west_ocb_2_status
+   request west_ocb_2_status
+
+   set source ss9_ocb_status = heathrow
+   set filter ss9_ocb_status.db_addr = lim_eq
+   set limit ss9_ocb_status.db_addr = B22427 
+   set persist ss9_ocb_status
+   request ss9_ocb_status
+
+   set source ss45_ocb_status = heathrow
+   set filter ss45_ocb_status.db_addr = lim_eq
+   set limit ss45_ocb_status.db_addr = B22139
+   set persist ss45_ocb_status
+   request ss45_ocb_status
+
+   end
+
+! SELECT RING COLOUR !
+if north_ocb_status.b_value and ss5_ocb_status.b_value then
+   
+   fg = red
+
+else if west_ocb_20_status.b_value and west_ocb_2_status.b_value OR
+        ss9_ocb_status.b_value and ss45_ocb_status.b_value then
+   
+    fg = lightblue3
+
+else fg = flashred
+
+
+! DRAW AIRFIELD RING !
+lw = 2
+
+X=-451 Y=-123  ADD
+X=-416 ADD
+Y=205 ADD
+X=-299 ADD
+line
+clear
+X=-275 Y=205  ADD
+X=-246 ADD
+line
+clear
+X=-223 Y=205  ADD
+X=-92 ADD
+line
+clear
+X=-69 Y=205  ADD
+X=10 ADD
+line
+clear
+X=34 Y=205  ADD
+X=53 ADD
+Y=164  ADD
+line
+clear
+X=53 Y=153  ADD
+Y=106  ADD
+line
+clear
+X=53 Y=95  ADD
+Y=41  ADD
+line
+clear
+X=53 Y=30  ADd
+Y=-47  ADD
+line
+clear
+X=53 Y=-58  ADD
+Y=-135  ADD
+line
+clear
+X=53 Y=-146  ADD
+Y=-184  ADD
+X=-56 ADD
+line
+clear
+X=-78 Y=-184  ADD
+X=-118 ADD
+line
+clear
+X=-141 Y=-184  ADD
+X=-189 ADD
+line
+clear
+X=-212 Y=-184  ADD
+X=-238 ADD
+line
+clear
+X=-260 Y=-184  Add
+X=-286 ADD
+line
+clear
+X=-308 Y=-184  ADD
+X=-365 ADD
+Y=-145  ADD
+X=-397 ADD
+Y=183  ADD
+line
+clear
+
+X=65 Y=-53  ADD
+X=135 ADD
+Y=-269 ADD
+X=163 ADD
+Y=-284 ADD
+line
+clear
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+air_lights(322,3442)
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

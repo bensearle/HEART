@@ -1,0 +1,35 @@
+load mimic_libutil
+load fuse_sw_upsidedown
+load transformer
+
+
+!************* BUSBAR 59 ***************!
+
+object busbar_59
+begin
+
+lw = 2
+x = 0 y = 30 add y -= 85 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = -25 hv_fuse_upsidedown(angle=180,25123,289,1401,heathrow,"c")
+
+scale = 100
+X = 0 Y = 25 add transformer("LT 1","LOCAL")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 0 y = -65 text("SS77 P3")
+ch=25 x = 50 y = 0 text("59")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+busbar_59
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=aquamarine3,resizable

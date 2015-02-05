@@ -1,0 +1,14 @@
+load mimic_libutil
+load fire_main_backup
+
+load PRINT_HELP
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+x = 25 y = 0 fire_main_backup(16000,16200,810,heathrow)
+
+end
+
+mimic = main_object w=300,h=140,just=centrecentre,fg=white,bg=black,resizable

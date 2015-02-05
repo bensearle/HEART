@@ -1,0 +1,118 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+load oil_switch
+load lv_generator_nrc1
+
+!***************************************!
+! Created by VIJAY KARA  !
+
+!  Dated  16th October 2006  !
+
+! This sub station is for Viewing purpose only and does not allow any
+  live CONTROL or MONITORING !
+
+
+
+!************ DSS 5 *************!
+
+object busbar_smpn_103
+
+begin
+
+just = centrecentre
+
+tfg = black x = 130 y = -40 add text ("ESSENTIAL",ch = 20) clear
+tfg = black x = -170 y = 40 add text ("NON ESSENTIAL",ch = 20) clear
+!tfg = black x = 120 y -= -100 add text ("'G'", ch = 40) clear!
+
+
+tfg = black x = 90 y = -200 add text ("DSS 5",ch = 30) clear
+tfg = black x = 100 y = - 170 add text ("CONTROL TOWER",ch = 30) clear
+
+
+lw = 2
+x = -250 y = 0 add x += 300 add line(lw=4,fg=blue) clear
+y = 0 x = -150 add y -= 150 add line(fg=red) clear  ! 1 !
+y = 0 x = 120 add y += 50 add line(fg=black) clear 
+y = -20 x = 50 add y += 40 add line(lw=2,fg=red) clear 
+y = -20 x = 60 add y += 40 add line(lw=2,fg=red) clear 
+x = 60 y = 0 add x += 120 add line(lw=4,fg=blue) clear
+x = 105 y -= -50 add x += 30 add line(lw=4,fg=red) clear
+x = 105 y -= -15 add x += 30 add line(lw=4,fg=red) clear
+y-= -0 x = 120 add y += 50 add line(fg=black) clear 
+
+
+!*******************1st Dotted Line***************************!
+
+x = -250 y = -90 add x = -70 add line(lw=3,fg=yellow) clear
+x = -240 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -225 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -215 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -200 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -190 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -175 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -160 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -145 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -130 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -115 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -100 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -85 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+x = -70 y = -90 add x -= 05 add line(lw=3,fg=blue) clear
+
+
+
+!*********************2nd DOTTED LINE**********************!
+
+x = -250 y = -10 add x = -70 add line(lw=3,fg=white) clear
+x = -240 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -225 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -215 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -200 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -190 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -175 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -160 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -145 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -130 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -115 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -100 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -85 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+x = -70 y = -10 add x -= 05 add line(lw=3,fg=black) clear
+
+
+scale = 120
+y = -95 x = -150 transformer("Tx","LOCAL")
+
+
+scale = 120
+
+x = -150 y = -35 oil_switch(15011,1871,8751,heathro4,"top")
+
+x = -20  y = 0  ocb_mont(0,15210,1902,8782,heathro4,1,"sect", angle=90)
+
+x = 120 y = 130 lv_generator_nrc1(0,0,0,1925,heathro4)
+
+
+scale = 256 !just = centrecentre!
+tfg = black ch = 12
+x = -80 y = -150 text("DSS 5")
+x = -70 y = -130 text("LOCAL Tx")
+x = -75 y = -110 text("500 kVA")
+
+x = -220 y = -100 text("6600v")
+x = -220 y = -80 text("433v")
+x = -220 y = -25 text("EDF Limit")
+
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 10 y = -10 busbar_smpn_103
+
+end
+
+mimic = main_object w=600,h=500,just=centrecentre,fg=white,bg=aquamarine3,resizable

@@ -1,0 +1,58 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+!************* BUSBAR M1/8 ***************!
+
+object busbar_m1_8
+
+begin
+
+just = centrecentre
+tfg=black
+ch=12
+x = -25 y = -85 text("NI P1")
+x = 25 y = -100 text("M1/12")
+x = 25 y = -85 text("P1")
+x = -75 y = 30 text("Spare")
+x = 75 y = 30 text("Spare")
+
+tfg = black x = -120 y = -45 add text ("M1/8",ch = 25) clear
+x = -150 y = -25 add x = 150 add line(lw=4,fg=red) clear
+lw = 2
+x = -125 y = -25 add y += 50 add line (fg=red) clear
+x = -75 y = -25 add y += 30 add line (fg=red) clear
+x = -25 y = -75 add y += 50 add line (fg=red) clear
+x =  25 y = -25 add y -= 50 add line (fg=red) clear
+x =  75 y = -25 add y += 30 add line (fg=red) clear
+x =  125 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = -125 y = 0   ocb_mont(1500,1630,42,78,heathro2,1,"btm")
+x = -75  y = 0   ocb_mont(1500,1640,43,79,heathro2,2,"btm")
+x = -25  y = -50 ocb_mont(1500,1650,44,80,heathro2,3,"top")
+x =  25  y = -50 ocb_mont(1500,1660,45,81,heathro2,4,"btm")
+x =  75  y = 0   ocb_mont(1500,1670,46,82,heathro2,5,"btm")
+x =  125 y = 0   ocb_mont(1500,1680,47,83,heathro2,6,"btm")
+
+
+scale = 100
+x = -125 y = 45 add transformer("LT 1","LOCAL")
+!x =  125 y = 45 add transformer("Tx 2","BH 383")!
+
+!x = 125 y = 75 text(ch=25,"BH383")!
+x = -180 y = -90 text(ch=26,"Bld 346")
+x = -180 y = -80 text(ch=26,"Elmdon Rd")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+busbar_m1_8
+
+end
+
+mimic = main_object w=450,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

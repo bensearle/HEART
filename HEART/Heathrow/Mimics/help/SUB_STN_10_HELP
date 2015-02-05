@@ -1,0 +1,27 @@
+
+helptext sub_stn_10_help =
+ "
+ **** SUB STATION 10 POPUP MIMIC ****
+ ------------------------------------------------- -------------------------------------------------
+Sub Station 10
+ ------------------------------------------------- -------------------------------------------------
+
+This Mimic displays circuit breaker status, current and voltage for Panels on new Substation 10.
+
+
+The Circuit Breakers are Control and Monitoring. 
+
+
+The Analogue meters display high and low alarms together with under/over/invalid ranges.
+
+
+
+References:
+------------------
+Operation and Maintenance Manual 	- Section 7.0 page 38
+
+Keypages from the Mimic Menu Object -  for information on mimic objects used (HV Area)
+ ------------------
+
+ "
+

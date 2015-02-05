@@ -1,0 +1,2378 @@
+!**  dual busbar control object 
+created:		2 june 2004
+mod:		9 june 2004 added modbus node cb
+**!
+
+load fp_generic_server_request
+load hv_lib_help
+
+type main_menu_row 	= table (main_menu_items= string(27))
+type confirm_state 	= enum(execute = "execute", cancel = "cancel")
+
+!-----------------------------------------------------------------------------!
+!  confirm / cancel for Modbus and Dual Breakers       !
+!-----------------------------------------------------------------------------!
+object set_e_value2(db_addr=db_address,src=source,val=real,op=output e_db_row_type) 
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op   
+   end
+end
+
+object confirm_popup(ident=int) = yesno
+begin
+	x = 0 y = 0 rect(h=100,w=300,fg=decoroff)
+	x = 10 y = 30 add x = 290 add line(fg=white) clear
+	x = 10 y = 31 add x = 290 add line(fg=grey40) clear
+
+	just=centrecentre
+	x = 150 y = 15	text(tfg=black,ch=17,"circuit breaker "+ident+" control")
+
+  	!  confirm  !
+	fg=decoroff
+	x = 15 y = 75 add y -= 30 add x += 120 add line(fg=white) clear
+	x = 15 y = 75 add x += 120 add y -= 30 add line(fg=grey40) clear
+	x = 75 y = 60 h=29 w=119 rect(fg=decoroff)
+		text(tfg=black,ch=15,"confirm")
+	if anyb then
+	begin
+		x = 15 y = 75 add y -= 30 add x += 120 add line(fg=grey40) clear
+		x = 15 y = 75 add x += 120 add y -= 30 add line(fg=white) clear
+		x = 75 y = 60 h=29 w=119 rect(fg=grey40)
+		text(tfg=black,ch=15,"confirm")
+		confirm_popup = yes
+		exit
+	end
+
+	!  cancel  !
+	fg=decoroff
+	x = 165 y = 75 add y -= 30 add x += 120 add line(fg=white) clear
+	x = 165 y = 75 add x += 120 add y -= 30 add line(fg=grey40) clear
+	x = 225 y = 60 h=29 w=119 rect(fg=decoroff)
+		text(tfg=black,ch=15,"cancel")
+	if anyb then
+	begin
+		x = 165 y = 75 add y -= 30 add x += 120 add line(fg=grey40) clear
+		x = 165 y = 75 add x += 120 add y -= 30 add line(fg=white) clear
+		x = 225 y = 60 h=29 w=119 rect(fg=grey40)
+		text(tfg=black,ch=15,"cancel")
+		confirm_popup = no
+		exit
+	end
+end 
+mimic confirm_popup = confirm_popup w = 300,h = 100
+
+!-----------------------------------------------------------------------------!
+!  control status                                                             !
+!-----------------------------------------------------------------------------!
+
+object control_status(ident=int,control_msg=string(50)) = yesno
+begin
+	x = 0 y = 0
+	rect(h=100,w=300,fg=decoroff)
+	x = 10 y = 30 add x = 290 add line(fg=white) clear
+	x = 10 y = 31 add x = 290 add line(fg=grey40) clear
+	just=centrecentre
+	x = 150 y = 15	text(tfg=black,ch=17,"circuit breaker "+ident+" control")
+	y += 30	text(tfg=red,ch=17,control_msg)
+
+	!  ok  !
+	fg=decoroff
+	x = 90 y = 90 add y -= 30 add x += 120 add line(fg=white) clear
+	x = 90 y = 90 add x += 120 add y -= 30 add line(fg=grey40) clear
+	x = 150 y = 75 h=29 w=119 rect(fg=decoroff)
+		text(tfg=black,ch=15,"ok")
+	if anyb then
+	begin
+		x = 90 y = 90 add y -= 30 add x += 120 add line(fg=grey40) clear
+		x = 90 y = 90 add x += 120 add y -= 30 add line(fg=white) clear
+		x = 150 y = 75 h=29 w=119 rect(fg=grey40)
+		text(tfg=black,ch=15,"ok")
+		control_status = yes
+		exit
+	end
+end
+mimic control_status = control_status w = 300,h = 100
+
+! ** Modbus Circuit breaker symbols ** !
+!** closed **!
+object closed_ocb_a(ocb_fg = colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg  lw=6
+  y = 75  y -= 50 x -= 25 add
+  y -= 50 x += 50 add line clear
+  y += 50 add  x -= 50 y -= 50 add line clear
+  x += 25 y += 25 add clear
+  x = 0 y = 40 add y = -40 add line clear
+end
+
+object closed_ocb_b(ocb_fg = colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg  lw=6
+  y = 75  y -= 50 x -= 25 add
+  y -= 50 x += 50 add line clear
+  y += 50 add  x -= 50 y -= 50 add line clear
+  x += 25 y += 25 add clear
+  x = -40 y = 0 add x += 80 add line clear
+end
+
+!** tripped **!
+object tripped_ocb_a(ocb_fg = colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg  lw=6
+  y = -20  y += 40 x -= 20 add
+  y -= 40 x += 40 add line clear
+  y += 40 add  x -= 40 y -= 40 add line clear
+  x += 20 y += 20 add
+  x = 0 y = 0 circle(h=56,w=56) clear
+  x = 0 y = -27 add y = -40 add line clear
+  x = 0 y = 27 add y = 40 add line clear
+end
+
+object tripped_ocb_b(ocb_fg = colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg  lw=6
+  y = -20  y += 40 x -= 20 add
+  y -= 40 x += 40 add line clear
+  y += 40 add  x -= 40 y -= 40 add line clear
+  x += 20 y += 20 add
+  x = 0 y = 0 circle(h=56,w=56) clear
+  x = 25 y = 0 add x += 15 add line clear
+  x = -25 y = 0 add x -= 15 add line clear
+end
+
+!**  isolated **!
+object isolated_ocb_a(ocb_fg=colour,angle)
+begin
+  fg = ocb_fg  lw=6
+  y = -40 add  y += 20 add  x -= 7 add  x += 14 add line clear
+  y += 60 x -= 7 add  y -= 20 add  x -= 7 add  x += 14 add line clear
+end
+
+object isolated_ocb_b(ocb_fg=colour,angle)
+begin
+  fg = ocb_fg  lw=6
+  x = -40 add  x += 20 add
+  y -= 7 add  y += 14 add line clear
+  y -= 7  x += 67 x -= 7 add  x -= 20 add  y -= 7 add
+  y += 14 add line clear
+end
+
+!** earth on **!
+object earth_on_ocb_a(ocb_fg=colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg  lw=4
+  x = 0  y += 40 add  y -= 8 add line clear 
+  disk(w=10,h=10) 
+  lw=6
+  y -= 1 add  y -= 20 add line clear
+  disk(w=10,h=10)
+  lw=4
+  y -= 3 add  y -= 6 add line
+  x += 15 add  x -= 30 add line clear
+  x += 5 y -= 10 add  x += 20 add line clear
+  x -= 6 y -= 9 add  x -= 8 add line clear
+end
+
+object earth_on_ocb_b(ocb_fg=colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg  lw=4 			
+  x = 0 y = -80  y += 40 add  y += 8 add line clear 
+  disk(w=10,h=10) 
+  lw=6
+  y += 1 add  y += 20 add line clear
+  disk(w=10,h=10)
+  lw=4			
+  y += 3 add  y += 6 add line
+  x += 15 add  x -= 30 add line clear
+  x += 5 y += 10 add  x += 20 add line clear
+  x -= 6 y += 9 add  x -= 8 add line clear
+end
+
+object earth_on_ocb_c(ocb_fg=colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg  lw=4		
+  x += 40 add  x -= 40 add line clear
+  x += 32
+  disk(w=10,h=10) 
+  lw=6
+  x -= 1 add  x -= 20 add line clear
+  disk(w=10,h=10)
+  lw=4 	
+  x -= 1  x -= 3 add  x -= 6 add line
+  y += 15 add  y -= 30 add line clear
+  y += 5 x -= 10 add  y += 20 add line clear
+  y -= 6 x -= 9 add  y -= 8 add line clear
+end
+
+object earth_on_ocb_d(ocb_fg=colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg  lw=4	
+  x -= 40 add  x += 40 add line clear
+  x -= 32
+  disk(w=10,h=10) 
+  lw=6
+  x += 1 add  x += 20 add line clear
+  disk(w=10,h=10)
+  lw=4	
+  x += 1  x += 3 add  x += 6 add line
+  y += 15 add  y -= 30 add line clear
+  y += 5 x += 10 add  y += 20 add line clear
+  y -= 6 x += 9 add  y -= 8 add line clear
+end
+
+object earth_off_ocb_a(ocb_fg=colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg
+  lw=4
+  x = 0  y = 40 add  y -= 8 add line clear 
+  disk(w=10,h=10) 
+  lw=6
+  y -= 1 y -= 20 clear
+  disk(w=10,h=10)
+  lw=4
+  y -= 3 add y -= 6 add line
+  x += 15 add x -= 30 add line clear
+  x += 5 y -= 10 add x += 20 add line clear
+  x -= 6 y -= 9 add x -= 8 add line clear
+end
+
+object earth_off_ocb_b(ocb_fg=colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg
+  lw=4 
+  x = 0 y = -80 y += 40 add y += 8 add line clear
+  disk(w=10,h=10) 
+  lw=6
+  y += 1 y += 20 clear
+  disk(w=10,h=10)
+  lw=4			
+  y += 3 add y += 6 add line
+  x += 15 add x -= 30 add line clear
+  x += 5 y += 10 add x += 20 add line clear
+  x -= 6 y += 9 add x -= 8 add line clear
+end
+
+object earth_off_ocb_c(ocb_fg=colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg lw=4		
+  x = 40 add x -= 8 add line clear
+  disk(w=10,h=10) 
+  lw=6
+  x -= 1 x -= 20 clear
+  disk(w=10,h=10)
+  lw=4 	
+  x -= 1 x -= 3 add x -= 6 add line
+  y += 15 add y -= 30 add line clear
+  y += 5 x -= 10 add y += 20 add line clear
+  y -= 6 x -= 9 add y -= 8 add line clear
+end
+
+object earth_off_ocb_d(ocb_fg=colour,angle)
+begin
+  just = centrecentre
+  fg = ocb_fg
+  lw=4
+  x = -40 add x += 8 add line clear
+  disk(w=10,h=10) 
+  lw=6
+  x += 1 x += 20 clear
+  disk(w=10,h=10)
+  lw=4	
+  x += 1 x += 3 add x += 6 add line
+  y += 15 add y -= 30 add line clear
+  y += 5 x += 10 add y += 20 add line clear
+  y -= 6 x += 9 add y -= 8 add line clear
+end
+
+
+!**  Modbus Breaker object  - control with checkback from plc and Node Comms **!
+object modbus_cb(plc_offset=int,node_offset=int,b_offset=int,c_offset=int,e_offset=int,cont_offset=int,src=source,
+	ident=int,position=string(4),cont_code=int,xtra_alarms=int,cb_type=string,res2=int,res1=int,angle)
+
+! variable declaration !
+var plc_inputs = input b_bool_type[2]		! * comms inputs * !
+var node_input = input b_bool_type		! * node comms input * !
+var ocb_inputs = input b_bool_type[20]		! * breaker inputs * !
+var alarm_inputs = input alarm_row_type[20]	! * breaker alarms * !
+var ocb_closed_ip	 	= onoff	!7!
+var ocb_open_ip	 	= onoff	!8!
+var ocb_circuit_earth_ip	= onoff 	!9!
+var a_in_service_ip	 	= onoff	!10!
+var ocb_sect_a_isolated_ip	= onoff 	!11!
+var control_fail_ip	 	= onoff 	!12!
+var ocb_ptw_ip	 	= onoff	!13!
+var ocb_sect_b_earth_ip 	= onoff 	!14!
+var b_in_service_ip		= onoff 	!15!
+var ocb_sect_b_isolated_ip	= onoff 	!16!
+var ready_earth_ip		= onoff 	!17!
+var fuse_fail_ip	 	= onoff	!18!
+var spare_1_ip		= onoff	!19!
+var control_reset_ip	= onoff	!20!
+
+var prot_operated_al	=alarm_status !1	 * defined breaker alarms * !
+var control_fault_al		=alarm_status !2!
+var int_trip_rx_al		=alarm_status !3!
+var int_trip_fault_al		=alarm_status !4!
+var therm_fault_al		=alarm_status !5!
+var local_control_al		=alarm_status !6!
+var ocb_closed_al	 	=alarm_status !7!
+var ocb_tripped_al	 	=alarm_status !8!
+var ocb_circuit_earth_al	=alarm_status !9!
+var a_in_service_al	 	=alarm_status !10!
+var ocb_sect_a_isolated_al	=alarm_status !11!
+var control_fail_al	 	=alarm_status !12!
+var ocb_ptw_al	 	=alarm_status !13!
+var ocb_sect_b_earth_al 	=alarm_status !14!
+var b_in_service_al		=alarm_status !15!
+var ocb_sect_b_isolated_al	=alarm_status !16!
+var ready_earth_al		=alarm_status !17!
+var fuse_fail_al	 	=alarm_status !18!
+var spare_1_al		=alarm_status !19!
+var control_reset_al	=alarm_status !20!
+
+! control codes !
+var control_data		= input		e_db_row_type[4]
+var control_code		= int
+var checkback_code	= int
+var execute_code	= int
+var plc_execute_code	= int
+
+! manually dressed status !
+var manual_dress	= input		e_db_row_type
+
+! tag message !
+var tag_message		= input		c_db_row_type
+
+! loopback variables !
+var ocb_foreground	= loopback	colour
+var ocb_background	= loopback	colour
+var confirm		= loopback	yesno
+var accept		= loopback 	yesno
+var close_ocb_control	= loopback	yesno
+var open_ocb_control	= loopback	yesno
+var plc_executed		= loopback	yesno
+
+! menus !
+var main_menu		= menu		string(40)
+var tag_message_panel 	= panel		panel_item_row
+var popup_box		= popup		confirm_popup
+var failure_box		= popup		control_status
+var local_control_in_progress 	= popup		control_status
+var node_alarm = loopback onoff
+
+var close_code		= int
+var open_code		= int
+var control_text		= string(10)
+var in_progress		= yesno
+var controllable_ocb	= yesno
+var num_alarms		= int
+var helpstr = help string(30)
+var reset_offset = loopback int
+var reset_ctl = loopback yesno
+var op1=output e_db_row_type
+begin
+   just=centrecentre    x=0 y=0  
+   if invalid reset_ctl then
+      reset_ctl=no
+   if reset_ctl==yes and get busy op1==0 then
+      begin
+      set_e_value(db_address(int(e1) + reset_offset-1),src,0)
+      reset_ctl=no
+      end
+
+	if position == "sect" then
+	begin
+		W=80 H=66
+		set text helpstr = "CIRCUIT_BREAKERS_lib_help"
+	end
+	else
+	begin
+		W=66 H=80
+		set text helpstr = "CIRCUIT_BREAKERS_lib_help"
+	end
+         		if invalid get source plc_inputs then 	! * get database values * !
+         		begin
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+	   	set source node_input = src
+	   	set filter node_input.db_addr = lim_eq
+	   	set limit node_input.db_addr = db_address(int(b1) + node_offset -1)
+	   	set priority node_input.db_addr = 15
+	   	set persist node_input
+	   	set mayexist node_input
+	   	request node_input
+	
+		set source ocb_inputs = src
+		set filter ocb_inputs.db_addr = lim_ge
+		set limit ocb_inputs.db_addr = db_address(int(b1) + b_offset -1)
+		set priority ocb_inputs.db_addr = 15
+		set persist ocb_inputs
+		set mayexist ocb_inputs
+	   	request ocb_inputs
+
+	   	set source alarm_inputs = src
+	   	set filter alarm_inputs.db_addr = lim_ge
+	   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+   		set priority alarm_inputs.db_addr = 15
+   		set persist alarm_inputs
+   		set mayexist alarm_inputs
+   		request alarm_inputs
+
+	   	set source manual_dress = src
+	   	set filter manual_dress.db_addr = lim_eq
+	   	set limit manual_dress.db_addr = db_address(int(e1) + e_offset - 1)
+	   	set persist manual_dress 
+	   	request manual_dress
+
+		if cont_code <> int and cont_code <> 0 then
+		begin
+		   	set source control_data = src
+		   	set filter control_data.db_addr = lim_ge
+		   	set limit control_data.db_addr = db_address(int(e1) + cont_offset-1)
+		   	set persist control_data 
+		   	request control_data
+		end
+			
+	   	set source tag_message = src
+	   	set filter tag_message.db_addr = lim_eq
+	   	set limit tag_message.db_addr = db_address(int(c1) + c_offset -1)
+	   	set persist tag_message
+	   	request tag_message
+        		end
+
+	open_code = cont_code 
+	close_code = cont_code +  1
+	if cont_offset<>int and cont_code<>int then
+		controllable_ocb = yes
+	else controllable_ocb = no
+
+
+	ocb_closed_ip	 	= ocb_inputs[7].b_value
+	ocb_open_ip	 	= ocb_inputs[8].b_value
+	ocb_circuit_earth_ip	= ocb_inputs[9].b_value
+	a_in_service_ip	 	= ocb_inputs[10].b_value
+	ocb_sect_a_isolated_ip	= ocb_inputs[11].b_value
+	control_fail_ip	 	= ocb_inputs[12].b_value
+	ocb_ptw_ip	 	= ocb_inputs[13].b_value
+	ocb_sect_b_earth_ip 	= ocb_inputs[14].b_value
+	b_in_service_ip		= ocb_inputs[15].b_value
+	ocb_sect_b_isolated_ip	= ocb_inputs[16].b_value
+	ready_earth_ip		= ocb_inputs[17].b_value
+	fuse_fail_ip	 	= ocb_inputs[18].b_value
+	spare_1_ip		= ocb_inputs[19].b_value
+	control_reset_ip		= ocb_inputs[20].b_value
+
+	prot_operated_al		=alarm_inputs[1].alarm_status 
+	control_fault_al		=alarm_inputs[2].alarm_status
+	int_trip_rx_al		=alarm_inputs[3].alarm_status
+	int_trip_fault_al		=alarm_inputs[4].alarm_status 
+	therm_fault_al		=alarm_inputs[5].alarm_status
+	local_control_al		=alarm_inputs[6].alarm_status
+	ocb_closed_al	 	=alarm_inputs[7].alarm_status
+	ocb_tripped_al	 	=alarm_inputs[8].alarm_status
+	ocb_circuit_earth_al	=alarm_inputs[9].alarm_status
+	a_in_service_al	 	=alarm_inputs[10].alarm_status
+	ocb_sect_a_isolated_al	=alarm_inputs[11].alarm_status
+	control_fail_al	 	=alarm_inputs[12].alarm_status
+	ocb_ptw_al	 	=alarm_inputs[13].alarm_status
+	ocb_sect_b_earth_al 	=alarm_inputs[14].alarm_status
+	b_in_service_al		=alarm_inputs[15].alarm_status 
+	ocb_sect_b_isolated_al	=alarm_inputs[16].alarm_status 
+	ready_earth_al		=alarm_inputs[17].alarm_status 
+	fuse_fail_al	 	=alarm_inputs[18].alarm_status 
+	spare_1_al		=alarm_inputs[19].alarm_status 
+	control_reset_al		=alarm_inputs[20].alarm_status 
+
+	control_code	= int(control_data[1].e_value)
+	checkback_code	= int(control_data[2].e_value)
+	execute_code	= int(control_data[3].e_value)
+	plc_execute_code	= int(control_data[4].e_value)
+
+		if invalid node_input.b_value then node_alarm = off
+		else node_alarm = node_input.b_value
+
+	! * circuit breaker foreground * !
+
+	if 	plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+			ocb_foreground = magenta
+	else if node_alarm == on then
+		ocb_foreground = magenta
+	else if 	 	
+		prot_operated_al		== w_note or
+		control_fault_al		== w_note or
+		int_trip_rx_al		== w_note or
+		int_trip_fault_al		== w_note or
+		therm_fault_al		== w_note or
+		local_control_al		== w_note or
+		ocb_closed_al	 	== w_note or
+		ocb_tripped_al	 	== w_note or
+		ocb_circuit_earth_al	== w_note or
+		a_in_service_al	 	== w_note or
+		ocb_sect_a_isolated_al	== w_note or
+		control_fail_al	 	== w_note or
+		ocb_ptw_al	 	== w_note or
+		ocb_sect_b_earth_al 	== w_note or
+		b_in_service_al		== w_note or
+		ocb_sect_b_isolated_al	== w_note or
+		ready_earth_al		== w_note or
+		fuse_fail_al	 	== w_note or
+		spare_1_al		== w_note or
+		control_reset_al		== w_note then
+			ocb_foreground = flashred
+
+	else if  
+		prot_operated_al		== w_clr or
+		control_fault_al		== w_clr or
+		int_trip_rx_al		== w_clr or
+		int_trip_fault_al		== w_clr or
+		therm_fault_al		== w_clr or
+		local_control_al		== w_clr or
+		ocb_closed_al	 	== w_clr or
+		ocb_tripped_al	 	== w_clr or
+		ocb_circuit_earth_al	== w_clr or
+		a_in_service_al	 	== w_clr or
+		ocb_sect_a_isolated_al	== w_clr or
+		control_fail_al	 	== w_clr or
+		ocb_ptw_al	 	== w_clr or
+		ocb_sect_b_earth_al 	== w_clr or
+		b_in_service_al		== w_clr or
+		ocb_sect_b_isolated_al	== w_clr or
+		ready_earth_al		== w_clr or
+		fuse_fail_al	 	== w_clr or
+		spare_1_al		== w_clr or
+		control_reset_al		== w_clr then
+			ocb_foreground = red
+
+	else if int(manual_dress.e_value) >=1 and int(manual_dress.e_value) <= 9 then
+	   begin
+		case int(manual_dress.e_value) of
+		1,2,3,5,6,7,8,9
+			ocb_foreground = white
+		4
+			begin
+			   if ocb_closed_ip == on and ocb_open_ip == on then
+			   	ocb_foreground = black
+			   else
+			   	ocb_foreground = white
+			end
+		default
+		   begin
+		   end
+	   end
+	else
+		ocb_foreground = green4
+
+	! ocb background !
+	if ocb_ptw_ip then
+		ocb_background = orange
+
+	else if int(manual_dress.e_value) >= 1 and int(manual_dress.e_value) <= 9 then
+	   begin
+	      if cb_type == "Siemens" then
+	      begin	
+		case int(manual_dress.e_value) of
+		1  ! dressed to on !
+			if ocb_closed_ip == on and a_in_service_ip == on then
+			   	ocb_background = flashblue
+			else
+			   	ocb_background = blue
+		2  ! dressed to off !
+			if ocb_open_ip == on and a_in_service_ip == on then
+			   	ocb_background = flashblue
+			else
+			   	ocb_background = blue
+		3  ! dressed to isolate !
+			if ocb_sect_a_isolated_ip == on and ocb_circuit_earth_ip == off then
+			   	ocb_background = flashblue
+			else
+			   	ocb_background = blue
+		4  ! dressed to feeder earth off!
+ 			if ready_earth_ip == on then
+	   		   	ocb_background = flashblue
+			else
+	   		   	ocb_background = blue
+		5  ! dressed to feeder earth on !
+			if ocb_circuit_earth_ip == on and ocb_closed_ip == on then
+	  		   	ocb_background = flashblue
+			else
+	  		   	ocb_background = blue		
+		6 ! dressed to left hand section earth on !
+			if ocb_circuit_earth_ip == on and ocb_sect_b_earth_ip == off then
+	  		   	ocb_background = flashblue
+			else
+	  		  	ocb_background = blue		
+		7 ! dressed to right hand section earth on !
+			if ocb_circuit_earth_ip == off and  ocb_sect_b_earth_ip == on then
+	  		   	ocb_background = flashblue
+		8,9 ! dressed to section earth off !
+			if ready_earth_ip == on then
+	  		   	ocb_background = flashblue
+			else
+	  		  	ocb_background = blue		
+		default
+		   begin
+		   end
+	      end  !*end statement for Siemens type dress states *!
+	      else
+	      begin
+		case int(manual_dress.e_value) of
+		1  ! dressed to on !
+			if ocb_closed_ip == on and ocb_open_ip == off then
+			   	ocb_background = flashblue
+			else
+			   	ocb_background = blue
+		2  ! dressed to off !
+			if ocb_closed_ip == off and ocb_open_ip == on then
+			   	ocb_background = flashblue
+			else
+			   	ocb_background = blue
+		3  ! dressed to isolate !
+			if (ocb_sect_a_isolated_ip == on or ocb_sect_b_isolated_ip == on) and 
+			ocb_circuit_earth_ip == off and ocb_sect_b_earth_ip == off then 
+			   	ocb_background = flashblue
+			else
+			   	ocb_background = blue
+		4  ! dressed to feeder earth off!
+ 			if ready_earth_ip == on and ocb_circuit_earth_ip == off  then
+	   		   	ocb_background = flashblue
+			else
+	   		   	ocb_background = blue
+		5  ! dressed to feeder earth on !
+			if ocb_circuit_earth_ip == on  then
+	  		   	ocb_background = flashblue
+			else
+	  		   	ocb_background = blue		
+		6 ! dressed to left hand section earth on !
+			if ocb_circuit_earth_ip == on and  ocb_sect_b_earth_ip == off then
+	  		   	ocb_background = flashblue
+			else
+	  		  	ocb_background = blue		
+		7 ! dressed to right hand section earth on !
+			if ocb_circuit_earth_ip == off and  ocb_sect_b_earth_ip == on then
+	  		   	ocb_background = flashblue
+		8,9 ! dressed to section earth off !
+			if ready_earth_ip == on then
+	  		   	ocb_background = flashblue
+			else
+	  		  	ocb_background = blue		
+		default
+		   begin
+		   end
+	      end !*end statement for normal dress states *!
+	   end  !*end statement for if cb is dressed *!
+	else if tag_message.c_value <> "" then
+		ocb_background = yellow
+	else
+		ocb_background = decoroff
+
+	! main symbol !
+
+	x = 0 y = 0
+	just = centrecentre
+
+	if position == "sect" then
+	   begin
+		if controllable_ocb == yes then
+		   begin
+ 			if control_code == cont_code or control_code == cont_code + 1 then
+  		   		rect(w=110,h=100,fg=flashgreen)
+		   end
+ 		if manual_dress.e_value > 0 and tag_message.c_value <> "" then
+  		   begin
+    		 	rect(w=89,h=75,fg=yellow) 
+  		   end
+  		else if ocb_ptw_ip == on and tag_message.c_value <> "" then
+  		      begin
+    			rect(w=89,h=75,fg=yellow) 
+ 		      end
+
+  		if manual_dress.e_value > 0 and ocb_ptw_ip == on then
+  		   begin
+    			if tag_message.c_value <> "" then
+      			   	rect(w=93,h=79,fg=yellow) 
+    			rect(w=89,h=75,fg=blue) 
+  		   end
+  		rotrect(w=80,h=66,fg=ocb_background) clear
+  		w=80 h=66 set rect main_menu
+  		clear
+	   end
+	else
+	   begin
+		if controllable_ocb == yes then
+		   begin
+  			if control_code == cont_code or control_code == cont_code + 1 then
+    		   		rect(w=81,h=97,fg=flashgreen)
+		   end
+  		if manual_dress.e_value > 0 and tag_message.c_value <> "" then
+ 		   begin
+    			rect(w=75,h=89,fg=yellow) 
+  		   end
+  		else if ocb_ptw_ip == on and tag_message.c_value <> "" then
+  		      begin
+    			rect(w=75,h=89,fg=yellow) 
+  		      end
+
+  		if manual_dress.e_value > 0 and ocb_ptw_ip == on then
+  		   begin
+    			if tag_message.c_value <> "" then
+      			   	rect(w=79,h=93,fg=yellow) 
+    			rect(w=75,h=89,fg=blue) 
+  	  	   end
+  		x = 0 y = 0 w = 66 h = 80 rotrect(fg=ocb_background) clear
+  		x = 0 y = 0 w = 66 h = 80 set rect main_menu
+  		clear
+	   end
+
+	if control_code == cont_code or control_code == cont_code + 1 then 
+	   begin
+		if control_code == plc_execute_code then
+		   plc_executed = yes
+
+		if plc_executed == yes and plc_execute_code  == 0 and controllable_ocb==yes then 
+		   begin
+			set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+			set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+			plc_executed = no
+		   end
+	   end
+	else plc_executed = no
+
+	! tag message box !
+	if selb and tag_message.c_value <> "" then
+	begin
+  	   message_text_box(tag_message.c_value)
+	end
+
+	if position == "sect" then
+	   begin
+  	   	x -= 40 y += 33 add
+  	   	y -= 66 add
+  	   	x += 80 add line(fg=decorlight) clear
+  	   	y += 1 add
+  	   	y += 66 add
+   	   	x -= 79 add line(fg=decorshadow) clear
+  	   	fg = ocb_foreground
+  	   	clear
+	   end
+	else
+	   begin
+  		x -= 33 y += 40 add
+  		y -= 80 add
+  		x += 66 add line(fg=decorlight) clear
+  		y += 1 add
+  		y += 79 add
+  		x -= 66 add line(fg=decorshadow) clear
+  		fg = ocb_foreground
+  		clear
+	end
+
+	if position == "sect" then
+	   set title main_menu = "bus section breaker"
+	else
+	   set title main_menu = "controllable ocb "+ident
+
+	set empty main_menu
+	set remove main_menu = "alter tag message"
+	set remove main_menu = "clear tag message"
+	set remove main_menu = "alter permit to work"
+	set remove main_menu = "undress ocb"
+	set remove main_menu = "dress to isolated"
+	set remove main_menu = "dress to left hand section earth on"
+	set remove main_menu = "dress to right hand section earth on"
+	set remove main_menu = "dress to left hand section earth off"
+	set remove main_menu = "dress to right hand section earth off"
+	set remove main_menu = "dress to feeder earth off"
+	set remove main_menu = "dress to feeder earth on"
+	set remove main_menu = "dress to off"
+	set remove main_menu = "dress to on"
+	set remove main_menu = "switch to off"
+	set remove main_menu = "switch to on"
+	set add main_menu = "alter tag message"
+	set add main_menu = "clear tag message"
+	set add main_menu = "alter permit to work"
+
+	x = 0 y = 0
+
+	! ready for earth !
+	if
+	((ready_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 4 or  manual_dress.e_value == 8 or manual_dress.e_value == 9)
+	then
+       	   begin
+        	      	if position =="top" then
+	      	begin
+  	   		earth_off_ocb_b(ocb_foreground)
+  	   		set add main_menu = "dress to isolated"
+			set add main_menu = "dress to feeder earth on"
+
+ 	   		if manual_dress.e_value > 0 then
+    	   		set add main_menu = "undress ocb"
+	      	end
+
+        		if position =="btm" then
+		begin
+			earth_off_ocb_a(ocb_foreground)
+			set add main_menu = "dress to isolated"
+			set add main_menu = "dress to feeder earth on"
+
+			if manual_dress.e_value > 0 then
+			set add main_menu = "undress ocb"
+		end
+	
+        		if position =="sect" then
+	         	begin
+	      	   if((ocb_circuit_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 8) then
+	         	      begin
+  	  		earth_off_ocb_d(ocb_foreground)
+  	  		set add main_menu = "dress to isolated"
+  	  		if manual_dress.e_value > 0 then
+    	  		set add main_menu = "undress ocb"
+	      	      end
+	      	   else if ((ocb_sect_b_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 9) then
+	         	      begin
+  			  earth_off_ocb_c(ocb_foreground)
+  			  set add main_menu = "dress to isolated"
+  			  if manual_dress.e_value > 0 then
+    			  set add main_menu = "undress ocb"
+	   	      end
+	      	   else
+	         	      begin
+  			  earth_off_ocb_b(ocb_foreground)
+  			  set add main_menu = "dress to isolated"
+  			  if manual_dress.e_value > 0 then
+    			  set add main_menu = "undress ocb"
+	   	      end
+	            	end
+	   end
+	! circuit earthed !
+	else if ((ocb_circuit_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 5 or manual_dress.e_value == 6) or  
+	   ((ocb_sect_b_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 7) 
+	then 
+       	   begin
+        	      	if position =="top" then
+	      	begin
+  	   		earth_on_ocb_b(ocb_foreground)
+  	   		set add main_menu = "dress to isolated"
+    	       		set add main_menu = "dress to feeder earth off"
+ 	   		if manual_dress.e_value > 0 then
+    	   		set add main_menu = "undress ocb"
+	      	end
+
+        		if position =="btm" then
+		begin
+			earth_on_ocb_a(ocb_foreground)
+			set add main_menu = "dress to isolated"
+    	       		set add main_menu = "dress to feeder earth off"
+			if manual_dress.e_value > 0 then
+    			set add main_menu = "undress ocb"
+		end
+	
+        		if position =="sect" then
+	         	begin
+	      	   if ((ocb_circuit_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 6) then
+	         	      begin
+  	  		earth_on_ocb_d(ocb_foreground)
+  	  		set add main_menu = "dress to isolated"
+  	  		if manual_dress.e_value > 0 then
+    	  		set add main_menu = "undress ocb"
+	      	      end
+	      	   else if ((ocb_sect_b_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 7) then
+	         	      begin
+  			  earth_on_ocb_c(ocb_foreground)
+  			  set add main_menu = "dress to isolated"
+  			  if manual_dress.e_value > 0 then
+    			  set add main_menu = "undress ocb"
+	   	      end
+	            	end
+	   end
+     	else if 	! isolated !
+	   (ocb_sect_a_isolated_ip == on and manual_dress.e_value == 0) or (ocb_inputs[16].b_value == on and manual_dress.e_value == 0) or 
+	   (ocb_closed_ip == off and ocb_open_ip == off and manual_dress.e_value == 0) or manual_dress.e_value == 3 then
+	   begin
+  	        if position == "sect" then
+	        	isolated_ocb_b(ocb_foreground)
+  	        else
+    	        	isolated_ocb_a(ocb_foreground)
+
+	        set add main_menu = "dress to off"
+
+  	        if position == "sect" then
+  	           begin
+    	   	!set add main_menu = "dress to left hand section earth off"!
+    	   	set add main_menu = "dress to left hand section earth on"
+    	   	!set add main_menu = "dress to right hand section earth off"!
+    	   	set add main_menu = "dress to right hand section earth on"
+  	           end
+  	        else 
+		begin
+    	       		set add main_menu = "dress to feeder earth off"
+    	       		set add main_menu = "dress to feeder earth on"
+		end
+		
+  	        if manual_dress.e_value > 0 then
+       	        	set add main_menu = "undress ocb"
+	   end
+     	else if	! tripped !
+	   (ocb_open_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 2 then
+	   begin
+  	    	if position == "sect" then
+  		   tripped_ocb_b(ocb_foreground)
+  		else
+    		   tripped_ocb_a(ocb_foreground)
+  	                
+                            angle = 90
+		if (ocb_open_ip == on and ocb_closed_ip == on and manual_dress.e_value == 0) then 
+		   set add main_menu = "dress to off"
+
+  		set add main_menu = "dress to on"
+  		set add main_menu = "dress to isolated"
+ 		if manual_dress.e_value == 0 and controllable_ocb == yes  then
+  		   begin
+    		   	set add main_menu = "switch to off"
+    		   	set add main_menu = "switch to on"
+  		   end
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "undress ocb"
+	   end
+     	else if	! closed !
+	   (ocb_closed_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 1  then
+	   begin
+  		if position == "sect" then
+	    	   closed_ocb_b(ocb_foreground)
+  		else
+    		   closed_ocb_a(ocb_foreground)
+
+  		set add main_menu = "dress to off"
+  		if manual_dress.e_value == 0 and cont_offset<>int and controllable_ocb == yes   then 
+  		    begin
+    			set add main_menu = "switch to off"
+    			set add main_menu = "switch to on"
+  		    end
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "undress ocb"
+	   end
+	else 
+	   begin
+  	        if position == "sect" then
+	        	isolated_ocb_b(ocb_foreground)
+  	        else
+    	        	isolated_ocb_a(ocb_foreground)
+
+	        set add main_menu = "dress to off"
+
+  	        if position == "sect" then
+  	           begin
+    	   	set add main_menu = "dress to left hand section earth on"
+    	   	set add main_menu = "dress to right hand section earth on"
+  	           end
+  	        else 
+		begin
+    	       		set add main_menu = "dress to feeder earth off"
+    	       		set add main_menu = "dress to feeder earth on"
+		end
+		
+  	        if manual_dress.e_value > 0 then
+       	        	set add main_menu = "undress ocb"
+	   end
+
+	! menu control !
+	! main menu selection !
+
+         if valid main_menu then
+            begin
+	  case main_menu of
+	
+	  "alter tag message"
+	  begin
+	     set title tag_message_panel 		= "modify tag message"	
+	     set label tag_message_panel.str	= "tag message :"
+	     set unpinned tag_message_panel
+	     request tag_message_panel
+	  end
+
+	  "clear tag message"
+	     set_c_value(db_address(int(c1) +c_offset - 1),src,"")
+
+	  "alter permit to work"
+	  begin
+	     if ocb_ptw_ip == on then
+	        set_b_value(db_address(int(b1) + b_offset +11),src,off)
+	     else
+	        set_b_value(db_address(int(b1) + b_offset +11),src,on)
+	  end	
+
+	  "undress ocb"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+	  "dress to on"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+	  "dress to off"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+	  "dress to isolated"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+	  "dress to feeder earth off"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 4)
+	  "dress to feeder earth on"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 5)
+	  "dress to left hand section earth on"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 6)
+	  "dress to right hand section earth on"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 7)
+!
+	"dress to left hand section earth off"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 8)
+	"dress to right hand section earth off"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 9)
+!
+	"switch to on"
+	   begin
+	      if control_code == 0 then
+	  	begin
+	    	   close_ocb_control = yes
+	    	   set_e_value(db_address(int(e1) + cont_offset-1),src, close_code)
+	  	end
+	      else 
+    	   	in_progress = yes
+  	   end
+
+	"switch to off"
+  	   begin
+     	      if control_code == 0 then
+  		begin
+    	   	   open_ocb_control = yes
+    	   	   set_e_value(db_address(int(e1) + cont_offset-1),src, open_code)
+  		end
+	      else
+    	   	in_progress = yes
+  	   end
+
+  	"control cancel"
+    	   begin
+    		set_e_value2(db_address(int(e1) + cont_offset-1),src, 9999,op1)
+            reset_ctl=yes
+            reset_offset=cont_offset
+		set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+                            set_b_value(db_address(int(b1) + b_offset + 18), src ,on)
+  	   	set_b_value(db_address(int(b1) + b_offset + 18), src ,off)
+    	   end
+  
+   	default
+   	   begin
+   	   end
+
+	set invalid main_menu
+            end
+
+	! control in progress !
+	if in_progress == yes then
+	begin
+   	   set title local_control_in_progress = " "
+   	   set unpinned local_control_in_progress
+   	   request local_control_in_progress(ident,"control in progress")
+   	   in_progress = no
+	end
+
+	if open_ocb_control then
+	   	control_text = ident+" open"
+	else if close_ocb_control then
+	   	control_text = ident+" close"
+	else
+   		control_text = " "
+
+	! control confirm / cancel !
+	if invalid popup_box and control_code > 0 and execute_code == 0 and control_code == checkback_code then
+	   begin  
+  	      if control_code == open_code or control_code == close_code then
+  	         begin
+     		if open_ocb_control == yes then
+     		   begin
+      		   	set title popup_box = control_text
+      			set unpinned popup_box
+      			request popup_box(ident)
+     		   end 
+     		else if  close_ocb_control == yes then
+       		   begin
+         			set title popup_box = control_text
+         			set unpinned popup_box
+         			request popup_box(ident)
+       		   end 
+     	         end
+	   end
+
+	if popup_box == yes and confirm == no and controllable_ocb == yes then
+	   begin
+  	      if control_code == checkback_code then
+  	         begin
+    		if control_code == open_code or control_code == close_code then 
+    		   begin
+      			if open_ocb_control == yes then
+      			   begin
+     			   	set_e_value(db_address(int(e1) + cont_offset+1),src, open_code)
+        				open_ocb_control = no
+        				confirm = yes
+      			   end
+      			else if close_ocb_control == yes then
+      			   begin
+        				set_e_value(db_address(int(e1) + cont_offset+1),src, close_code)
+        				close_ocb_control = no
+        				confirm = yes
+      			   end
+    			else close_ocb_control = no
+      			confirm = yes
+    		   end
+  	         end
+	   end
+
+	if popup_box == no and confirm == no and controllable_ocb == yes then
+	   begin
+  	      if open_ocb_control == yes then
+  	         begin
+    		set_e_value2(db_address(int(e1) + cont_offset-1),src, 9999,op1)
+            reset_ctl=yes
+            reset_offset=cont_offset
+    		set_e_value(db_address(int(e1) + cont_offset+1),src, 0)  
+    		close_ocb_control = no
+    		open_ocb_control = no
+   		confirm = yes
+  	         end
+  	      else if close_ocb_control == yes then
+  	         begin
+    		set_e_value2(db_address(int(e1) + cont_offset-1),src, 9999,op1)  
+            reset_ctl=yes
+            reset_offset=cont_offset
+    		set_e_value(db_address(int(e1) + cont_offset+1),src, 0) 
+    		close_ocb_control = no
+    		open_ocb_control = no
+    		confirm = yes
+  	         end
+	   end
+
+	if execute_code == 0 then
+	   begin
+  		confirm = no
+  		set invalid popup_box
+	   end
+
+	! cancel control !
+	if (control_code == open_code or control_code == close_code) and control_code > 0 then
+	   set add main_menu = "control cancel"
+
+	! control fail !
+	if invalid accept then
+	   accept = no
+
+	if control_fail_ip == on  then
+	   begin
+		if  open_ocb_control==yes then
+		begin
+  	   		if invalid failure_box and accept == no then
+  	      		begin
+    			     set title failure_box = " "
+    			     set unpinned failure_box
+    			     request failure_box(ident,"control failed")
+  	      		end
+		end
+		if  close_ocb_control==yes then
+		begin
+  	   		if invalid failure_box and accept == no then
+  	      		begin
+    			     set title failure_box = " "
+    			     set unpinned failure_box
+    			     request failure_box(ident,"control failed")
+  	      		end
+		end
+	   end
+
+	if failure_box == yes and accept == no then
+	   begin
+                            set_b_value(db_address(int(b1) + b_offset + 18), src ,on)
+  	   	set_b_value(db_address(int(b1) + b_offset + 18), src ,off)
+  	   	accept = yes
+	   end
+
+	if control_fail_ip == off then
+	   begin
+  	   	set invalid failure_box
+  	   	accept = no
+	   end
+
+	! tag message panel !
+	if valid tag_message_panel then
+	   begin
+    	   	set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+    	   	set invalid tag_message_panel
+  	   end
+
+	if position == "top" or position == "btm" then
+	   begin
+  	   	x = 50 y = 0 text(tfg=black,ch=25,ident)
+	   end
+	else if position == "sect" then
+	   begin
+  	         	x = 0 y = 50 text(tfg=black,ch=25,ident)
+	   end
+end
+
+
+!** Dual Bus objects and breaker symbols   **!
+object bus_con(pos=string)
+begin
+	clear
+	x=0 y=-80 add x=0 y=80 add line(lw=3, fg=darkgrey) clear
+
+	if pos<>"end" then
+	begin
+		x=0 y=0 w=10 h=10 just=centrecentre fg=darkgrey disk clear
+		x=0 y=0 add x=25 y=0 add x=25
+		if pos == "up" then
+			y=-190 
+		else
+			y=190
+		add line(lw=3, fg=darkgrey) clear
+	end
+end
+
+
+!** closed **!
+object closed_symbol(bus_fg = colour,angle)
+begin
+	just = centrecentre
+	fg = bus_fg lw=6
+	y = 75  y -= 50 x -= 25 add y -= 50 x += 50 add line clear
+	y += 50 add x -= 50 y -= 50 add line clear
+	x += 25 y += 25 add clear
+	x = 0 y = 40 add y = -40 add line clear
+end
+
+!** tripped **!
+object tripped_symbol(bus_fg = colour,angle)
+begin
+	just = centrecentre
+	fg = bus_fg
+	lw=6
+	y = -20 y += 40 x -= 20 add y -= 40 x += 40 add line clear
+	y += 40 add x -= 40 y -= 40 add line clear
+	x += 20 y += 20 add
+	x = 0 y = 0 circle(h=56,w=56) clear
+	x = 0 y = -27 add y = -40 add line clear
+	x = 0 y = 27 add y = 40 add line clear
+end
+
+!** earth on **!
+object earth_on_symbol(bus_fg=colour,angle)
+begin
+	just = centrecentre
+	fg = bus_fg lw=4
+	x = 0 y += 40 add y -= 8 add line clear 
+	disk(w=10,h=10)
+	lw=6
+	y -= 1 add y -= 20 add line clear
+	disk(w=10,h=10)
+	lw=4
+	y -= 3 add y -= 6 add line
+	x += 15 add x -= 30 add line clear
+	x += 5 y -= 10 add x += 20 add line clear
+	x -= 6 y -= 9 add x -= 8 add line clear
+end
+
+object earth_off_symbol(bus_fg=colour,angle)
+begin
+	just = centrecentre
+	fg = bus_fg
+	lw=4
+	x = 0 y = 40 add y -= 8 add line clear 
+	disk(w=10,h=10) 
+	lw=6
+	y -= 1 y -= 20 clear
+	disk(w=10,h=10)
+	lw=4
+	y -= 3 add y -= 6 add line
+	x += 15 add x -= 30 add line clear
+	x += 5 y -= 10 add x += 20 add line clear
+	x -= 6 y -= 9 add x -= 8 add line clear
+end
+
+
+!**  isolated **!
+object isolated_symbol(bus_fg=colour,angle)
+begin
+	fg = bus_fg
+	lw=6
+	y = -40 add y += 20 add x -= 7 add x += 14 add line clear
+	y += 60 x -= 7 add y -= 20 add x -= 7 add x += 14 add line clear
+end
+
+!**  in service**!
+object in_service_symbol(bus_fg=colour,angle)
+begin
+	fg = bus_fg
+	lw=10
+	x=0 y=39 add x=0 y=-39 add line clear
+	x=0 y=39 add x=0 y=-39 add line clear
+	x=0 y=-30 w=14 h=11 just=centrecentre fs=fillsolid sa=0 disk
+	x=0 y=30 w=14 h=11 fs=fillsolid sa=0 disk clear
+end
+
+!**  Dual Bus Connector object  - with Node Comms **!
+object bus_link(bus_type=string,plc_offset=int,node_offset=int,b_offset=int,c_offset=int,e_offset=int,src=source,ident=string,xtra_alarms=int,res_str=string,res1=int,angle)
+var plc_inputs = input b_bool_type[2]		! * comms inputs * !
+var node_input = input b_bool_type		! * node comms input * !
+var bus_inputs = input b_bool_type[2]		! * bus inputs * !
+var alarm_inputs = input alarm_row_type[2]	! * bus alarms * !
+var in_service_ip		= onoff	!1	 * defined bus inputs * !	
+var isolated_ip		= onoff	!2!
+var in_service_al		=alarm_status !1	 * defined bus alarms * !
+var isolated_al		=alarm_status !2!
+var manual_dress	= input e_db_row_type		! * dress input * !
+var tag_message		= input c_db_row_type	! * msg input * !
+var bus_fg	= loopback colour			! * loopbacks * !
+var bus_bg	= loopback colour
+var main_menu		= menu string(40)		! * menus * !
+var tag_message_panel 	= panel panel_item_row
+var num_alarms		= int
+begin
+         		if invalid get source plc_inputs then 	! * get database values * !
+         		begin
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+	   	set source node_input = src
+	   	set filter node_input.db_addr = lim_eq
+	   	set limit node_input.db_addr = db_address(int(b1) + node_offset -1)
+	   	set priority node_input.db_addr = 15
+	   	set persist node_input
+	   	set mayexist node_input
+	   	request node_input
+	
+		set source bus_inputs = src
+		set filter bus_inputs.db_addr = lim_ge
+		set limit bus_inputs.db_addr = db_address(int(b1) + b_offset -1)
+		set priority bus_inputs.db_addr = 15
+		set persist bus_inputs
+		set mayexist bus_inputs
+	   	request bus_inputs
+
+	   	set source alarm_inputs = src
+	   	set filter alarm_inputs.db_addr = lim_ge
+	   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+   		set priority alarm_inputs.db_addr = 15
+   		set persist alarm_inputs
+   		set mayexist alarm_inputs
+   		request alarm_inputs
+
+	   	set source manual_dress = src
+	   	set filter manual_dress.db_addr = lim_eq
+	   	set limit manual_dress.db_addr = db_address(int(e1) + e_offset - 1)
+	   	set persist manual_dress 
+	   	request manual_dress
+
+	   	set source tag_message = src
+	   	set filter tag_message.db_addr = lim_eq
+	   	set limit tag_message.db_addr = db_address(int(c1) + c_offset -1)
+	   	set persist tag_message
+	   	request tag_message
+        		end
+
+		in_service_ip	= bus_inputs[1].b_value
+		isolated_ip	= bus_inputs[2].b_value
+		in_service_al	=alarm_inputs[1].alarm_status 
+		isolated_al	=alarm_inputs[2].alarm_status
+
+
+	! * bus link fg * !
+
+	if 	plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+			bus_fg = magenta
+	else if 	node_input.b_value== on then
+			bus_fg = magenta
+	else if 	
+		in_service_al == w_note or isolated_al	== w_note then
+			bus_fg = flashred
+	else if  
+		in_service_al == w_clr or isolated_al == w_clr then
+			bus_fg = red
+	else if
+		int(manual_dress.e_value) >=1 then
+			bus_fg = white
+	else
+			bus_fg = green4
+ 
+	
+	! * bus link bg * !
+
+	 if manual_dress.e_value ==1  then
+	   begin
+		if in_service_ip == on and isolated_ip == off then
+		   	bus_bg = flashblue
+		else
+		   	bus_bg = blue
+	   end
+	else if manual_dress.e_value ==2  then
+	   begin
+		if in_service_ip == off and isolated_ip == on then
+		   	bus_bg = flashblue
+		else
+		   	bus_bg = blue
+	   end
+	else if 	tag_message.c_value <> "" then
+			bus_bg = yellow
+	else
+			bus_bg = grey80
+
+
+	! main symbol !
+
+	x = 0 y = 0
+	just = centrecentre
+
+  		if manual_dress.e_value > 0 and tag_message.c_value <> "" then
+    			rect(w=75,h=89,fg=yellow)
+
+  		x = 0 y = 0 w = 66 h = 80 rotrect(fg=bus_bg) clear
+ 
+		
+		set rect main_menu clear
+	
+		! tag message box !
+		if selb and tag_message.c_value <> "" then
+		begin
+	  	   message_text_box(tag_message.c_value)
+		end
+
+		! * draw box * !
+		x=0 y=0
+  		x -= 33 y += 40 add y -= 80 add x += 66 add line(fg=white) clear
+  		y += 1 add y += 79 add x -= 66 add line(fg=darkgrey) clear
+  		fg = bus_fg clear
+	
+		set title main_menu = "bus link "+ident
+		set empty main_menu
+		set remove main_menu = "alter tag message"
+		set remove main_menu = "clear tag message"
+		set remove main_menu = "undress"
+		set remove main_menu = "dress to isolated"
+		set remove main_menu = "dress to connected"
+
+		set add main_menu = "alter tag message"
+		set add main_menu = "clear tag message"
+
+		if manual_dress.e_value==0  then
+			set add main_menu = "dress to connected"
+
+		if manual_dress.e_value==1  then
+		begin
+	       	        	set add main_menu = "dress to isolated"
+			set add main_menu = "undress"
+		end
+		if manual_dress.e_value==2  then
+		begin
+       	        		set add main_menu = "dress to connected"
+			set add main_menu = "undress"
+		end
+
+	x = 0 y = 0 
+	if ((isolated_ip == on and manual_dress.e_value == 0) or manual_dress.e_value==2)
+	then
+		isolated_symbol(bus_fg)
+	else if ((in_service_ip == on and manual_dress.e_value == 0) or manual_dress.e_value==1)
+	then
+		in_service_symbol(bus_fg)
+
+	! main menu selection !
+
+         if valid main_menu then
+            begin
+	  case main_menu of
+	
+	  "alter tag message"
+	  begin
+	     set title tag_message_panel = "modify tag message"	
+	     set label tag_message_panel.str = "tag message :"
+	     set unpinned tag_message_panel
+	     request tag_message_panel
+	  end
+
+	  "clear tag message"
+	     set_c_value(db_address(int(c1) +c_offset - 1),src,"")
+
+	  "undress"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+	  "dress to on"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+	  "dress to isolated"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+	  "dress to connected"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+   	default
+   	   begin
+   	   end
+
+	set invalid main_menu
+            end
+
+	! tag message panel !
+	if valid tag_message_panel then
+	   begin
+    	   	set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+    	   	set invalid tag_message_panel
+  	   end
+  	   	x = 37 y = 0 text(just=centreleft,tfg=black,ch=25,ident)
+end
+
+
+!**  Dual Bus Breaker object  - control with checkback from plc and Node Comms **!
+object dual_bus_cb(cb_type=string,plc_offset=int,node_offset=int,b_offset=int,c_offset=int,e_offset=int,cont_offset=int,src=source,ident=int,position=string(4),cont_code=int,xtra_alarms=int,res_str=string,res2=int,res1=int,bus_line_fg=colour,angle)
+var plc_inputs = input b_bool_type[2]		! * comms inputs * !
+var node_input = input b_bool_type		! * node comms input * !
+var ocb_inputs = input b_bool_type[14]		! * breaker inputs * !
+var alarm_inputs = input alarm_row_type[20]	! * breaker alarms * !
+var ocb_closed_ip		= onoff	!7!
+var ocb_open_ip	 	= onoff	!8!
+var main_earth_ip		= onoff	!9!
+var main_service_ip	= onoff	!10!
+var main_isolated_ip	= onoff	!11!
+var control_fail_ip		= onoff	!12!
+var ocb_ptw_ip	 	= onoff	!13!
+var reserve_earth_ip 	= onoff	!14!
+var reserve_service_ip	= onoff	!15!
+var reserve_isolated_ip	= onoff	!16!
+var main_rdy_earth_ip	= onoff	!17!
+var reserve_rdy_earth_ip	= onoff	!18!
+var both_isolated_ip	= onoff	!19!
+var control_reset_ip	= onoff	!20!
+var alarm1_al		=alarm_status !1	 * defined breaker alarms * !
+var alarm2_al		=alarm_status !2!
+var alarm3_al		=alarm_status !3!
+var alarm4_al		=alarm_status !4!
+var alarm5_al		=alarm_status !5!
+var alarm6_al		=alarm_status !6!
+var ocb_closed_al		=alarm_status !7!
+var ocb_tripped_al		=alarm_status !8!
+var main_earth_al		=alarm_status !9!
+var main_service_al	=alarm_status !10!
+var main_isolated_al	=alarm_status !11!
+var control_fail_al		=alarm_status !12!
+var reserve_earth_al 	=alarm_status !14!
+var reserve_service_al	=alarm_status !15!
+var reserve_isolated_al	=alarm_status !16!
+var main_rdy_earth_al	=alarm_status !17!
+var reserve_rdy_earth_al	=alarm_status !18!
+var both_isolated_al	=alarm_status !19!
+var control_reset_al	=alarm_status !20!
+var control_data		= input e_db_row_type[4]	! * control code inputs* !
+var control_code		= int
+var checkback_code	= int
+var execute_code	= int
+var plc_execute_code	= int
+var manual_dress		= input e_db_row_type		! * dress input * !
+var tag_message		= input c_db_row_type	! * msg input * !
+var ocb_foreground	= loopback colour			! * loopbacks * !
+var ocb_background	= loopback colour
+var confirm		= loopback yesno
+var accept		= loopback yesno
+var close_ocb_control	= loopback yesno
+var open_ocb_control	= loopback yesno
+var plc_executed		= loopback yesno
+var main_menu		= menu string(40)		! * menus * !
+var tag_message_panel 	= panel panel_item_row
+var popup_box		= popup confirm_popup
+var failure_box		= popup control_status
+var local_control_in_progress 	= popup control_status
+var node_alarm = loopback onoff
+var close_code		= int			! * menus * !
+var open_code		= int
+var control_text		= string(10)
+var in_progress		= yesno
+var controllable_ocb	= yesno
+var num_alarms		= int
+var bus_orient_pos = int
+var bus_orient_angle = int
+var helpstr = help string(30)
+var reset_offset = loopback int
+var reset_ctl = loopback yesno
+var op1= output e_db_row_type
+begin
+   just=centrecentre    x=0 y=0  
+   if invalid reset_ctl then
+      reset_ctl=no
+   if reset_ctl==yes then
+      begin
+      set_e_value(db_address(int(e1) + reset_offset-1),src,0)
+      reset_ctl=no
+      end
+		W=80 H=66
+		set text helpstr = "CIRCUIT_BREAKERS_lib_help"
+
+         		if invalid get source plc_inputs then 	! * get database values * !
+         		begin
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+	   	set source node_input = src
+	   	set filter node_input.db_addr = lim_eq
+	   	set limit node_input.db_addr = db_address(int(b1) + node_offset -1)
+	   	set priority node_input.db_addr = 15
+	   	set persist node_input
+	   	set mayexist node_input
+	   	request node_input
+	
+		set source ocb_inputs = src
+		set filter ocb_inputs.db_addr = lim_ge
+		set limit ocb_inputs.db_addr = db_address(int(b1) + b_offset + 5)
+		set priority ocb_inputs.db_addr = 15
+		set persist ocb_inputs
+		set mayexist ocb_inputs
+	   	request ocb_inputs
+
+	   	set source alarm_inputs = src
+	   	set filter alarm_inputs.db_addr = lim_ge
+	   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+   		set priority alarm_inputs.db_addr = 15
+   		set persist alarm_inputs
+   		set mayexist alarm_inputs
+   		request alarm_inputs
+
+	   	set source manual_dress = src
+	   	set filter manual_dress.db_addr = lim_eq
+	   	set limit manual_dress.db_addr = db_address(int(e1) + e_offset - 1)
+	   	set persist manual_dress 
+	   	request manual_dress
+
+		if cont_code <> int and cont_code <> 0 then
+		begin
+		   	set source control_data = src
+		   	set filter control_data.db_addr = lim_ge
+		   	set limit control_data.db_addr = db_address(int(e1) + cont_offset-1)
+		   	set persist control_data 
+		   	request control_data
+		end
+			
+	   	set source tag_message = src
+	   	set filter tag_message.db_addr = lim_eq
+	   	set limit tag_message.db_addr = db_address(int(c1) + c_offset -1)
+	   	set persist tag_message
+	   	request tag_message
+        		end
+
+
+		open_code = cont_code 
+		close_code = cont_code +  1
+		if cont_offset<>int and cont_code<>int then
+			controllable_ocb = yes
+		else controllable_ocb = no
+
+	ocb_closed_ip	 	= ocb_inputs[1].b_value
+	ocb_open_ip	 	= ocb_inputs[2].b_value
+	main_earth_ip		= ocb_inputs[3].b_value
+	main_service_ip	 	= ocb_inputs[4].b_value
+	main_isolated_ip		= ocb_inputs[5].b_value
+	control_fail_ip	 	= ocb_inputs[6].b_value
+	ocb_ptw_ip	 	= ocb_inputs[7].b_value
+	reserve_earth_ip 		= ocb_inputs[8].b_value
+	reserve_service_ip		= ocb_inputs[9].b_value
+	reserve_isolated_ip		= ocb_inputs[10].b_value
+	main_rdy_earth_ip		= ocb_inputs[11].b_value
+	reserve_rdy_earth_ip	= ocb_inputs[12].b_value
+	both_isolated_ip		= ocb_inputs[13].b_value
+	control_reset_ip		= ocb_inputs[14].b_value
+
+	alarm1_al		=alarm_inputs[1].alarm_status 
+	alarm2_al		=alarm_inputs[2].alarm_status
+	alarm3_al		=alarm_inputs[3].alarm_status
+	alarm4_al		=alarm_inputs[4].alarm_status 
+	alarm5_al		=alarm_inputs[5].alarm_status
+	alarm6_al		=alarm_inputs[6].alarm_status
+	ocb_closed_al		=alarm_inputs[7].alarm_status
+	ocb_tripped_al		=alarm_inputs[8].alarm_status
+	main_earth_al		=alarm_inputs[9].alarm_status
+	main_service_al	 	=alarm_inputs[10].alarm_status
+	main_isolated_al		=alarm_inputs[11].alarm_status
+	control_fail_al	 	=alarm_inputs[12].alarm_status
+	reserve_earth_al 		=alarm_inputs[14].alarm_status
+	reserve_service_al		=alarm_inputs[15].alarm_status 
+	reserve_isolated_al		=alarm_inputs[16].alarm_status 
+	main_rdy_earth_al		=alarm_inputs[17].alarm_status 
+	reserve_rdy_earth_al	=alarm_inputs[18].alarm_status 
+	both_isolated_al	 	=alarm_inputs[19].alarm_status 
+
+		if cont_code <> int and cont_code <> 0 then
+		begin
+			control_code	= int(control_data[1].e_value)
+			checkback_code	= int(control_data[2].e_value)
+			execute_code	= int(control_data[3].e_value)
+			plc_execute_code= int(control_data[4].e_value)
+		end
+
+		if invalid node_input.b_value then node_alarm = off
+		else node_alarm = node_input.b_value
+
+		if invalid alarm_inputs[1].alarm_status then alarm1_al=alarm_clear
+		if invalid alarm_inputs[2].alarm_status then alarm2_al=alarm_clear
+		if invalid alarm_inputs[3].alarm_status then alarm3_al=alarm_clear
+		if invalid alarm_inputs[4].alarm_status then alarm4_al=alarm_clear
+		if invalid alarm_inputs[5].alarm_status then alarm5_al=alarm_clear
+		if invalid alarm_inputs[6].alarm_status then alarm6_al=alarm_clear
+		if invalid alarm_inputs[7].alarm_status then ocb_closed_al	=alarm_clear
+		if invalid alarm_inputs[8].alarm_status then ocb_tripped_al	=alarm_clear
+		if invalid alarm_inputs[9].alarm_status then main_earth_al=alarm_clear
+		if invalid alarm_inputs[10].alarm_status then main_service_al=alarm_clear
+		if invalid alarm_inputs[11].alarm_status then main_isolated_al=alarm_clear
+		if invalid alarm_inputs[12].alarm_status then control_fail_al=alarm_clear
+
+		if invalid alarm_inputs[14].alarm_status then reserve_earth_al=alarm_clear
+		if invalid alarm_inputs[15].alarm_status then reserve_service_al=alarm_clear
+		if invalid alarm_inputs[16].alarm_status then reserve_isolated_al=alarm_clear
+		if invalid alarm_inputs[17].alarm_status then main_rdy_earth_al=alarm_clear
+		if invalid alarm_inputs[18].alarm_status then reserve_rdy_earth_al=alarm_clear
+		if invalid alarm_inputs[19].alarm_status then both_isolated_al=alarm_clear
+
+	! * circuit breaker foreground * !
+
+	if 	plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+			ocb_foreground = magenta
+	else if node_alarm == on then
+		ocb_foreground = magenta
+	else if 	
+		alarm1_al	== w_note or
+		alarm2_al	== w_note or
+		alarm3_al	== w_note or
+		alarm4_al	== w_note or
+		alarm5_al	== w_note or
+		alarm6_al	== w_note or
+		ocb_closed_al	== w_note or
+		ocb_tripped_al	== w_note or
+		main_earth_al	== w_note or
+		main_service_al	== w_note or
+		main_isolated_al	== w_note or
+		control_fail_al	== w_note or
+		reserve_earth_al 	== w_note or
+		reserve_service_al	== w_note or
+		reserve_isolated_al	== w_note or
+		main_rdy_earth_al	== w_note or
+		reserve_rdy_earth_al== w_note or
+		both_isolated_al	== w_note then
+			ocb_foreground = flashred
+	else if  
+		alarm1_al	== w_clr or
+		alarm2_al	== w_clr or
+		alarm3_al	== w_clr or
+		alarm4_al	== w_clr or
+		alarm5_al	== w_clr or
+		alarm6_al	== w_clr or
+		ocb_closed_al	== w_clr or
+		ocb_tripped_al	== w_clr or
+		main_earth_al	== w_clr or
+		main_service_al	== w_clr or
+		main_isolated_al	== w_clr or
+		control_fail_al	== w_clr or
+		reserve_earth_al 	== w_clr or
+		reserve_service_al	== w_clr or
+		reserve_isolated_al	== w_clr or
+		main_rdy_earth_al	== w_clr or
+		reserve_rdy_earth_al== w_clr or
+		both_isolated_al	== w_clr then
+			ocb_foreground = red
+	else if
+		int(manual_dress.e_value) >=1 then
+			ocb_foreground = white
+	else
+		ocb_foreground = green4
+ 
+	! * circuit breaker background * !
+
+	if ocb_ptw_ip then
+			ocb_background = orange
+
+	else if manual_dress.e_value <> 0 then
+	   begin
+		case int(manual_dress.e_value) of
+		1 ! dressed to on !
+			if ocb_closed_ip == on and ocb_open_ip == off then
+			   	ocb_background = flashblue
+			else
+			   	ocb_background = blue
+		2  ! dressed to off !
+			if ocb_closed_ip == off and ocb_open_ip == on then
+			   	ocb_background = flashblue
+			else
+			   	ocb_background = blue
+		3  ! dressed to isolated !
+			if both_isolated_ip == on then
+			   	ocb_background = flashblue
+			else
+			   	ocb_background = blue
+		4 ! dressed to bus earth off !
+ 			if main_rdy_earth_ip == on and main_earth_ip == off  then
+	   		   	ocb_background = flashblue
+			else
+	   		   	ocb_background = blue
+		5 ! dressed to bus earth on !
+			if main_earth_ip == on  then
+	  		   	ocb_background = flashblue
+			else
+	  		   	ocb_background = blue		
+		6 ! dressed to main earth on !
+			if main_earth_ip == on and  reserve_earth_ip == off then
+	  		   	ocb_background = flashblue
+			else
+	  		  	ocb_background = blue		
+		7 ! dressed to main earth off !
+			if main_rdy_earth_ip == on then
+	  		   	ocb_background = flashblue
+			else
+	  		  	ocb_background = blue
+		8 ! dressed to reserve earth on !
+			if main_earth_ip == off and  reserve_earth_ip == on then
+	  		   	ocb_background = flashblue
+			else
+	  		  	ocb_background = blue
+		9 ! dressed to reserve earth off !
+			if reserve_rdy_earth_ip == on then
+	  		   	ocb_background = flashblue
+			else
+	  		  	ocb_background = blue
+		default
+		   begin
+		   end
+	   end
+	else if tag_message.c_value <> "" then
+			ocb_background = yellow
+	else
+			ocb_background = grey80
+
+
+	! main symbol !
+
+	x = 0 y = 0
+	just = centrecentre
+
+		if controllable_ocb == yes then
+		   begin
+  			if control_code == cont_code or control_code == cont_code + 1 then
+    		   		rect(w=81,h=97,fg=flashgreen)
+		   end
+
+
+  		if manual_dress.e_value > 0 and tag_message.c_value <> "" then
+    			rect(w=75,h=89,fg=yellow)
+  		else if ocb_ptw_ip == on and tag_message.c_value <> "" then
+    			rect(w=75,h=89,fg=yellow) 
+
+  		if manual_dress.e_value > 0 and ocb_ptw_ip == on then
+  		   begin
+    			if tag_message.c_value <> "" then
+			   	rect(w=79,h=93,fg=yellow)
+
+    			rect(w=75,h=89,fg=blue) 
+  	  	   end
+  		x = 0 y = 0 w = 66 h = 80 rotrect(fg=ocb_background) clear
+
+	set rect main_menu clear
+	
+	! tag message box !
+	if selb and tag_message.c_value <> "" then
+	begin
+  	   message_text_box(tag_message.c_value)
+	end
+
+	! * draw box * !
+		x=0 y=0
+  		x -= 33 y += 40 add y -= 80 add x += 66 add line(fg=white) clear
+  		y += 1 add y += 79 add x -= 66 add line(fg=darkgrey) clear
+  		fg = ocb_foreground clear
+
+
+
+	if control_code == cont_code or control_code == cont_code + 1 then 
+	   begin
+		if control_code == plc_execute_code then
+		   plc_executed = yes
+
+		if plc_executed == yes and control_code <> 0 and controllable_ocb==yes then 
+		   begin
+			set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+			set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+			plc_executed = no
+		   end
+	   end
+	else plc_executed = no
+
+
+	set title main_menu = "controllable dual bus cb "+ident
+
+	set empty main_menu
+	set remove main_menu = "alter tag message"
+	set remove main_menu = "clear tag message"
+	set remove main_menu = "alter permit to work"
+	set remove main_menu = "undress"
+	set remove main_menu = "dress to feeder earth on"
+	set remove main_menu = "dress to feeder earth off"
+	set remove main_menu = "dress main earth on"
+	set remove main_menu = "dress main earth off"
+	set remove main_menu = "dress reserve earth on"
+	set remove main_menu = "dress reserve earth off"
+	set remove main_menu = "dress to off"
+	set remove main_menu = "dress to on"
+
+	set remove main_menu = "switch to off"
+	set remove main_menu = "switch to on"
+	set add main_menu = "alter tag message"
+	set add main_menu = "clear tag message"
+	set add main_menu = "alter permit to work"
+
+
+
+	x = 0 y = 0	! ready for earth !
+		if
+	((main_rdy_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 4 or manual_dress.e_value == 7)
+	then
+       	   begin
+	        	    	if position =="top" then
+		      	begin
+	   			earth_off_symbol(ocb_foreground,angle=180)
+		      	end
+
+	        		if position =="btm" then
+			begin
+	   			earth_off_symbol(ocb_foreground)
+			end
+
+			if cb_type=="bus end" then
+  			   set add main_menu = "dress main earth on"
+			else
+  			   set add main_menu = "dress to feeder earth on"
+
+  			   set add main_menu = "dress to off"
+	   end
+	else if
+		((reserve_rdy_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 9) and cb_type == "bus end" 
+	then
+       	   begin
+	        	      	if position =="top" then
+		      	begin
+	   			earth_off_symbol(ocb_foreground)
+		      	end
+
+	        		if position =="btm"  then
+			begin
+	   			earth_off_symbol(ocb_foreground,angle=180)
+			end
+
+			if cb_type=="bus end" then
+  			   set add main_menu = "dress reserve earth on"
+
+  			   set add main_menu = "dress to off"
+	   end
+
+	! circuit earthed !
+	else if ((main_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 5 or manual_dress.e_value == 6)  
+	then 
+       	   begin
+        	      	if position =="top" then
+	      	begin
+  	   		earth_on_symbol(ocb_foreground,angle=180)
+	      	end
+
+        		if position =="btm" then
+		begin
+   			earth_on_symbol(ocb_foreground)
+		end
+
+			if cb_type=="bus end" then
+			begin
+  			   set add main_menu = "dress main earth off"
+  			   set add main_menu = "dress reserve earth off"
+			end
+			else
+  			   set add main_menu = "dress to feeder earth off"
+
+	   end
+	else if ((reserve_earth_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 8) and cb_type == "bus end"  
+	then 
+       	   begin
+        	      	if position =="top"  then
+	      	begin
+   			earth_on_symbol(ocb_foreground)
+	      	end
+
+        		if position =="btm" then
+		begin
+   			earth_on_symbol(ocb_foreground,angle=180)
+		end
+
+			if cb_type=="bus end" then
+			begin
+  			   set add main_menu = "dress main earth off"
+  			   set add main_menu = "dress reserve earth off"
+			end
+			else
+  			   set add main_menu = "dress to feeder earth off"
+	   end
+	else if 	! isolated ! 
+	   (both_isolated_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 3 then
+	   begin
+   			isolated_symbol(ocb_foreground)
+                
+			if cb_type=="bus end" then
+			begin
+  			   set add main_menu = "dress main earth off"
+  			   set add main_menu = "dress reserve earth off"
+			end
+			else
+  			   set add main_menu = "dress to feeder earth off"
+
+
+	  		set add main_menu = "dress to off"
+
+	 		if manual_dress.e_value == 0 and controllable_ocb == yes  then
+  			   begin
+    		   		set add main_menu = "switch to off"
+    			   	set add main_menu = "switch to on"
+  			   end
+	   end
+
+     	else if	! tripped !
+	   (ocb_open_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 2 then
+	   begin
+   			tripped_symbol(ocb_foreground)
+                
+  		set add main_menu = "dress to isolated"
+
+			if cb_type=="bus end" then
+			begin
+  			   set add main_menu = "dress main earth off"
+  			   set add main_menu = "dress reserve earth off"
+			end
+			else
+  			   set add main_menu = "dress to feeder earth off"
+
+  		set add main_menu = "dress to on"
+ 		if manual_dress.e_value == 0 and controllable_ocb == yes  then
+  		   begin
+    		   	set add main_menu = "switch to off"
+    		   	set add main_menu = "switch to on"
+  		   end
+	   end
+     	else if	! closed !
+	   (ocb_closed_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 1  then
+	   begin
+	   		closed_symbol(ocb_foreground)
+
+  		set add main_menu = "dress to off"
+  		if manual_dress.e_value == 0 and cont_offset<>int and controllable_ocb == yes   then 
+  		    begin
+    			set add main_menu = "switch to off"
+    			set add main_menu = "switch to on"
+  		    end
+	   end
+	else 
+	   begin
+   			isolated_symbol(ocb_foreground)
+                
+			if cb_type=="bus end" then
+			begin
+  			   set add main_menu = "dress main earth off"
+  			   set add main_menu = "dress reserve earth off"
+			end
+			else
+  			   set add main_menu = "dress to feeder earth off"
+
+	  		set add main_menu = "dress to off"
+	   end
+
+
+
+	if manual_dress.e_value > 0 then
+    	   set add main_menu = "undress"
+
+
+	! main menu selection !
+
+         if valid main_menu then
+            begin
+	  case main_menu of
+	
+	  "alter tag message"
+	  begin
+	     set title tag_message_panel 		= "modify tag message"	
+	     set label tag_message_panel.str	= "tag message :"
+	     set unpinned tag_message_panel
+	     request tag_message_panel
+	  end
+
+	  "clear tag message"
+	     set_c_value(db_address(int(c1) +c_offset - 1),src,"")
+
+	  "alter permit to work"
+	  begin
+	     if ocb_ptw_ip == on then
+	        set_b_value(db_address(int(b1) + b_offset +11),src,off)
+	     else
+	        set_b_value(db_address(int(b1) + b_offset +11),src,on)
+	  end	
+
+	  "undress"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+	  "dress to on"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+	  "dress to off"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+	  "dress to isolated"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+	  "dress to feeder earth off"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 4)
+	  "dress to feeder earth on"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 5)
+	  "dress main earth on"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 6)
+	  "dress main earth off"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 7)
+	  "dress reserve earth on"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 8)
+	  "dress reserve earth off"
+	    		set_e_value(db_address(int(e1) + e_offset - 1),src, 9)
+	"switch to on"
+	   begin
+	      if control_code == 0 then
+	  	begin
+	    	   close_ocb_control = yes
+	    	   set_e_value(db_address(int(e1) + cont_offset-1),src, close_code)
+	  	end
+	      else 
+    	   	in_progress = yes
+  	   end
+
+	"switch to off"
+  	   begin
+     	      if control_code == 0 then
+  		begin
+    	   	   open_ocb_control = yes
+    	   	   set_e_value(db_address(int(e1) + cont_offset-1),src, open_code)
+  		end
+	      else
+    	   	in_progress = yes
+  	   end
+
+  	"control cancel"
+    	   begin
+    		set_e_value2(db_address(int(e1) + cont_offset-1),src, 9999,op1)
+            reset_ctl=yes
+            reset_offset=cont_offset
+		set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+                            set_b_value(db_address(int(b1) + b_offset + 18), src ,on)
+  	   	set_b_value(db_address(int(b1) + b_offset + 18), src ,off)
+    	   end
+  
+   	default
+   	   begin
+   	   end
+
+	set invalid main_menu
+            end
+
+	! control in progress !
+	if in_progress == yes then
+	begin
+   	   set title local_control_in_progress = " "
+   	   set unpinned local_control_in_progress
+   	   request local_control_in_progress(ident,"control in progress")
+   	   in_progress = no
+	end
+
+	if open_ocb_control then
+	   	control_text = ident+" open"
+	else if close_ocb_control then
+	   	control_text = ident+" close"
+	else
+   		control_text = " "
+
+	! control confirm / cancel !
+	if invalid popup_box and control_code > 0 and execute_code == 0 and control_code == checkback_code then
+	   begin  
+  	      if control_code == open_code or control_code == close_code then
+  	         begin
+     		if open_ocb_control == yes then
+     		   begin
+      		   	set title popup_box = control_text
+      			set unpinned popup_box
+      			request popup_box(ident)
+     		   end 
+     		else if  close_ocb_control == yes then
+       		   begin
+         			set title popup_box = control_text
+         			set unpinned popup_box
+         			request popup_box(ident)
+       		   end 
+     	         end
+	   end
+
+	if popup_box == yes and confirm == no and controllable_ocb == yes then
+	   begin
+  	      if control_code == checkback_code then
+  	         begin
+    		if control_code == open_code or control_code == close_code then 
+    		   begin
+      			if open_ocb_control == yes then
+      			   begin
+     			   	set_e_value(db_address(int(e1) + cont_offset+1),src, open_code)
+        				open_ocb_control = no
+        				confirm = yes
+      			   end
+      			else if close_ocb_control == yes then
+      			   begin
+        				set_e_value(db_address(int(e1) + cont_offset+1),src, close_code)
+        				close_ocb_control = no
+        				confirm = yes
+      			   end
+    			else close_ocb_control = no
+      			confirm = yes
+    		   end
+  	         end
+	   end
+
+	if popup_box == no and confirm == no and controllable_ocb == yes then
+	   begin
+  	      if open_ocb_control == yes then
+  	         begin
+    		set_e_value2(db_address(int(e1) + cont_offset-1),src, 9999,op1)
+            reset_offset=cont_offset
+    		reset_ctl=yes
+    		set_e_value(db_address(int(e1) + cont_offset+1),src, 0)  
+    		close_ocb_control = no
+    		open_ocb_control = no
+   		confirm = yes
+  	         end
+  	      else if close_ocb_control == yes then
+  	         begin
+    		set_e_value2(db_address(int(e1) + cont_offset-1),src, 9999,op1) 
+            reset_offset=cont_offset 
+    		reset_ctl=yes
+    		set_e_value(db_address(int(e1) + cont_offset+1),src, 0) 
+    		close_ocb_control = no
+    		open_ocb_control = no
+    		confirm = yes
+  	         end
+	   end
+
+	if execute_code == 0 then
+	   begin
+  		confirm = no
+  		set invalid popup_box
+	   end
+
+	! cancel control !
+	if (control_code == open_code or control_code == close_code) and control_code > 0 then
+	   set add main_menu = "control cancel"
+
+	! control fail !
+	if invalid accept then
+	   accept = no
+
+	if control_fail_ip == on  then
+	   begin
+		if  open_ocb_control==yes then
+		begin
+  	   		if invalid failure_box and accept == no then
+  	      		begin
+    			     set title failure_box = " "
+    			     set unpinned failure_box
+    			     request failure_box(ident,"control failed")
+  	      		end
+		end
+		if  close_ocb_control==yes then
+		begin
+  	   		if invalid failure_box and accept == no then
+  	      		begin
+    			     set title failure_box = " "
+    			     set unpinned failure_box
+    			     request failure_box(ident,"control failed")
+  	      		end
+		end
+	   end
+
+	if failure_box == yes and accept == no then
+	   begin
+                            set_b_value(db_address(int(b1) + b_offset + 18), src ,on)
+  	   	set_b_value(db_address(int(b1) + b_offset + 18), src ,off)
+  	   	accept = yes
+	   end
+
+	if control_fail_ip == off then
+	   begin
+  	   	set invalid failure_box
+  	   	accept = no
+	   end
+
+	! tag message panel !
+	if valid tag_message_panel then
+	   begin
+    	   	set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+    	   	set invalid tag_message_panel
+  	   end
+
+  	   	x = 37 y = 0 text(just=centreleft,tfg=black,ch=25,ident)
+
+end
+
+! main object !
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+	! 	(bus_type,plc_offset,node_offset,	b_offset,	c_offset,	e_offset,src,	ident_str,xtra_alarms,res_str,res1_int) !
+clear
+fg=black ls=solid lw=1 line
+!
+x=0 y=-90 bus_link	("",	8000,	8010,		8100,	401,	2352,	heathro3,"1a",	int,	"",int) clear
+x=0 y=0 
+x=0 y=90 bus_link	("",	8000,	8010,		8100,	401,	2352,	heathro3,"1b",	int,	"",int) clear
+
+
+dual_bus_cb("bus end",8000,8010,8100,401,2352,2350,heathro3,1,"",10,0,"",int,int,black)
+!
+
+!modbus_cb(8000,8010,8100,401,2354,2360,heathro3,1,"top",3,int,string,int,int)!
+
+end
+mimic = main_object w=150,h=500,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+
+
+
+
+
+

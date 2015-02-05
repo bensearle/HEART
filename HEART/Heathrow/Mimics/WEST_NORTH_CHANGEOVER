@@ -1,0 +1,899 @@
+LOAD mimic_libutil
+LOAD gadgets_libutil
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+TYPE b_bool_type 	= db_elements(b_value)
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!-----------------------------------------------------------------------------!
+!  SYSTEM DIAGNOSTIC TEXT                                                     !
+!-----------------------------------------------------------------------------!
+
+OBJECT diagnostic_text(os_offset=INT,plc_offset=INT,src=SOURCE)
+
+! VARIABLE DECLARATION !
+VAR os_comms = input b_bool_type[2]
+VAR status_inputs = input b_bool_type[30]
+
+VAR a_test = ONOFF		! PLC A IN TEST MODE !
+VAR b_test = ONOFF		! PLC B IN TEST MODE !
+VAR a_enabled = ONOFF		! PLC A ENABLED !
+VAR b_enabled = ONOFF		! PLC B ENABLED !
+VAR a_disabled = ONOFF		! PLC A DISABLED !
+VAR b_disabled = ONOFF		! PLC B DISABLED !
+VAR a_fault = ONOFF		! PLC A FAULT !
+VAR b_fault = ONOFF		! PLC B FAULT !
+VAR a_primary = ONOFF		! PLC A PRIMARY !
+VAR b_primary = ONOFF		! PLC B PRIMARY !
+VAR a_secondary = ONOFF		! PLC A SECONDARY !
+VAR b_secondary = ONOFF		! PLC B SECONDARY !
+VAR a_failed = ONOFF		! PLC A FAILED !
+VAR b_failed = ONOFF		! PLC B FAILED !
+VAR a_initiated = ONOFF		! PLC A CHANGEOVER INITIATED !
+VAR b_initiated = ONOFF		! PLC B CHANGEOVER INITIATED !
+VAR a_completed = ONOFF		! PLC A CHANGEOVER COMPLETED !
+VAR b_completed = ONOFF		! PLC B CHANGEOVER COMPLETED !
+VAR a_comms_fault = ONOFF	! 11KV OUTSTATION TO PLC A WATCHDOG FAILED !
+VAR b_comms_fault = ONOFF       ! 11KV OUTSTATION TO PLC B WATCHDOG FAILED !
+VAR a_mode_total = INT		! TOTAL OF MODE INPUTS ON FROM PLC A !
+VAR b_mode_total = INT          ! TOTAL OF MODE INPUTS ON FROM PLC B !
+
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+   set source os_comms = src
+   set filter os_comms.db_addr = lim_ge
+   set limit os_comms.db_addr = db_address(int(b1) + os_offset - 1)
+   set priority os_comms.db_addr = 15
+   set persist os_comms
+   set mayexist os_comms
+   request os_comms
+
+   set source status_inputs = src
+   set filter status_inputs.db_addr = lim_ge
+   set limit status_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority status_inputs.db_addr = 15
+   set persist status_inputs
+   set mayexist status_inputs
+   request status_inputs
+
+
+   a_test = status_inputs[1].b_value
+   b_test = status_inputs[2].b_value
+   a_enabled = status_inputs[3].b_value
+   b_enabled = status_inputs[4].b_value
+   a_disabled = status_inputs[5].b_value
+   b_disabled = status_inputs[6].b_value
+   a_fault = status_inputs[7].b_value
+   b_fault = status_inputs[8].b_value
+   a_primary = status_inputs[9].b_value
+   b_primary = status_inputs[10].b_value
+   a_secondary = status_inputs[11].b_value
+   b_secondary = status_inputs[12].b_value
+   a_failed = status_inputs[13].b_value
+   b_failed = status_inputs[14].b_value
+   a_initiated = status_inputs[15].b_value
+   b_initiated = status_inputs[16].b_value
+   a_completed = status_inputs[17].b_value
+   b_completed = status_inputs[18].b_value
+   a_comms_fault = status_inputs[19].b_value
+   b_comms_fault = status_inputs[20].b_value
+
+
+! MAIN SYMBOL !
+
+! DIAGNOSTICS !
+
+X=-400 Y=-320 TEXT(TFG=BLACK,CH=20,"PLC A") 
+X+=0 Y+=30 TEXT(TFG=BLACK,CH=15,"COMMS FLT (B718): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_comms_fault)
+X-=150 Y+=30 TEXT(TFG=BLACK,CH=15,"TEST MODE (B700): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_test)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"ENABLED (B702): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_enabled)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"DISABLED (B704): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_disabled)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"FAILED (B712): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_failed)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"INITIATED (B714): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_initiated)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"COMPLETED (B716): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_completed)
+
+X-=150 Y+=40 TEXT(TFG=BLACK,CH=15,"FAULT (B706): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_fault)
+X-=150 Y+=40 TEXT(TFG=BLACK,CH=15,"PRIMARY (B708): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_primary)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"SECONDARY (B710): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_secondary)
+
+X=-150 Y=-320 TEXT(TFG=BLACK,CH=20,"PLC B")
+X+=0 Y+=30 TEXT(TFG=BLACK,CH=15,"COMMS FLT (B719): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_comms_fault)
+X-=150 Y+=30 TEXT(TFG=BLACK,CH=15,"TEST MODE (B701): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_test)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"ENABLED (B703): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_enabled)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"DISABLED (B705): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_disabled)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"FAILED (B713): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_failed)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"INITIATED (B715): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_initiated)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"COMPLETED (B717): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_completed)
+X-=150 Y+=40 TEXT(TFG=BLACK,CH=15,"FAULT (B707): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_fault)
+X-=150 Y+=40 TEXT(TFG=BLACK,CH=15,"PRIMARY (B709): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_primary)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"SECONDARY (B711): ")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_secondary)
+
+
+! DETERMINE NUMBER OF STATUS INDICATIONS FROM EACH PLC !
+a_mode_total = 0
+b_mode_total = 0
+
+IF a_test == ON THEN a_mode_total = a_mode_total + 1
+IF a_enabled == ON THEN a_mode_total = a_mode_total + 1
+IF a_disabled == ON THEN a_mode_total = a_mode_total + 1
+IF a_failed == ON THEN a_mode_total = a_mode_total + 1
+IF b_test == ON THEN b_mode_total = b_mode_total + 1
+IF b_enabled == ON THEN b_mode_total = b_mode_total + 1
+IF b_disabled == ON THEN b_mode_total = b_mode_total + 1
+IF b_failed == ON THEN b_mode_total = b_mode_total + 1
+
+
+X=0 Y=100
+X-=150 Y-=120 TEXT(TFG=BLACK,CH=15,"PLC A TOTAL:")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_mode_total)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"PLC B TOTAL:")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_mode_total)
+
+END
+
+!-----------------------------------------------------------------------------!
+!  SYSTEM STATUS                                                              !
+!-----------------------------------------------------------------------------!
+
+OBJECT status_text(os_offset=INT,plc_offset=INT,src=SOURCE)
+
+! VARIABLE DECLARATION !
+VAR os_comms = input b_bool_type[2]
+VAR status_inputs = input b_bool_type[30]
+
+VAR a_test = ONOFF		! PLC A IN TEST MODE !
+VAR b_test = ONOFF		! PLC B IN TEST MODE !
+VAR a_enabled = ONOFF		! PLC A ENABLED !
+VAR b_enabled = ONOFF		! PLC B ENABLED !
+VAR a_disabled = ONOFF		! PLC A DISABLED !
+VAR b_disabled = ONOFF		! PLC B DISABLED !
+VAR a_fault = ONOFF		! PLC A FAULT !
+VAR b_fault = ONOFF		! PLC B FAULT !
+VAR a_primary = ONOFF		! PLC A PRIMARY !
+VAR b_primary = ONOFF		! PLC B PRIMARY !
+VAR a_secondary = ONOFF		! PLC A SECONDARY !
+VAR b_secondary = ONOFF		! PLC B SECONDARY !
+VAR a_failed = ONOFF		! PLC A FAILED !
+VAR b_failed = ONOFF		! PLC B FAILED !
+VAR a_initiated = ONOFF		! PLC A CHANGEOVER INITIATED !
+VAR b_initiated = ONOFF		! PLC B CHANGEOVER INITIATED !
+VAR a_completed = ONOFF		! PLC A CHANGEOVER COMPLETED !
+VAR b_completed = ONOFF		! PLC B CHANGEOVER COMPLETED !
+VAR mode = LOOPBACK STRING(15)	! PLC MODE INDICATOR !
+VAR prisec = LOOPBACK STRING(15)! PLC PRIMARY / SECONDARY INDICATOR !
+
+VAR mode_error = ONOFF		! ERROR IN MODE INDICATIONS !
+VAR prisec_error = ONOFF        ! ERROR IN PRIMARY / SECONDARY INDICATION !
+VAR a_mode_total = INT		! TOTAL OF MODE INPUTS ON FROM PLC A !
+VAR b_mode_total = INT          ! TOTAL OF MODE INPUTS ON FROM PLC B !
+
+VAR a_comms_fault = ONOFF	! 11KV OUTSTATION TO PLC A WATCHDOG FAILED !
+VAR b_comms_fault = ONOFF       ! 11KV OUTSTATION TO PLC B WATCHDOG FAILED !
+
+VAR mode_colour = COLOUR	! MODE TEXT COLOUR !
+VAR prisec_colour = COLOUR	! PRIMARY / SECONDARY TEXT COLOUR !
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+   set source status_inputs = src
+   set filter status_inputs.db_addr = lim_ge
+   set limit status_inputs.db_addr = db_address(int(b1) + os_offset - 1)
+   set priority status_inputs.db_addr = 15
+   set persist status_inputs
+   set mayexist status_inputs
+   request status_inputs
+
+   set source status_inputs = src
+   set filter status_inputs.db_addr = lim_ge
+   set limit status_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority status_inputs.db_addr = 15
+   set persist status_inputs
+   set mayexist status_inputs
+   request status_inputs
+
+
+   a_test = status_inputs[1].b_value
+   b_test = status_inputs[2].b_value
+   a_enabled = status_inputs[3].b_value
+   b_enabled = status_inputs[4].b_value
+   a_disabled = status_inputs[5].b_value
+   b_disabled = status_inputs[6].b_value
+   a_fault = status_inputs[7].b_value
+   b_fault = status_inputs[8].b_value
+   a_primary = status_inputs[9].b_value
+   b_primary = status_inputs[10].b_value
+   a_secondary = status_inputs[11].b_value
+   b_secondary = status_inputs[12].b_value
+   a_failed = status_inputs[13].b_value
+   b_failed = status_inputs[14].b_value
+   a_initiated = status_inputs[15].b_value
+   b_initiated = status_inputs[16].b_value
+   a_completed = status_inputs[17].b_value
+   b_completed = status_inputs[18].b_value
+   a_comms_fault = status_inputs[19].b_value
+   b_comms_fault = status_inputs[20].b_value
+
+
+! MAIN SYMBOL !
+
+! RESET ERROR FLAGS !
+
+IF a_comms_fault == OFF OR b_comms_fault == OFF THEN
+BEGIN
+  mode = "ERROR"
+  mode_colour = RED
+  prisec = "ERROR"
+  prisec_colour = RED
+END
+
+mode_error = ON
+prisec_error = ON
+a_mode_total = 0
+b_mode_total = 0
+
+
+! DETERMINE NUMBER OF STATUS INDICATIONS FROM EACH PLC !
+
+IF a_test == ON THEN a_mode_total = a_mode_total + 1
+IF a_enabled == ON THEN a_mode_total = a_mode_total + 1
+IF a_disabled == ON THEN a_mode_total = a_mode_total + 1
+IF a_failed == ON THEN a_mode_total = a_mode_total + 1
+IF b_test == ON THEN b_mode_total = b_mode_total + 1
+IF b_enabled == ON THEN b_mode_total = b_mode_total + 1
+IF b_disabled == ON THEN b_mode_total = b_mode_total + 1
+IF b_failed == ON THEN b_mode_total = b_mode_total + 1
+
+
+! MODE STATUS IF COMMS HEALTHY !
+
+IF a_comms_fault == OFF AND b_comms_fault == OFF THEN
+BEGIN
+
+  IF a_test AND b_test THEN
+  BEGIN
+    mode = "TEST"
+    mode_error = OFF
+    mode_colour = ORANGE
+  END
+
+  IF a_enabled AND b_enabled THEN
+  BEGIN
+    mode = "ENABLED"
+    mode_error = OFF
+    mode_colour = YELLOW
+  END
+
+  IF a_enabled == ON AND b_enabled == OFF THEN
+  BEGIN
+    mode = "ENABLED"
+    mode_error = ON
+    mode_colour = RED
+  END
+
+  IF a_enabled == OFF AND b_enabled == ON THEN
+  BEGIN
+    mode = "ENABLED"
+    mode_error = ON
+    mode_colour = RED
+  END
+
+  IF a_disabled AND b_disabled THEN
+  BEGIN
+    mode = "DISABLED"
+    mode_error = OFF
+    mode_colour = GREEN
+  END
+
+  IF a_failed AND b_failed THEN
+  BEGIN
+    mode = "FAILED"
+    mode_error = OFF
+    mode_colour = FLASHRED
+  END
+
+  IF a_initiated AND b_initiated THEN
+  BEGIN
+    mode = "C/O INITIATED"
+    mode_error = OFF
+    mode_colour = FLASHYELLOW
+  END
+
+  IF a_initiated == ON AND b_initiated == OFF THEN
+  BEGIN
+    mode = "C/O INITIATED"
+    mode_error = ON
+    mode_colour = FLASHRED
+  END
+
+  IF a_initiated == OFF AND b_initiated == ON THEN
+  BEGIN
+    mode = "C/O INITIATED"
+    mode_error = ON
+    mode_colour = FLASHRED
+  END
+
+  IF a_completed AND b_completed THEN
+  BEGIN
+    mode = "C/O COMPLETED"
+    mode_error = OFF
+    mode_colour = FLASHGREEN
+  END
+
+  IF a_completed == ON AND b_completed == OFF THEN
+  BEGIN
+    mode = "C/O COMPLETED"
+    mode_error = ON
+    mode_colour = FLASHRED
+  END
+
+  IF a_completed == OFF AND b_completed == ON THEN
+  BEGIN
+    mode = "C/O COMPLETED"
+    mode_error = ON
+    mode_colour = FLASHRED
+  END
+
+  IF a_mode_total > 2 OR b_mode_total > 2 THEN
+  BEGIN
+    mode = "ERROR"
+    mode_error = ON
+    mode_colour = RED
+  END
+
+  IF a_fault OR b_fault THEN
+    mode_colour = RED
+
+END
+
+
+! MODE STATUS IF PLC B COMMS FAILED !
+
+IF a_comms_fault == OFF and b_comms_fault == ON THEN
+BEGIN
+
+  mode = "ERROR"
+
+  IF a_test THEN
+  BEGIN
+    mode = "TEST"
+    mode_error = OFF
+    mode_colour = ORANGE
+  END
+
+  IF a_enabled THEN
+  BEGIN
+    mode = "ENABLED"
+    mode_error = OFF
+    mode_colour = YELLOW
+  END
+
+  IF a_disabled THEN
+  BEGIN
+    mode = "DISABLED"
+    mode_error = OFF
+    mode_colour = GREEN
+  END
+
+  IF a_failed THEN
+  BEGIN
+    mode = "FAILED"
+    mode_error = OFF
+    mode_colour = FLASHRED
+  END
+
+  IF a_initiated THEN
+  BEGIN
+    mode = "INITIATED"
+    mode_error = OFF
+    mode_colour = FLASHYELLOW
+  END
+
+  IF a_completed THEN
+  BEGIN
+    mode = "COMPLETED"
+    mode_error = OFF
+    mode_colour = FLASHGREEN
+  END
+
+  IF a_mode_total > 1 THEN
+  BEGIN
+    mode = "ERROR"
+    mode_error = ON
+    mode_colour = RED
+  END
+
+  IF a_fault THEN
+    mode_colour = RED
+
+END
+
+
+! MODE STATUS IF PLC A COMMS FAILED !
+
+IF a_comms_fault == ON and b_comms_fault == OFF THEN
+BEGIN
+
+  mode = "ERROR"
+
+  IF b_test THEN
+  BEGIN
+    mode = "TEST"
+    mode_error = OFF
+    mode_colour = ORANGE
+  END
+
+  IF b_enabled THEN
+  BEGIN
+    mode = "ENABLED"
+    mode_error = OFF
+    mode_colour = YELLOW
+  END
+
+  IF b_disabled THEN
+  BEGIN
+    mode = "DISABLED"
+    mode_error = OFF
+    mode_colour = GREEN
+  END
+
+  IF b_failed THEN
+  BEGIN
+    mode = "FAILED"
+    mode_error = OFF
+    mode_colour = FLASHRED
+  END
+
+  IF b_initiated THEN
+  BEGIN
+    mode = "INITIATED"
+    mode_error = OFF
+    mode_colour = FLASHYELLOW
+  END
+
+  IF b_completed THEN
+  BEGIN
+    mode = "COMPLETED"
+    mode_error = OFF
+    mode_colour = FLASHGREEN
+  END
+
+  IF b_mode_total > 1 THEN
+  BEGIN
+    mode = "ERROR"
+    mode_error = ON
+    mode_colour = RED
+  END
+
+  IF b_fault THEN
+    mode_colour = RED
+
+END
+
+
+! DISPLAY MODE STATUS !
+
+IF a_comms_fault AND b_comms_fault THEN
+  mode_colour = MAGENTA
+ELSE IF os_comms[1].b_value AND os_comms[2].b_value THEN
+  mode_colour = MAGENTA
+
+IF INVALID mode THEN
+  mode = "UNKNOWN"
+
+X=0 Y=0
+X+=0 Y+=0 TEXT(TFG=mode_colour,CH=18,mode)
+
+
+! PRIMARY SECONDARY STATUS IF COMMS HEALTHY !
+
+IF a_comms_fault == OFF AND b_comms_fault == OFF THEN
+BEGIN   
+
+  IF (a_primary AND b_primary) AND (a_secondary == OFF AND b_secondary == OFF)  
+  THEN
+  BEGIN
+    prisec = "PRIMARY"
+    prisec_error = OFF
+    prisec_colour = YELLOW
+  END
+
+  ELSE IF (a_secondary AND b_secondary) AND (a_primary == OFF AND b_primary == 
+          OFF)
+  THEN
+  BEGIN
+    prisec = "SECONDARY"
+    prisec_error = OFF
+    prisec_colour = YELLOW
+  END
+
+  ELSE IF (a_primary == OFF AND b_primary == OFF) AND (a_secondary == OFF AND 
+          b_secondary == OFF)
+  THEN
+  BEGIN 
+    prisec = "NOT SELECTED"
+    prisec_error = OFF
+    prisec_colour = FLASHGREEN
+  END
+
+  ELSE IF (a_primary == ON AND b_primary == OFF) AND (a_secondary == OFF AND 
+          b_secondary == OFF) 
+  THEN
+  BEGIN
+    prisec = "PRIMARY"
+    prisec_error = ON
+    prisec_colour = RED
+  END
+
+  ELSE IF (a_primary == OFF AND b_primary == ON) AND (a_secondary == OFF AND 
+          b_secondary == OFF) 
+  THEN
+  BEGIN
+    prisec = "PRIMARY"
+    prisec_error = ON
+    prisec_colour = RED
+  END
+
+  ELSE IF (a_primary == OFF AND b_primary == OFF) AND (a_secondary == ON AND 
+          b_secondary == OFF) 
+  THEN
+  BEGIN
+    prisec = "SECONDARY"
+    prisec_error = ON
+    prisec_colour = RED
+  END
+
+  ELSE IF (a_primary == OFF AND b_primary == OFF) AND (a_secondary == OFF AND 
+          b_secondary == ON) 
+  THEN
+  BEGIN
+    prisec = "PRIMARY"
+    prisec_error = ON
+    prisec_colour = RED
+  END
+
+  ELSE
+  BEGIN
+    prisec = "ERROR"
+    prisec_error = ON
+    prisec_colour = RED
+  END
+
+  IF a_fault OR b_fault THEN
+    prisec_colour = RED
+
+END
+
+! PRIMARY SECONDARY STATUS IF PLC A COMMS FAILED !
+
+IF a_comms_fault == ON AND b_comms_fault == OFF THEN
+BEGIN   
+
+  IF b_primary == ON AND b_secondary == OFF THEN
+  BEGIN
+    prisec = "PRIMARY"
+    prisec_error = OFF
+    prisec_colour = YELLOW
+  END
+
+  ELSE IF b_primary == OFF AND b_secondary == ON THEN
+  BEGIN
+    prisec = "SECONDARY"
+    prisec_error = OFF
+    prisec_colour = YELLOW
+  END
+
+  ELSE IF b_primary == OFF AND b_secondary == OFF THEN
+  BEGIN
+    prisec = "NOT SELECTED"
+    prisec_error = OFF
+    prisec_colour = FLASHGREEN
+  END
+
+  ELSE 
+  BEGIN
+    prisec = "ERROR"
+    prisec_error = ON
+    prisec_colour = RED
+  END
+
+  IF b_fault THEN
+    prisec_colour = RED
+
+END
+
+! PRIMARY SECONDARY STATUS IF PLC B COMMS FAILED !
+
+IF a_comms_fault == OFF AND b_comms_fault == ON THEN
+BEGIN   
+
+  IF a_primary == ON AND a_secondary == OFF THEN
+  BEGIN
+    prisec = "PRIMARY"
+    prisec_error = OFF
+    prisec_colour = YELLOW
+  END
+
+  ELSE IF a_primary == OFF AND a_secondary == ON THEN
+  BEGIN
+    prisec = "SECONDARY"
+    prisec_error = OFF
+    prisec_colour = YELLOW
+  END
+
+  ELSE IF a_primary == OFF AND a_secondary == OFF THEN
+  BEGIN
+    prisec = "NOT SELECTED"
+    prisec_error = OFF
+    prisec_colour = FLASHGREEN
+  END
+
+  ELSE 
+  BEGIN
+    prisec = "ERROR"
+    prisec_error = OFF
+    prisec_colour = RED
+  END
+
+  IF b_fault THEN
+    prisec_colour = RED
+
+END
+
+! DISPLAY PRIMARY/SECONDARY STATUS !
+
+IF a_comms_fault AND b_comms_fault THEN
+  prisec_colour = MAGENTA
+ELSE IF os_comms[1].b_value AND os_comms[2].b_value THEN
+  prisec_colour = MAGENTA
+
+IF INVALID prisec THEN
+  prisec = "UNKNOWN"
+
+x=0 y=0
+X+=0 Y+=55 TEXT(TFG=prisec_colour,CH=18,prisec)
+
+END
+
+
+!-----------------------------------------------------------------------------!
+!  STATUS BOX OBJECT                                                          !
+!-----------------------------------------------------------------------------!
+
+OBJECT STATUS_BOX(north_os_offset=INT,north_plc_offset=INT,west_plc_offset=INT,
+west_os_offset=INT,src=SOURCE)
+
+! VARIABLE DECLARATION !
+VAR north_os_comms = input b_bool_type[2]
+VAR west_os_comms = input b_bool_type[2]
+VAR north_status_inputs = input b_bool_type[4]
+VAR west_status_inputs = input b_bool_type[4]
+
+VAR north_a_comms_fault = ONOFF
+VAR north_b_comms_fault = ONOFF
+VAR west_a_comms_fault = ONOFF
+VAR west_b_comms_fault = ONOFF
+
+VAR north_colour = COLOUR
+VAR west_colour = COLOUR
+
+VAR main_menu = menu	string(40)
+
+BEGIN
+
+SET EMPTY main_menu
+SET TITLE main_menu = "CONTROL"
+
+north_a_comms_fault = north_status_inputs[1].b_value
+north_b_comms_fault = north_status_inputs[2].b_value
+west_a_comms_fault = west_status_inputs[1].b_value
+west_b_comms_fault = west_status_inputs[2].b_value
+
+! DATA RETRIEVAL !
+
+   set source north_os_comms = src
+   set filter north_os_comms.db_addr = lim_ge
+   set limit north_os_comms.db_addr = db_address(int(b1) + north_os_offset - 1)
+   set priority north_os_comms.db_addr = 15
+   set persist north_os_comms
+   set mayexist north_os_comms
+   request north_os_comms
+
+   set source north_status_inputs = src
+   set filter north_status_inputs.db_addr = lim_ge
+   set limit north_status_inputs.db_addr = db_address(int(b1) + 
+   north_plc_offset + 17)
+   set priority north_status_inputs.db_addr = 15
+   set persist north_status_inputs
+   set mayexist north_status_inputs
+   request north_status_inputs
+
+   set source west_os_comms = src
+   set filter west_os_comms.db_addr = lim_ge
+   set limit west_os_comms.db_addr = db_address(int(b1) + west_os_offset - 1)
+   set priority west_os_comms.db_addr = 15
+   set persist west_os_comms
+   set mayexist west_os_comms
+   request west_os_comms
+
+   set source west_status_inputs = src
+   set filter west_status_inputs.db_addr = lim_ge
+   set limit west_status_inputs.db_addr = db_address(int(b1) + 
+   west_plc_offset + 17)
+   set priority west_status_inputs.db_addr = 15
+   set persist west_status_inputs
+   set mayexist west_status_inputs
+   request west_status_inputs
+
+! SET COLOUR !
+
+north_colour=DECOROFF
+
+IF north_os_comms[1].b_value AND north_os_comms[2].b_value THEN
+  north_colour = MAGENTA
+ELSE IF north_os_comms[1].b_value OR north_os_comms[2].b_value THEN
+  north_colour = RED
+ELSE IF north_a_comms_fault AND north_b_comms_fault THEN
+  north_colour = MAGENTA
+ELSE IF north_a_comms_fault OR north_b_comms_fault THEN
+  north_colour = RED
+ELSE
+  north_colour = YELLOW
+
+IF west_os_comms[1].b_value AND west_os_comms[2].b_value THEN
+  west_colour = MAGENTA
+ELSE IF west_os_comms[1].b_value OR west_os_comms[2].b_value THEN
+  west_colour = RED
+ELSE IF west_a_comms_fault AND west_b_comms_fault THEN
+  west_colour = MAGENTA
+ELSE IF west_a_comms_fault OR west_b_comms_fault THEN
+  west_colour = RED
+ELSE
+  west_colour = YELLOW
+
+! STATUS BOX !
+
+FG = decoroff
+H=180 W=355
+RECT(FG=DECOROFF)
+!SET RECT alter_ds_panel !
+
+! OUTLINE !
+X=355 Y=0 ADD
+X-=355 ADD 
+Y+=180 ADD LINE(FG=WHITE) CLEAR
+X=0 Y=180 ADD
+X+=355 ADD
+Y-=180 ADD LINE(FG=GREY) CLEAR
+
+! NORTH BOX !
+X=15 Y=40
+W=155 H=25
+RECT(FG=north_colour)
+SET RECT main_menu
+
+X=15 Y=65 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=WHITE) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=GREY) CLEAR
+
+! WEST BOX !
+X=185 Y=40
+W=155 H=25
+RECT(FG=west_colour)
+
+X=185 Y=65 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=WHITE) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=GREY) CLEAR
+
+! UNDERLINE !
+X=15 Y=30 ADD
+X+=325 ADD LINE(FG=WHITE) CLEAR
+X=15 Y=31 ADD
+X+=325 ADD LINE(FG=GREY) CLEAR
+
+X=15 Y=110 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=GREY) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=WHITE) CLEAR
+
+X=185 Y=110 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=GREY) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=WHITE) CLEAR
+
+X=15 Y=165 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=GREY) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=WHITE) CLEAR
+
+X=185 Y=165 ADD
+Y-=25 ADD 
+X+=155 ADD LINE(FG=GREY) CLEAR
+ADD 
+Y+=25 ADD
+X-=155 ADD LINE(FG=WHITE) CLEAR
+
+x=0y=0
+X+=40 Y+=5 TEXT(TFG=BLACK,CH=20,"NORTH / WEST CHANGEOVER")
+X+=18 Y+=38 TEXT(TFG=BLACK,CH=20,"NORTH")
+X+=180 Y+=0 TEXT(TFG=BLACK,CH=20,"WEST")
+X-=225 Y+=28 TEXT(TFG=GREY,CH=13,"STATUS")
+X-=0 Y+=55  TEXT(TFG=GREY,CH=13,"PRIMARY/SECONDARY")
+X+=170 Y-=55 TEXT(TFG=GREY,CH=13,"STATUS")
+X-=0 Y+=55  TEXT(TFG=GREY,CH=13,"PRIMARY/SECONDARY")
+
+END
+
+
+!-----------------------------------------------------------------------------!
+!  MAIN OBJECT                                                                !
+!-----------------------------------------------------------------------------!
+
+OBJECT MAIN_OBJECT(BG,FG,W,H,TFG,TBG)
+BEGIN
+
+x=-70 y=0 diagnostic_text(1,700,heathrow)
+x=400 y=0 diagnostic_text(1,3700,heathrow)
+x=-200 y=100 status_box(1,700,3000,3700,heathrow)
+x=-180 y=190 status_text(1,700,heathrow)
+x=-10 y=190 status_text(1,3700,heathrow)
+
+END
+
+MIMIC = MAIN_OBJECT 
+W=1000,H=700,JUST=CENTRECENTRE,FG=WHITE,BG=AQUAMARINE3

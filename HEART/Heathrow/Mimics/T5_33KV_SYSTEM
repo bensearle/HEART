@@ -1,0 +1,214 @@
+!********* SUBSTATION ********!
+!********* 				********!
+load dual_bus_objects
+load transformer_types
+load browser
+load generic_bar_meter
+
+object blank(cb_type=string,plc_int=int,cb_int=int,c_int=int,e_int=int,code=int,src=source,num=int,pos=string,act_code=int,angle)
+begin
+clear
+	lw=1
+	X=0 Y=0 W=30 H=38 FG=GREY80 JUST=centrecentre FS=FILLSOLID ANGLE=0 ROTRECT Clear
+	FG=grey
+	X=-16 Y=19 Add X=16 Y=19 Add X=16 Y=-19 Add line clear
+	
+	FG=white 
+	X=-16 Y=18 Add X=-16 Y=-20 Add X=15 Y=-20 Add line clear
+
+	fg=green4 lw=3
+	X=0 Y=-20 Add X=0 Y=-10 Add line clear
+	X=0 Y=20 Add X=0 Y=10 Add line clear
+	X=-5 Y=10 Add X=5 Y=10 Add line clear
+	X=-5 Y=-10 Add X=5 Y=-10 Add line clear
+
+	x=23 y=0 text(ch=12,tfg=black,num)
+end
+
+
+object sub_call(box_bg=colour,width=int,height=int,txt_top=string,txt_btm=string,txt_col=colour,txt_size=int,popup_mimic=yesno,mimic_title=string,src=source,res3=int,res2=string,res1=int)
+var mm = toplevel  string_50
+begin
+	X=0 Y=0 W=width H=height ANGLE=0 JUST=centrecentre FG=box_bg FS=FILLSOLID ROTRECT
+	if anyb then
+	  begin
+	  	fg=grey rect
+      	  	set source mm = src
+      	 	 set mimic mm = mimic_title
+      	 	 set selfreplace mm
+      	  	request mm
+	  end
+
+	Clear
+	X=-(width/2) Y=(height/2) Add
+	Y=-(height/2) Add
+	X=(width/2) Y=-(height/2) Add
+	FG=white LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-(width/2) Y=(height/2) Add	
+	X=(width/2) Add
+	Y=-(height/2) Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	CH=txt_size FONT=FONT_NORMAL FONTNAME="Arial" TFG=txt_col JUST=centrecentre
+
+	if txt_btm=="" or txt_btm==string then
+	begin
+		X=0 Y=0  TEXT(txt_top)
+	end
+	else
+	begin
+		X=0 Y=-10 TEXT(txt_top)
+		X=0 Y=10 TEXT(txt_btm)
+	end
+end
+
+
+
+object sub151
+begin
+	clear
+	lw=2
+	X=-135 Y=-220 Add y-=55 Add X+=50 Add Y+=55 Add line(fg=white) clear 		
+	x=-185 y=-220 Add y-=50 add line(fg=white) clear		
+	x=-35 y=-220 Add y-=50 add line(fg=white) clear					
+
+	X=-185 Y=-247	blank("TYPE3",8000,8010,400,2350,int,heathro3,13,"top",int)
+	X=-135 Y=-247	blank("TYPE3",8000,8010,400,2350,int,heathro3,18,"top",int)
+	X=-85 Y=-247	blank("TYPE3",8000,8010,400,2350,int,heathro3,19,"top",int)
+	X=-35 Y=-247	blank("TYPE3",8000,8010,400,2350,int,heathro3,23,"top",int)
+
+	X=-185 Y=-312	TRANSFORMER_SELECT(scale=120,"TYPE3",8000,8010,400,2350,int,heathro3,"TX1 33/11kV","INCOMER",1,int,"black","white") CLEAR
+	X=-35 Y=-312	TRANSFORMER_SELECT(scale=120,"TYPE3",8000,8010,400,2350,int,heathro3,"TX2 33/11kV","INCOMER",2,int,"black","white") CLEAR
+
+	X=-165 Y=-211	sub_call(grey80,90,20,"SUB 151","",white,20,yes,"",heathro3,int,string,int)
+	X=-55 Y=-211	sub_call(grey80,90,20,"SUB 151","",white,20,yes,"",heathro3,int,string,int)
+end
+
+object sub152
+begin
+	clear
+	lw=2
+	X=-135 Y=-220 Add y-=55 Add X+=50 Add Y+=55 Add line(fg=white) clear 		
+	x=-185 y=-220 Add y-=50 add line(fg=white) clear		
+	x=-35 y=-220 Add y-=50 add line(fg=white) clear					
+
+	scale = 120
+	X=-185 Y=-247	modbus_cb(42100,43161,42420,1562,6308,6445,heathrow,12,"top",120,int,string,int,int)
+	X=-135 Y=-247	modbus_cb(42100,43168,42560,1569,6315,6445,heathrow,19,"top",190,int,string,int,int)
+	X=-85 Y=-247	modbus_cb(42100,43169,42580,1570,6316,6445,heathrow,20,"btm",200,int,string,int,int)
+	X=-35 Y=-247	modbus_cb(42100,43173,42660,1574,6320,6445,heathrow,24,"btm",240,int,string,int,int)
+
+	scale=120
+	X=-185 Y=-312	TRANSFORMER_SELECT("modbus",42100,6421,43019,1695,6445,heathrow,"43189","INC. TX1",1,410,"black","white") CLEAR
+	X=-35 Y=-312	TRANSFORMER_SELECT("modbus",42100,6424,43069,1696,6445,heathrow,"43190","INC. TX2",2,420,"black","white") CLEAR
+
+	scale=256
+	X=-165 Y=-211	sub_call(grey80,90,20,"SUB 152","",white,20,no,"sub_stn_152",heathrow,int,string,int)
+	X=-55 Y=-211	sub_call(grey80,90,20,"SUB 152","",white,20,no,"sub_stn_152",heathrow,int,string,int)
+end
+
+
+object sub_west_intake
+begin
+	clear
+	lw=2
+	x=-185 y=-220 Add y-=50 add line(fg=blue) clear		
+	x=-35 y=-220 Add y-=50 add line(fg=blue) clear					
+	x=-190 y=-210 add x+=180 add line(lw=3, fg=blue) clear
+
+	X=-185 Y=-247	blank("TYPE3",8000,8010,400,2350,int,heathro3,1,"top",int)
+	X=-135 Y=-210	blank("TYPE3",8000,8010,400,2350,int,heathro3,2,"top",int,angle=90)
+	X=-85 Y=-210	blank("TYPE3",8000,8010,400,2350,int,heathro3,3,"top",int,angle=90)
+	X=-35 Y=-247	blank("TYPE3",8000,8010,400,2350,int,heathro3,4,"top",int)
+
+	X=-185 Y=-312	TRANSFORMER_SELECT(scale=120,"TYPE3",8000,8010,400,2350,int,heathro3,"TX1 33/11kV","INCOMER",1,int,"black","blue") CLEAR
+	X=-35 Y=-312	TRANSFORMER_SELECT(scale=120,"TYPE3",8000,8010,400,2350,int,heathro3,"TX2 33/11kV","INCOMER",2,int,"black","blue") CLEAR
+
+	X=-205 Y=-211	sub_call(grey80,80,20,"WEST","",white,20,yes,"",heathro3,int,string,int)
+	X=-15 Y=-211	sub_call(grey80,80,20,"INTAKE","",white,20,yes,"",heathro3,int,string,int)
+end
+
+object sub150
+begin
+lw=3
+clear
+scale=220
+X=-176 Y=-340 	bus_con("")	! * panel 6 * !	
+X=-127 Y=-340	bus_con("")	! * panel 8 * !
+X=-76 Y=-340	bus_con("")	! * panel 9 * !
+X=34 Y=-340	bus_con("")	! * panel 12 * !
+X=184 Y=-340	bus_con("")	! * panel 16 * !
+
+scale=100
+X=-155 Y=-238
+	X=-176 Y=-372	bus_link	("",	44450,	45025,		44629,	2504,	6710,	heathrow,"1",	int,	"",int) clear ! * panel 6 * !
+	Y=-310	 	bus_link	("",	44450,	45025,		44634,	2505,	6711,	heathrow,"2",	int,	"",int) clear ! * panel 6 * !
+
+	X=-127 Y=-372	bus_link	("",	44450,	45027,		44669,	2508,	6714,	heathrow,"1",	int,	"",int) clear ! * panel 8 * !
+	Y=-310	 	bus_link	("",	44450,	45027,		44674,	2509,	6715,	heathrow,"2",	int,	"",int) clear ! * panel 8 * !
+	X=-76 Y=-372	bus_link	("",	44450,	45028,		44689,	2510,	6716,	heathrow,"1",	int,	"",int) clear ! * panel 9 * !
+	Y=-310	 	bus_link	("",	44450,	45028,		44694,	2511,	6717,	heathrow,"2",	int,	"",int) clear ! * panel 9 * !
+
+	X=34 Y=-372	bus_link	("",	44450,	45031,		44749,	2516,	6722,	heathrow,"3",	int,	"",int) clear ! * panel 12 * !
+	Y=-310	 	bus_link	("",	44450,	45031,		44754,	2517,	6723,	heathrow,"4",	int,	"",int) clear ! * panel 12 * !
+
+
+	X=184 Y=-372	bus_link	("",	44450,	45035,		44829,	2524,	6730,	heathrow,"3",	int,	"",int) clear ! * panel 16 * !
+	Y=-310	 	bus_link	("",	44450,	45035,		44834,	2525,	6731,	heathrow,"4",	int,	"",int) clear ! * panel 16 * !
+
+scale=256
+	
+clear
+
+x=-55 y=-280 Add y+=70 add x+=110 add y-=70 add line(fg=white) clear
+
+
+!X=-255 Y=-238 blank("TYPE3",8000,8010,400,2350,int,heathro3,3,"top",int)!
+!X=-205 Y=-238 blank("TYPE3",8000,8010,400,2350,int,heathro3,5,"top",int)!
+!X=105 Y=-238 blank("TYPE3",8000,8010,400,2350,int,heathro3,13,"top",int)!
+!X=155 Y=-238 blank("TYPE3",8000,8010,400,2350,int,heathro3,15,"top",int)!
+!X=305 Y=-238 blank("TYPE3",8000,8010,400,2350,int,heathro3,19,"top",int)!
+
+
+X=-185 Y=-275 sub_call(grey80,330,20,"Sub 150 - section 2","",white,20,no,"sub_stn_150",heathrow,int,"string",int)
+X=184 Y=-276 sub_call(grey80,330,20,"Sub 150 - section 4","",white,20,no,"sub_stn_150",heathrow,int,"string",int)
+
+X=-185 Y=-410 sub_call(grey80,330,20,"Sub 150 - section 1","",white,20,no,"sub_stn_150",heathrow,int,"string",int)
+X=184 Y=-410 sub_call(grey80,330,20,"Sub 150 - section 3","",white,20,no,"sub_stn_150",heathrow,int,"string",int)
+
+
+scale = 130
+X=-155 Y=-238 dual_bus_cb("norm",44450,	45025,	44620,2406,6606,	6696,	heathrow,6,"btm",	60,0,"",int,int,white) 	! * panel 6 to 151 * !
+
+
+X=-105 Y=-238 dual_bus_cb("norm",44450,45027,44660,2408,6608,	6696,heathrow,8,"btm",80,0,"",int,int,white)	! * panel 8 to 152 * !
+X=-55 Y=-238 dual_bus_cb("norm",44450,45028,44680,2409,6609,6696,heathrow,9,"btm",90,0,"",int,int,white)	! * coupler * !
+X= 55 Y=-238 dual_bus_cb("norm",44450,45031,44740,2412,6612,6696,heathrow,12,"btm",120,0,"",int,int,white)	! * coupler * !
+X=205 Y=-238 dual_bus_cb("norm",44450,45035,44820,2416,6616,	6696,heathrow,16,"btm",160,0,"",int,int,white)	! * panel 16 to 152 * !
+
+X=255 Y=-238 dual_bus_cb("norm",44450,	45037,	44860,2418,6618,	6696,	heathrow,18,"btm",180,0,"",int,int,white) ! * panel 18 to 151 * !
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	x = -570 y = 310 browser(8000,heathro3,1140)
+
+
+	scale=220
+	x=0 y=50 sub150
+
+	X=110 Y=470 sub151
+	X=410 Y=470 sub152
+
+	!X=-190 Y=470 sub_west_intake!
+
+
+
+clear
+X=-49 Y=-129 W=122 H=34 FG=AQUAMARINE3 JUST=TOPLEFT FS=FILLSOLID ANGLE=0 ROTRECT
+end
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+

@@ -1,0 +1,162 @@
+load mimic_libutil
+
+load gadgets_libutil
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type b_bool_type =  db_elements(b_value)
+
+type alarm_row_type =  db_elements(alarm_status)
+
+type main_menu_row = table (main_menu_items= string(26))
+
+type execute_states = enum(execute = "Execute",
+                           cancel = "Cancel")
+type panel_item_row = table (str = string(40))
+
+type panel_second = enum(continue="Continue")
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+************************************************************************
+* OCB ALARM TEST                                                       *
+* This object detects if the ocb is in alarm and returns true or false *
+************************************************************************
+!
+
+object sub_alarm(plc_offset=int,b_offset=int,src=source) = int
+
+var sub_status = int
+
+!PLC TYPE INPUTS !  
+var plc_a_comms_fail_ip = input    b_bool_type
+var plc_b_comms_fail_ip = input    b_bool_type
+var plc_cancel_ip = input    b_bool_type
+var plc_sel_in_progress_ip = input    b_db_row_type
+ 
+!ALARMS!
+var ocb_closed_alarm = input  alarm_row_type
+var ocb_tripped_alarm = input  alarm_row_type
+var failed_to_trip_alarm = input  alarm_row_type
+var failed_to_close_alarm = input  alarm_row_type
+var ocb_close_in_discr = input  alarm_row_type
+var ocb_trip_in_discr = input  alarm_row_type
+var ocb_close_out_discr = input  alarm_row_type
+var ocb_trip_out_discr = input  alarm_row_type
+
+begin
+
+
+!PLC TYPE REQUESTS!
+
+   set source plc_a_comms_fail_ip = src
+   set filter plc_a_comms_fail_ip.db_addr = lim_eq
+   set limit plc_a_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset-1 )
+   set persist plc_a_comms_fail_ip 
+   request plc_a_comms_fail_ip
+
+   set source plc_b_comms_fail_ip = src
+   set filter plc_b_comms_fail_ip.db_addr = lim_eq
+   set limit plc_b_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset )
+   set persist plc_b_comms_fail_ip 
+   request plc_b_comms_fail_ip
+
+   set source plc_sel_in_progress_ip = src
+   set filter plc_sel_in_progress_ip.db_addr = lim_eq
+   set limit plc_sel_in_progress_ip.db_addr = db_address(int(b1)+plc_offset +2)
+   set persist plc_sel_in_progress_ip 
+   request plc_sel_in_progress_ip
+
+!ALARM REQUESTS!
+
+   set source ocb_closed_alarm = src
+   set filter ocb_closed_alarm.db_addr = lim_eq
+   set limit ocb_closed_alarm.db_addr = db_address(int(b1) + b_offset +1)
+   set persist ocb_closed_alarm 
+   request ocb_closed_alarm
+
+   set source ocb_tripped_alarm = src
+   set filter ocb_tripped_alarm.db_addr = lim_eq
+   set limit ocb_tripped_alarm.db_addr = db_address(int(b1) + b_offset +2)
+   set persist ocb_tripped_alarm 
+   request ocb_tripped_alarm
+
+   set source failed_to_close_alarm = src
+   set filter failed_to_close_alarm.db_addr = lim_eq
+   set limit failed_to_close_alarm.db_addr = db_address(int(b1) + b_offset+3)
+   set persist failed_to_close_alarm 
+   request failed_to_close_alarm
+
+   set source failed_to_trip_alarm = src
+   set filter failed_to_trip_alarm.db_addr = lim_eq
+   set limit failed_to_trip_alarm.db_addr = db_address(int(b1) + b_offset +4)
+   set persist failed_to_trip_alarm 
+   request failed_to_trip_alarm
+
+if plc_a_comms_fail_ip.b_value and plc_b_comms_fail_ip.b_value then
+begin
+	sub_alarm = 1	
+end
+else if ocb_close_in_discr.alarm_status == w_note or
+        ocb_trip_in_discr.alarm_status == w_note or
+        ocb_close_out_discr.alarm_status == w_note or
+        ocb_trip_out_discr.alarm_status == w_note or
+        failed_to_close_alarm.alarm_status == w_note or
+        failed_to_trip_alarm.alarm_status == w_note or
+        ocb_tripped_alarm.alarm_status == w_note or
+        ocb_closed_alarm.alarm_status == w_note then
+begin
+            sub_alarm = 2
+end	   
+else if ocb_close_in_discr.alarm_status == w_clr or
+        ocb_trip_in_discr.alarm_status == w_clr or
+        ocb_close_out_discr.alarm_status == w_clr or
+        ocb_trip_out_discr.alarm_status == w_clr or
+        failed_to_close_alarm.alarm_status == w_clr or
+        failed_to_trip_alarm.alarm_status == w_clr or
+        ocb_tripped_alarm.alarm_status == w_clr or
+        ocb_closed_alarm.alarm_status == w_clr then         
+begin        
+	    sub_alarm = 3
+end
+else
+begin
+	sub_alarm = 0
+end
+!sub_alarm=sub_status!
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,18 @@
+load mimic_libutil
+
+
+object greg_object(tfg)
+begin
+
+x = 0 y = 0 text(just=centrecentre,ch=30,font=font_bold,"HELLO")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+greg_object(tfg=red)
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

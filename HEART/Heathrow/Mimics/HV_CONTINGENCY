@@ -1,0 +1,453 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!***********Hv Ring 17**********!
+
+
+load mimic_libutil
+load intakes
+load ocb
+load ocb_highlight
+load ocb_monitored
+load small_transformer_meter
+load transformer
+load lv_contactor
+load fuse_sw
+load lv_contactor
+load oil_switch
+load ocb_barcis
+load intruder_display
+load hv_menu_bar
+load hierarchy
+
+
+
+
+!******************************NORTH INTAKE***************************!
+object hv_17_north(lw,angle)
+begin
+just = centrecentre
+lw=4
+scale = 260
+fg = red
+x = 520 y = 0 add
+x = -520 add line clear
+
+!********************************lines*********************************!
+
+!x = -100 y = -26
+rotrect (w=40,h=45,fg=grey)!
+!x = 355 y = -18
+x -= 33 y += 40 add
+y -= 44 add
+x += 56 add line (fg=decorlight) clear 
+y += 1 add
+y += 44 add
+x -= 56 add line (fg=decorshadow) clear
+x += 33 y -= 40 clear fg = ocb_fg!
+scale=120
+lw =5 
+x = -500  
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,100,1,25,heathrow,1,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,120,2,26,heathrow,2,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,160,4,28,heathrow,4,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,180,5,29,heathrow,6,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,200,6,30,heathrow,7,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb_highlight(1,220,7,31,heathrow,9,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,260,9,33,heathrow,11,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,280,10,34,heathrow,13,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,300,11,35,heathrow,14,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,320,12,36,heathrow,16,"top")
+
+x += 50 y = 0 
+y -= 70 add
+y += 70 add line(lw=5) clear
+y -= 25 add
+ocb(1,340,13,37,heathrow,17,"top")
+
+x += 100 y = 0 
+y += 35 add
+y += 15 add !line(lw=5)! clear
+y -= 25 add
+ocb(1,380,15,39,heathrow,19,"btm")
+
+x += 50 y = 0 
+y += 35 add
+y += 15 add !line(lw=3)! clear
+y -= 25 add
+ocb(1,400,16,40,heathrow,20,"btm")
+
+x += 50 y = 0 
+y += 35 add
+y += 15 add !line(lw=5)! clear
+y -= 25 add
+ocb(1,420,17,41,heathrow,21,"btm")
+
+
+x = -300 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb_mont(1,440,18,42,heathrow,5,"btm")
+
+x = -150 y = 0 add 
+y += 60 add      ! selects ocb vertical position!
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb_mont(1,450,19,43,heathrow,8,"btm")
+
+x = 50 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb_mont(1,460,20,44,heathrow,12,"btm")
+
+x = 200 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb_mont(1,470,21,45,heathrow,15,"btm")
+
+angle = 90
+x = -400 y = 0
+ocb(1,140,3,27,heathrow,3,"sect")
+angle = 0
+
+angle = 90
+x = -50 y = 0
+ocb(1,240,8,32,heathrow,10,"sect")
+angle = 0
+
+angle = 90
+x = 350 y = 0
+ocb_highlight(1,360,14,38,heathrow,18,"sect")
+angle = 0
+
+scale = 100
+y = 70 x = -300 add transformer("Tx 4","SEB")
+
+y = 70 x = -150 add transformer("Tx 3","SEB")
+
+y = 70 x = 50 add transformer("Tx 1","SEB")
+
+y = 70 x = 200 add transformer("Tx 2","SEB")
+
+y = -90 x = 300 add transformer("LT","TFR")
+
+scale=200
+x = -10 y = 95 hv_17_meter(598,7,heathrow,"small_ammeter","Tx 1")
+x = 140 y = 95 hv_17_meter(599,11,heathrow,"small_ammeter","Tx 2")
+x = -210 y = 95 hv_17_meter(680,5,heathrow,"small_ammeter","Tx 3")
+x = -360 y = 95 hv_17_meter(681,3,heathrow,"small_ammeter","Tx 4")
+
+x = 0 y = -100 add text(scale=260,ch=21,tfg=red,"NORTH INTAKE") clear
+scale =260
+x = -200 y = -55 text ("92 P5",ch=12,tfg=black)
+clear
+
+x = 480 y = -15
+scale=180
+int_sensor(10,heathrow,"INT")
+
+
+
+!****************************ORDER TO SWITCH****************************!
+!x = 350 y = -30 text ("1",ch=30,tfg=white) clear
+x = 278 y = 360 text ("3",ch=30,tfg=white) clear
+x = -100 y = 15 text ("2",ch=30,tfg=white) clear
+x = 323 y = 315 text ("4",ch=30,tfg=white) clear
+!
+!***********************************************************************!
+
+end
+!**************************END OF NORTH INTAKE**************************!
+
+!******************************SOUTH INTAKE*****************************!
+object hv_17_south
+
+begin
+scale=256 just = centrecentre
+
+x = -565 y = 190 add text(scale=260,ch=21,tfg=green4,"SOUTH INTAKE") clear
+
+scale = 256 just = centrecentre
+tfg = green4 ch = 20
+x = -550 y = 300 text("Front")
+x = -550 y = 240 text("Rear")
+
+
+! REAR BAR !
+x = -600 y = 255 add
+x += 200 add
+line(fg=green4,lw=4) clear
+
+! REAR BAR DIAGONALS !
+x = -610 y = 270 add
+x += 20 y-=30 add
+line(fg=green4,lw=3) clear
+x = -620 y = 270 add
+x += 20 y-=30 add
+line(fg=green4,lw=3) clear
+
+! FRONT BAR !
+x = -600 y = 315 add
+x += 200 add
+line(fg=green4,lw=4) clear
+
+! FRONT BAR DIAGONALS !
+x = -610 y = 330 add
+x += 20 y-=30 add
+line(fg=green4,lw=3) clear
+x = -620 y = 330 add
+x += 20 y-=30 add
+line(fg=green4,lw=3) clear
+
+!***********************INTRUDER ALARM**********************!
+x = -490 y = 330
+scale=180
+int_sensor(1009,heathrow,"INT")
+y +=18
+int_sensor(1011,heathrow,"CO2")
+!***********************************************************!
+
+lw=3
+x = -425 y = 255 add y -= 60 add line(fg=green4) clear
+x = -475 y = 315 add y -= 120 add x += 50 add line(fg=green4) clear
+
+scale=200
+x = -620 y = 434 hv_17_meter(591,60,heathrow,"small_ammeter","Tx 1")
+x = -555 y = 434 hv_17_meter(592,61,heathrow,"small_ammeter","Tx 2")
+x = -490 y = 434 hv_17_meter(593,55,heathrow,"small_ammeter","Tx 3")
+x = -425 y = 434 hv_17_meter(594,54,heathrow,"small_ammeter","Tx 4")
+x = -360 y = 434 hv_17_meter(595,69,heathrow,"big_ammeter","P 21")
+
+
+scale=120
+X=-475  Y=285 ocb(1000,1660,86,111,heathrow,21,"top") clear
+X=-425  Y=225 ocb(1000,1680,87,112,heathrow,21,"top") clear
+
+end
+!***********************END OF SOUTH INTAKE**********************!
+
+!*************************EAST INTAKE****************************!
+object hv_17_east(lw,scale,angle)
+begin
+scale=256 just = centrecentre
+
+x = 85 y = -75 add text(scale=260,ch=21,tfg=orange3,"EAST INTAKE") clear
+
+scale = 256 just = centrecentre
+tfg = orange3 ch = 20
+x = -50 y = 25 text("Front")
+x = -50 y = -35 text("Rear")
+
+
+! REAR BAR !
+x = -500 y = -20 add
+x += 780 add
+line(fg=orange2,lw=4) clear
+
+! FRONT BAR !
+x = -500 y = 40 add
+x += 780 add
+line(fg=orange2,lw=4) clear
+
+! REAR BAR DIAGONALS !
+x = 270 y = -5 add
+x += 20 y-=30 add
+line(fg=orange2,lw=3) clear
+x = 280 y = -5 add
+x += 20 y-=30 add
+line(fg=orange2,lw=3) clear
+
+! FRONT BAR DIAGONALS !
+x = 270 y = 55 add
+x += 20 y-=30 add
+line(fg=orange2,lw=3) clear
+x = 280 y = 55 add
+x += 20 y-=30 add
+line(fg=orange2,lw=3) clear
+
+x = 230 y = -52
+scale=180
+int_sensor(2009,heathrow,"INT")
+y +=18
+int_sensor(2011,heathrow,"CO2")
+
+
+lw=3
+
+x = -115 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -155 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = -135 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = -195 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -235 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = -215 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = -275 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -315 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+
+x = -355 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -395 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+
+x = -435 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -475 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+
+x = 35 y = -20 add y += 60 add line(fg=orange2) clear
+x = 135 y = -20 add y += 60 add line(fg=orange2) clear
+
+!TX 1 LINES!
+x = -65 y = 40 add y += 110 add x += 50 add line(fg=orange2) clear
+x = -15 y = -20 add y += 170 add line(fg=orange2) clear
+x = -40 y = 150 add y +=25 add line(fg=orange2) clear
+
+!TX 2 LINES!
+x = 195 y = 40 add y += 110 add line(fg=orange2) clear
+x = 245 y = -20 add y += 170 add x -=50 add line(fg=orange2) clear
+x = 220 y = 150 add y +=25 add line(fg=orange2) clear
+
+!DRAW RECTANGLE AROUND SWITCHING OCB's!
+!scale=260
+x = 84 y = -19
+rotrect (w=45,h=40,fg=grey)
+x = 35 y = 8
+rotrect (w=40,h=45,fg=grey)!
+
+
+scale=120
+
+x = 195 y = 120 add ocb_mont(2000,2560,116,191,heathrow,17,"top")
+x = 245 y = 120 add ocb_mont(2000,2570,117,192,heathrow,18,"top")
+
+x = 135 y = 10 add ocb_highlight(2000,2360,115,190,heathrow,16,"top")
+x = 85 y = 40 add ocb(2000,2340,114,189,heathrow,15,"sect",angle=90)
+x = 85 y = -20 add ocb_highlight(2000,2320,113,188,heathrow,14,"sect",angle=-90)
+x = 35   y = 10 add ocb(2000,2300,112,187,heathrow,13,"top")
+
+x = -65 y = 120 add ocb_mont(2000,2540,110,185,heathrow,11,"top")
+x = -15 y = 120 add ocb_mont(2000,2550,111,186,heathrow,12,"top")
+
+x = -115 y = -50 add ocb(2000,2280,109,184,heathrow,10,"top")
+x = -155 y = 10 add ocb(2000,2260,108,183,heathrow,9,"top")
+x = -195 y = -50 add ocb(2000,2240,107,182,heathrow,8,"top")
+x = -235 y = 10 add ocb(2000,2220,106,181,heathrow,7,"top")
+x = -275 y = -50 add ocb(2000,2200,105,180,heathrow,6,"top")
+x = -315 y = 10 add ocb(2000,2180,104,179,heathrow,5,"top")
+x = -355 y = -50 add ocb(2000,2160,103,178,heathrow,4,"top")
+x = -395 y = 10 add ocb(2000,2140,102,177,heathrow,3,"top")
+x = -435 y = -50 add ocb(2000,2120,101,176,heathrow,2,"top")
+x = -475 y = 10 add ocb(2000,2100,100,175,heathrow,1,"top")
+
+scale=200
+x = -120 y = 160 hv_17_meter(596,155,heathrow,"big_ammeter","Tx 1")
+x = 140 y = 160 hv_17_meter(597,156,heathrow,"big_ammeter","Tx 2")
+clear
+
+
+scale = 100
+x = -40 y = 190 transformer("Tx 1","SEB")
+x = 220 y = 190 transformer("Tx 2","SEB")
+
+!************************END OF EAST INTAKE**************************!
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin 
+goto_menu
+x = 470 y = -350 command_button(590,heathrow)
+
+
+! South Intake P21 to North P9!
+x = 10 y = -2 clear
+lw=2 
+X=-355 Add 
+Y=-100 add 
+X=-545 Add 
+Y=-360 Add 
+X=-102 add 
+Y=-290  Add  
+LINE(fg=red3) clear 
+
+! NI P21 to EI P1 and 2 !
+X=-200 Y=0  Add 
+Y=-100  Add 
+X=508  Add 
+Y=-250  Add 
+line (fg=red3) clear 
+
+! NI P20 to EI P3 and 4 !
+X=-120 Y=0  Add 
+Y=-80  Add 
+X= 457  Add 
+Y=-250  Add 
+line (fg=red3) clear
+
+! NI P19 to EI P4 and 5 !
+X=-40 Y=0  Add 
+Y=-60  Add 
+X=406  Add 
+Y=-250  Add 
+line (fg=red3) clear
+
+clear
+scale=260
+x=100 y = -200 hv_17_south
+x=0 y = -280 hv_17_north
+x=260 y = 80 hv_17_east
+clear
+scale = 260
+x = 0 y = 322 menu_bar
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

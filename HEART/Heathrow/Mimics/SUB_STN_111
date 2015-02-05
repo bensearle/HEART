@@ -1,0 +1,149 @@
+load mimic_libutil
+load SUB_STN_111_HELP
+load hv_lib
+load generic_meter_library
+
+!************* BUSBAR 111 *************!
+
+object busbar_111
+var helpstr = help string(30)
+begin
+	clear
+   	scale=256
+   	just=centrecentre
+   	x=20 y=20  w=700 h=440
+   	set text helpstr = "sub_stn_111_help"
+	
+
+	!** Main Bus Bar **!
+	just=centrecentre
+	x = -300 y =-25 add x = 300 add line(lw=4,fg=yellow) clear
+	
+	!** Connecting Lines**!
+	lw=2
+	tfg = black x = 290 y = -5 add text ("111",ch = 25) clear
+
+
+	x =  -275 y = -25 add y -= 50 add line (fg=yellow) clear
+	x =  -225 y = -25 add y -= 50	 add line (fg=yellow) clear
+
+	x =  -165 y = -25 add y += 20 add line (fg=yellow) clear
+
+	x =  -75 	y = -25 add y += 150 add line (fg=yellow) clear
+	x =  -25	y = -25 add y += 150 add line (fg=yellow) clear
+	x =   25	y = -25 add y += 150 add line (fg=yellow) clear
+	x =   75	y = -25 add y += 50 add line (fg=yellow) clear
+
+	x =   135	y = -25 add y += 20 add line (fg=yellow) clear
+
+	x =   225	y = -25 add y -= 50 add line (fg=yellow) clear
+ 	x =   275	y = -25 add y -= 50 add line (fg=yellow) clear
+	
+	! circuit breakers !
+
+   	scale = 310
+
+	x =  -275 y = -50	hv_lib_breaker("eclipse",40000,40130,1350,5540,5574,HEATHROW,1,"TOP",10)
+	x =  -225 y = -50	hv_lib_breaker("eclipse",40000,40150,1351,5541,5574,HEATHROW,2,"TOP",20)
+
+	x =  -165 y = 0	hv_lib_breaker("eclipse",40000,40190,1353,5543,INT,HEATHROW,3,"SECT",INT,angle=90)
+	x =  -125 y = -25	hv_lib_breaker("eclipse",40000,40170,1352,5542,5574,HEATHROW,3,"SECT",30)
+
+	x =  -75    y = 0	hv_lib_breaker("eclipse",40000,40210,1354,5544,int,HEATHROW,4,"BTM",int)
+	x =  -25    y = 0	hv_lib_breaker("eclipse",40000,40230,1355,5545,int,HEATHROW,5,"BTM",int)
+	x =   25    y = 0	hv_lib_breaker("eclipse",40000,40250,1356,5546,int,HEATHROW,6,"BTM",int)
+	x =   75    y = 0	hv_lib_breaker("eclipse",40000,40270,1357,5547,int,HEATHROW,7,"BTM",int)
+
+	x =   135  y = 0	hv_lib_breaker("eclipse",40000,40310,1359,5549,INT,HEATHROW,8,"SECT",INT,angle=90)
+	x =   175  y = -25	hv_lib_breaker("eclipse",40000,40290,1358,5548,5574,HEATHROW,8,"SECT",40)
+
+	x =   225  y = -50	hv_lib_breaker("eclipse",40000,40330,1360,5550,5574,HEATHROW,9,"TOP",50)
+	x =   275  y = -50	hv_lib_breaker("eclipse",40000,40350,1361,5551,5574,HEATHROW,10,"TOP",60)
+
+	! hv meters !
+
+	scale = 155
+
+	!						plc, 	c, 	e, 	b_over, 	b_under, 	src, 		units, 	metname, 	range_lo, range_hi, dec_places, 	bar_colour, 	range_dec_places, res_int1, res_str1!
+	x =  -275 y = -115	GENERIC_BAR_METER_LIB(	40000,	1365,	5557,	40068,	40069,	HEATHROW,	"A",	"PANEL1",	0.000,	400.000,	0,		YELLOW,	INT,		INT,	"STRING")
+	x =  -225 y = -115	GENERIC_BAR_METER_LIB(	40000,	1366,	5558,	40072,	40073,	HEATHROW,	"A",	"PANEL2",	0.000,	400.000,	0,		YELLOW,	INT,		INT,	"STRING")
+	x =  -150 y = -100	GENERIC_BAR_METER_LIB(	40000,	1367,	5559,	40076,	40077,	HEATHROW,	"A",	"PANEL3",	0.000,	800.000,	0,		YELLOW,	INT,		INT,	"STRING")
+	x =  -75    y = 78	GENERIC_BAR_METER_LIB(	40000,	1368,	5560,	40080,	40081,	HEATHROW,	"A",	"PANEL4",	0.000,	100.000,	0,		YELLOW,	INT,		INT,	"STRING")
+	x =  -25    y = 78	GENERIC_BAR_METER_LIB(	40000,	1369,	5561,	40084,	40085,	HEATHROW,	"A",	"PANEL5",	0.000,	100.000,	0,		YELLOW,	INT,		INT,	"STRING")
+	x =   25    y = 78	GENERIC_BAR_METER_LIB(	40000,	1370,	5562,	40088,	40089,	HEATHROW,	"A",	"PANEL6",	0.000,	100.000,	0,		YELLOW,	INT,		INT,	"STRING")
+	x =   75    y = 78	GENERIC_BAR_METER_LIB(	40000,	1371,	5563,	40092,	40093,	HEATHROW,	"A",	"PANEL7",	0.000,	100.000,	0,		YELLOW,	INT,		INT,	"STRING")
+	x =   150  y = -100	GENERIC_BAR_METER_LIB(	40000,	1372,	5564,	40096,	40097,	HEATHROW,	"A",	"PANEL8",	0.000,	800.000,	0,		YELLOW,	INT,		INT,	"STRING")
+	x =   225  y = -115	GENERIC_BAR_METER_LIB(	40000,	1373,	5565,	40100,	40101,	HEATHROW,	"A",	"PANEL9",	0.000,	400.000,	0,		YELLOW,	INT,		INT,	"STRING")
+	x =   275  y = -115	GENERIC_BAR_METER_LIB(	40000,	1374,	5566,	40104,	40105,	HEATHROW,	"A",	"PANEL10",	0.000,	400.000,	0,		YELLOW,	INT,		INT,	"STRING")
+
+
+	! transformers !
+
+	scale = 256
+
+	x =  -75	y = 146	transformer_lib("Tx 1","")
+	x =  -25	y = 146	transformer_lib("Tx 2","")
+	x =  25	y = 146	transformer_lib("Tx 1","")
+	
+
+	! labels !
+
+	scale = 260
+
+	tfg = black ch =12
+	! p1 !
+	x =  -275 y = -190	text("Sub81 ")
+		y = -178	text("P1")
+
+	! p2 !
+	x =  -225 y = -190	text("Sub124 ")
+		y = -178	text("P2")
+
+
+	x =  -150 y = -175	text("BUS SECT ")
+		y = -163	text("1-2")
+
+	x = -186	y = 10	text("a")
+	x = -165	y = 30	text("LH Bus")
+		y = 42	text("Earth")
+		y = 54	text("Switch")
+
+
+	x =  -75	y = 178	text("Taxi")
+		y = 190	text("Feeder")
+
+	x =  -25   y = 178	text("Taxi")
+		y = 190	text("Feeder")
+		y = 202	text(ch=10,"(Canteen)")
+
+	x =   25  y = 178	text("WBC III")
+		y = 190	text("")
+
+	x =   75   y = 128	text("SPARE")
+		y = 140	text("")
+
+
+	! p8 !
+	x =   150 y = -175	text("BUS SECT ")
+		y = -163	text("2-3")
+
+	x = 114	y = 10	text("a")
+	x = 135	y = 30	text("LH Bus")
+		y = 42	text("Earth")
+		y = 54	text("Switch")
+
+	! p9 !
+	x =   225 y = -190	text("Sub110 ")
+		y = -178	text("P3")
+	! p10 !
+	x =   275 y = -190	text("Sub64 ")
+		y = -178	text("P5")
+end	
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=0 Y=0 busbar_111
+end
+
+mimic = main_object w=700,h=440,just=centrecentre,fg=white,bg=aquamarine3,resizable

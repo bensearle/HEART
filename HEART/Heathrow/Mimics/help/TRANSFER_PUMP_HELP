@@ -1,0 +1,92 @@
+helptext TRANSFER_PUMP_HELP = "TRANSFER PUMP
+
+-------------
+
+This object has two possible states it can display, either running or not running. This is represented by:
+
+
+Green Foreground - RUNNING
+
+
+White Foregroud - NOT RUNNING
+
+
+
+CONTROL MENU
+
+------------
+
+
+Alter Tag Message
+
+-----------------
+
+It is possible to apply a tagged message to the object, this would be used if, for instance, the pump was out of service or perhaps the pump had been isolated for any reason. This message can be up to 20 characters long.
+
+
+Clear Tag Message
+
+-----------------
+
+The message can be cleared from this object using this option.
+
+
+Tag messages are represented by a change in background colour, this is as follows:
+
+
+Yellow Background - TAG MESSAGE APPLIED
+
+
+Grey Background - NO TAG MESSAGE
+
+
+Alter Transfer of Service
+
+-------------------------
+
+This control option changes the appearance of the object background colour, this is used to highlight a Transfer of Service, the colours are as follows:
+
+
+Orange Background - TRANSFER OF SERVICE APPLIED
+
+
+Grey Background - TRANSFER OF SERVICE REMOVED
+
+
+Disable Local Control
+
+---------------------
+
+If the background colour is Grey then the local control is Enabled, i.e. the PLC is controlling the plant. To aquire Remote Control the Disable Local Control must be selected.
+
+
+Enable Local Control
+
+---------------------
+
+If the background colour is Lightblue then the Local Control is Disabled, i.e. the operator is controlling the plant. To aquire Local Control the Enable Local Control must be selected.
+
+
+Lightblue Background - LOCAL CONTROL DISABLED
+
+
+Grey Background - LOCAL CONTROL ENABLED
+
+
+Start Pump
+
+----------
+
+If the pump is in Remote Control then the appropiate control option is presented to the user. Start Pump will send a start control to the PLC.
+
+
+Stop Pump
+
+---------
+
+If the pump is in Remote Control then the appropiate control option is presented to the user. Stop Pump will send a stop control to the PLC.
+
+
+NB, Only the appropiate controls are contained in the Menus, i.e. it is only possible to stop the pump if the pump is running. Similarly it is only possible to Enable Remote Control if the PLC is in Local Control.
+
+"

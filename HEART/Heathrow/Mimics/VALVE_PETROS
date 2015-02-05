@@ -1,0 +1,26 @@
+Load VALVE_PETROS_HELP
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load GENERIC_VALVE
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+
+
+
+Object main_object(w,h,fg,bg)
+Begin
+
+x=100 y=100 generic_valve(heathrow,B46600,B46601,B4604,C3000,E6690,E6560)
+x=250 y=250 generic_valve(heathrow,B46600,B46601,B4604,C3000,E6690,E6560)
+x=350 y=350 generic_valve(heathrow,B46600,B46601,B4604,C3000,E6690,E6560)
+x=450 y=250 generic_valve(heathrow,B46600,B46601,B4604,C3000,E6690,E6560)
+x=500 y=250 generic_valve(heathrow,B46600,B46601,B4604,C3000,E6690,E6560)
+x=450 y=100 generic_valve(heathrow,B46600,B46601,B4604,C3000,E6690,E6560)
+end
+
+
+
+
+
+mimic = main_object w=700,h=500, bg=grey80 ,resizable

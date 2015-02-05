@@ -1,0 +1,119 @@
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ocb_barcis
+
+!**********          BUSBAR 82          **********!
+
+object busbar_82
+begin
+
+scale = 260
+tfg = white x = 175 y = -303 add text ("82",ch = 25) clear
+
+x = 425 y = -275 add x = 175 add line(fg=lightblue3,lw=4) clear
+lw = 2
+x = 400 y = -275 add y += 50 add line (fg=lightblue3) clear
+x = 350 y = -275 add y -= 50 add line (fg=lightblue3) clear
+x = 250 y = -275 add y -= 50 add line (fg=lightblue3) clear
+x = 200 y = -275 add y += 50 add line (fg=lightblue3) clear
+
+scale = 120
+x = 400 y = -250 ocb_barcis(8290,571,1363,heathrow,5,"btm")
+x = 350 y = -300 ocb_barcis(8280,570,1362,heathrow,4,"top")
+x = 300 y = -275 ocb_barcis(8270,569,1361,heathrow,3,"sect",angle=90)
+x = 250 y = -300 ocb_barcis(8260,568,1360,heathrow,2,"top")
+x = 200 y = -250 ocb_barcis(8250,567,1359,heathrow,1,"btm")
+
+scale = 100
+X = 200 Y = -205 add transformer("LT 1","LOCAL")
+X = 400 Y = -205 add transformer("LT 2","LOCAL")
+
+scale = 260
+
+end
+
+
+!***********************busbar 54*********************!
+
+object busbar_54
+begin
+
+tfg = white x = -525 y = -303 add text ("54",ch = 25) clear
+
+x = -525 y = -275 add x = 25 add line(fg=lightblue3,lw=4) clear
+lw = 2
+x = -500 y = -275 add y += 30 add line (fg=lightblue3) clear
+x = -450 y = -275 add y += 50 add line (fg=lightblue3) clear
+x = -400 y = -275 add y += 50 add line (fg=lightblue3) clear
+x = -350 y = -275 add y += 50 add line (fg=lightblue3) clear
+x = -300 y = -275 add y -= 50 add line (fg=lightblue3) clear
+x = -200 y = -275 add y -= 50 add line (fg=lightblue3) clear
+x = -150 y = -275 add y += 50 add line (fg=lightblue3) clear
+x = -100 y = -275 add y += 50 add line (fg=lightblue3) clear
+x = -50 y = -275 add y += 50 add line (fg=lightblue3) clear
+x =  0 y = -275 add y += 30 add line (fg=lightblue3) clear
+
+scale = 120
+x = -500 y = -250 ocb_barcis(8300,572,1364,heathrow,1,"btm")
+x = -450 y = -250 ocb_barcis(23174,949,1224,heathrow,2,"btm")
+x = -400 y = -250 ocb_barcis(23194,950,1225,heathrow,3,"btm")
+x = -350 y = -250 ocb_barcis(23214,951,1226,heathrow,4,"btm")
+x = -300 y = -300 ocb_barcis(23234,952,1227,heathrow,5,"top")
+angle = 90 
+x = -250 y = -275 ocb_barcis(23334,957,1232,heathrow,6,"sect") 
+angle = 0
+x = -200 y = -300 ocb_barcis(23314,956,1231,heathrow,7,"top")
+x = -150 y = -250 ocb_barcis(23294,955,1230,heathrow,8,"btm")
+x = -100 y = -250 ocb_barcis(23274,954,1229,heathrow,9,"btm")
+x = -50 y = -250 ocb_barcis(23254,953,1228,heathrow,10,"btm")
+x =  0 y = -250 ocb_barcis(8310,573,1365,heathrow,11,"btm")
+
+scale = 100
+X = -450 Y = -205 add transformer("T 1","")
+X = -350 Y = -205 add transformer("T 1","")
+x = -400 y = -205 add transformer("T 1","")
+X = -150 Y = -205 add transformer("T 2","")
+
+X = -100 Y = -205 add transformer("T 2","")
+X = -50 Y = -205  add transformer("T 2","")
+
+scale = 260
+just = centrecentre
+tfg=white
+ch=12
+x = -500 y = -220 text ("Spare")
+x = -450 
+y = -180 text("Shell")
+y = -165 text("BP")
+x = -400
+y = -180 text ("FEGP Tx")
+y = -165 text ("Stands")
+y = -150 text ("156/7/8")
+x = -350 
+y =-180  text ("Perry")
+y =-165  text ("Oaks")
+x = -150
+y =-180  text ("Perry")
+y =-165  text ("Oaks")
+x = -100
+y =-180  text ("HSC")
+x = -50
+y =-180  text ("Shell")
+y =-165  text ("BP")
+
+
+x = 0   y = -220 text ("Spare")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x=0 y=0 busbar_54
+
+end
+
+mimic = main_object w=800,h=800,just=centrecentre,fg=white,bg=black,resizable

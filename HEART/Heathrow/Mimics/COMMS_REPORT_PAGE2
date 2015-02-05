@@ -1,0 +1,748 @@
+load report_tllib
+Load REPLIB
+load archive2_std_libutil
+load debug_libutil
+
+CONST column_width = 60 
+
+
+TYPE KEYED_TWO_A_VALUES = TABLE (
+	! 1RW !    ID = ID,
+	!  R  !       STREAM = STREAM,
+	!  R  !          STREAM_NAME = STREAM_NAME,
+	!  R  !       KEYNUMBER = KEYNUMBER,
+	! 2RW !    TIME = CS_TIME,
+	!  RW !    KEYED_TWO_A_VALUES_1 = REAL,
+	!  RW !    KEYED_TWO_A_VALUES_2 = REAL )
+
+type stats_display_type = enum( percent_time_true = "Percentage true",
+				ft_transitions = "False-true transitions")
+
+!*******************************************************************************!
+!February is a leap year every fourth year, except at the turn of the century.!
+!There are 29 days in a leap year for february, normally 28!
+!Every 400 years the century year is also a leap year!
+!Thus 1900 is not a leap year, 1996 and 2000 are leap years!
+
+!Beware though, because MDL doesn't know that 2000 is a leap year, nor do DOS !
+!PC's. SUN machines do recognize 29-Feb-2000!
+
+!Original Object did not work, was re-written 30-6-1999 !
+!Jan, mar, may,Jul,Aug,Oct,Dec = 31 !
+!Apr,Jun,Sep,Nov = 30 !
+
+!*******************************************************************************!
+
+
+object daysInMonth ( ip_date = string) = int
+
+var str_month = string(3)
+var year = int
+begin
+
+str_month = getchars(4,3,time(ip_date))
+CASE str_month OF
+"APR","JUN","SEP","NOV"
+   daysInMonth = 30
+"FEB" 
+   begin 
+      year = int(getchars(8,4,time(ip_date)))
+      if (((year % 4 == 0) and (year % 100 <> 0)) or (year % 400 == 0)) then
+	 begin
+	 daysInMonth = 29
+	 end
+      else
+	   daysInMonth = 28
+   end
+DEFAULT
+   daysInMonth = 31
+end
+
+! ------------------------------------------------------------------------------------------------------------------- !
+! This object will return boolean statistics for single element !
+! The choice is :                                                                 !
+! percent_time_true      : The percentage of the period for which the element was true is displayed ! 
+! ft_transitions : The number of fasle-true transitions for the period is displayed !
+! The object also returns the percentage time true !
+! ------------------------------------------------------------------------------------------------------------------- !
+
+object return_boolean_stats(ch,just,realf,
+			server_name = source,
+				address = db_address,
+				report_period = report_period_type,
+				stats_display = stats_display_type,
+			var_busy = loopback yesno)=string
+! INPUT !
+var boolean_data = input keyed_two_a_values[40]
+
+! TEMPORARY !
+var i = int
+var time_true = real
+var total_transitions = real
+var percent_true = real
+var final_text = string
+var temp_time1 = int
+var temp_time2 = int
+var temp_time = time
+var num_days_over = int
+
+var requested_data = loopback yesno
+begin
+
+! calculate the total time for last month in seconds !
+! ------------------------------------------------------------------------- !
+
+   num_days_over = int(getchars(1,2,time("01-Aug-2001 00:00:00")))
+   temp_time = time(int(time("01-Aug-2001 00:00:00")) - (num_days_over * 86400))
+
+! request the boolean stats data for last month !
+! -------------------------------------------------------------------- !
+if invalid requested_data then
+   begin
+   requested_data = yes
+   set source boolean_data = arhsource(server_name)
+
+   set filter boolean_data.time = lim_ge_lt2
+
+   timef = local_dmy_hms
+   set limit boolean_data.time = time ("01" + getchars(3,9,temp_time))
+
+   timef = local_dmy_hms
+   temp_time1 = int(get limit boolean_data.time)
+   temp_time2 = int(daysInMonth(temp_time))*86400
+   set limit2 boolean_data.time = time(temp_time1+temp_time2)
+
+
+   set filter boolean_data.stream_name = lim_eq
+   set limit boolean_data.stream_name = server_name + " B_STATS"
+   
+   set filter boolean_data.keynumber = lim_eq
+   set limit boolean_data.keynumber = convert_db_address_to_keynumber(address) 
+   
+   request boolean_data   
+   end
+! calculate the total time true in seconds !
+! ----------------------------------------------------------- !
+debug("BUSY :"+get busy boolean_data+" VALID :"+valid boolean_data+" LASTROW :"+lastrow boolean_data)
+if valid boolean_data then
+   begin
+   if lastrow boolean_data > 0 then
+      begin   
+      time_true = 0
+      for i from 1 to lastrow boolean_data do
+         begin
+         time_true += boolean_data[i].keyed_two_a_values_2
+         end
+      time_true = time_true*60
+
+      ! calculate the percentage of the month that the element was true !
+      ! ------------------------------------------------------------------------------------------------- !
+      percent_true = 100*(time_true/(lastrow boolean_data*86400)) 
+
+      ! calculate the total number of false to true transitions in the month ! 
+      ! ------------------------------------------------------------------------------------------------- !
+      total_transitions = 0
+      for i from 1 to lastrow boolean_data do
+         total_transitions += boolean_data[i].keyed_two_a_values_1
+      end 
+   else
+      begin
+      percent_true = 0 
+      end
+   end
+! display the text required !
+! -------------------------------------- !
+case stats_display of
+   percent_time_true    final_text = percent_true
+   ft_transitions               final_text = total_transitions
+   default                      begin end
+
+! prevent printing until the data has been obtained !
+! ------------------------------------------------------------------------- !
+if get busy boolean_data then
+   begin
+   var_busy = yes
+   end
+else
+   begin 
+   return_boolean_stats = final_text
+   end
+end
+
+			
+! ***************************************************************************************** !
+!----------------- COMMUNICATIONS STATUS REPORT ------------------------!
+
+object COMMSTAT_REPORT(w,h,fg,bg,report_period=report_period_type,report_date=string,just)=yesno
+
+var i =int
+var fld_1 = string
+var fld_2 = string
+var fld_3 = string
+var fld_4 = string
+var fld_5 = string
+var fld_6 = string
+
+var getting_data = loopback yesno
+var temp_time = time
+var num_days_over = int
+
+VAR text_file = FILEWRITE string
+
+Begin
+getting_data = no
+FONT=FONT_BOLD
+
+num_days_over = int(getchars(1,2,time("01-Aug-2001 00:00:00")))
+temp_time = time(int(time("01-Aug-2001 00:00:00")) - (num_days_over * 86400))
+
+     SET RESET text_file
+     SET FILE text_file = "com_file.rtf"
+     SET NOAPPEND text_file
+     text_file = "{\\rtf1\\ansi\\deff0\\deftab720{\\fonttbl{\\f0\\fswiss MS Sans Serif;}{\\f1\\froman\\fcharset2 Symbol;}{\\f2\\froman\\fprq2 Times New Roman;}"
+     text_file += "{\\f3\\froman Times New Roman;}{\\f4\\fmodern\\fprq1 Courier New;}}"
+     request text_file
+     SET APPEND text_file
+     text_file= "{\\colortbl\\red0\\green0\\blue0;}"
+     request text_file
+     text_file= "\\deflang2057\\pard\\qc\\tx1080\\tx2160\\tx3240\\tx4590\\tx5940\\tx7200\\tx9000\\plain\\f2\\fs44\\b\\ul Communications Status Report" 
+     request text_file
+     text_file= "\\par \\pard\\qc\\tx1080\\tx2160\\tx3240\\tx4590\\tx5940\\tx7200\\tx8550" 
+     request text_file
+     text_file= "\\plain\\f2\\fs36 For :" + getchars(4,9,temp_time)
+     request text_file
+     text_file= "\\par \\pard\\qc\\tx1890\\tx2970\\tx4050\\tx5310\\tx6570\\tx7740\\tx8910" 
+     request text_file
+     text_file= "\\plain\\f4\\fs20 ------------------------------------------------------------------------" 
+     request text_file
+     text_file= "\\par |\\tab | % Time\\tab | % Time\\tab |  % Time\\tab |  % Time\\tab | No Duty\\tab | No Duty\\tab |" 
+     request text_file
+     text_file= "\\par |  PLC\\tab | PLC  A\\tab | PLC  B\\tab | No Comms\\tab | No Comms\\tab | Changed\\tab | Changed\\tab |" 
+     request text_file
+     text_file= "\\par |  \\tab | Line A\\tab | Line B\\tab |  Line A\\tab |  Line B\\tab | A to B\\tab | B to A\\tab |" 
+     request text_file
+     text_file= "\\par ------------------------------------------------------------------------" 
+     request text_file
+
+     fld_1 = return_boolean_stats (heathrow,b44,report_period,percent_time_true, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathrow,b45,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b62,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b63,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 = return_boolean_stats (heathrow,b44,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b45,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS1 Nth Intake\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+
+     fld_1 = return_boolean_stats (heathrow,b2034,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b2035,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b2058,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b2059,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 = return_boolean_stats (heathrow,b2034,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b2035,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS3 Est Intake\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b3043,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b3044,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b3067,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b3068,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 = return_boolean_stats (heathrow,b3043,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b3044,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS4 Wst Intake\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b4019 ,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b4020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b4035,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b4036,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 = return_boolean_stats (heathrow,b3043,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b3044,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS5 Sub 23\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b5020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b5021,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b5031,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b5032,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b5020,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b5021,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS6 Sub 32\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b6026,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b6027,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b6036,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b6037,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b6026,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b6027,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS7 Sub 62\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b7085,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b7086,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b7091,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b7092,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b7085,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b7086,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS8 A1 Cntre\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b9003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b9004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b9086,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b9087,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b9003,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b9004,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS9 Hex Intake\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b10420,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b10421,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b10078,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b10079,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b10420,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b10421,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS10 Crgo Tnnl\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b11034,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b11035,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b11059,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b11060,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b11034,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b11035,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS11 Pot East\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+
+     fld_1 = return_boolean_stats (heathrow,b12046,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b12047,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b12066,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b12067,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b12046,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b12047,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS12 Pot West\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b13013,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b13014,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b13022,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b13023,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b13013,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b13014,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS13 Fegp T3\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b14016,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b14017,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b14028,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b14028,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b14016,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b14017,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS14 Fegp T4\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b15058,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b15059,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b15900,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b15901,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 = return_boolean_stats (heathrow,b15058,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b15059,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS15 Firemain\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b16026,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b16027,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b16050,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b16051,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b16026,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b16027,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS16 Bld 139\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b70001,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b5,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b21,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b22,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b4,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b5,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS17 Sub 3\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b503,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b504,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b520,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b520,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b503,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b504,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS18 Sub 4\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b1003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b1004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b1020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b1020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b1003,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b1004,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS19 Sub 5\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b1503,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b1504,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b1520,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b1520,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b1503,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b1504,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS20 Sub 6\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b2003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b2004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b2020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b2021,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b2003,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b2004,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS21 Sub 7\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b2503,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b2504,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b2520,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b2521,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b2503,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b2504,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS22 Sub 8\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b3003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b3004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b3020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b3021,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b3003,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b3004,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS23 Sub 9\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b3503,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b3504,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b3520,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b3521,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b3503,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b3504,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS24 Sub 10\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b4003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b4004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b4020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b4021,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b4003,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b4004,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS25 Sub 11\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b4503,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b4504,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b4520,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b4521,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b4503,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b4504,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS26 Sub 14\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b5003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b5004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b5020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b5021,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b5003,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b5004,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS27 Sub 20\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b5503,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b5504,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b4520,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b4521,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b5503,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b5504,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS28 Sub 26\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b6003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b6004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b6020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b6021,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b6003,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b6004,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS29 Sub 56\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b7003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b7004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b7020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b7021,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b7003,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b7004,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS30 Sub 58\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b20004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b20005,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b20010,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b20011,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b20004,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b20005,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS32 33Kv\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b21004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b21005,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b21010,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b21011,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b21004,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b21005,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS33 SouthARCS\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b22004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b22005,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b22010,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b22011,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b22004,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b22005,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS34 Es Intake\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b31002,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b31003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b31000,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b31001,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b31002,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b31003,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS36 Sub 116\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b34202,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b34203,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b34200,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b34201,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b34202,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b34203,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS37 Sealnd Rd\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b34002,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b34003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b34000,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b34001,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b34002,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b34003,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS38 Pier 7\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b32002,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b32003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b32000,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b32001,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b32002,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b32003,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS39 Sub 115\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b33002,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b33003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b33000,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b33001,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b33002,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b33003,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS40 Sub 114\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathrow,b34402,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathrow,b34403,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathrow,b34400,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathrow,b34401,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathrow,b34402,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathrow,b34403,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS41 Cstm Hse\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b13000,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b13001,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b13134,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b13135,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b13000,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b13001,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS42 Sub 112\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b13500,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b13501,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b13650,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b13651,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b13500,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b13501,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS43 Sub 113\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+
+     fld_1 = return_boolean_stats (heathro2,b10003,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b10004,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b10020,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b10021,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b10003,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b10004,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS45 Sub 37\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+
+     fld_1 = return_boolean_stats (heathro2,b31560,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_2 = return_boolean_stats (heathro2,b31561,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_3 = return_boolean_stats (heathro2,b31550,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_4 = return_boolean_stats (heathro2,b31551,report_period,percent_time_true, getting_data,realf = fixed1)
+     fld_5 =return_boolean_stats (heathro2,b31560,report_period,ft_transitions, getting_data,realf = fixed0)
+     fld_6 = return_boolean_stats (heathro2,b31561,report_period,ft_transitions, getting_data,realf = fixed0)
+     if (getting_data==no) then
+     begin
+          text_file = "\\par |OS135 Sub 294\\tab | " + fld_1 + "\\tab | " + fld_2 + "\\tab | " + fld_3 + "\\tab | " + fld_4 + "\\tab | " + fld_5 + "\\tab | " + fld_6 + "\\tab |" 
+          request text_file
+     end
+
+
+     text_file= "\\par -------------------------------------------------------------------------" 
+     request text_file
+     text_file= "\\par }" 
+     request text_file
+     SET RESET text_file
+
+
+FG=BLACK
+REALF=FIXED3
+FONT=FONT_NORMAL
+commstat_report=getting_data
+end
+

@@ -1,0 +1,654 @@
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: HV_9                                     **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 3.0 (For OS08 SAT)                  **!
+!** Date: 24/05/13                                       **!
+!** Changes made:                                        **!
+!**  - No changes from FAT (renumbering only).           **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.1 (For OS08 FAT)                  **!
+!** Date: 29/11/12                                       **!
+!** Changes made:                                        **!
+!**  - Sub 52 replaced by new Sub 302.                   **!
+!**********************************************************!
+
+!****************************************************************************************************************************************************!
+!***	HV9 Mimic											***!
+!***													***!
+!***	Designed By: Carl Cheetham 									***!
+!***	Designed On: 18/05/2006										***!
+!***													***!
+!***	Based on the HV_9 mimic, sub-stations split between new HV9 & HV10 mimics				***!
+!***	as per C. Springhalls instructions, permit No. 02260.							***!
+!***													***!
+!***	Modifications:											***!
+!***													***!
+!***													***!
+!***	Carl Cheetham	V1	18/05/06		New mimic.						***!
+!***	Asim Malik	V2	12/10/10		Sub 293 addition and Sub 84, 121 & 132 Panels updated 		***!
+!***	Carl Cheetham	V3	27/6/11		Updates to sub 293 abling as per Colin Springhalls request	***!
+!***	Shaun Bye	V4	22/08/2011	Updates to Sub 293 Database References under permit no. 4491	***!
+!***	Mike Reid	V5	30/05/2012	Added Control Codes for Sub 293 Breakers under permit no. 4268	***!
+!***	Carl Cheetham	V6	6/7/12		Added west intake as per Colin Springalls request		***!
+!***	Carl Cheetham	V7	10/7/12		Incorporated Firstco changes to sub 29, 38, 52 and 84		***!
+!***													***!
+!****************************************************************************************************************************************************!
+
+
+
+
+
+!*****************************************!
+!*** LOAD LIBRARY FILES ETC ***!
+!*****************************************!
+load mimic_libutil
+load ocb
+load hex_ocb
+load ocb_118
+load hv_9_sub_stations
+load hv_9_sub_stations_b
+Load BROWSER
+load bsp_breakers
+load hv_cable_ident
+load hv_lib
+
+
+
+
+
+
+!*****************************!
+!*** SUB-FUNCTIONS ***!
+!*****************************!
+!*** SUB 29 ***!
+object hv10_sub_29
+begin
+	clear
+	sub_symbol_29B
+
+	lw=2
+	x = -105 y = -25 add y += 50 add line (fg=magenta3) clear
+	x = -55 y = -25 add y += 50 add line (fg=magenta3) clear
+
+	x = 35 y = -25 add y += 50 add line (fg=magenta3) clear
+	x = 85 y = -25 add y += 50 add line (fg=magenta3) clear
+
+	scale = 120
+	x = -105 y = 0 ocb_mont(32700,33230,2910,8056,heathro2,0,"top")
+	x = -55 y = 0 ocb_mont(32700,33280,2915,8061,heathro2,5,"top")
+	x = 35 y = 0 ocb_mont(32700,33300,2917,8063,heathro2,7,"top")
+	x = 85 y = 0 ocb_mont(32700,33310,2918,8064,heathro2,8,"btm")
+end
+
+
+
+
+
+!*** SUB 38 ***!
+object hv10_sub_38
+begin
+	clear
+	sub_symbol_38
+	
+	lw=2
+	x = 0 y = -25 add y += 50 add line (fg=magenta3) clear
+	x = 50 y = -25 add y += 50 add line (fg=magenta3) clear
+	!x = 100 y = -25 add y += 50 add line (fg=magenta3)! clear
+
+	scale = 120
+	x = 0 y = 0 ocb_mont(32700,33350,2922,8068,heathro2,1,"top")
+	x = 50 y = 0 ocb_mont(32700,33360,2923,8069,heathro2,2,"top")
+	!x = 100 y = 0 ocb_mont(7000,7600,450,700,heathrow,5,"top")!
+end
+
+
+
+
+
+!*** West Intake ***!
+object hv9_west_intake
+begin
+	clear
+	sub_symbol_WI
+	
+	lw=2
+	x = -75 y = -25 add y += 50 add line (fg=magenta3) clear
+	x = 75 y = -25 add y += 50 add line (fg=magenta3) clear
+
+	scale = 120
+	x = -75 y = 0 ocb(3000,3420,168,293,heathrow,12,"top")
+	x = 75 y = 0 ocb(3000,3220,157,282,heathrow,15,"top")
+end
+
+
+
+
+
+!*** SUB 84 ***!
+object hv10_sub_84
+begin
+	clear
+	sub_symbol_84
+
+	lw=2
+	x =   0 y = 25 add y -= 50 add line (fg=magenta3) clear
+	x =  50  y = 25 add y -= 50 add line (fg=magenta3) clear
+
+	scale = 120
+	x = 0 y = 0 ocb_mont(32700,33790,2966,8122,heathro2,1,"top")
+	x = 50 y = 0 ocb_mont(32700,33800,2967,8123,heathro2,2,"top")
+end
+
+
+
+
+
+!*** SUB 52 ***!
+!** Sub 52 Deleted **!
+!** object hv10_sub_52
+begin
+	clear
+	sub_symbol_52_new
+
+	lw=2
+	x = -45 y = -25 add y += 50 add line (fg=magenta3) clear
+	x = 100 y = -25 add y += 50 add line (fg=magenta3) clear
+	x = 150 y = -25 add y += 50 add line (fg=magenta3) clear
+
+	scale = 120
+	x = -45 y = 0 ocb_mont(32700,33730,2960,8116,heathro2,3,"top")
+	x = 100 y = 0 ocb_mont(32700,33750,2962,8118,heathro2,5,"top")
+	x = 150 y = 0 ocb_mont(32700,33760,2963,8119,heathro2,6,"top")
+end **!
+
+!*** SUB 302 ***!
+object hv9_sub_302
+begin
+	clear
+	sub_symbol_302
+
+	lw=2
+	x = -50 y = -25 add y += 50 add line (fg=magenta3) clear
+	x = 100 y = -25 add y += 50 add line (fg=magenta3) clear
+	x = 150 y = -25 add y += 50 add line (fg=magenta3) clear
+	x=0 y=50 add y+=60 add x+=50 add y-=60 add line (fg=magenta3) clear
+
+	scale = 305
+	x=-50	y=0		hv_lib_breaker(	"eclipse"  ,26000,	26120,	2862,	3960,	3920,	HEATHRO5,	3,	"TOP",	30)
+	x=0		y=75	hv_lib_breaker(	"eclipse"  ,26000,	26220,	2867,	3965,	3920,	HEATHRO5,	8,	"BTM",	80)
+	x=50	y=75	hv_lib_breaker(	"eclipse",	26000,	26240,	2868,	3966,	3920,	HEATHRO5,	9,	"BTM",	90)
+	x=100	y=0		hv_lib_breaker(	"eclipse",	26000,	26260,	2869,	3967,	3920,	HEATHRO5,	10,	"TOP",	100)	
+	x=150	y=0		hv_lib_breaker(	"eclipse",	26000,	26340,	2873,	3971,	3920,	HEATHRO5,	14,	"TOP",	140)
+end
+
+
+
+!*** SUB 118 ***!
+object hv10_sub_118
+begin
+	clear
+	sub_symbol_118_new
+
+	lw=2
+	x = -45 y = 25 add y -= 50 add line(fg=magenta3) clear
+	x = 105 y = 25 add y -= 50 add line(fg=magenta3) clear
+	
+	scale =120
+	x = -45 y = 0 ocb_118(2080,2020,54,712,HEATHRO3,3,"top",3) 
+	x = 105 y = 0 ocb_118(2080,2050,57,715,HEATHRO3,6,"top",6) 
+end
+
+
+
+
+
+!*** SUB 120 ***!
+object hv10_sub_120
+begin
+	clear
+	sub_symbol_ss120
+
+	lw=2
+	x -= 40  y = 25 add y = -25 add line (fg=magenta3) clear
+	x = 70  y = 25 add y = -25 add line (fg=magenta3) clear
+
+	x -= 110 y = 0 ocb_mont_lib(2600,2520,102,1012,heathro3,3,"top")
+	x = 70 y = 0 ocb_mont_lib(2600,2540,105,1015,heathro3,6,"top")
+end
+
+
+
+
+!*** SUB 121 ***!
+object  hv10_sub_121
+var call_var = toplevel string
+begin
+	set source call_var = heathro3
+	set selfreplace call_var
+	set mimic call_Var = "Sub_Station_121"
+
+	Clear
+
+	x = -175 y = 36 add x += 400 add line(fg=magenta3, lw=4) clear
+
+	X=-225 Y=25 W=100 H=25 RECT(fg=decoroff)
+
+	if anyb then
+	begin
+		request call_var
+	end
+
+	x = -175 y = 38 text(tfg=white,ch=25,"",just=centrecentre) clear
+
+	x = -225 y = 50 add y -= 25 add x += 100 add line (fg=white) clear
+	x = -225 y = 50  add x += 100 add y -= 25 add line (fg=grey40) clear
+
+	!** Middle Box **!
+	X=-50 Y=25 W=150 H=25 RECT(fg=decoroff)
+
+	if anyb then
+	begin
+		request call_var
+	end
+
+	x = 25 y = 38 text(tfg=white,ch=25,"Sub 121",just=centrecentre) clear
+
+	x = -50 y = 50 add y -= 25 add x += 150 add line (fg=white) clear
+	x = -50 y = 50  add x += 150 add y -= 25 add line (fg=grey40) clear
+
+	!** Right Box**!
+	X=175 Y=25 W=200 H=25 RECT(fg=decoroff)
+
+	if anyb then
+	begin
+		request call_var
+	end
+
+	x = 225 y = 38 text(tfg=white,ch=25,"",just=centrecentre) clear
+
+	x = 175 y = 50 add y -= 25 add x += 200 add line (fg=white) clear
+	x = 175 y = 50  add x += 200 add y -= 25 add line (fg=grey40) clear
+
+	!** Breaker Lines **!
+	lw=2
+	x = -200  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = -150 y = -25 add y = 25 add line (fg=magenta3) clear
+
+	x = 0  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = 50  y = -25 add y = 25 add line (fg=magenta3) clear
+
+	x = 200  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = 250  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = 300  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = 350  y = -25 add y = 25 add line (fg=magenta3) clear
+
+	scale = 120
+	x =-200	y= 0	BREAKER(	"TYPE3",	6000,	6120,	301,	2101,	2180,	HEATHRO3,	2,	"top",	20)
+ 	x =-150 	y= 0 	BREAKER(	"TYPE3",	6000,	6180,	304,	2104,	2180,	HEATHRO3,	5,	"TOP",	50)
+
+
+ 	x =-85 	y= 36 	BREAKER(	"TYPE3",	6000,	6200,	305,	2105,	2180,	HEATHRO3,	6,	"SECT",	60)
+
+	x = 0 	y=0	BREAKER(	"TYPE3",	6000,	6220,	307,	2107,	2180,	HEATHRO3,	8,	"TOP",	70)
+	x =50 	y=0	BREAKER(	"TYPE3",	6000,	6280,	310,	2110,	2180,	HEATHRO3,	11,	"TOP",	100)
+
+
+ 	x =135 	y= 34 	BREAKER(	"TYPE3",	6000,	6300,	311,	2111,	2180,	HEATHRO3,	12,	"SECT",	110)
+
+	x = 200	y=0	BREAKER(	"TYPE3",	6000,	6320,	313,	2113,	2180,	HEATHRO3,	14,	"TOP",	120)
+	x = 250	y=0	BREAKER(	"TYPE3",	6000,	6340,	314,	2114,	2180,	HEATHRO3,	15,	"TOP",	130)
+
+	!*** THE DATABASE REFERENCES FOR THE BREAKERS BELOW WERE COPIED FROM THE SUB 121 POPUP BY CARL CHEETHAM (CORE CONTROL SOLUTIONS) ***!
+	!*** ON THE 27/6.11 AS PER COLIN SPRINGHALLS REQUEST ***!	
+	X=300 Y=0	BREAKER(	"TYPE3",6000,	6400,	317,	2117,	2180,	HEATHRO3,	18,	"TOP",	160)
+	X=350 Y=0	BREAKER(	"TYPE3",6000,	6420,	318,	2118,	2180,	HEATHRO3,	19,	"TOP",	170)
+
+
+!
+	THESE BREAKERS WERE COMMENTED OUT BY CARL CHEETHAM (CORE CONTROL SOLUTIONS) AT 16:10 ON THE 27/06/2011
+	AFTER AN EMAIL REQUEST FROM COLIN SPRINGHALL THE BREAKERS ABOVE WERE SET TO BE REPRESENTATION ONLY
+	x = 300	y=0	BREAKER(	"TYPE3",	6000,	6340,	314,	2114,	2180,	HEATHRO3,	18,	"TOP",	130)
+	x = 350	y=0	BREAKER(	"TYPE3",	6000,	6340,	314,	2114,	2180,	HEATHRO3,	19,	"TOP",	130)
+!
+end
+
+
+
+
+
+!*** SUB 132 ***!
+object hv10_sub_132
+begin
+	x=10 y=-70 sub_symbol_132
+	lw=2
+
+	x = -40 y = -45 add y -= 50 add line(fg=magenta3) clear
+	x = 90 y = -45 add y -= 50 add line(fg=magenta3) clear
+	scale=300
+	x = -40 y = -70 hv_lib_breaker("eclipse",35500,35620,1200,4300,int,HEATHROW,1,"TOP",int)
+	x = 90 y = -70 hv_lib_breaker("eclipse",35500,35760,1207,4307,int,HEATHROW,7,"TOP",int)
+	scale=256
+end
+
+
+
+
+
+!*** SUB 137 ***!
+object hv10_sub_137
+begin
+	x=10 y=-70 sub_symbol_137	
+
+
+
+
+
+	lw=2
+	x = -40 y = -45 add y -= 50 add line(fg=magenta3) clear
+	x = 55 y = -45 add y -= 50 add line(fg=magenta3) clear
+	x = 100 y = -45 add y -= 50 add line(fg=magenta3) clear
+
+
+
+
+
+	scale=300	
+	!				Type	PLC Of.	B Of.	C Of.	E Of.	Cont Of.	Source		Ident	Pos	Cont Code!
+	x = -40	y = -70	hv_lib_breaker(	"TYPE3",	12015,	12135,	391,	1917,	1926,	HEATHRO3,	1,	"BTM",	10)
+	x = 55	y = -70	hv_lib_breaker(	"TYPE3",	12015,	12235,	395,	1921,	1926,	HEATHRO3,	5,	"BTM",	40)
+	x = 100	y = -70	hv_lib_breaker(	"TYPE3",	12015,	12310,	398,	1924,	1926,	HEATHRO3,	8,	"BTM",	60)
+	scale=256
+end
+
+
+
+
+
+!*** SUB 139 ***!
+object hv10_sub_139
+begin
+	clear
+	sub_symbol_139
+
+	lw=2
+	x -= 40  y = 25 add y = -25 add line (fg=magenta3) clear
+	x = 70  y = 25 add y = -25 add line (fg=magenta3) clear
+
+	scale=300	
+	x -= 110 y = 0	hv_lib_breaker(	"eclipse",	29901,	29996,	2266,	6833,	int,	HEATHRO3,	1,	"TOP",	int)
+	x = 70 y = 0	hv_lib_breaker(	"eclipse",	29901,	30193,	2273,	6840,	int,	HEATHRO3,	8,	"TOP",	int)
+	scale=256
+end
+
+!*** SUB 293 ***!
+object  hv9_sub_293
+var call_var = toplevel string
+begin
+	set source call_var = heathro5
+	set selfreplace call_var
+	set mimic call_Var = "Sub_Stn_293"
+
+	Clear
+	!** Sub Box **!
+	X=-50Y=25 W=150 H=25 RECT(fg=decoroff)
+
+	if anyb then
+	begin
+		request call_var
+	end
+
+	x = 25 y = 38 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+	x = -50 y = 50 add y -= 25 add x += 150 add line (fg=white) clear
+	x =-50 y = 50  add x += 150 add y -= 25 add line (fg=grey40) clear 
+
+	!** 293 Box **!
+	X=110Y=25 W=150 H=25 RECT(fg=decoroff)
+
+	if anyb then
+	begin
+		request call_var
+	end
+	x = 185 y = 38 text(tfg=white,ch=25,"293",just=centrecentre) clear
+	x = 110 y = 50 add y -= 25 add x += 150 add line (fg=white) clear
+	x =110 y = 50  add x += 150 add y -= 25 add line (fg=grey40) clear 
+
+	
+	!** Breaker Lines **!
+	lw=2
+	x = -25  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = 25  y = -25 add y = 25 add line (fg=magenta3) clear
+	x += 50  y = -25 add y = 25 add line (fg=magenta3) clear
+
+	x = 135  y = -25 add y = 25 add line (fg=magenta3) clear
+	x += 50  y = -25 add y = 25 add line (fg=magenta3) clear
+	x += 50  y = -25 add y = 25 add line (fg=magenta3) clear
+
+	!** Breakers **!
+	scale = 305
+
+!* THESE DATABASE REFERENCES WERE CHANGED BY SHAUN BYE ( CORE CONTROLS) ON THE 22/08/2011 UNDER PERMIT NUMBER 4491      *!
+!* CONTROL CODES ADDED MY MIKE REID ON 30/05/12 UNDER PERMIT 4268 *!
+
+
+	!				Type	PLC Of.	B Of.	C Of.	E Of.	Cont Of.	Source		Ident	Pos	Cont Code!
+	x = -25 y = 0	hv_lib_breaker(	"eclipse",	2501,	2710,	377,	362,	401,	HEATHRO5,	8,	"TOP",	80)
+	x += 50 y = 0	hv_lib_breaker(	"eclipse",	2501,	2730,	378,	363,	401,	HEATHRO5,	9,	"TOP",	90)
+	x += 50 y = 0	hv_lib_breaker(	"eclipse",	2501,	2750,	379,	364,	401,	HEATHRO5,	10,	"TOP",	100)
+
+	x = 135 y = 0	hv_lib_breaker(	"eclipse",	2501,	2910,	387,	372,	401,	HEATHRO5,	18,	"TOP",	180)
+	x += 50 y = 0	hv_lib_breaker(	"eclipse",	2501,	2930,	388,	373,	401,	HEATHRO5,	19,	"TOP",	190)
+	x += 50 y = 0	hv_lib_breaker(	"eclipse",	2501,	2950,	389,	374,	401,	HEATHRO5,	20,	"TOP",	200)
+
+end
+
+!*******************************!
+!*** MAIN MIMIC CODE ***!
+!*******************************!
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	Clear
+
+	!*** Add Sub-Stations To mimic ***!
+	X=-400 	Y=-350	hv10_sub_29
+	X=0 	Y=-280	hv10_sub_132
+	X=360 	Y=-350	hv10_sub_118
+
+	X=-440 	Y=-100	hv9_sub_302
+	X=0 	Y=-100	hv10_sub_137
+	X=400 	Y=-100	hv10_sub_38
+	X=30	Y=-25	hv9_west_intake
+
+	X=-480 	Y=142	hv10_sub_84
+	X=-250 	Y=142	hv10_sub_139
+	X=-70	Y=142	hv9_sub_293
+	X=400 	Y=142	hv10_sub_120
+
+	X=0 	Y=295	hv10_sub_121
+
+	!*** Draw Connecting Cables ***!
+	Clear
+	lw=2
+
+	!*** SS29-P0 TO SS52-P5 ***!
+	x = -505 y = -374 add
+	x = -505 y = -400 add
+	x = -545 y = -400 add
+	x = -545 y = -200 add
+	x = -340 y = -200 add
+	x = -340 y = -118 add
+	line(fg=magenta3) clear
+
+	x = -450 y = -200 cable_ident("purple","maggot","7.0") clear
+
+	!*** SS29-P5 TO SS132-P1 ***! 
+	X=-455 Y=-368 Add
+	X=-455 Y=-400 Add
+	X=-40 Y=-400 Add
+	X=-40 Y=-368 Add
+	line(fg=magenta3) clear
+
+	!*** SS29-P7 TO SS118-P6 ***!
+	x = -365 y = -368 add
+	x = -365 y = -390 add
+	x = 465 y = -390 add
+	x = 465 y = -368 add
+	line(fg=magenta3) clear
+
+	x = -100 y = -390 cable_ident("purple","maggot","5.6") clear
+
+	!*** SS29-P8 TO SS137-P5 ***!
+	x = -315 y = -368 add
+	x = -315 y= -380 add
+	x = -150 y= -380 add
+	x = -150 y= -230 add
+	x = 55 y= -230 add
+	x = 55 y= -188 add
+	line(fg=magenta3) clear
+
+	!*** SS38-P1 TO SS120-P6 ***!
+	x = 400 y = -117 add
+	x = 400 y = -170 add
+	x = 320 y = -170 add
+	x = 320 y = 20 add
+	x = 469 y = 20 add
+	x = 469 y = 120 add
+	line(fg=magenta3) clear
+	x = 400 y = 20 cable_ident("purple","maggot","5.6") clear
+
+	!*** SS38-P2 TO SS118-P3 ***!
+	x = 450 y = -117 add
+	x = 450 y = -220 add
+	x = 250 y = -220 add
+	x = 250 y = -380 add
+	x = 314 y = -380 add
+	x = 314 y = -367 add
+	line(fg=magenta3) clear
+
+	!*** SS302-P3 TO SS84-P1 ***!
+	x = -490 y = -120 add
+	x = -490 y = -170 add
+	x = -540 y = -170 add
+	x = -540 y = 50 add
+	x = -480 y = 50 add
+	x = -480 y = 120 add
+	line(fg=magenta3) clear
+	x = -510 y = 50 cable_ident("purple","maggot","7.0") clear
+
+	!*** SS52-P6 TO SS121-P2 ***!
+	x = -290 y = -120 add
+	x = -290 y = -185 add
+	x = -560 y = -185 add
+	x = -560 y = 250 add
+	x = -200 y = 250 add
+	x = -200 y = 270 add
+	line(fg=magenta3) clear
+
+	!*** SS84-P2 TO SS121-P18 ***!
+	x = -430 y = 120 add
+	x = -430 y = 100 add
+	x = -380 y = 100 add
+	x = -380 y = 225 add
+	x = 300 y = 225 add 
+	x = 300 y = 275 add
+	line(fg=magenta3) clear
+
+	!*** SS120-P3 TO SS121-P8 ***!
+	x = 360 y = 118 add
+	x = 360 y = 100 add
+	x = 250 y = 100 add
+	x = 250 y = 235 add
+	x = 0 y = 235 add
+	x = 0 y = 275 add
+	line(fg=magenta3) clear	
+
+	!*** SS121-P5 TO SS139-P1 ***!
+	x = -150 y = 275 add
+	x = -150 y = 215 add
+	x = -350 y = 215 add
+	x = -350 y = 100 add
+	x = -290 y = 100 add
+	x = -290 y = 123 add
+	line(fg=magenta3) clear
+
+
+	!** SS121-P14 TO SS137-P8 **!
+	x = 200 y = 275 add
+	x = 200 y = -230 add
+	x = 100 y = -230 add
+	x = 100 y = -194 add
+	line(fg=magenta3) clear
+
+
+	!** SS121-P15 TO SS132-P7 **!
+	x = 250 y = 275 add
+	x = 250 y = 245 add
+	x = 550 y = 245 add
+	x = 550 y = -400 add
+	x = 90 y = -400 add
+	x = 90 y = -370 add
+	line(fg=magenta3) clear
+
+	!** SS121-P15 TO SS132-P7 **!
+	!x = 300 y = 260 text(tfg=black,ch=10,"WI P15",just=centrecentre) clear!
+
+	!** SS137-P1 TO SS139-P8 **!
+	x = -40 y = -192 add
+	x = -40 y = -220 add
+	x = -180 y = -220 add
+	x = -180 y = 120 add
+	line(fg=magenta3) clear
+
+	!** SS293-P8 TO SS121-P11 **!
+	x = -95 y = 120 add
+	y -= 20 add
+	x -= 35 add
+	y += 115 add
+	x += 180 add
+	y += 60 add
+	line(fg=magenta3) clear
+
+	!** SS293-P10 TO SS293-P20 **!
+	x = 5 y = 120 add
+	y -= 20 add
+	x += 160 add
+	y += 20 add
+	line(fg=magenta3) clear
+
+	!** SS293-P18 TO SS121-P19 **!
+	x = 65 y = 120 add
+	y -= 40 add
+	x += 195 add
+	y += 155 add
+	x += 90 add
+	y += 40 add
+	line(fg=magenta3) clear
+
+	!** SS293-P9 to WI-P15**!
+	x = -45 y = 120 add
+	y -= 60 add
+	x -= 50 add
+	y -= 130 add
+	x += 200 add
+	y += 25 add
+	line(fg=magenta3) clear
+
+	!** SS293-P19 to WI-P12**!
+	x = 115 y = 120 add
+	y -= 60 add
+	x += 50 add
+	y -= 150 add
+	x -= 210 add
+	y += 45 add
+	line(fg=magenta3) clear
+
+
+	x = -570 y = 365 browser(1069,heathrow,1140)
+end
+mimic = main_object w=1140,h=900,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+

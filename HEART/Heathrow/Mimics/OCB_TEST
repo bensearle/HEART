@@ -1,0 +1,924 @@
+load mimic_libutil
+load OCB_HELP
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+type b_db_row_type =  db_elements(db_addr,b_value)
+type c_db_row_type = db_elements(db_addr,c_value)
+type b_bool_type =  db_elements(b_value)
+type alarm_row_type =  db_elements(alarm_status)
+type main_menu_row = table (main_menu_items= string(20))
+type execute_states = enum(app="Execute",can="Cancel")
+type panel_item_row = table (str = string(40))
+
+
+ 
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+!y-=60 add
+clear
+just = centrecentre
+rect(w=370,h=60,fg=yellow) 
+lw=2
+fg=black
+clear
+y-=30 x-=185 add
+x+=370 add line
+y+=60 add line
+x-=370 add line
+y-=60 add line
+y+=30 x+=185 add
+y-=18 add !
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+************************************************************
+* OCB CIRCUIT BREAKER                                      *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object ocb(plc_offset=int,b_offset=int,c_offset=int,e_offset=int,src=source,
+           ident = int,angle)
+
+
+!PLC TYPE INPUTS !  
+var plc_a_comms_fail_ip = input  b_bool_type
+var plc_b_comms_fail_ip = input  b_bool_type
+var plc_select_trip_ip = output  b_db_row_type
+var plc_select_close_ip = output  b_db_row_type
+var plc_open_selected_ip = input  b_db_row_type
+var plc_close_selected_ip = input  b_db_row_type
+var plc_execute_ip = output  b_db_row_type
+var plc_cancel_ip = output  b_db_row_type
+var plc_sel_in_progress_ip = input  b_db_row_type
+ 
+!OCB TYPE INPUTS!
+
+var permit_to_work_ip = input  b_bool_type
+var normally_tripped_ip = input  b_bool_type
+var closed_ip = input  b_bool_type
+var tripped_ip = input  b_bool_type
+var select_ip = output  b_bool_type
+var selected_ip = input  b_bool_type
+
+
+
+!ALARMS!
+
+var select_trip_alarm = input  alarm_row_type
+var select_close_alarm = input  alarm_row_type
+var select_alarm = input  alarm_row_type
+var duty_alarm = input  alarm_row_type
+var tripped_alarm = input  alarm_row_type
+var closed_alarm = input  alarm_row_type
+var failed_to_trip_alarm = input  alarm_row_type
+var failed_to_close_alarm = input  alarm_row_type
+var closed_tripped_alarm = input  alarm_row_type
+
+
+!REAL INPUTS!
+
+var manually_dress_ip = input  e_db_row_type
+
+!CHARACTER INPUTS!
+
+var tag_message_ip = input  c_db_row_type
+
+!LOOPBACKS!
+
+var ocb_bg = loopback  colour
+var ocb_fg = loopback  colour
+var sel_cyan = loopback  string(10)
+var request_close_or_trip = loopback  string(10)
+
+!PANELS AND MENUS!
+var main_menu = menu  string(25)
+var tag_message_panel = panel  panel_item_row
+var execute_panel = panel  execute_states
+
+
+begin
+! INITIALISATION !
+
+if invalid get source plc_a_comms_fail_ip then 
+   begin
+
+!PLC TYPE REQUESTS!
+
+   set source plc_a_comms_fail_ip = src
+   set filter plc_a_comms_fail_ip.db_addr = lim_eq
+   set limit plc_a_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset-1 )
+   set persist plc_a_comms_fail_ip 
+   request plc_a_comms_fail_ip
+
+   set source plc_b_comms_fail_ip = src
+   set filter plc_b_comms_fail_ip.db_addr = lim_eq
+   set limit plc_b_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset +1)
+   set persist plc_b_comms_fail_ip 
+   request plc_b_comms_fail_ip
+
+
+   set source select_trip_alarm = src
+   set filter select_trip_alarm.db_addr = lim_eq
+   set limit select_trip_alarm.db_addr = db_address(int(b1) + plc_offset + 3)
+   set persist select_trip_alarm 
+   request select_trip_alarm
+
+
+!OCB REQUESTS!
+
+   set source permit_to_work_ip = src
+   set filter permit_to_work_ip.db_addr = lim_eq
+   set limit permit_to_work_ip.db_addr = db_address(int(b1) + b_offset -1)
+   set persist permit_to_work_ip 
+   request permit_to_work_ip
+ 
+   set source closed_ip = src
+   set filter closed_ip.db_addr = lim_eq
+   set limit closed_ip.db_addr = db_address(int(b1) + b_offset +3)
+   set persist closed_ip 
+   request closed_ip
+
+   set source closed_alarm = src
+   set filter closed_alarm.db_addr = lim_eq
+   set limit closed_alarm.db_addr = db_address(int(b1) + b_offset +3)
+   set persist closed_alarm 
+   request closed_alarm
+
+   set source tripped_ip = src
+   set filter tripped_ip.db_addr = lim_eq
+   set limit tripped_ip.db_addr = db_address(int(b1) + b_offset +5)
+   set persist tripped_ip 
+   request tripped_ip
+
+   set source tripped_alarm = src
+   set filter tripped_alarm.db_addr = lim_eq
+   set limit tripped_alarm.db_addr = db_address(int(b1) + b_offset +5)
+   set persist tripped_alarm 
+   request tripped_alarm
+
+   set source closed_tripped_alarm = src
+   set filter closed_tripped_alarm.db_addr = lim_eq
+   set limit closed_tripped_alarm.db_addr = db_address(int(b1) + b_offset +5)
+   set persist closed_tripped_alarm 
+   request closed_tripped_alarm
+
+
+   set source select_alarm = src
+   set filter select_alarm.db_addr = lim_eq
+   set limit select_alarm.db_addr = db_address(int(b1) + b_offset +7)
+   set persist select_alarm 
+   request select_alarm
+
+
+   set source failed_to_trip_alarm = src
+   set filter failed_to_trip_alarm.db_addr = lim_eq
+   set limit failed_to_trip_alarm.db_addr = db_address(int(b1) + b_offset +11)
+   set persist failed_to_trip_alarm 
+   request failed_to_trip_alarm
+
+
+   set source failed_to_close_alarm = src
+   set filter failed_to_close_alarm.db_addr = lim_eq
+   set limit failed_to_close_alarm.db_addr = db_address(int(b1) + b_offset +13)
+   set persist failed_to_close_alarm 
+   request failed_to_close_alarm
+
+!REQUEST TEXT FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+!REQUEST REAL FROM SCOPE!  
+
+   set source manually_dress_ip = src
+   set filter manually_dress_ip.db_addr = lim_eq
+   set limit manually_dress_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist manually_dress_ip 
+   request manually_dress_ip
+
+end
+
+!SELECT OCB BG COLOUR!
+
+ 
+if anyb then 
+begin
+sel_cyan = "cyan" 
+ ocb_bg = cyan
+end
+
+else if permit_to_work_ip.b_value then
+   ocb_bg = orange
+
+else if int(manually_dress_ip.e_value) >= 1 and 
+        int(manually_dress_ip.e_value) <= 7 then
+   begin
+   case int(manually_dress_ip.e_value) of
+      1 
+      
+      if closed_ip.b_value and tripped_ip.b_value == off then
+         ocb_bg = fLashcyan
+      else
+         ocb_bg = blue
+      
+       
+      2
+      
+      if closed_ip.b_value == off and tripped_ip.b_value then
+         ocb_bg = fLashcyan
+      else
+         ocb_bg = blue
+      
+
+      3
+      
+      if closed_ip.b_value == off and tripped_ip.b_value == off then
+         ocb_bg = fLashcyan
+      else
+         ocb_bg = blue
+      
+    
+      4
+      ocb_bg = blue
+
+      5
+      ocb_bg = blue
+      
+      6 
+      ocb_bg = blue
+
+      7
+      ocb_bg = blue
+
+      default
+      begin
+      end
+   end
+   
+
+else if tag_message_ip.c_value <> "" then
+   ocb_bg = yellow
+else
+   ocb_bg = decoroff
+
+
+
+
+
+
+!SET OCB FG COLOUR!
+
+if plc_a_comms_fail_ip.b_value and plc_b_comms_fail_ip.b_value then
+  ocb_fg = magenta
+
+else if select_trip_alarm.alarm_status == w_note or
+      closed_alarm.alarm_status == w_note or
+      tripped_alarm.alarm_status == w_note or
+      select_close_alarm.alarm_status == w_note or
+      failed_to_close_alarm.alarm_status == w_note or
+      failed_to_trip_alarm.alarm_status == w_note or
+      select_alarm.alarm_status == w_note or
+      duty_alarm.alarm_status == w_note or
+      closed_tripped_alarm.alarm_status == w_note then
+         
+         ocb_fg = flashred
+
+else if select_trip_alarm.alarm_status == w_clr or
+      closed_alarm.alarm_status == w_clr or
+      tripped_alarm.alarm_status == w_clr or
+      select_close_alarm.alarm_status == w_clr or
+      failed_to_close_alarm.alarm_status == w_clr or   
+      failed_to_trip_alarm.alarm_status == w_clr or
+      select_alarm.alarm_status == w_clr or
+      duty_alarm.alarm_status == w_clr or
+      closed_tripped_alarm.alarm_status == w_clr then
+         
+      ocb_fg = red
+
+
+else if int(manually_dress_ip.e_value) >= 1 and 
+        int(manually_dress_ip.e_value) <= 7 then
+   begin
+   case int(manually_dress_ip.e_value) of 
+      1
+      ocb_fg = white
+      2
+      ocb_fg = white     
+      3
+      ocb_fg = white 
+      5
+      ocb_fg = white 
+      6
+      ocb_fg = white 
+      7
+      ocb_fg = white 
+      4
+      begin
+      if tripped_ip.b_value and closed_ip.b_value then
+         ocb_fg = black
+      else
+         ocb_fg = white
+      end
+
+    default
+       begin
+       end
+   end       
+else
+    ocb_fg = green
+
+
+!MAIN MENU CONTROL!
+
+if valid main_menu then
+   begin
+ 
+   case main_menu of
+      "Alter Tag Message"
+         begin
+         set title tag_message_panel = "Modify Alter Tag Message"
+         set label tag_message_panel.str = "Alter Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tag Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Permit To Work"
+         begin
+         if permit_to_work_ip.b_value then
+            begin
+            set_b_value(db_address(int(b1) + b_offset -1), src, off)
+            end
+         else
+            set_b_value(db_address(int(b1) + b_offset -1), src, on)
+         end
+         
+      "Trip Breaker"
+         begin        
+         set request_close_or_trip = "Trip"
+         set_b_value(db_address(int(b1) + plc_offset + 3),src, on)
+         set_b_value(db_address(int(b1) + b_offset + 7),src, on)
+
+         end
+
+      "Close Breaker"
+         begin
+         set request_close_or_trip = "Close"
+         set_b_value(db_address(int(b1) + plc_offset + 5),src, on)
+         set_b_value(db_address(int(b1) + b_offset + 7),src, on)
+         end
+                  
+      "Undress OCB"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+
+      "Closed (Dress)"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+
+      "Tripped (Dress)"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+
+      "Racked Down (Dress)"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+
+      "Feeder Earth Off (Dress)"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 4)
+
+      "Feeder Earth On (Dress)"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 5)
+
+      "Busbar Earth Off (Dress)"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 6)
+
+      "Busbar Earth On (Dress)"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 7)
+
+      default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+!EXECUTE PANEL!
+
+
+if selected_ip.b_value and
+   plc_close_selected_ip.b_value and
+   plc_open_selected_ip.b_value == off then
+   begin   
+   x = 0 y = 0
+   set title execute_panel = request_close_or_trip+" OCB "+ident
+   set unfixed execute_panel
+   set unpinned execute_panel
+   request execute_panel
+   end
+
+if selected_ip.b_value and
+   plc_open_selected_ip.b_value and
+   plc_close_selected_ip.b_value == off then
+
+   begin   
+   x = 0 y = 0
+   set title execute_panel = request_close_or_trip+" OCB "+ident
+   set unfixed execute_panel
+   set unpinned execute_panel
+   request execute_panel
+   end
+
+if valid execute_panel then
+   begin
+   case execute_panel of
+
+   app
+
+      begin 
+      set_b_value(db_address(int(b1) + plc_offset +11),src, on)
+      set_b_value(db_address(int(b1) + b_offset +9),src, off)
+      end
+
+   can
+ 
+      begin
+      set_b_value(db_address(int(b1) + b_offset +9),src, off)
+      end
+
+   default
+
+      begin
+      end
+
+   end
+set invalid execute_panel
+
+if selected_ip.b_value and plc_close_selected_ip.b_value then
+   set_b_value(db_address(int(b1) + b_offset +11),src, on)
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+!MAIN MENU!
+
+just = centrecentre
+w = 70 h = 80
+x=0 y=0
+set rect main_menu 
+set title main_menu = "OCB TEST Main Menu"
+set remove main_menu = "Alter Tag Message"
+set remove main_menu = "Clear Tag Message"
+set remove main_menu = "Alter Permit To Work"
+set remove main_menu = "Manually Dress Input"
+set remove main_menu = "Trip Breaker"
+set remove main_menu = "Close Breaker"
+set remove main_menu = "Closed (Dress)"
+set remove main_menu = "Tripped (Dress)"
+set remove main_menu = "Racked Down (Dress)"
+set remove main_menu = "Feeder Earth Off (Dress)"
+set remove main_menu = "Feeder Earth On (Dress)"
+set remove main_menu = "Busbar Earth Off (Dress)"
+set remove main_menu = "Busbar Earth On (Dress)"
+set remove main_menu = "Undress OCB"
+
+! TAG MESSAGE BOX !
+
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+
+
+
+
+!********************************************************!
+!                  DRAW MAIN SYMBOL                      !
+!********************************************************!
+
+just = centrecentre
+rotrect (w=66,h=80,fg=ocb_bg)
+clear
+x -= 33 y += 40 add
+y -= 80 add
+x += 66 add line (fg=decorlight) clear 
+y += 1 add
+y += 79 add
+x -= 66 add line (fg=decorshadow) clear
+x += 33 y -= 40 clear
+fg = ocb_fg
+ch = 18
+if manually_dress_ip.e_value > 0 then tfg = white
+else tfg = black
+x = 18 y = -30 add text (just=centrecentre, ident)
+x = 0 y = 0 clear
+tfg = black
+
+if int(manually_dress_ip.e_value) >= 1 then
+   case int(manually_dress_ip.e_value) of
+      1
+      begin
+      lw=2
+      y -= 40 add
+      y += 80 add line clear
+      y -= 26 x -= 13 add
+      y -= 26 x += 26 add line clear
+      y += 26 add
+      x -= 26 y -= 26 add line clear
+      x += 13 y += 13 add clear
+
+      set add main_menu = "Alter Tag Message"
+      set add main_menu = "Clear Tag Message"
+      set add main_menu = "Alter Permit To Work"
+      set add main_menu = "Tripped (Dress)"
+      set add main_menu = "Undress OCB"
+
+      end
+
+      2
+      begin
+      lw=2
+      y -= 40 add
+      y += 80 add line clear
+      y -= 30 x -= 10 add
+      y -= 20 x += 20 add line clear
+      y += 20 add
+      x -= 20 y -= 20 add line clear
+      x += 10 y += 10 add
+      circle(h=30,w=30) clear
+
+      set add main_menu = "Alter Tag Message"
+      set add main_menu = "Clear Tag Message"
+      set add main_menu = "Alter Permit To Work"
+      set add main_menu = "Closed (Dress)"
+      set add main_menu = "Racked Down (Dress)"
+      set add main_menu = "Undress OCB"
+
+      end
+
+      3
+      begin
+      !RACKED OUT!
+      lw=2
+      y = -40 add
+      y += 8 add
+      x -= 3 add
+      x += 6 add line clear
+      y += 72 x -= 3 add
+      y -= 8 add
+      x -= 3 add
+      x += 6 add line clear
+
+      set add main_menu = "Alter Tag Message"
+      set add main_menu = "Clear Tag Message"
+      set add main_menu = "Alter Permit To Work"
+      set add main_menu = "Tripped (Dress)"
+      set add main_menu = "Feeder Earth Off (Dress)"
+      set add main_menu = "Busbar Earth Off (Dress)"
+      set add main_menu = "Undress OCB"
+
+      end
+
+      4
+      begin
+      !FEEDER EARTH on!
+      lw=2
+      y -= 40 add
+      y += 5 add line clear
+      y += 4 add
+      circle (w=8,h=8) clear
+      y += 20 
+      circle (w=8,h=8)
+      lw=2
+      y += 3 add
+      y += 6 add line 
+      x -= 11 add
+      x += 22 add line clear
+      x -= 4 y += 5 add
+      x -= 14 add line clear
+      x += 4 y += 5 add
+      x += 6 add line clear
+      y += 24 add
+      x -= 6 add line clear
+      x += 3 add
+      y += 8 add line clear
+
+      set add main_menu = "Alter Tag Message"
+      set add main_menu = "Clear Tag Message"
+      set add main_menu = "Alter Permit To Work"
+      set add main_menu = "Racked Down (Dress)"
+      set add main_menu = "Feeder Earth On (Dress)"
+      set add main_menu = "Undress OCB"
+
+      end
+
+
+      5
+      begin
+      lw=2
+      y -= 40 add
+      y += 8 add line clear
+      disk (w=8,h=8)
+      lw=4
+      y += 1 add
+      y += 20 add line clear
+      disk (w=8,h=8)
+      lw=2
+      y += 1 add
+      y += 8 add line 
+      x -= 11 add
+      x += 22 add line clear
+      x -= 4 y += 5 add
+      x -= 14 add line clear
+      x += 4 y += 5 add
+      x += 6 add line clear
+      y += 24 add
+      x -= 6 add line clear
+      x += 3 add
+      y += 8 add line clear
+
+      set add main_menu = "Alter Tag Message"
+      set add main_menu = "Clear Tag Message"
+      set add main_menu = "Alter Permit To Work"
+      set add main_menu = "Racked Down (Dress)"
+      set add main_menu = "Feeder Earth Off (Dress)"
+      set add main_menu = "Undress OCB"
+
+      end
+
+
+      6
+      begin
+      !BUSBAR EARTH ON! 
+      lw=2     
+      y += 40 add
+      y -= 5 add line clear
+      y -= 3 add
+      circle (w=8,h=8) clear
+      y -= 20 
+      circle (w=8,h=8)
+      lw=2
+      y -= 3 add
+      y -= 6 add line 
+      x += 11 add
+      x -= 22 add line clear
+      x += 4 y -= 5 add
+      x += 14 add line clear
+      x -= 4 y -= 5 add
+      x -= 6 add line clear
+      y -= 24 add
+      x += 6 add line clear
+      x -= 3 add
+      y -= 9 add line clear
+
+      set add main_menu = "Alter Tag Message"
+      set add main_menu = "Clear Tag Message"
+      set add main_menu = "Alter Permit To Work"
+      set add main_menu = "Busbar Earth On (Dress)"
+      set add main_menu = "Undress OCB"
+
+      end
+
+      7
+      !BUSBAR EARTH OFF!
+      begin
+      lw=2
+      y += 40 add
+      y -= 8 add line clear
+      disk (w=8,h=8)
+      lw=4
+      y -= 1 add
+      y -= 20 add line clear
+      disk (w=8,h=8)
+      lw=2
+      y -= 1 add
+      y -= 8 add line 
+      x += 11 add
+      x -= 22 add line clear
+      x += 4 y -= 5 add
+      x += 14 add line clear
+      x -= 4 y -= 5 add
+      x -= 6 add line clear
+      y -= 24 add
+      x += 6 add line clear
+      x -= 3 add
+      y -= 8 add line clear
+
+      set add main_menu = "Alter Tag Message"
+      set add main_menu = "Clear Tag Message"
+      set add main_menu = "Alter Permit To Work"
+      set add main_menu = "Racked Down (Dress)"
+      set add main_menu = "Busbar Earth Off (Dress)"
+      set add main_menu = "Undress OCB"
+ 
+     end
+
+
+      default
+      begin
+      end
+   
+else if tripped_ip.b_value then
+   begin
+   lw=2
+   y -= 40 add
+   y += 80 add line clear
+   y -= 30 x -= 10 add
+   y -= 20 x += 20 add line clear
+   y += 20 add
+   x -= 20 y -= 20 add line clear
+   x += 10 y += 10 add
+   circle(h=30,w=30) clear
+
+   set add main_menu = "Alter Tag Message"
+   set add main_menu = "Clear Tag Message"
+   set add main_menu = "Alter Permit To Work"
+   set add main_menu = "Close Breaker"
+   set add main_menu = "Racked Down (Dress)"
+
+   end
+
+else if closed_ip.b_value then
+   begin
+   lw=2
+   y -= 40 add
+   y += 80 add line clear
+   y -= 26 x -= 13 add
+   y -= 26 x += 26 add line clear
+   y += 26 add
+   x -= 26 y -= 26 add line clear
+   x += 13 y += 13 add clear
+
+   set add main_menu = "Alter Tag Message"
+   set add main_menu = "Clear Tag Message"
+   set add main_menu = "Alter Permit To Work"
+   set add main_menu = "Trip Breaker"
+   set add main_menu = "Tripped (Dress)"
+
+   end
+
+
+else
+      begin
+      lw=2
+      y = -40 add
+      y += 8 add
+      x -= 3 add
+      x += 6 add line clear
+      y += 72 x -= 3 add
+      y -= 8 add
+      x -= 3 add
+      x += 6 add line clear
+      !RACKED OUT!
+
+      set add main_menu = "Alter Tag Message"
+      set add main_menu = "Clear Tag Message"
+      set add main_menu = "Alter Permit To Work"
+      set add main_menu = "Tripped (Dress)"
+      set add main_menu = "Feeder Earth Off (Dress)"
+      set add main_menu = "Busbar Earth Off (Dress)"
+
+      end
+end
+
+object wderfcdocb(plc_offset=int,b_offset=int,c_offset=int
+                ,e_offset=int,src=source,ident = int,angle)
+begin
+just = centrecentre
+rotrect (w=66,h=80,fg=decoroff)
+clear
+x -= 33 y += 40 add
+y -= 80 add
+x += 66 add line (fg=decorlight) clear 
+y += 1 add
+y += 79 add
+x -= 66 add line (fg=decorshadow) clear
+x += 33 y -= 40 clear
+fg = red
+ch = 18
+x = 18 y = -28 add text (just=centrecentre, ident)
+x = 0 y = 0 clear
+      lw=2
+      y -= 40 add
+      y += 80 add line clear
+      y -= 26 x -= 13 add
+      y -= 26 x += 26 add line clear
+      y += 26 add
+      x -= 26 y -= 26 add line clear
+      x += 13 y += 13 add clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+!scale = 700!
+X=-1 Y=0  ocb(10000,11000,1,1,heathrow,22)
+
+!X=-1 Y=200  ocb(10000,11000,1,1,heathrow,3)!
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=red,bg=black,resizable

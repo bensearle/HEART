@@ -1,0 +1,268 @@
+type panel_1_item = table (str=string)
+
+object msg (valve_tag_message=string,bg,just)
+begin
+text (valve_tag_message)
+end
+
+mimic msg_box = msg bg=decoroff,just=centrecentre,w=350,h=50
+
+object get_b_value(db_addr=db_address, src=source) = onoff
+var ipb = input db_elements(db_addr, b_value)
+begin
+set source ipb = src   
+set filter ipb.db_addr = lim_eq   
+set limit ipb.db_addr = db_addr   
+set persist ipb    
+request ipb   
+get_b_value = ipb.b_value   
+end
+
+object get_c_value(db_addr=db_address, src=source) = string
+var ipc = input db_elements(db_addr, c_value)
+begin
+set source ipc = src   
+set filter ipc.db_addr = lim_eq   
+set limit ipc.db_addr = db_addr   
+set persist ipc    
+request ipc   
+get_c_value = ipc.c_value   
+end
+
+object get_e_value(db_addr=db_address, src=source) = real
+var ipe = input db_elements(db_addr, e_value)
+begin
+set source ipe = src   
+set filter ipe.db_addr = lim_eq   
+set limit ipe.db_addr = db_addr   
+set persist ipe    
+request ipe   
+get_e_value = ipe.e_value   
+end
+
+object send_e_value(db_addr=db_address, src=source, e_value=real)
+var dbOP = output db_elements(db_addr, e_value)
+begin
+set source dbOP = src
+set default dbOP 
+set old_default dbOP 
+set value dbOP.db_addr = db_addr
+set old_value dbop.db_addr = db_addr
+set value dbOP.e_value = e_value
+set old_off dbop.e_value  
+request dbOP   
+end
+
+object send_c_value(db_addr=db_address, src=source, c_value=string)
+var dbOP = output db_elements(db_addr, c_value)
+begin
+set source dbOP = src
+set default dbOP 
+set old_default dbOP 
+set value dbOP.db_addr = db_addr
+set old_value dbop.db_addr = db_addr
+set value dbOP.c_value = c_value
+set old_off dbop.c_value  
+request dbOP   
+end
+
+object draw(valve_fill_colour = colour,tag_fill = colour, valve_hand_dress_colour = colour, valve_tag_message = string, angle)
+var message_box = popup msg_box
+begin
+	just = centrecentre
+	h=300 w=300 
+	if rotselb 
+	then
+		begin
+			set title message_box = "Message"
+			request message_box(valve_tag_message)
+		end	
+	x = -150
+	y = -150 add 
+	x+=300 add
+	y+=300 add
+	x-=300 add 
+	fg = tag_fill
+	fill	
+	x = -100
+	y = -100
+	move y+=200	add
+	x+=200 y-=200 add
+	y+=200 add
+	ls = solid
+	lw = 3
+	fg = valve_fill_colour
+	fill
+	fg = black
+	polygon
+	just = centrecentre
+	x = 0
+	y = 0
+	sa = 0
+	aa = 360
+	w = 100
+	h = 100
+	fg = valve_hand_dress_colour
+	pie
+	fg = black
+	arc
+end
+
+Object valve(initialx=int, initialy=int, valve_opened_b_addr=db_address, valve_closed_b_addr=db_address, valve_commonfault_addr=db_address, valve_position_e_addr=db_address, valve_tag_message_addr=db_address, valve_hand_dress_state_addr=db_address, src_svr=source)
+var valve_commonfault_alarm_status = input db_elements(db_addr, alarm_status)
+var valve_opened_b_value = loopback onoff
+var valve_closed_b_value = loopback onoff
+var valve_position_e_value = loopback real
+var valve_fill_colour = loopback colour
+var tag_fill = loopback colour
+var valve_tag_message = loopback string
+var context_menu = menu string
+var valve_hand_dress_state = loopback int
+var valve_hand_dress_colour = loopback colour
+var tag_message_panel = panel panel_1_item
+
+Begin
+	valve_opened_b_value = get_b_value(valve_opened_b_addr,src_svr)
+	valve_closed_b_value = get_b_value(valve_closed_b_addr,src_svr)
+	valve_position_e_value = get_e_value(valve_position_e_addr,src_svr)
+	valve_tag_message = get_c_value(valve_tag_message_addr,src_svr)
+	valve_hand_dress_state = int(get_e_value(valve_hand_dress_state_addr,src_svr))
+	
+	set source valve_commonfault_alarm_status = src_svr
+	set filter valve_commonfault_alarm_status.db_addr = lim_eq
+	set limit valve_commonfault_alarm_status.db_addr = valve_commonfault_addr
+	request valve_commonfault_alarm_status
+	
+	if valid tag_message_panel 
+	then
+		begin
+			send_c_value(valve_tag_message_addr,src_svr,tag_message_panel.str)
+			set invalid tag_message_panel
+		end
+	
+	if valid context_menu 
+	then
+		begin
+		if context_menu == "Dress Valve Open" 
+		then
+			begin
+				send_e_value(valve_hand_dress_state_addr, src_svr, 1)
+			end
+		else 
+		if context_menu == "Dress Valve Closed" 
+		then
+			begin
+				send_e_value(valve_hand_dress_state_addr, src_svr, 2)
+			end
+		else 
+		if context_menu == "Undress Valve"
+		then
+			begin
+			send_e_value(valve_hand_dress_state_addr, src_svr, 0)
+			end
+		else 
+		if context_menu == "Edit Tag Message"
+		then
+			begin
+				set title tag_message_panel = "Modify Tagged Message"     
+				set label tag_message_panel.str = "Tag Message :"
+				set unpinned tag_message_panel         	
+				request tag_message_panel		
+			end
+		else 
+		if context_menu == "Clear Tag Message"
+		then
+			begin
+			send_c_value(valve_tag_message_addr, src_svr, "")
+			end
+		set invalid context_menu 
+		end
+	
+	set remove context_menu = "Dress Valve Open"
+	set remove context_menu = "Dress Valve Closed"
+	set remove context_menu = "Undress Valve"
+	set remove context_menu = "Edit Tag Message"
+	set remove context_menu = "Clear Tag Message"
+	
+	if valve_opened_b_value == on and valve_closed_b_value == on
+	then
+		begin
+			set add context_menu = "Dress Valve Open"
+			set add context_menu = "Dress Valve Closed"
+			set add context_menu = "Undress Valve"
+			set add context_menu = "Edit Tag Message"
+			set add context_menu = "Clear Tag Message"
+			x=250 y=250 w=300 h=300
+			set rect context_menu 
+		end
+	
+	if valve_opened_b_value == on and valve_closed_b_value == off
+	then
+		begin
+		valve_fill_colour = green
+		end
+	else if valve_closed_b_value == on and valve_opened_b_value == off
+	then
+		begin
+		valve_fill_colour = white
+		end
+	else
+		begin
+		valve_fill_colour = grey40
+		end
+	
+	if valve_commonfault_alarm_status.alarm_status == w_note
+	then
+		begin
+		valve_fill_colour = flashred
+		end
+	else if valve_commonfault_alarm_status.alarm_status == w_clr
+	then
+		begin
+		valve_fill_colour = red
+		end
+	else
+		begin
+		end		
+	
+	if valve_tag_message <> ""
+	then
+		begin
+		tag_fill = yellow
+		end
+	else
+		begin
+		tag_fill = white
+		end
+	
+	case valve_hand_dress_state of
+	0
+	begin
+		valve_position_e_value = valve_position_e_value*0.9
+		valve_hand_dress_colour = grey40
+	end
+	
+	1
+	begin
+		valve_position_e_value = 0
+		valve_hand_dress_colour = blue
+		valve_fill_colour = green
+	end
+	
+	2
+	begin
+		valve_position_e_value = 90
+		valve_hand_dress_colour = blue
+		valve_fill_colour = white
+	end
+	
+	default
+	begin
+	end
+	
+	x = initialx
+	y = initialy
+	angle = int(valve_position_e_value)
+	draw(valve_fill_colour, tag_fill ,valve_hand_dress_colour, valve_tag_message)
+End
+

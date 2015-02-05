@@ -1,0 +1,274 @@
+!**	HEATHROW\SUB_STN_156		**!
+!** 	Modified by ULTRA - 04 Apr 2007	**!
+!** 	Updated panel designations		**!
+!**					**!
+!**	SUBSTATION 156			**!
+!**					**!
+!** 	26 July 2004 			**!
+
+load circuit_breakers
+load lv_breaker
+load dual_bus_objects
+load transformer
+load transformer_types
+load browser
+load generic_bar_meter
+load sub_stn_156_help
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object busbar_156 !** future use **!
+var helpstr	= help string(30)
+var line_col	= colour
+begin
+end
+
+
+object lv_156_popup(bg)
+begin
+	clear lw=3
+	X=-125 Y=45 Add X+=250 Y=45 Add line(fg=white) clear
+	X=-100 Y=45 Add X=-100 Y=-140 Add line(fg=white) clear
+	X=100 Y=45 Add X=100 Y=-140 Add line(fg=white) clear
+	scale=200
+	x=-100 y=10	lv_breaker("",43600,44160,1797,6537,heathrow,"LHS","top",int,int,int)
+	y-=100 		transformer_select("TYPE1",43600,5,44125,1800,INT,heathrow,"TX1","Local",1,INT,white,green,scale=100)
+	x=100 y=10	lv_breaker("",43600,44165,1798,6538,heathrow,"RHS","top",int,int,int)
+	y-=100		transformer_select("TYPE1",43600,5,44130,1801,INT,heathrow,"TX2","Local",2,INT,white,green,scale=100)
+	X=0 Y=45	lv_breaker("",43600,44170,1799,6539,heathrow,"BUS","sect",int,int,int)
+	ch=14 just=centrecentre
+	X=-100 Y=-160	text(tfg=black,"Sub 156")
+	Y+=12		text(tfg=black,"P3")
+	X=100 Y=-160	text(tfg=black,"Sub 156")
+	Y+=12		text(tfg=black,"P19")
+	ch=14 just=centrecentre tfg=black
+	X=-160 Y=-120 	TEXT("Local Tx1")
+	X=160 		TEXT("Local Tx2")
+	ch=18 font = font_bold
+	X=0 Y=100 	TEXT("Low Voltage Panels")
+	Y+=15		text(tfg=black,"from Sub 156")
+
+	ch=14 just=topleft
+	x=-81 y=18 text("(ACB1)")
+	x=119 y=18 text("(ACB2)")
+end
+mimic lv_156_popup = lv_156_popup w=380,h=380,just=centrecentre, bg=lightblue3
+
+
+
+
+
+object lv_156_status(plc_offset=int,src=source,txt_id=string,res2=string,res1=int)
+var plc_inputs = input b_bool_type[2]
+var lv_pop = popup	lv_156_popup
+var alarm1_col = colour
+var alarm2_col = colour
+var alarm3_col = colour
+var alarm4_col = colour
+var alarm5_col = colour
+begin
+	! ** Get Alarm status colour ** !
+	alarm1_col =lv_alarm_test(44125,5,heathrow)
+	alarm2_col =lv_alarm_test(44130,5,heathrow)
+	alarm3_col = lv_alarm_test(44160,5,heathrow)
+	alarm4_col =lv_alarm_test(44165,5,heathrow)
+	alarm5_col =lv_alarm_test(44170,5,heathrow)
+
+	if alarm1_col == flashred or
+	alarm2_col == flashred or
+	alarm3_col == flashred or
+	alarm4_col == flashred or
+	alarm5_col == flashred then
+		fg = flashred
+	else if alarm1_col ==red or
+	alarm2_col == red or
+	alarm3_col == red or
+	alarm4_col == red or
+	alarm5_col == red then
+		fg = red
+	else
+		fg = grey80
+
+	   if invalid get source plc_inputs then 
+	   begin
+		! GET PLC INPUTS !
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+	  end
+
+	X=0 Y=0 W=50 H=50 ANGLE=0 JUST=centrecentre FS=FILLSOLID rotrect
+	if selb then
+	begin
+		rect(fg=darkgrey)
+		request lv_pop
+	end
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on
+	then
+		tfg=magenta
+	else
+		tfg=white
+	lw=1
+	X=-25 Y=25 Add Y=-25 Add X=25 Y=-25 Add line(fg=white) clear
+	X=-25 Y=25 Add X=25 Add Y=-25 Add line(fg=black) clear
+
+	ch=18 font=font_bold just=centrecentre
+	X=0 Y=16  text(txt_id) clear
+
+	X=-20 Y=-20 W=20 H=20 just=topleft fg=green4 ls=solid lw=3 sa=0 circle
+	X=0 Y=-20 W=20 H=20 circle clear
+end
+
+
+Object main_object(w,h,fg,bg)
+var helpstr	= help string(30)
+var line_col	= colour
+var modbus_btn_col = colour
+Begin
+   	scale = 256
+   	just = centrecentre
+   	x = 20 y = 20 w =1140 h = 600
+   	set text helpstr = "sub_stn_156_help"
+
+	line_col=white
+	just = centrecentre
+
+	! title !
+	X=20 Y=-68 CH=18 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK TEXT("SUB 156")
+
+	!** Circuit Breaker Connecting Lines **!
+	Clear
+	FG=line_col LS=SOLID LW=3 
+	X=-480 Y=-28 Add X=-40 Y=-28 Add LINE clear
+	
+	lw=3
+	X=-450 Y=-28 Add Y+=70 Add LINE clear	!** P3  **!
+	X=-400 Y=-28 Add Y+=70 Add LINE clear	!** P4  **!
+	X=-350 Y=-28 Add Y+=70 Add LINE clear	!** P5  **!
+	X=-300 Y=-28 Add Y+=70 Add LINE clear	!** P6  **!
+	X=-250 Y=-28 Add Y+=70 Add LINE clear	!** P7  **!
+	X=-200 Y=-28 Add Y+=70 Add LINE clear	!** P8  **!
+	X=-160 Y=-28 Add Y-=70 Add LINE clear	!** P9  **!
+	X=-125 Y=-28 Add Y+=70 Add LINE clear	!** P10**!
+	X=-75 Y=-28 Add Y+=220 Add x+=200 add y-=220 add LINE clear	!** P11 to P12**!
+
+	X=175 Y=-28 Add Y+=70 Add LINE clear	!** P13**!
+	X=210 Y=-28 Add Y-=70 Add LINE clear	!** P14**!
+	X=250 Y=-28 Add Y+=70 Add LINE clear	!** P15**!
+	X=300 Y=-28 Add Y+=70 Add LINE clear	!** P16**!
+	X=350 Y=-28 Add Y+=70 Add LINE clear	!** P17**!
+	X=400 Y=-28 Add Y+=70 Add LINE clear	!** P18**!
+	X=450 Y=-28 Add Y+=70 Add LINE clear	!** P19**!
+
+	! * LHS to RHS Line * !
+
+	FG=line_col LS=SOLID LW=3
+	X= 480 Y=-28 Add X= 90 Y=-28 Add LINE clear
+
+
+	!** Breakers**!
+	scale=120
+			!modbus_cb(plc_offset,node,	b_offset,	c_offset,	e_offset,	cont_offset,	src,	ident,	position,cont_code,xtra_alarms,res_str,res2,res1,angle)!
+
+	X=-450 Y=0 	modbus_cb(43600,44312,43740,1753,6453,6533,heathrow,3,"btm",30,int,string,int,int)
+	X=-400 Y=0 	modbus_cb(43600,44313,43760,1754,6454,6533,heathrow,4,"btm",40,int,string,int,int)
+	X=-350 Y=0 	modbus_cb(43600,44314,43780,1755,6455,6533,heathrow,5,"btm",50,int,string,int,int)
+	X=-300 Y=0 	modbus_cb(43600,44315,43800,1756,6456,6533,heathrow,6,"btm",60,int,string,int,int)
+	X=-250 Y=0 	modbus_cb(43600,44316,43820,1757,6457,6533,heathrow,7,"btm",70,int,string,int,int)
+	X=-200 Y=0 	modbus_cb(43600,44317,43840,1758,6458,6533,heathrow,8,"btm",80,int,string,int,int)
+	X=-160 Y= -55 	modbus_cb(43600,44318,43860,1759,6459,6533,heathrow,9,"TOP",90,int,string,int,int)
+	X=-125 Y=0 	modbus_cb(43600,44319,43880,1760,6460,6533,heathrow,10,"btm",100,int,string,int,int)
+	X= -75 Y=0 	modbus_cb(43600,44320,43900,1761,6461,6533,heathrow,11,"btm",110,int,string,int,int)
+
+	X=125 Y=0 	modbus_cb(43600,44321,43920,1762,6462,6533,heathrow,12,"btm",120,int,string,int,int)
+	X=175 Y=0 	modbus_cb(43600,44322,43940,1763,6463,6533,heathrow,13,"btm",130,int,string,int,int)
+	X=210 Y= -55	modbus_cb(43600,44323,43960,1764,6464,6533,heathrow,14,"TOP",140,int,string,int,int)
+	X=250 Y=0 	modbus_cb(43600,44324,43980,1765,6465,6533,heathrow,15,"btm",150,int,string,int,int)
+	X=300 Y=0 	modbus_cb(43600,44325,44000,1766,6466,6533,heathrow,16,"btm",160,int,string,int,int)
+	X=350 Y=0 	modbus_cb(43600,44326,44020,1767,6467,6533,heathrow,17,"btm",170,int,string,int,int)
+	X=400 Y=0 	modbus_cb(43600,44327,44040,1768,6468,6533,heathrow,18,"btm",180,int,string,int,int)
+	X=450 Y=0 	modbus_cb(43600,44328,44060,1769,6469,6533,heathrow,19,"btm",190,int,string,int,int)
+
+
+	! MAX DEMAND meters !
+	! LHS !
+	scale = 250
+	!p3!	X=-450 Y=134	text_meter(43600,6503,heathrow,"Max (A)","",green4,1)
+	!p4!	X=-400 Y=134	text_meter(43600,6504,heathrow,"Max (A)","",green4,1)
+	!p5!	X=-350 Y=134	text_meter(43600,6505,heathrow,"Max (A)","",green4,1)
+	!p6!	X=-300 Y=134	text_meter(43600,6506,heathrow,"Max (A)","",green4,1)
+	!p7!	X=-250 Y=134	text_meter(43600,6507,heathrow,"Max (A)","",green4,1)
+	!p8!	X=-200 Y=134	text_meter(43600,6508,heathrow,"Max (A)","",green4,1)
+	!p9!	X=-158 Y=-190	text_meter(43600,6509,heathrow,"MVA","",green4,2)
+
+	!p10!	X=-125 Y=134	text_meter(43600,6510,heathrow,"Max (A)","",green4,1)
+	!p11!	X=-75 Y=134	text_meter(43600,6511,heathrow,"MVA","",green4,2)
+
+	! MAX DEMAND meters !
+	! RHS !
+	scale = 250
+	!p12!	X=125 Y=134	text_meter(43600,6512,heathrow,"MVA","",green4,2)
+	!p13!	X=175 Y=134	text_meter(43600,6513,heathrow,"Max (A)","",green4,1)
+	!p14!	X=206 Y=-190	text_meter(43600,6514,heathrow,"MVA","",green4,2)
+	!p15!	X=250 Y=134	text_meter(43600,6515,heathrow,"Max (A)","",green4,1)
+	!p16!	X=300 Y=134	text_meter(43600,6516,heathrow,"Max (A)","",green4,1)
+	!p17!	X=350 Y=134	text_meter(43600,6517,heathrow,"Max (A)","",green4,1)
+	!p18!	X=400 Y=134	text_meter(43600,6518,heathrow,"Max (A)","",green4,1)
+	!p19!	X=450 Y=134	text_meter(43600,6519,heathrow,"Max (A)","",green4,1)
+
+	! Current and Voltage meters !
+	scale = 150
+		! METER					(plc_comms,c_offset,e_offset,b_over,b_under,src,units,metname,range_lo,range_hi,dec_places,bar_colour,range_dec_places,	res_int1,res_str1)!
+
+	! *** PANEL 3 *** !	X=-450 Y=70 	generic_bar_meter_obj(43600,1774,6478,44312,int,heathrow,"A","LOC TX1",0,100,0,yellow,0,int,"MODBUS")
+	! *** PANEL 4 *** !	X=-400 Y=70 	generic_bar_meter_obj(43600,1775,6479,44313,int,heathrow,"A","TTS SUP",0,200,0,yellow,0,int,"MODBUS")
+	! *** PANEL 5 *** !	X=-350 Y=70 	generic_bar_meter_obj(43600,1776,6480,44314,int,heathrow,"A","T5B-TX22",0,200,0,yellow,0,int,"MODBUS")
+	! *** PANEL 6 *** !	X=-300 Y=70 	generic_bar_meter_obj(43600,1777,6481,44315,int,heathrow,"A","T5B-TX6",0,200,0,yellow,0,int,"MODBUS")
+	! *** PANEL 7 *** !	X=-250 Y=70 	generic_bar_meter_obj(43600,1778,6482,44316,int,heathrow,"A","T5B-TX14",0,200,0,yellow,0,int,"MODBUS")
+	! *** PANEL 8 *** !	X=-200 Y=70 	generic_bar_meter_obj(43600,1779,6483,44317,int,heathrow,"A","SUB 180",0,300,0,yellow,0,int,"MODBUS")
+	! *** PANEL 9 *** !	X=-183 Y= -125 	generic_bar_meter_obj(43600,1780,6484,44318,int,heathrow,"A","INCOMER1",0,600,0,yellow,0,int,"MODBUS")
+	! *** PANEL10 *** !	X=-125 Y=70 	generic_bar_meter_obj(43600,1781,6485,44319,int,heathrow,"A","FEGP TX1",0,100,0,yellow,0,int,"MODBUS")
+	! *** PANEL11 *** !	X= -75 Y=70 	generic_bar_meter_obj(43600,1782,6486,44320,int,heathrow,"A","LHS",0,800,0,yellow,0,int,"MODBUS")
+	
+	! *** PANEL12 *** !	X=125 Y=70 	generic_bar_meter_obj(43600,1783,6487,44321,int,heathrow,"A","RHS",0,800,0,yellow,0,int,"MODBUS")
+	! *** PANEL13 *** !	X=175 Y=70 	generic_bar_meter_obj(43600,1784,6488,44322,int,heathrow,"A","FEGP TX2",0,100,0,yellow,0,int,"MODBUS")
+	! *** PANEL14 *** !	X=185 Y= -125	generic_bar_meter_obj(43600,1785,6489,44323,int,heathrow,"A","INCOMER2",0,600,0,yellow,0,int,"MODBUS")
+	! *** PANEL15 *** !	X=250 Y=70 	generic_bar_meter_obj(43600,1786,6490,44324,int,heathrow,"A","T5B-TX3",0,200,0,yellow,0,int,"MODBUS")
+	! *** PANEL16 *** !	X=300 Y=70 	generic_bar_meter_obj(43600,1787,6491,44325,int,heathrow,"A","T5B-TX19",0,200,0,yellow,0,int,"MODBUS")
+	! *** PANEL17 *** !	X=350 Y=70 	generic_bar_meter_obj(43600,1788,6492,44326,int,heathrow,"A","T5B-TX9",0,200,0,yellow,0,int,"MODBUS")
+	! *** PANEL18 *** !	X=400 Y=70 	generic_bar_meter_obj(43600,1789,6493,44327,int,heathrow,"A","SUB 181",0,300,0,yellow,0,int,"MODBUS")
+	! *** PANEL19 *** !	X=450 Y=70 	generic_bar_meter_obj(43600,1790,6494,44328,int,heathrow,"A","LOC TX2",0,100,0,yellow,0,int,"MODBUS")
+
+	! *** PANEL9 *** !	X=-135 Y= -125 	generic_bar_meter_obj(43600,1793,6497,44318,int,heathrow,"kV","INCOMER1",0,13.2,1,blue,1,int,"MODBUS")
+	! *** PANEL11 *** !	X=-27 Y=70 	generic_bar_meter_obj(43600,1794,6498,44320,int,heathrow,"kV","LHS",0,13.2,1,blue,1,int,"MODBUS")
+	! *** PANEL12 *** !	X=77 Y=70 	generic_bar_meter_obj(43600,1795,6499,44321,int,heathrow,"kV","RHS",0,13.2,1,blue,1,int,"MODBUS")
+	! *** PANEL14 *** !	X=232 Y= -125	generic_bar_meter_obj(43600,1796,6500,44323,int,heathrow,"kV","INCOMER2",0,13.2,1,blue,1,int,"MODBUS")
+
+	! ** transformers ** !
+	scale = 200
+	X=-450 Y=172 lv_156_status(43600,heathrow,"TX1",string,int)	
+	X=450 Y=172 lv_156_status(43600,heathrow,"TX2",string,int)	
+
+	! ** Labels ** !
+	scale = 256 just=centrecentre ch=10 tfg=black
+	X=-160 Y=-225 text("Sub 152") y+=12 text("P6")
+	X=207 Y=-225 text("Sub 152") y+=12 text("P31")
+
+	! ** Modbus Navigation ** !
+
+	! ** Get Alarm Status Colour - this checks MCM timeout status for PLC A and B - by entering 4 on the parameters only 1 call to database is required ** !
+	! * if in alarm, a reset of the plc is required * !
+	modbus_btn_col=lv_alarm_test(43678,4,heathrow)
+
+	X=449 Y=-238 main_sub_call(grey80,100,25,"Modbus","",white,16,yes,"comms_sub_156",heathrow,int,"string",int,fg=modbus_btn_col)
+
+	! ** FEGP navigation ** !
+	X=449 Y=-213 main_sub_call(grey80,100,25,"FEGP","",blue4,14,yes,"fegp_t5",heathrow,int,"string",int)
+End
+mimic = MAIN_OBJECT W=1000, H=500, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE, top=1
+

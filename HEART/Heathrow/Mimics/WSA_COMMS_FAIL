@@ -1,0 +1,490 @@
+load report_tllib
+load REPLIB
+load archive2_std_libutil
+load debug_libutil
+
+
+CONST column_width = 60 
+CONST time_period = "01-Feb-2001 06:25"
+
+TYPE KEYED_TWO_A_VALUES = TABLE (
+	! 1RW !  ID = ID,
+	!  R  ! STREAM = STREAM,
+	!  R  !  STREAM_NAME = STREAM_NAME,
+	!  R  ! KEYNUMBER = KEYNUMBER,
+	! 2RW !  TIME = CS_TIME,
+	!  RW !  KEYED_TWO_A_VALUES_1 = REAL,
+	!  RW !  KEYED_TWO_A_VALUES_2 = REAL )
+
+type stats_display_type = enum( percent_time_true = "Percentage true",
+				ft_transitions = "False-true transitions")
+
+!*******************************************************************************!
+!February is a leap year every fourth year, except at the turn of the century.!
+!There are 29 days in a leap year for february, normally 28!
+!Every 400 years the century year is also a leap year!
+!Thus 1900 is not a leap year, 1996 and 2000 are leap years!
+
+!Beware though, because MDL doesn't know that 2000 is a leap year, nor do DOS !
+!PC's. SUN machines do recognize 29-Feb-2000!
+
+!Original Object did not work, was re-written 30-6-1999 !
+!Jan, mar, may,Mar,Mar,Oct,Dec = 31 !
+!Mar,Mar,Sep,Oct = 30 !
+
+!*******************************************************************************!
+
+
+object daysInMonth ( ip_date = string) = int
+
+var str_month = string(3)
+var year = int
+begin
+
+str_month = getchars(4,3,time(ip_date))
+CASE str_month OF
+"APR","JUN","SEP","OCT"
+ daysInMonth = 30
+"FEB" 
+ begin 
+  year = int(getchars(8,4,time(ip_date)))
+  if (((year % 4 == 0) and (year % 100 <> 0)) or (year % 400 == 0)) then
+	begin
+	daysInMonth = 29
+	end
+  else
+	 daysInMonth = 28
+ end
+DEFAULT
+ daysInMonth = 31
+end
+
+
+object return_daily_stats(ch,just,realf,
+			server_name = source,
+				address = db_address,
+				report_period = report_period_type,
+				stats_display = stats_display_type,
+			var_busy = loopback yesno,day_ip=string,month_ip=string,year_ip=string)=string
+! INPUT !
+var boolean_data = input keyed_two_a_values[40]
+
+! TEMPORARY !
+var i = int
+var time_true = real
+var total_transitions = real
+var percent_true = real
+
+var final_text = string
+var temp_time1 = string
+var temp_time2 = string
+var temp_time = time
+var num_days_over = int
+
+var requested_data = loopback yesno
+begin
+
+! calculate the total time for last month in seconds !
+! ------------------------------------------------------------------------- !
+
+
+
+! request the boolean stats data for last month !
+! -------------------------------------------------------------------- !
+	if invalid requested_data then
+	begin
+	requested_data = yes
+	set source boolean_data = arhsource(server_name)
+
+	set filter boolean_data.time = lim_le_gt2
+	temp_time1 = string(day_ip+"-"+month_ip+"-"+year_ip+" "+"23:59:00")
+	temp_time1 = string(day_ip+"-"+month_ip+"-"+year_ip+" "+"00:01:00")
+	timef = local_dmy_hms
+	set limit boolean_data.time = time(temp_time1)
+
+	timef = local_dmy_hms
+	set limit2 boolean_data.time = time(temp_time2)
+
+	set filter boolean_data.stream_name = lim_eq
+	set limit boolean_data.stream_name = server_name + " B_STATS"
+ 
+	set filter boolean_data.keynumber = lim_eq
+	set limit boolean_data.keynumber = convert_db_address_to_keynumber(address) 
+ 
+	request boolean_data 
+	end
+
+	! calculate the total time true in seconds !
+! ----------------------------------------------------------- !
+debug("BUSY :"+get busy boolean_data+" VALID :"+valid boolean_data+" LASTROW :"+lastrow boolean_data)
+if valid boolean_data then
+ begin
+ if lastrow boolean_data > 0 then
+  begin 
+  time_true = 0
+  for i from 1 to lastrow boolean_data do
+ begin
+ time_true += boolean_data[i].keyed_two_a_values_2
+ end
+  time_true = time_true*60
+
+
+  ! calculate the total number of false to true transitions in the month ! 
+  ! ------------------------------------------------------------------------------------------------- !
+  total_transitions = 0
+  for i from 1 to lastrow boolean_data do
+ 	total_transitions = boolean_data[i].keyed_two_a_values_1
+  end 
+ else
+  begin
+  percent_true = 100
+  time_true = 0 
+  end
+ end
+! display the text required !
+! -------------------------------------- !
+
+ final_text = total_transitions
+
+
+
+! prevent printing until the data has been obtained !
+! ------------------------------------------------------------------------- !
+if get busy boolean_data then
+ begin
+ var_busy = yes
+ end
+else
+ begin 
+ return_daily_stats = final_text
+ end
+end
+
+			
+! ***************************************************************************************** !
+!----------------- COMMUNICATIONS STATUS REPORT ------------------------!
+
+object WSA_REPORT(w,h,fg,bg,report_period=report_period_type,report_date=string,just)=yesno
+
+var i =int
+var fld_1 = string
+var fld_2 = string
+var fld_3 = string
+var fld_4 = string
+var fld_5 = string
+var fld_6 = string
+var fld_7 = string
+var fld_8 = string
+var fld_9 = string
+var fld_10 = string
+var getting_data = loopback yesno
+var temp_time = time
+var num_days_over = int
+
+VAR text_file = FILEWRITE string
+
+Begin
+getting_data = no
+FONT=FONT_BOLD
+
+num_days_over = int(getchars(1,2,time(time_period)))
+temp_time = time(int(current_time) - (num_days_over * 86400))
+
+	SET RESET text_file
+	SET FILE text_file = "comms-report-" + getchars(4,8,temp_time) + ".htm"
+	SET NOAPPEND text_file
+	text_file = ""
+	text_file += ""
+	request text_file
+	SET APPEND text_file
+	text_file= "<html><head><link rel=stylesheet href=css/text.css type=text/css></head><body text=#FFFFFF bgcolor=#004080>"
+	request text_file
+	text_file= "<font face=Verdana, Arial, Helvetica, sans-serif size=2 color=#FFFFFF>" 
+	request text_file
+	text_file= "<center>" 
+	request text_file
+	text_file= "<font size=4><b>Daily Communications Status Report</b></font><br><br>For: October" + "<br><br>" 
+	request text_file
+	text_file= "<table width=85% align=center border=1>" 
+	request text_file
+	text_file= "<th width=10% class=headertext2>Date</th><th width=10% class=headertext2>Sub 152 OS96 A to B</th><th width=10% class=headertext2>Sub 152 OS96 B to A</th>" 
+	request text_file
+	text_file= "<th width=10% class=headertext2>Sub 150 OS98 A to B</th><th width=10% class=headertext2>Sub 150 OS98 B to A</th>" 
+	request text_file
+	text_file= "<th width=10% class=headertext2>Sub 182 OS74 A to B</th><th width=10% class=headertext2>Sub 182 OS74 B to A</th>" 
+	request text_file
+	text_file= "<th width=10% class=headertext2>Sub 151 OS95 A to B</th><th width=10% class=headertext2>Sub 151 OS95 B to A</th>" 
+	request text_file
+	text_file= "<th width=10% class=headertext2>Sub 156 OS97 A to B</th><th width=10% class=headertext2>Sub 156 OS97 B to A</th>" 
+	request text_file
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"01","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>01 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"02","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>02 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"03","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>03 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"04","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>04 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"05","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>05 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"06","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>06 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"07","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>07 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"08","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>08 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"09","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>09 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"10","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>10 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"11","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>11 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"12","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>12 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"13","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>13 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"14","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>14 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"15","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>15 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+	fld_1 = return_daily_stats (heathrow,b42110,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	fld_2 = return_daily_stats (heathrow,b42111,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	fld_3 = return_daily_stats (heathrow,b44460,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	fld_4 = return_daily_stats (heathrow,b44461,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	fld_5 = return_daily_stats (heathrow,b2010,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	fld_6 = return_daily_stats (heathrow,b2011,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	fld_7 = return_daily_stats (heathrow,b45310,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	fld_8 = return_daily_stats (heathrow,b45311,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	fld_9 = return_daily_stats (heathrow,b43610,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	fld_10 = return_daily_stats (heathrow,b43611,report_period,ft_transitions, getting_data,"16","Oct","2004",realf = fixed0)
+	if (getting_data==no) then
+	begin
+		text_file = "<tr><td class=text>16 Oct</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td><td class=text>" + fld_3 + "</td><td class=text>" + fld_4 +"</td><td class=text>" + fld_5 +"</td><td class=text>" + fld_6 +"</td><td class=text>" + fld_7 +"</td><td class=text>" + fld_8 +"</td><td class=text>" + fld_9 +"</td><td class=text>" + fld_10 +"</td></tr>"
+		request text_file
+	end
+
+
+
+	text_file= "</table></center>" 
+	request text_file
+	text_file= "</body></html>" 
+	request text_file
+	SET RESET text_file
+
+	FG=BLACK
+	REALF=FIXED3
+	FONT=FONT_NORMAL
+	wsa_report=getting_data
+end

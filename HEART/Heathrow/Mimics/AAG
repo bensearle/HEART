@@ -1,0 +1,162 @@
+load mimic_libutil
+load alarm_types_libutil
+ 
+type b_db_row_type =  db_elements(db_addr,db_name)
+
+type save_test_row =  db_alarm_config(db_addr,
+					   config_number,
+					   text_id,
+					   wrkstn_set,
+					   printer_set,
+                                           alarm_group_set,
+					   rtl_number,
+			                   text,
+					   command_text,
+					   print_on_accept,
+					   print_on_return,
+					   accept_level,
+					   accept_delay_specifier,
+			                   annunciation_delay,
+			                   test_db_addr,
+					   alarm_level,
+			                   banner_note_required,
+			                   action_required,
+                                           normal_accept_required,
+					   inhibit_retrigger,
+			                   r_test,
+					   b_test,
+					   c_test,
+			                   test_value,
+			                   test_deadband,
+					   db_addr_2,
+					   r_test_2,
+					   b_test_2,
+					   test_value_2,
+					   test_deadband_2,
+					   test_db_addr_2)
+
+type save_test_type =  save_test_row[6]
+
+type save_table_array =  save_test_type[500]
+
+type db_offset = int(1,24999)
+
+type panel_type = table (start_addr = db_address,
+                         new_ws_set = set(wrkstn_number),
+                         alm_grp = alarm_group_number)
+
+type config_gen_stat_type = enum (waiting_for_input,
+				  requesting_db_text,
+				  creating_alarms)
+
+type current_status_type = enum (init="Start",
+				 user_in="Waiting for user input",
+				 req_db="Requesting db info",
+				 req_al="Requesting alarm data",
+				 sav_al="saving alarm data")
+
+object read_alarm_data(y,db_info = b_db_row_type,
+                    al_group = set (alarm_group_number)
+, alarms_ip = input  save_test_type)
+
+begin
+
+  set source alarms_ip = heathrow
+  set filter alarms_ip.db_addr = lim_eq
+  set limit  alarms_ip.db_addr = db_info.db_addr
+  set mayexist alarms_ip
+  set mustexist alarms_ip.config_number
+  set mustexist alarms_ip.db_addr
+  set persist alarms_ip
+  request alarms_ip
+
+end
+
+
+object modify_alarm(y,
+		    new_alarm_group = set(alarm_group_number),
+		    new_ws_set = set(wrkstn_number),
+		    alarm_ip = save_test_type
+, alarms_op = output  save_test_type)
+
+var i = int
+
+begin
+set source alarms_op = heathrow
+set old_value alarms_op = alarm_ip
+set value alarms_op = alarm_ip
+
+if lastrow alarm_ip > 0 then 
+  begin
+  for i from 1 to lastrow alarm_ip do
+    begin
+    text(x = 10,tfg=red,alarms_op[i].config_number)
+    y += ch + 5
+    text(x = 10,tfg=black,alarms_op[i].text)
+    y += ch + 5
+    set value alarms_op[i].alarm_group_set = new_alarm_group
+    set value alarms_op[i].wrkstn_set = new_ws_set
+    end
+  request alarms_op
+  end
+else
+  begin
+  y += ch +5 text(tfg=red,"No alarms to modify")
+  end
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var alarm_group_set = loopback  set(alarm_group_number)
+var ws_set = loopback  set(wrkstn_number)
+var status = loopback  current_status_type
+var user_input = panel  panel_type
+var alarms_op = output  save_test_type
+var alarm_tests = input  save_test_type
+var db_info_ip = input  b_db_row_type
+begin
+
+ if invalid status then
+    status=init
+
+ if status==init and selb (x = 0,y= 0,w = 500,h = 500) then
+      begin
+      status=user_in
+      request user_input
+      end
+ if status==init and get busy user_input then
+      status=user_in
+
+ if status==user_in and valid user_input then
+   begin
+      status=req_db
+      set invalid db_info_ip
+      set source db_info_ip = heathrow
+      set filter db_info_ip.db_addr = lim_eq
+      set limit db_info_ip.db_addr=user_input.start_addr
+      request db_info_ip
+      set default alarm_group_set
+      alarm_group_set += user_input.alm_grp
+      ws_set = user_input.new_ws_set
+      set invalid user_input
+   end
+
+ if status==req_db and valid db_info_ip then
+    begin
+    status=req_al
+    read_alarm_data(db_info_ip,alarm_group_set,alarm_tests)
+    end
+
+ if status==req_al and not get busy alarm_tests then
+    begin
+    status=sav_al
+    modify_alarm(alarm_group_set,ws_set,alarm_tests,alarms_op)
+    end 
+
+ if status==sav_al and not get busy alarms_op then
+    status=init
+
+text(tfg=black,status)
+end
+
+mimic = main_object w=500,h=500,just=topleft,resizable

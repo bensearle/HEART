@@ -1,0 +1,31 @@
+
+helptext sub_stn_128_help =
+ "
+ **** SUB STATION 128 POPUP MIMIC ****
+ ------------------------------------------------- -------------------------------------------------
+
+ ------------------------------------------------- -------------------------------------------------
+
+=== SUBSTATION 128 -Mimic ===
+
+This Object displays information on the HV SUB STATION 128.
+
+The Mimic consists of PLANT equipment (displayed as Objects) which may be controlled/monitored by the ADEM.
+
+Objects Displayed:
+HV Circuit Breaker Objects
+Current/Voltage/Power Meter Objects
+Transformer Objects
+
+
+Menu Mimic Object - Enables Navigation through the H.E.A.R.T. system
+
+
+References:
+------------------
+Operation and Maintenance Manual 	- Section 7.0 page 38
+
+Keypages from the Mimic Menu Object -  for information on mimic objects used (HV Area)
+ ------------------
+
+ "

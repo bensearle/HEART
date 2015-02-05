@@ -1,0 +1,74 @@
+load mimic_libutil
+load lv_generator
+load lv_contactor
+load transformer
+load ocb_monitored
+
+
+!*************** BUSBAR 11 ****************!
+
+object busbar_11
+
+begin
+
+tfg = black x = 35 y = -55 add text ("11",ch = 25) clear
+
+lw = 2
+
+scale = 260
+X=55 Y=50  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=84 Y=50  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=50 Y=135  ADD
+x=90  ADD
+line (fg=red,lw=4) clear
+
+x = -25 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = 0     y = -25 add y -= 50 add line (fg=red) clear
+x = 50    y = -25 add y += 50 add line (fg=red) clear
+x = 100   y = -25 add y -= 50 add line (fg=red) clear
+
+scale = 120
+
+x =     0 y = -50   ocb_mont(4000,4100,148,300,heathro2,1,"top")
+x =    50 y = 0     ocb_mont(4000,4110,149,301,heathro2,2,"btm")
+x =   100 y = -50   ocb_mont(4000,4120,150,302,heathro2,3,"top")
+
+
+scale = 140
+
+x = 90 y = 45 lv_generator(4000,4270,165,0,heathro2)
+
+scale = 100
+X =  50 Y = 45 transformer("LT 1","LOCAL") 
+
+scale = 120
+
+x = 70 y = 100 lv_changeover(4000,4260,164,heathro2)
+
+
+scale = 256
+just = centrecentre
+tfg = black
+ch = 12
+x = 0 y = -85 text("SS20 P2")
+x = 100 y = -85 text("SS26 P2")
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -50 y = -25 busbar_11
+
+end
+
+mimic = main_object w=250,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable

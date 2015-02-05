@@ -1,0 +1,163 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!*********Hv WEST INTAKE********!
+
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ammeter
+load transformer_meter
+load west_north_changeover_old
+load west_intake_sub_stations 
+load hv_menu_bar
+load hv_hierarchy
+
+
+!***********************************************************
+* WEST INTAKE OBJECT                                       *
+***********************************************************!
+
+object west_intake(lw,scale,angle)
+begin
+
+just = centrecentre
+
+scale = 256
+x = -570 y = 0 add x += 1100 add line(fg=blue,lw=4) clear
+
+lw=2
+x = -550 y = 0 add y -= 75 add line(fg=blue) clear
+x = -500 y = 0 add y -= 75 add line(fg=blue) clear
+x = -450 y = 0 add y -= 75 add line(fg=blue) clear
+x = -400 y = 0 add y -= 75 add line(fg=blue) clear
+x = -350 y = 0 add y -= 75 add line(fg=blue) clear
+
+x = -300 y = 0 add y += 130 add line(fg=blue) clear
+
+x = -250 y = 0 add y -= 75 add line(fg=blue) clear
+x = -200 y = 0 add y -= 75 add line(fg=blue) clear
+x = -150 y = 0 add y -= 75 add line(fg=blue) clear
+x = -100 y = 0 add y -= 75 add line(fg=blue) clear
+
+x = 0 y = 0 add y -= 75 add line(fg=blue) clear
+x = 50 y = 0 add y -= 75 add line(fg=blue) clear
+x = 100 y = 0 add y -= 75 add line(fg=blue) clear
+x = 150 y = 0 add y -= 75 add line(fg=blue) clear
+
+x = 200 y = 0 add y += 130 add line(fg=blue) clear
+
+x = 250 y = 0 add y -= 75 add line(fg=blue) clear
+x = 300 y = 0 add y = 75  add x += 50 add y +=40 add line(fg=blue) clear
+x = 350 y = 0 add y -= 75 add line(fg=blue) clear
+x = 400 y = 0 add y -= 75 add line(fg=blue) clear
+x = 450 y = 0 add y -= 75 add line(fg=blue) clear
+x = 500 y = 0 add y -= 75 add line(fg=blue) clear
+
+
+scale=120
+x = -550 y = -35 ocb(3000,3100,150,275,heathrow,1,"top")
+x = -500 y = -35 ocb(3000,3120,151,276,heathrow,2,"top")
+x = -450 y = -35 ocb(3000,3140,152,277,heathrow,3,"top")
+x = -400 y = -35 ocb(3000,3160,153,278,heathrow,4,"top")
+x = -350 y = -35 ocb(3000,3180,154,279,heathrow,5,"top")
+x = -250 y = -35 ocb(3000,3200,156,281,heathrow,7,"top")
+
+x = -200 y = -35 ocb(3000,3220,157,282,heathrow,8,"top")
+x = -150 y = -35 ocb(3000,3240,158,283,heathrow,9,"top")
+x = -100 y = -35 ocb(3000,3260,159,284,heathrow,10,"top")
+
+x = 0 y = -35   ocb(3000,3300,161,286,heathrow,12,"top")
+x = 50 y = -35  ocb(3000,3320,162,287,heathrow,13,"top")
+x = 100 y = -35  ocb(3000,3340,163,288,heathrow,14,"top")
+x = 150 y = -35  ocb(3000,3360,164,289,heathrow,15,"top")
+
+x = 250 y = -35  ocb(3000,3380,166,291,heathrow,17,"top")
+x = 300 y = 35  ocb(3000,3400,167,292,heathrow,18,"btm")
+x = 350 y = -35  ocb(3000,3420,168,293,heathrow,19,"top")
+x = 400 y = -35  ocb(3000,3440,169,294,heathrow,20,"top")
+x = 450 y = -35  ocb(3000,3460,170,295,heathrow,21,"top")
+x = 500 y = -35  ocb(3000,3480,171,296,heathrow,22,"top")
+
+x = -300 y = 85 ocb_mont(3000,3500,155,280,heathrow,6,"btm")
+x = 200 y = 85 ocb_mont(3000,3510,165,290,heathrow,16,"btm")
+
+x = -50 y = 0 ocb(3000,3280,160,285,heathrow,11,"sect",ANGLE=90)
+
+scale = 100
+x = -300 y = 150 transformer("Tx 1","SEB")
+x = 200 y = 150 transformer("Tx 2","SEB")
+
+scale = 256
+x = -50 y = 50 text("WEST INTAKE",ch=20,tfg=blue)
+x = -400 y = -97 text(ch=12,tfg=black,"Sub 113")
+x = -400 y = -85 text(ch=12,tfg=black,"P9")
+
+x = 325 y = 75 sub_symbol_40  
+
+end
+
+
+object west_intake_mimic
+begin
+
+scale = 256
+x = 0 y = 0 west_intake
+
+x = -340 y = 50 h = 130 w = 75 rect(fg=aquamarine3) clear
+x = 165 y = 50 h = 130 w = 75 rect(fg=aquamarine3) clear
+
+lw=2
+x = -300 y = 200 add y += 75 add line(fg=blue) clear
+x = 200 y = 200 add y += 75 add line(fg=blue) clear
+
+scale = 200
+y = -160 x = -550 ammeter(250,heathrow,"0-400A","62 F1")
+y = -160 x = -500 ammeter(251,heathrow,"0-400A","SUB 9")
+y = -160 x = -450 ammeter(252,heathrow,"0-400A","54 F1")
+y = -160 x = -350 ammeter(253,heathrow,"0-400A","SUB 41")
+y = -160 x = -250 ammeter(255,heathrow,"0-400A","SUB 62")
+y = -160 x = -200 ammeter(256,heathrow,"0-400A","SUB 39")
+y = -160 x = -150 ammeter(257,heathrow,"0-400A","SUB 50")
+y = -160 x = -100 ammeter(258,heathrow,"0-400A","SUB 53")
+y = -160 x =    0 ammeter(259,heathrow,"0-400A","SUB 51")
+y = -160 x =   50 ammeter(260,heathrow,"0-400A","SUB 44")
+y = -160 x =  100 ammeter(261,heathrow,"0-400A","SUB 98")
+y = -160 x =  150 ammeter(262,heathrow,"0-400A","SUB 109")
+y = -160 x =  250 ammeter(264,heathrow,"0-400A","SUB 43")
+y = -160 x =  350 ammeter(265,heathrow,"0-400A","SUB 38")
+y = -160 x =  400 ammeter(266,heathrow,"0-400A","SUB 45")
+y = -160 x =  450 ammeter(267,heathrow,"0-400A","62 F2")
+y = -160 x =  500 ammeter(268,heathrow,"0-800A","SUB 73")!-400-400!
+
+x = 400 y = -320 west_north_changeover(38,heathrow,scale=260)
+
+scale = 240
+x =-250 y = 110 transformer_meter(269,254,heathrow,"WEST INTAKE","1","0-2000A")
+x =150 y = 110 transformer_meter(270,263,heathrow,"WEST INTAKE","2","0-2000A")
+
+scale = 100
+x = -300 y = 280 transformer("Tx 1","SEB")
+x = 200 y = 280 transformer("Tx 2","SEB")
+
+scale = 120
+x = -300 y = 230 ocb_mont(3000,3500,155,280,heathrow,6,"btm")
+x = 200 y = 230 ocb_mont(3000,3510,165,290,heathrow,16,"btm")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+goto_menu
+x = 500 y = 270 command_button(199,heathrow)
+clear
+x = 25 y = 0 west_intake_mimic
+x = 0 y = 322 menu_bar
+clear
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

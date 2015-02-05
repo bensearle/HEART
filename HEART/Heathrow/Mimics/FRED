@@ -1,0 +1,12 @@
+load mimic_libutil
+load FRED_HELP
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+X=-75 Y=-100 W=216 H=218  RECT
+
+X=-64 Y=-201 W=287 H=290  DISK
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,helptext=test1,fg=white,bg=black,resizable

@@ -1,0 +1,98 @@
+!**	HEATHROW\SUB_STN_223		**!
+!** 	Modified by ULTRA - 05 Aug 2009	**!
+!** 	Sub 223 P5 goes to Sub 58T P2	**!
+!** 					**!
+
+!load SUB_STN_223_HELP!
+
+load transformer
+Load circuit_breakers
+load generic_bar_meter
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object busbar_223
+var helpstr = help string(30)
+var line_col=colour
+begin
+   	scale=256
+   	just=centrecentre
+   	x=20 y=20  w=500 h=300
+   	set text helpstr = "sub_stn_223_help"
+
+	line_col=green4
+	just=centrecentre
+	lw=3
+	X=200 Y=-15 add text (tfg=black,"223",ch = 22) clear
+	x = -200 y = 0 add x += 400 add line(lw=5,fg=line_col) clear
+
+	x =-150 y = 0 add y += 55 add line (fg=line_col) clear	! Panel 1 !
+	x =-108 y = -55 add y += 55 add line (fg=line_col) clear	! Panel 2 !
+	x =-75  y = 0 add y += 60 add line (fg=line_col) clear	! Panel 3 !
+	x = 0 y = 0 add y += 60 add line (fg=line_col) clear	! Panel 4 !
+	x = 38 y = -55 add y += 55 add line (fg=line_col) clear	! Panel 5 !
+	x = 75 y = 0 add y += 60 add line (fg=line_col) clear	! Panel 6 !
+	x = 150 y = 0 add y += 55 add line (fg=line_col) clear	! Panel 7 !
+
+! *** Circuit Breaker objects *** !
+!OBJECT TYPE3(plc_offset=INT,b_offset=INT,c_offset=INT,e_offset=INT,cont_offset=INT,src=SOURCE,ident=INT,position=STRING(4),cont_code=INT,ANGLE)!
+
+	scale=130
+	x =-150 y = 30 	breaker("type3",2300,2390,340,441,int,HEATHRO4,1,"BTM",int,angle=0)
+	x =-108 y = -30	breaker("type3",2300,2410,341,442,463,HEATHRO4,2,"TOP",20,angle=0)
+	x =-75 y = 30 	breaker("type3",2300,2430,342,443,int,HEATHRO4,3,"BTM",int,angle=0)
+	x =0 y = 30 	breaker("type3",2300,2450,343,444,int,HEATHRO4,4,"BTM",int,angle=0)
+	x = 38 y = -30	breaker("type3",2300,2470,344,445,463,HEATHRO4,5,"TOP",50,angle=0)
+	x = 75 y = 30 	breaker("type3",2300,2490,345,446,int,HEATHRO4,6,"BTM",int,angle=0)
+	x = 150 y = 30 	breaker("bus_earth",2300,2510,346,447,int,HEATHRO4,7,"BTM",int,angle=0)
+	
+
+
+! *** Scaling for objects *** !
+	scale=120
+! *** Transformer objects *** !
+
+	x = -75  Y=80  transformer("TX1","")
+	x = 0 Y=80 transformer("TX2","")
+	x = 75 Y=80 transformer("TX","")
+
+! *** Labels *** !
+	scale=256
+	tfg=black ch=12
+
+	!**panel 1**!
+	x =-150 y = 63 text("Spare")
+
+	!**panel 2**!
+	x = -100 y = -63 text("SS34 P1")
+
+	!**panel 3**!
+	x = -75 y = 115 text("Baggage")
+	y = 127 text("Tunnel")
+	y = 139 text("Vent Fans")
+
+	!**panel 4**!
+	x =0 y = 115 text("Baggage")
+	y = 127 text("Tunnel")
+	y = 139 text("Vent Fans")
+
+	!**panel 5**!
+	x = 40 y = -63 text("SS58T P2")
+
+	!**panel 6**!
+	x =75 y = 115 text("Construction")
+	y = 127 text("Supply")
+	y = 139 text("Tx")
+
+	!**panel 7**!
+	x = 150 y = 78 text("Bus")
+	y += 12 text("Earth")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=-10 Y=-30 busbar_223
+end
+mimic = main_object w=500,h=300,just=centrecentre,fg=white,bg=aquamarine3,x=170,y=235
+

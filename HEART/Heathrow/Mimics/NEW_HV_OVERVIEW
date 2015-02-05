@@ -1,0 +1,813 @@
+load mimic_libutil
+load new_menu_bar
+load hv_1_alarm_test
+load hv_2_alarm_test
+load hv_3_alarm_test
+load hv_4_alarm_test
+load hv_5_alarm_test
+load hv_6_alarm_test
+load hv_7_alarm_test
+load hv_9_alarm_test
+load hv_10_alarm_test
+load hv_11_alarm_test
+load hv_12_alarm_test
+load hv_13_alarm_test
+load hv_14_alarm_test
+load hv_15_alarm_test
+load north_intake_alarm_status
+load south_intake_alarm_status
+load east_intake_alarm_status
+load west_intake_alarm_status
+load sub_stn_23_alarm_test
+load sub_stn_32_alarm_test
+load sub_stn_62_alarm_test
+
+
+!************ NORTH INTAKE ************!
+
+object north_intake
+
+var call_var = toplevel  string
+
+begin
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_north_intake"
+   end
+
+if north_intake_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("NORTH INTAKE",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ SOUTH INTAKE ************!
+
+object south_intake
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_south_intake"
+   end
+
+if south_intake_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("SOUTH INTAKE",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ EAST INTAKE ************!
+
+object east_intake
+
+var call_var = toplevel  string
+
+begin
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_east_intake"
+   end
+
+if east_intake_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("EAST INTAKE",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+!************ WEST INTAKE ************!
+
+object west_intake
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_west_intake"
+   end
+
+if west_intake_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("WEST INTAKE",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ SUB 62 ************!
+
+object sub_stn_62
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_sub_stn_62"
+   end
+
+if sub_stn_62_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("SUB STATION 62",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ SUB 32 ************!
+
+object sub_stn_32
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_sub_stn_32"
+   end
+
+if sub_stn_32_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("SUB STATION 32",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ SUB 23 ************!
+
+object sub_stn_23
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_sub_stn_23"
+   end
+
+if sub_stn_23_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("SUB STATION 23",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 1 ************!
+
+object hv_1
+
+var call_var = toplevel  string
+
+begin
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_1"
+   end
+
+if hv_1_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 1",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 2 ************!
+
+object hv_2
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_2"
+   end
+
+if hv_1_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 2",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 3 ************!
+
+object hv_3
+
+var call_var = toplevel  string
+
+begin
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_3"
+   end
+
+if hv_3_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 3",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 4 ************!
+
+object hv_4
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_4"
+   end
+
+
+if hv_4_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 4",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 5 ************!
+
+object hv_5
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_5"
+   end
+
+if hv_5_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 5",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 6 ************!
+
+object hv_6
+
+var call_var = toplevel  string
+
+begin
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_6"
+   end
+
+if hv_6_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 6",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 7 ************!
+
+object hv_7
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_7"
+   end
+
+if hv_7_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 7",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 9 ************!
+
+object hv_9
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_9"
+   end
+
+if hv_9_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 9",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 10 ************!
+
+object hv_10
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_10"
+   end
+
+if hv_10_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 10",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 11 ************!
+
+object hv_11
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_11"
+   end
+
+if hv_11_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 11",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+!************ HV 12 ************!
+
+object hv_12
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_12"
+   end
+
+if hv_12_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 12",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 13 ************!
+
+object hv_13
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_13"
+   end
+
+if hv_13_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 13",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 14 ************!
+
+object hv_14
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_14"
+   end
+
+if hv_14_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 14",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+!************ HV 15 ************!
+
+object hv_15
+
+var call_var = toplevel  string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "new_hv_15"
+   end
+
+if hv_15_alarm_status == 0 then
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=decoroff)
+end
+else 
+begin
+  x = 0 y = 0 w = 300 h = 30 rect(fg=flashred)
+end
+
+x = 0 y = 30 add y -=30 add x += 300 add line(fg=white) clear
+x = 0 y = 30 add x += 300 add y -= 30 add line(fg=decoron) clear
+
+x = 150 y = 15 text("HV 15",tfg=white,ch = 25,just = centrecentre)
+
+x = 0 y = 0 w = 300 h = 30
+if anyb then
+  request call_var
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -310 y = -300 hv_1
+x = -310 y = -250 hv_2
+x = -310 y = -200 hv_3
+x = -310 y = -150 hv_4
+x = -310 y = -100 hv_5
+x = -310 y = -50 hv_6
+x = -310 y = -0 hv_7
+
+x = -310 y = 100 north_intake
+x = -310 y = 150 east_intake
+x = -310 y = 200 sub_stn_23
+x = -310 y = 250 sub_stn_62
+
+x = 10 y = -300 hv_9
+x = 10 y = -250 hv_10
+x = 10 y = -200 hv_11
+x = 10 y = -150 hv_12
+x = 10 y = -100 hv_13
+x = 10 y = -50 hv_14
+x = 10 y = 0 hv_15
+
+x = 10 y = 100 south_intake
+x = 10 y = 150 west_intake
+x = 10 y = 200 sub_stn_32
+
+x = 0 y = 310 menu_bar
+clear
+x = -560 y = -390 w = 1120 h = 50 rect(fg=decoroff) clear
+x = -560 y = -340 add y -= 50 add x += 1120 add line(fg=white) clear
+x = -560 y = -340 add x += 1120 add y -=50 add line(fg=decoron) clear 
+x = 0 y = -365 add text("HV NETWORK OVERVIEW",ch=30,just=centrecentre) clear
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

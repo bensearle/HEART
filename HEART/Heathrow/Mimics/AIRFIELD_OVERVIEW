@@ -1,0 +1,261 @@
+load mimic_libutil
+load intruder_display
+load alarm_text
+load AIRFIELD_OVERVIEW_HELP
+
+
+! 
+*********************************************************
+* Draw Firemain pipe in blue                          *
+*********************************************************
+!
+
+object fg_valves
+begin
+
+lw=8 
+fg = blue3
+
+x = -400 y = -350 add
+x = 800 add 
+y = 500 add
+x = -400 add
+y = -350 add
+ls=BACKWARD4
+line clear
+
+
+!x = 200 ADD
+y = 500 add
+line clear
+
+
+y = 50 add
+x = -400 add 
+line clear
+
+x = 0 y = 250 add
+y = -250 add
+line clear
+
+x = 125 y = 250 add
+y = 500 add
+line clear
+
+x = 250 Y = -250 ADD
+y = 250 add
+line clear
+!
+end
+
+object airfield_diagram (bg,fg,w,h,tbg,tfg)
+begin
+
+scale = 200
+! Draw Runways !
+
+X=-500 Y=-300  Add 
+Y=-250  Add 
+X=500  Add 
+y=-300 add
+x=-500 add 
+fill (fg=decoroff)
+line clear
+x=370 y=-240 add
+x= 100 y=200 add 
+X=-500 Add 
+Y=250  Add 
+X=500  Add 
+Y=200  Add 
+X=150 Add 
+x = 410 Y=-220  Add
+x=370 y=-240 add  
+fill(fg=decoroff)
+LINE clear
+
+
+
+! Draw Centre Lines !
+
+x=125 y=200 x+=13 y-=21 add x+=12 y-=20 add line(fg=white,lw=3) clear
+x+=14 y-=22 add x+=12 y-=20 add line(fg=white,lw=3) clear
+x+=13 y-=21 add x+=12  y-=20add line(fg=white,lw=3) clear
+x+=13 y-=21 add x+=12 y-=20 add line(fg=white,lw=3) clear
+x+=13 y-=20 add x+=12 y-=20 add line(fg=white,lw=3) clear
+x+=13 y-=20 add x+=12 y-=20 add line(fg=white,lw=3) clear
+x+=13 y-=20 add x+=12 y-=20 add line(fg=white,lw=3) clear
+x+=13 y-=20 add x+=12 y-=20 add line(fg=white,lw=3) clear
+x+=13 y-=20 add x+=12 y-=20  add line(fg=white,lw=3) clear
+x+=13 y-=20 add x+=12  y-=20 add line(fg=white,lw=3) clear
+
+
+x = -425 y = -275 add x += 850 add line(fg=white,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+
+
+x = -425 y = 225 add x += 850 add line(fg=white,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+x-=20 add x-=20 add line(fg=decoroff,lw=3) clear
+
+scale = 180
+x = -470 y=225 int_sensor(24227,heathrow,"09R")
+x = -470 y=-275 int_sensor(24228,heathrow,"09L")
+x = 465 y=-275 int_sensor(24225,heathrow,"27R")
+x = 465 y=225 int_sensor(24226,heathrow,"27L")
+x=380 y=-215 int_sensor(24229,heathrow,"23")
+
+
+scale = 200
+
+! Draw T3 Building !
+!departures!
+fs=FILLPATT  
+patt=HALFTONE 
+fg=green
+X=-300 Y=-150  Add 
+x=-225 y=-170 Add 
+x=-217 y=-130  Add 
+x=-258 y=-118 add
+!arrivals!
+x=-238 y=-20 add
+x=-275 y=-10  Add 
+x=-260 y=70 add
+!connector!
+x=-280 y=75 add
+x=-305 y=-50 add
+x=-360 y=-35 add
+x=-340 y=90 add
+x=-360 y=95 add 
+x=-400 y=-140 add
+x=-380 y=-145 add
+x=-365 y=-50 add
+x=-310 y=-65 add
+x=-335 y=-210 add
+x=-315 y=-215 add
+x=-303 y=-150 add
+fill(fg=grey) 
+LINE clear
+
+!************STAR***********!
+fg=green
+x=-109 y =-191 add
+x=-165 y=-180 add
+x=-155 y=-130 add
+x=-98 y=-140 add 
+x=-109 y=-191 add 
+fill (fg=grey)
+line clear
+
+
+!******draw terminal one***********!
+fg=green
+x=60 y=-170 add
+x=105 y=-190 add
+x=110 y=-180 add
+x=200 y=-225 add
+x=210 y=-205 add
+x=120 y=-160 add
+x=145 y=-100 add
+x=270 y=-165 add
+x=278 y=-148 add
+x=152 y=-82 add
+x=158 y=-70 add
+x=112 y=-48 add
+x=60 y=-170 add
+fill(fg=grey)
+line clear
+
+!**********draw terminal two************!
+x=-85 y=75 add
+x=70 y=20 add
+x=120 y=145 add
+x=100 y=155 add
+x=70 y=80 add
+x=-40 y=120 add
+x=-18 y=185 add
+x=-42 y=195 add
+x=-85 y=75 add
+fill(fg=grey)
+line clear
+
+!*************draw control tower***********!
+x=-50 y=-100
+fg=grey
+add disk (w=70,h=70)
+fg=green
+add circle (w=70,h=70) 
+clear
+
+!*************draw queens bld************!
+x = 50 y = -60
+add rotarc (w=150,h=150,sa=-20,aa=90) clear
+x = 90 y = -20 add
+x = 90 y = 50 add
+line clear
+
+!******Put in text********!
+tfg=white
+ch=36
+x=-300 y=-100 text ("T3")
+x=95 y=-135 text ("T1")
+x=-10 y=60 text ("T2")
+x=-38 y=-88 text ("A1")
+ch=20
+font=font_bold
+x=-155 y=-170 text ("STAR")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin 
+
+!alarm_point(7045,heathrow,"A1 UPS")!
+scale = 200
+x = -200 y = -75 fg_valves 
+scale = 200
+x = 0 y = 0 airfield_diagram
+
+end
+
+mimic = main_object w=1200,h=850,just=centrecentre,fg=white,bg=black,resizable

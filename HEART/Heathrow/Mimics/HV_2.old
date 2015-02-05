@@ -1,0 +1,380 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!*********Hv Ring 2*************!
+
+
+load mimic_libutil
+load ocb
+load hv_2_sub_stations
+load hv_menu_bar
+load hv_hierarchy
+
+
+!************* SUB 76 ***************!
+
+object sub_76
+
+begin
+
+sub_symbol_76
+
+lw = 2
+x = 0 y = 50 add y += 50 add line (fg=red) clear
+x = 50 y = 50 add y += 50 add line (fg=red) clear
+x = 100 y = -25 add y += 50 add line (fg=red) clear
+x = 150 y = -25 add y += 50 add line (fg=red) clear
+x = 200 y = 50 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0   y = 75 ocb_mont(500,650,20,30,heathro2,1,"btm")
+x = 50  y = 75 ocb_mont(500,660,21,31,heathro2,2,"btm")
+x = 100 y = 0 ocb_mont(500,670,22,32,heathro2,3,"top")
+x = 150 y = 0 ocb_mont(500,680,23,33,heathro2,4,"top")
+x = 200 y = 75 ocb_mont(500,690,24,34,heathro2,5,"btm")
+
+
+end
+
+
+!************* SUB M1/8 ***************!
+
+object sub_m1_8
+
+begin
+
+sub_symbol_m1_8
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+!x = 0 y = 0 ocb_barcis(21194,858,1133,heathrow,3,"top")
+x = 50 y = 0 ocb_barcis(21174,857,1132,heathrow,4,"top")!
+ 
+x = 0  y = 0 ocb_mont(1500,1650,44,80,heathro2,3,"top")
+x = 50 y = 0 ocb_mont(1500,1660,45,81,heathro2,4,"top")
+
+end
+
+
+!************* SUB 68 ***************!
+
+object sub_68
+
+begin
+
+sub_symbol_68
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25000,30,1300,heathrow,"o")
+x = 50 y = 0 oil_switch(25002,31,1301,heathrow,"c")
+
+scale = 256
+x = 15 y = -5 text("1",ch=12,tfg=white)
+x = 65 y = -5 text("2",ch=12,tfg=white)
+
+end
+
+
+!************* SUB 70 ***************!
+
+object sub_70
+
+begin
+
+sub_symbol_70
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25006,33,1303,heathrow,"c")
+x = 50 y = 0 oil_switch(25008,34,1304,heathrow,"c")
+
+scale = 256
+x = 15 y = -5 text("1",ch=12,tfg=white)
+x = 65 y = -5 text("2",ch=12,tfg=white)
+
+end 
+
+
+!************* SUB 63 ***************!
+
+object sub_63
+
+begin
+
+sub_symbol_63
+
+lw = 2
+x = 0 y = -25  add y += 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25014,37,1307,heathrow,"c")
+
+scale = 256
+x = 15 y = -5 text("3",ch=12,tfg=white)
+
+end
+
+
+!************* SUB M1/11 ***************!
+
+object sub_m1_11
+
+begin
+
+sub_symbol_m1_11
+
+lw = 2
+x = 0 y = -25 add y += 50 add line(lw=2,fg=red) clear
+x = 50  y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+!x = 0 y = 0 ocb_barcis(21314,864,1139,heathrow,8,"top")
+x = 50 y = 0 ocb_barcis(21294,863,1138,heathrow,9,"top")!
+
+x = 0  y = 0 ocb_mont(1500,1690,48,84,heathro2,8,"top")
+x = 50 y = 0 ocb_mont(1500,1700,49,85,heathro2,9,"top")
+
+
+end
+
+
+!************* SUB M1/12 ***************!
+
+object sub_m1_12
+
+begin
+
+sub_symbol_m1_12
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+!x = 0 y = 0 ocb_barcis(21334,865,1140,heathrow,8,"top")
+x = 50 y = 0 ocb_barcis(21354,866,1141,heathrow,9,"top")!
+
+x = 0  y = 0 ocb_mont(1500,1710,50,86,heathro2,8,"top")
+x = 50 y = 0 ocb_mont(1500,1720,51,87,heathro2,9,"top")
+
+
+end
+
+
+!************* SUB 100 ***************!
+
+object sub_100
+
+begin
+
+sub_symbol_100
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25105,495,1373,heathrow,"c")
+x = 50 y = 0 oil_switch(25106,496,1374,heathrow,"c")
+
+scale = 256
+x = 15 y = -5 text("3",ch=12,tfg=white)
+x = 65 y = -5 text("4",ch=12,tfg=white)
+
+end
+
+
+!*********** HV 2 SOUTH INTAKE ***********!
+
+object hv_2_south_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var="south_intake"
+
+W=200 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 75 y = 38 text(tfg=white,ch=25,"South Intake",just=centrecentre) clear
+
+x = 175 y = 25 add x -= 200 add y += 25 add line (fg=white) clear
+x = 175 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear
+
+lw=2
+x = 0 y = 25 add y = -75 add line(fg=red) clear
+x = 50 y = 25 add y = -55 add x -= 50 add line(fg=red) clear
+x = 100 y = 25 add y = -75 add line(fg=red) clear
+x = 150 y = 25 add y = -55 add x -= 50 add line(fg=red) clear
+
+scale=120
+x = 0 y = -25 ocb(1000,1440,71,96,heathrow,13,"top")
+x = 50 y = 0 ocb(1000,1460,72,97,heathrow,13,"top") 
+x = 100 y = -25 ocb(1000,1500,78,103,heathrow,17,"top") 
+x = 150 y = 0 ocb(1000,1520,79,104,heathrow,17,"top")
+
+end
+
+
+!*********** HV 2 NORTH INTAKE ************!
+
+object hv_2_north_intake
+
+var call_var = toplevel string
+
+begin
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var="north_intake"
+
+W=150 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"North Intake",just=centrecentre) clear
+
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 50 y = 25 add y = -25 add line(fg=red) clear
+
+
+scale=120
+x = 0 y = 0 ocb(1,100,1,25,heathrow,1,"top")
+x = 50 y = 0 ocb(1,120,2,26,heathrow,2,"top")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin 
+
+goto_menu
+x = 500 y = 270 command_button(221,heathrow)
+clear
+
+lw=2
+
+! M1/8-3 TO NI-1 !
+x = -350 y = -205 add 
+y -= 160 add
+x += 300 add
+y += 15 add
+line(fg=red) clear
+
+! M1/8-4 TO M1/12 !
+x = -300 y = -205 add
+y -= 15 add
+x -= 125 add
+y += 205 add
+line(fg=red) clear
+
+! SS76-1 TO SS100-3 !
+x = -100 y = -80 add
+y += 25 add
+x -= 125 add
+y += 30 add
+line(fg=red) clear
+
+! SS76-2 TO SS70-1 !
+x = -50 y = -80 add
+y += 25 add
+x += 225 add
+y += 30 add
+line(fg=red) clear
+
+! SS76-3 TO NI-2 !
+x = 0 y = -205 add
+y -= 45 add
+x = 150 add
+y -= 115 add
+x -= 150 add
+y += 15 add
+line(fg=red) clear
+
+! SS76-4 TO M1/11-9 !
+x = 50 y = -205 add
+y -= 30 add
+x += 300 add
+y += 30 add
+line(fg=red) clear
+
+! SS76-5 TO SS63-3 !
+x = 100 y = -80 add
+y += 10 add
+x += 275 add
+y += 45 add
+line(fg=red) clear
+
+! M1/11-8 TO SI-13 !
+x = 300 y = -205 add
+y -= 15 add
+x += 200 add
+y += 330 add
+x -= 575 add
+y += 15 add
+line(fg=red) clear
+
+! M1/12-2 TO SI-17 !
+x = -375 y = -25 add
+y -= 15 add
+x += 75 add
+y += 125 add
+x += 325 add
+y += 45 add
+line(fg=red) clear
+
+! SS100-4 TO SS68-1 !
+x = -175 y = -25 add
+y -= 15 add
+x += 150 add
+y += 15 add
+line(fg=red) clear
+
+! SS68-2 TO SS70-2 !
+x = 25 y = -25 add
+y -= 15 add
+x += 200 add
+y += 15 add
+line(fg=red) clear
+
+x = -100 y = -180 sub_76
+x = 300 y = -180 sub_m1_11
+x = -350 y = -180 sub_m1_8
+
+x = -425 y = 0 sub_m1_12
+x = -225 y = 0 sub_100
+x = -25 y = 0 sub_68
+x = 175   y = 0 sub_70
+x = 375  y = 0 sub_63
+
+x =  -75 y = 200 hv_2_south_intake
+x = -50 y = -330 hv_2_north_intake 
+
+x = 0 y = 322 menu_bar
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=lightgreen3,resizable

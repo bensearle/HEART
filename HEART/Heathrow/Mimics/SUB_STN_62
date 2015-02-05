@@ -1,0 +1,166 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!*********Hv SUB STN 62*********!
+
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load transformer_meter
+load chp_meter
+load ammeter
+Load BROWSER
+
+
+!************** BUSBAR 62 ****************!
+
+object busbar_62
+begin
+
+just = centrecentre
+
+tfg = black x = -100 y = -20 add text ("Sub Station 62",ch = 20) clear
+
+x = -570 y = 0 add x += 690 add line(lw=4,fg=green4) clear
+x =120 y =0 add x +=475 add line(lw=4,fg=blue) clear
+
+tfg = black ch = 12
+x = -300 y = 70 text("Spare")
+x = -382 y = -80 text("SS104")
+x = -382 y = -65 text("P7")
+x = -255 y = -65 text("SI-F2")
+x = 568  y = -80 text("WI NEW")
+x = 560  y = -65 text("P11")
+
+!x = 560 y = -65 text("WI-S")!
+
+x = -345 y = 70 text("S/S 93",just=centrecentre)
+x = -345 y = 85 text("P1")
+
+scale = 256
+lw=2
+x = 560  y = 0 add y -= 50 add line(fg=blue) clear
+x = 510  y = 0 add y -= 80 add line(fg=blue) clear 
+x = 465  y = 0 add y = 80 add line(fg=blue) clear   
+x = 415  y = 0 add y = 80 add line(fg=blue) clear   
+x = 365  y = 0 add y = 120 add line(fg=blue) clear  
+x = 315  y = 0 add y = 60 add line(fg=blue) clear   
+x = 265  y = 0 add y = 80 add line(fg=blue) clear  
+x = 215  y = 0 add y = 130 add line(fg=blue) clear   
+x = 170  y = 0 add y -= 80 add line(fg=blue) clear
+
+x = 330 y = 150 add y -= 30 add x += 70 add y += 30 add line(fg=blue) clear
+
+x =  80  y = 0 add y -= 80 add line(fg=green4) clear  
+x =  40  y = 0 add y = 130 add line(fg=green4) clear   
+x = -10  y = 0 add y = 80 add line(fg=green4) clear   
+x = -65  y = 0 add y = 60 add line(fg=green4) clear   
+x = -115 y = 0 add y = 120 add line(fg=green4) clear   
+x = -165 y = 0 add y = 80 add line(fg=green4) clear   
+x = -210 y = 0 add y = 80 add line(fg=green4) clear   
+x = -255 y = 0 add y -= 50 add line(fg=green4) clear  
+x = -300 y = 0 add y = 60 add line(fg=green4) clear  
+x = -345 y = 0 add y = 60 add line(fg=green4) clear   
+x = -385 y = 0 add y -= 50 add line(fg=green4) clear  
+x = -485 y = 0 add y -= 80 add line(fg=green4) clear  
+x = -535 y = 0 add y -= 80 add line(fg=green4) clear  
+
+x = -150 y = 150 add y -= 30 add x += 70 add y += 30 add line(fg=green4) clear
+ 
+
+scale = 120
+x = 560  y = -25  ocb_mont(6000,6360,323,598,heathrow,26,"top")
+x = 510  y = -25  ocb(6000,6340,322,597,heathrow,25,"top")
+x = 465  y = 25   ocb_mont(6000,6470,321,596,heathrow,24,"btm")
+x = 415  y = 25   ocb_mont(6000,6460,320,595,heathrow,23,"btm")
+x = 365  y = 25   ocb_mont(6000,6450,319,594,heathrow,22,"btm")
+x = 315  y = 25   ocb_mont(6000,6440,318,593,heathrow,21,"btm")
+x = 265  y = 25   ocb_mont(6000,6430,317,592,heathrow,20,"btm")
+x = 215  y = 25   ocb(6000,6320,316,591,heathrow,19,"btm")
+x = 170  y = -25  ocb(6000,6300,315,590,heathrow,18,"top")
+x = 125  y = 0    ocb(6000,6280,314,589,heathrow,17,"sect",angle=90)
+x = 105 y = 22 add text ("16/",ch = 30) clear
+x =  80  y = -25  ocb(6000,6260,313,588,heathrow,15,"top")
+x =  40  y = 25   ocb(6000,6240,312,587,heathrow,14,"btm")
+x = -10  y = 25   ocb_mont(6000,6420,311,586,heathrow,13,"btm")
+x = -65  y = 25   ocb_mont(6000,6410,310,585,heathrow,12,"btm")
+x = -115 y = 25   ocb_mont(6000,6400,309,584,heathrow,11,"btm")
+x = -165 y = 25   ocb_mont(6000,6390,308,583,heathrow,10,"btm")
+x = -210 y = 25   ocb_mont(6000,6380,307,582,heathrow,9,"btm")
+x = -255 y = -25  ocb(6000,6220,306,581,heathrow,8,"top")
+x = -300 y = 25  ocb_mont(6000,6200,305,580,heathrow,7,"btm")
+x = -345 y = 25   ocb_mont(6000,6180,304,579,heathrow,6,"btm")
+x = -385 y = -25   ocb_mont(6000,6160,303,578,heathrow,5,"top")
+x = -435 y = 0    ocb(6000,6140,302,577,heathrow,3,"sect",angle=90)
+x = -424 y = 22 add text ("/4",ch = 30) clear
+x = -485 y = -25  ocb(6000,6120,301,576,heathrow,2,"top")
+x = -535 y = -25  ocb(6000,6100,300,575,heathrow,1,"top")
+
+scale=100
+y = 80
+x =  465  transformer("T 10","")
+x =  415  transformer("T 8","")
+x = 315  transformer("T 13","")
+x =  265  transformer("T 2","")
+x =  215  transformer("T 12","")
+x =  40  transformer("T 11","")
+x = -10  transformer("T 9","")
+x = -165  transformer("T 3","")
+x = -210  transformer("T 1","")
+x = -65  transformer("T 14","")
+
+y = 150
+x = -150 transformer("Tx 1","")
+x = -80 transformer("Tx 3","")
+x = 330 transformer("Tx 2","")
+x = 400 transformer("Tx 4","")
+x = -115 y=183 add text ("FEGP",ch=30) clear
+x = 365 y=183 add text ("FEGP",ch=30) clear
+x = -150 y=200 add text ("EAST",ch=30) clear
+x = -80 y=200 add text ("WEST",ch=30) clear
+x = 330 y=200 add text ("EAST",ch=30) clear
+x = 400 y=200 add text ("WEST",ch=30) clear
+end
+
+
+object busbar_62_mimic
+begin
+
+busbar_62
+
+scale = 260
+y = -165
+x = 250 transformer_meter(560,557,heathrow,"WEST - N","","0-400A")
+x = 0 transformer_meter(559,556,heathrow,"SOUTH - F1","","0-400A")
+
+scale = 200
+x = 510 y = -150 ammeter(553,heathrow,"0-400A","SS 116")
+
+x = 40 y = 240 ammeter(555,heathrow,"0-400A","T11")
+x = 215 y = 240 ammeter(558,heathrow,"0-400A","T12")
+
+
+x = -435 y = -150 ammeter(552,heathrow,"0-400A","BUS")
+x = -435 y = 160 chp_meter(561,heathrow,"9.5-12.5KV","BUS")
+
+x = -485 y = -150 ammeter(551,heathrow,"0-400A","SS 105")
+x = -535 y = -150 ammeter(550,heathrow,"0-400A","SI - F3")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+clear
+
+x = 0
+y = -50 busbar_62_mimic
+x = -600 y = 310 browser(1078,heathrow,1200)
+X=187 Y=-333 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("WEST INTAKE NEW")
+
+end
+
+mimic = main_object w=1200,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

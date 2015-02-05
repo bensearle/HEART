@@ -1,0 +1,1391 @@
+LOAD mimic_libutil
+
+LOAD gadgets_libutil
+LOAD nse_tap_confirm
+
+TYPE e_db_row_type 	= db_elements(db_addr,e_value)
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+TYPE c_db_row_type 	= db_elements(db_addr,c_value)
+TYPE b_bool_type 	= db_elements(b_value)
+TYPE alarm_row_type 	= db_elements(old,alarm_status)
+TYPE main_menu_row 	= table (main_menu_items= string(27))
+TYPE panel_item_row 	= table (str = string(40))
+TYPE confirm_state 	= enum(execute = "Execute",
+                               cancel = "Cancel")
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!-----------------------------------------------------------------------------!
+!  READ CHARACTER ARRAY                                                       !
+!-----------------------------------------------------------------------------!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!-----------------------------------------------------------------------------!
+!  READ ENGINEERING VALUE                                                     !
+!-----------------------------------------------------------------------------!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+!-----------------------------------------------------------------------------!
+!  TAG MESSAGE WINDOW                                                         !
+!-----------------------------------------------------------------------------!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+!-----------------------------------------------------------------------------				!
+! TRANSFORMER OBJECT TYPE 1                  -Monitoring Alarms and Tag Only       	!
+!-----------------------------------------------------------------------------				!
+OBJECT TXFR1(plc_offset=INT,num_alarms=INT,b_offset=INT,c_offset=INT,cont_offset=INT,src=SOURCE,ident=INT,col_1=string,col_2=string,fg)
+var plc_inputs 		= input b_bool_type[2]		! ** inputs ** !
+var alarm_inputs 		= input alarm_row_type[6]
+var tag_message_ip	= input c_db_row_type
+
+var main_menu		= MENU	string(40)		! ** menus** !
+var tag_message_panel	= PANEL panel_item_row
+
+var alarm1 = alarm_status
+var alarm2 = alarm_status
+var alarm3 = alarm_status
+var alarm4 = alarm_status
+var alarm5 = alarm_status
+var alarm6 = alarm_status
+
+var fg_col_1		= loopback colour		! ** loopbacks ** !
+var fg_col_2		= loopback colour
+var transformer_foreground	= loopback colour
+
+var special_comms_ip = input b_bool_type
+var special_alarm 		=onoff ! unique address used to animate fg magenta !
+
+BEGIN
+	if invalid get source plc_inputs then 
+	begin
+	   ! GET PLC INPUTS !
+	   set source plc_inputs = src
+	   set filter plc_inputs.db_addr = lim_ge
+	   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   set priority plc_inputs.db_addr = 15
+	   set persist plc_inputs
+	   set mayexist plc_inputs
+	   request plc_inputs
+
+	   ! GET RTU COMMS FAIL ADDRESS !
+	if cont_offset <> int and cont_offset <>0 then
+	begin
+		set source special_comms_ip = src
+		set filter special_comms_ip.db_addr = lim_ge
+		set limit special_comms_ip.db_addr = db_address(int(b1) + cont_offset - 1)
+		set priority special_comms_ip.db_addr = 15
+		set persist special_comms_ip
+		set mayexist special_comms_ip
+		request special_comms_ip
+	end
+
+	   ! GET TRANSFORMER TAG MESSAGE !
+	   set source tag_message_ip = src
+	   set filter tag_message_ip.db_addr = lim_eq
+	   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+	   set persist tag_message_ip
+	   request tag_message_ip
+	
+	   ! GET TRANSFORMER ALARM INPUTS !
+
+		if num_alarms ==int or num_alarms ==0 then
+		begin
+			! ** no alarms configured ** !
+		end
+		else
+		begin
+		   set source alarm_inputs = src
+		   set max_rows alarm_inputs = num_alarms
+		   set filter alarm_inputs.db_addr = lim_ge
+		   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+		   set priority alarm_inputs.db_addr = 15
+		   set persist alarm_inputs
+		   set mayexist alarm_inputs
+		   request alarm_inputs
+		end
+	end
+
+	if invalid special_comms_ip.b_value then special_alarm = off else
+		special_alarm = special_comms_ip.b_value
+
+	if invalid fg then fg=white
+
+	!-----------------------------------------------------------------------------!
+	!  SELECT FOREGROUND COLOURS                                                  !
+	!-----------------------------------------------------------------------------!
+
+	if num_alarms >= 1 then
+	begin
+		if invalid alarm_inputs[1].alarm_status then 
+			alarm1 = alarm_clear 
+		else 
+			alarm1 = alarm_inputs[1].alarm_status
+	end
+	else 
+			alarm1 = alarm_clear 
+
+	if num_alarms >= 2 then
+	begin
+		if invalid alarm_inputs[2].alarm_status then 
+			alarm2 = alarm_clear 
+		else 
+			alarm2 = alarm_inputs[2].alarm_status
+	end
+	else 
+			alarm2 = alarm_clear 
+
+	if num_alarms >= 3 then
+	begin
+		if invalid alarm_inputs[3].alarm_status then 
+			alarm3 = alarm_clear 
+		else 
+			alarm3 = alarm_inputs[3].alarm_status
+	end
+	else 
+			alarm3 = alarm_clear 
+
+	if num_alarms >= 4 then
+	begin
+		if invalid alarm_inputs[4].alarm_status then 
+			alarm4 = alarm_clear 
+		else 
+			alarm4 = alarm_inputs[4].alarm_status
+	end
+	else 
+			alarm4 = alarm_clear 
+
+	if num_alarms >= 5 then
+	begin
+		if invalid alarm_inputs[5].alarm_status then 
+			alarm5 = alarm_clear 
+		else 
+			alarm5 = alarm_inputs[5].alarm_status
+	end
+	else 
+			alarm5 = alarm_clear 
+
+	if num_alarms >= 6 then
+	begin
+		if invalid alarm_inputs[6].alarm_status then 
+			alarm6 = alarm_clear 
+		else 
+			alarm6 = alarm_inputs[6].alarm_status
+	end
+	else 
+			alarm6 = alarm_clear 
+
+
+	IF plc_inputs[1].b_value==1 AND plc_inputs[2].b_value==1 THEN
+	BEGIN
+		fg_col_1 = magenta
+		fg_col_2 = magenta
+	END
+	else if fg ==magenta then
+	BEGIN
+		fg_col_1 = magenta
+		fg_col_2 = magenta
+	END
+	else if special_alarm == on then
+	BEGIN
+		fg_col_1 = magenta
+		fg_col_2 = magenta
+	END
+	ELSE IF 	alarm1 == w_note or alarm2 == w_note OR alarm3 == w_note or alarm4 == w_note OR 
+		alarm5 == w_note or alarm6 == w_note THEN
+	BEGIN
+		fg_col_1 = flashred
+		fg_col_2 = flashred
+	END
+	ELSE IF 	alarm1 == w_clr or alarm2 == w_clr OR alarm3 == w_clr or alarm4 == w_clr OR 
+		alarm5 == w_clr or alarm6 == w_clr THEN
+	BEGIN
+		fg_col_1 = red
+		fg_col_2 = red
+	END
+	ELSE
+	BEGIN
+		if col_1 == "white" then 	fg_col_1 = white
+		if col_1 == "red" then 	fg_col_1 = red
+		if col_1 == "green" then	fg_col_1 = green4
+		if col_1 == "blue" then 	fg_col_1 = blue
+		if col_1 == "orange" then 	fg_col_1 = orange2
+		if col_1 == "black" then 	fg_col_1 = black
+		if col_1 == "" then		fg_col_1 = red
+
+		if col_2 == "white" then 	fg_col_2 = white
+		if col_2 == "red" then 	fg_col_2 = red
+		if col_2 == "green" then 	fg_col_2 = green4
+		if col_2 == "blue" then 	fg_col_2 = blue
+		if col_2 == "orange" then 	fg_col_2 = orange2
+		if col_2 == "black" then 	fg_col_2 = black
+		if col_2 == "" then 		fg_col_2 = black
+	END
+
+	IF tag_message_ip.c_value <> "" THEN
+	BEGIN
+	  x=1 y =1
+	  RECT(W=108,H=126,FG=yellow,just=centrecentre)
+	END
+	ELSE
+	  transformer_foreground = BLACK
+
+
+	just=centrecentre
+
+	! ** background rectangle ** !
+	x = 0 y = 0 RECT(W=99,H=119,FG=grey80)
+
+	! ** transformer symbol ** !
+	x = 0 y = -15 CIRCLE(LW=8,W=50,H=50,FG=fg_col_1)
+	x = 0 Y += 30 CIRCLE(LW=8,W=50,H=50,FG=fg_col_2)
+	x=0 y=-35 add y-=25 add line(lw=7,fg=fg_col_1) clear
+	x=0 y=35 add y+=25 add line(lw=7,fg=fg_col_2) clear
+
+	! ** line borders ** !
+	X=-50 Y=60 Add X=-50 Y=-60 Add X=50 Y=-60 Add line(lw=1, fg=white) clear
+	X=-50 Y=60 Add X=50 Y=60 Add X=50 Y=-60 Add line(lw=1, fg=black) clear
+
+	x = 65 y = 0 Add TEXT(TFG=black,CH=22,ident)
+
+	! TAG MESSAGE BOX !
+	just=centrecentre
+	x = 0 y = 0 w=100 h=120
+	IF SELB AND tag_message_ip.c_value <> "" THEN
+	BEGIN
+		MESSAGE_TEXT_BOX(tag_message_ip.c_value)
+	END
+	IF VALID tag_message_panel THEN
+	BEGIN
+		set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	END
+
+
+	!-----------------------------------------------------------------------------!
+	!  MAIN MENU                                                                  !
+	!-----------------------------------------------------------------------------!
+	just=centrecentre
+	x = 0 y = 0 w=100 h=120
+	set rect main_menu clear
+
+	SET TITLE main_menu = "Transformer "+ident
+	SET EMPTY main_menu
+	SET Remove main_menu = "Alter Tag Message"
+	SET Remove main_menu = "Clear Tag Message"
+	SET Add main_menu = "Alter Tag Message"
+	SET Add main_menu = "Clear Tag Message"
+
+
+	IF VALID main_menu THEN
+	BEGIN
+	   CASE main_menu OF
+
+	      "Alter Tag Message"
+  	      BEGIN
+    		SET TITLE tag_message_panel 	= "Modify Tag Message"	
+    		SET LABEL tag_message_panel.str	= "Tag Message :"
+    		SET UNPINNED tag_message_panel
+    		REQUEST tag_message_panel
+  	      END
+
+  	      "Clear Tag Message"
+    		set_c_value(db_address(int(c1) + c_offset - 1),src,"")
+
+  		DEFAULT
+  		  BEGIN
+  		  END
+
+  	      SET INVALID main_menu
+	END
+END
+
+
+
+!-----------------------------------------------------------------------------!
+! TRANSFORMER OBJECT TYPE 2                          !
+!-----------------------------------------------------------------------------!
+
+OBJECT TYPE2(c_offset=INT,src=SOURCE,ident=INT,col_1=string,col_2=string)
+! MENUS !
+VAR tag_message_panel		= PANEL		panel_item_row
+VAR main_menu			= MENU		STRING(40)
+VAR transformer_foreground	= COLOUR
+VAR tag_message_ip		= input 	c_db_row_type
+VAR fg_col_1			= loopback colour
+VAR fg_col_2			= loopback colour
+
+BEGIN
+	   if invalid get source tag_message_ip then 
+	   begin
+		! DATA RETRIEVAL !
+		! GET TAG MESSAGE !
+		set source tag_message_ip = src
+		set filter tag_message_ip.db_addr = lim_eq
+		set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+		set persist tag_message_ip
+		request tag_message_ip
+	end
+!-----------------------------------------------------------------------------!
+!  SELECT FOREGROUND COLOURS                                                  !
+!-----------------------------------------------------------------------------!
+if col_1 == "red" then 		fg_col_1 = red
+if col_1 == "green" then	fg_col_1 = green4
+if col_1 == "blue" then 	fg_col_1 = blue
+if col_1 == "orange" then 	fg_col_1 = orange2
+if col_1 == "black" then 	fg_col_1 = black
+if col_1 == "magenta" then 	fg_col_1 = magenta
+
+if col_2 == "red" then 		fg_col_2 = red
+if col_2 == "green" then 	fg_col_2 = green4
+if col_2 == "blue" then 	fg_col_2 = blue
+if col_2 == "orange" then 	fg_col_2 = orange2
+if col_2 == "black" then 	fg_col_2 = black
+if col_2 == "magenta" then 	fg_col_2 = magenta
+
+!-----------------------------------------------------------------------------!
+!  MAIN SYMBOL                                                                !
+!-----------------------------------------------------------------------------!
+
+IF tag_message_ip.c_value <> "" THEN
+BEGIN
+  x = 0 y = 0 w = 107 h = 127 RECT(FG=yellow,just=centrecentre)
+END
+ELSE
+  transformer_foreground = BLACK
+
+just=centrecentre
+x = 0 y = 0
+RECT(W=100,H=120,FG=DECOROFF)
+y = -15
+CIRCLE(LW=8,W=50,H=50,FG=fg_col_1)
+Y += 30
+CIRCLE(LW=8,W=50,H=50,FG=fg_col_2)
+CLEAR
+x = 0 y = -60 ADD
+y += 20 ADD
+LINE(LW=6,FG=fg_col_1)
+CLEAR
+x = 0 y = 60 ADD
+y -= 20 ADD
+LINE(LW=6,FG=fg_col_2)
+CLEAR
+
+X = 0 Y = 15
+x += 50 y -= 75 ADD
+x -= 100 ADD
+y += 120 ADD
+LINE(FG=WHITE) CLEAR
+
+ADD
+x += 100 ADD
+y -= 120 ADD
+LINE(FG=decoron) CLEAR
+x = 65 y = 0 ADD TEXT(tfg=black,ch=22,ident)
+
+!-----------------------------------------------------------------------------!
+!  MAIN MENU                                                                  !
+!-----------------------------------------------------------------------------!
+! TAG MESSAGE BOX !
+
+x = 0 y = 0 w = 100 h = 120 
+SET RECT main_menu
+SET TITLE main_menu = "Transformer "+ident
+IF SELB AND tag_message_ip.c_value <> "" THEN
+BEGIN
+  MESSAGE_TEXT_BOX(tag_message_ip.c_value)
+END
+IF VALID tag_message_panel THEN
+BEGIN
+  set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+  set invalid tag_message_panel
+END
+
+SET EMPTY main_menu
+SET ADD main_menu = "Alter Tag Message"
+SET ADD main_menu = "Clear Tag Message"
+
+IF VALID main_menu THEN
+BEGIN
+  CASE main_menu OF
+
+  "Alter Tag Message"
+  BEGIN
+    SET TITLE tag_message_panel 	= "Modify Tag Message"	
+    SET LABEL tag_message_panel.str	= "Tag Message :"
+    SET UNPINNED tag_message_panel
+    REQUEST tag_message_panel
+  END
+
+  "Clear Tag Message"
+    set_c_value(db_address(int(c1) + c_offset - 1),src,"")
+
+  DEFAULT
+  BEGIN
+  END
+
+  SET INVALID main_menu
+END
+Clear
+
+END
+
+!-----------------------------------------------------------------------------				!
+! TRANSFORMER OBJECT TYPE 3                  -Tap Change with Checkback       	!
+!-----------------------------------------------------------------------------				!
+OBJECT TXFR3(plc_offset=INT,pos1_number=INT,b_offset=INT,c_offset=INT,cont_offset=INT,src=SOURCE,btm_text=STRING(8),top_text=STRING(8),ident=INT,cont_code=INT,col_1=string,col_2=string,fg)
+
+! PLC INPUTS
+plc_inputs[1] = plc_a_comms_status
+plc_inputs[2] = plc_b_comms_status
+!
+var plc_inputs = input b_bool_type[2]
+
+! ALARM INPUTS
+Transformer Alarm inputs
+!
+var alarm_inputs 			= input alarm_row_type[21]
+
+! DIGITALS !
+VAR tap_status			= input		b_db_row_type
+VAR current_value			= input		e_db_row_type
+VAR tag_message_ip		= input 		c_db_row_type
+VAR control_code			= input		e_db_row_type
+VAR checkback_code		= input		e_db_row_type
+VAR execute_code		= input		e_db_row_type
+VAR plc_execute_code		= input		e_db_row_type
+
+! MENUS !
+VAR main_menu			= MENU		string(40)
+VAR tag_message_panel		= PANEL		panel_item_row
+VAR popup_box			= popup		confirm_popup
+VAR failure_box			= popup		control_status
+VAR local_control_in_progress 		= popup		control_status
+
+! LOOPBACK VARIABLES !
+VAR fg_col_1			= loopback colour
+VAR fg_col_2			= loopback colour
+VAR transformer_foreground		= loopback 	colour
+VAR confirm			= loopback	yesno
+VAR accept			= loopback 	yesno
+VAR increment			= loopback 	yesno
+VAR decrement			= loopback 	yesno
+VAR plc_executed			= loopback	yesno
+
+! GENERAL !
+VAR tap_position			= INT
+VAR in_progress			= YESNO
+VAR inc_code			= INT
+VAR dec_code			= INT
+VAR control_text			= STRING(10)
+
+BEGIN
+	if invalid get source plc_inputs then 
+	begin
+
+	   ! GET TAP POSITION INPUTS !
+	   set source current_value = src
+	   set filter current_value.db_addr = lim_ge
+	   set limit current_value.db_addr = db_address(int(e1) + pos1_number -1)
+	   set priority current_value.db_addr = 15
+	   set persist current_value
+	   set mayexist current_value
+	   request current_value
+
+	   ! GET PLC INPUTS !
+	   set source plc_inputs = src
+	   set filter plc_inputs.db_addr = lim_ge
+	   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   set priority plc_inputs.db_addr = 15
+	   set persist plc_inputs
+	   set mayexist plc_inputs
+	   request plc_inputs
+
+	   ! GET TRANSFORMER TAG MESSAGE !
+	   set source tag_message_ip = src
+	   set filter tag_message_ip.db_addr = lim_eq
+	   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+	   set persist tag_message_ip
+	   request tag_message_ip
+	
+	   ! GET TRANSFORMER ALARM INPUTS !
+	   set source alarm_inputs = src
+	   set filter alarm_inputs.db_addr = lim_ge
+	   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+	   set priority alarm_inputs.db_addr = 15
+	   set persist alarm_inputs
+	   set mayexist alarm_inputs
+	   request alarm_inputs
+	
+	   ! TAP INPUTS !
+	   set source tap_status = src
+	   set filter tap_status.db_addr = lim_eq
+	   set limit tap_status.db_addr = db_address(int(b1) + b_offset +39)
+	   set priority tap_status.db_addr = 15
+	   set persist tap_status
+	   set mayexist tap_status
+	   request tap_status
+
+	   ! GET CONTROL CODE !
+	   set source control_code = src
+	   set filter control_code.db_addr = lim_eq
+	   set limit control_code.db_addr = db_address(int(e1) + cont_offset - 1)	
+	   set persist control_code 
+	   request control_code
+
+	   ! GET CHECKBACK CODE !
+	   set source checkback_code = src
+	   set filter checkback_code.db_addr = lim_eq
+	   set limit checkback_code.db_addr = db_address(int(e1) + cont_offset)
+	   set persist checkback_code 
+	   request checkback_code
+
+	   ! GET SCOPE EXECUTE CODE !
+	   set source execute_code = src
+	   set filter execute_code.db_addr = lim_eq
+	   set limit execute_code.db_addr = db_address(int(e1) + cont_offset+1)
+	   set persist execute_code
+	   request execute_code
+
+	   ! GET PLC EXECUTE CODE !
+	   set source plc_execute_code = src
+	   set filter plc_execute_code.db_addr = lim_eq
+	   set limit plc_execute_code.db_addr = db_address(int(e1) + cont_offset+2)
+	   set persist plc_execute_code
+	   request plc_execute_code
+	end
+
+	inc_code = cont_code
+	dec_code = cont_code + 1
+
+	if invalid fg then fg=white
+
+	!-----------------------------------------------------------------------------!
+	!  SELECT FOREGROUND COLOURS                                                  !
+	!-----------------------------------------------------------------------------!
+
+
+	IF plc_inputs[1].b_value==1 AND plc_inputs[2].b_value==1 THEN
+	BEGIN
+		fg_col_1 = magenta
+		fg_col_2 = magenta
+	END
+	else if fg ==magenta then
+	BEGIN
+		fg_col_1 = magenta
+		fg_col_2 = magenta
+	END
+	ELSE IF 	alarm_inputs[1].alarm_status == w_note or alarm_inputs[2].alarm_status == w_note OR
+	alarm_inputs[3].alarm_status == w_note or alarm_inputs[4].alarm_status == w_note OR 
+	alarm_inputs[5].alarm_status == w_note or alarm_inputs[6].alarm_status == w_note OR 
+	alarm_inputs[7].alarm_status == w_note or alarm_inputs[8].alarm_status == w_note OR
+	alarm_inputs[9].alarm_status == w_note or alarm_inputs[10].alarm_status == w_note OR
+	alarm_inputs[11].alarm_status == w_note or alarm_inputs[12].alarm_status == w_note OR
+	alarm_inputs[13].alarm_status == w_note or alarm_inputs[14].alarm_status == w_note OR
+	alarm_inputs[15].alarm_status == w_note or alarm_inputs[16].alarm_status == w_note OR
+	alarm_inputs[17].alarm_status == w_note or alarm_inputs[18].alarm_status == w_note OR
+	alarm_inputs[19].alarm_status == w_note or alarm_inputs[20].alarm_status == w_note OR
+	alarm_inputs[21].alarm_status == w_note THEN
+	BEGIN
+		fg_col_1 = flashred
+		fg_col_2 = flashred
+	END
+	ELSE IF 	alarm_inputs[1].alarm_status == w_clr or alarm_inputs[2].alarm_status == w_clr OR
+	alarm_inputs[3].alarm_status == w_clr or alarm_inputs[4].alarm_status == w_clr OR 
+	alarm_inputs[5].alarm_status == w_clr or alarm_inputs[6].alarm_status == w_clr OR 
+	alarm_inputs[7].alarm_status == w_clr or alarm_inputs[8].alarm_status == w_clr OR
+	alarm_inputs[9].alarm_status == w_clr or alarm_inputs[10].alarm_status == w_clr OR
+	alarm_inputs[11].alarm_status == w_clr or alarm_inputs[12].alarm_status == w_clr OR
+	alarm_inputs[13].alarm_status == w_clr or alarm_inputs[14].alarm_status == w_clr OR
+	alarm_inputs[15].alarm_status == w_clr or alarm_inputs[16].alarm_status == w_clr OR
+	alarm_inputs[17].alarm_status == w_clr or alarm_inputs[18].alarm_status == w_clr OR
+	alarm_inputs[19].alarm_status == w_clr or alarm_inputs[20].alarm_status == w_clr OR
+	alarm_inputs[21].alarm_status == w_clr THEN
+	BEGIN
+		fg_col_1 = red
+		fg_col_2 = red
+	END
+	ELSE
+	BEGIN
+	if col_1 == "white" then 	fg_col_1 = white
+	if col_1 == "red" then 	fg_col_1 = red
+	if col_1 == "green" then	fg_col_1 = green4
+	if col_1 == "blue" then 	fg_col_1 = blue
+	if col_1 == "orange" then 	fg_col_1 = orange2
+	if col_1 == "black" then 	fg_col_1 = black
+
+	if col_1 == "" 		then 	fg_col_1 = red
+	if col_2 == "white" then 	fg_col_2 = white
+	if col_2 == "red" then 	fg_col_2 = red
+	if col_2 == "green" then 	fg_col_2 = green4
+	if col_2 == "blue" then 	fg_col_2 = blue
+	if col_2 == "orange" then 	fg_col_2 = orange2
+	if col_2 == "black" then 	fg_col_2 = black
+	if col_2 == "" then 		fg_col_2 = black
+	END
+
+
+
+	!-----------------------------------------------------------------------------!
+	!  MAIN SYMBOL                                                                !
+	!-----------------------------------------------------------------------------!
+	if cont_code == 0 or cont_code == int then
+	begin
+	end
+	else
+	begin
+		IF control_code.e_value == inc_code OR control_code.e_value == dec_code THEN
+		BEGIN
+		  y = -14
+		  RECT(W=122,H=232,FG=flashgreen,just=centrecentre)
+		END
+
+			IF control_code.e_value == cont_code OR control_code.e_value == cont_code + 1 THEN 
+			BEGIN
+			IF control_code.e_value == plc_execute_code.e_value THEN
+			   plc_executed = yes
+			IF plc_executed == yes AND plc_execute_code.e_value == 0 THEN 
+			   BEGIN
+				set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+				set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+				plc_executed = no
+			   END
+			END
+			ELSE plc_executed = no
+	end
+
+	IF tag_message_ip.c_value <> "" THEN
+	BEGIN
+	  y = -14
+	  RECT(W=112,H=222,FG=yellow,just=centrecentre)
+	END
+	ELSE
+	  transformer_foreground = BLACK
+
+
+	JUST=CENTRECENTRE
+	X = 0 Y = -15
+	W = 100 H = 210 SET RECT main_menu
+
+	RECT(W=100,H=210,FG=DECOROFF)
+	Y += 30
+	CIRCLE(LW=8,W=50,H=50,FG=fg_col_1)
+	Y += 30
+	CIRCLE(LW=8,W=50,H=50,FG=fg_col_2)
+	CLEAR
+
+	X = 50 Y = -120 ADD
+	X -= 100 ADD
+	Y += 210 ADD
+	LINE(FG=WHITE) CLEAR
+	
+	X += 0 ADD
+	X += 100 ADD
+	Y -= 210 ADD
+	LINE(FG=DECORON) CLEAR
+
+	X = -50 Y = -32 ADD
+	X += 100 ADD
+	LINE(FG=WHITE,LW=2) CLEAR
+
+	X = -50 Y = -34 ADD
+	X += 100 ADD
+	LINE(FG=DECORON,LW=2) CLEAR
+
+	X = -50 Y = -34 ADD
+	X += 100 ADD
+	LINE(FG=BLACK,LW=2) CLEAR
+
+	X = -40 Y = -40 ADD
+	Y -= 30 ADD
+	X += 80 ADD
+	LINE(FG=DECORON,LW=2) CLEAR
+	ADD
+	Y += 28 ADD
+	X -= 80 ADD
+	LINE(FG=WHITE,LW=2) CLEAR
+
+	X = 0 Y = -30 ADD
+	Y += 20 ADD
+	LINE(LW=7,FG=fg_col_1) CLEAR
+	X = 0 Y = 70 ADD
+	Y += 20 ADD
+	LINE(LW=7,FG=fg_col_2) CLEAR
+
+	FONT = FONT_BOLD
+	X = 0 Y = -105
+	TEXT(CH=17,top_text)
+	Y += 18
+	TEXT(CH=17,btm_text)
+	FONT = FONT_NORMAL
+	Y += 30 X += 30
+
+	
+	tap_position = int(current_value.e_value)
+
+	! TAP POSITION !
+	IF plc_inputs[1].b_value == 1 AND plc_inputs[2].b_value == 1 THEN 
+		TEXT(CH=21,TFG=MAGENTA,JUST=CENTRERIGHT,"####")  
+	ELSE
+		TEXT(TFG=BLACK,CH=21,JUST=CENTRERIGHT,tap_position) clear
+
+	x = 65 y = 0 ADD TEXT(TFG=black,CH=22,ident)
+
+
+	!-----------------------------------------------------------------------------!
+	!  MAIN MENU                                                                  !
+	!-----------------------------------------------------------------------------!
+	! TAG MESSAGE BOX !
+	x = 0 y = 0
+	w=120 h=201
+	IF SELB AND tag_message_ip.c_value <> "" THEN
+	BEGIN
+		MESSAGE_TEXT_BOX(tag_message_ip.c_value)
+	END
+	IF VALID tag_message_panel THEN
+	BEGIN
+		set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	END
+
+	SET TITLE main_menu = "Transformer "+ident
+	SET EMPTY main_menu
+	set remove main_menu = "Alter Tag Message"
+	set remove main_menu = "Clear Tag Message"
+	set remove main_menu = "Tap Increment"
+	set remove main_menu = "Tap Decrement"
+	set remove main_menu = "Control Cancel"
+	set add main_menu = "Alter Tag Message"
+	set add main_menu = "Clear Tag Message"
+
+	IF cont_offset <>int AND cont_offset <>0 AND cont_code <>int AND cont_code <>0 THEN
+	BEGIN
+		SET ADD main_menu = "Tap Increment"
+		SET ADD main_menu = "Tap Decrement"
+	END
+
+	IF (control_code.e_value == inc_code OR control_code.e_value == dec_code) AND cont_code > 0 THEN
+ 		SET ADD main_menu = "Control Cancel"
+
+
+	IF VALID main_menu THEN
+	BEGIN
+	   CASE main_menu OF
+
+	      "Alter Tag Message"
+  	      BEGIN
+    		SET TITLE tag_message_panel 	= "Modify Tag Message"	
+    		SET LABEL tag_message_panel.str	= "Tag Message :"
+    		SET UNPINNED tag_message_panel
+    		REQUEST tag_message_panel
+  	      END
+
+  	      "Clear Tag Message"
+    		set_c_value(db_address(int(c1) + c_offset - 1),src,"")
+
+  	      "Tap Increment"
+  		BEGIN      
+    			IF control_code.e_value == 0 THEN
+    			BEGIN
+				set_e_value(db_address(int(e1) + cont_offset-1),src, inc_code)
+      				increment = YES
+    			END
+    			ELSE
+      				in_progress = yes
+		END
+
+  	      "Tap Decrement"
+		BEGIN      
+    			IF control_code.e_value == 0 THEN
+    			BEGIN
+				set_e_value(db_address(int(e1) + cont_offset-1),src, dec_code)
+      				decrement = YES
+    			END
+    			ELSE
+      				in_progress = yes
+    		END
+
+	      "Control Cancel"
+    		BEGIN
+    			set_e_value(db_address(int(e1) + cont_offset-1),src, 9999)
+			set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+			set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+			set_b_value(db_address(int(b1) + b_offset + 38), src ,on)
+		  	set_b_value(db_address(int(b1) + b_offset + 38), src ,off)
+    		END
+	
+  		DEFAULT
+  		  BEGIN
+  		  END
+
+  	      SET INVALID main_menu
+	END
+
+
+
+
+
+	IF increment THEN
+		control_text = ident+" Inc"
+	ELSE IF decrement THEN
+		control_text = ident+" Dec"
+	ELSE
+		control_text = " "
+
+
+	! CONTROL CONFIRM / CANCEL !
+	IF INVALID popup_box AND control_code.e_value > 0 AND execute_code.e_value == 0 AND control_code.e_value == checkback_code.e_value THEN
+	BEGIN  
+
+  	   IF control_code.e_value == inc_code OR control_code.e_value == dec_code THEN
+  	      BEGIN
+     		IF increment== yes THEN
+     		   BEGIN
+      		   	set top popup_box
+      		   	set title popup_box = control_text
+      			set unpinned popup_box
+      			request popup_box(ident,"Increment")
+     		   END 
+     		ELSE IF  decrement== yes THEN
+       		   BEGIN
+      		   	set top popup_box
+         			set title popup_box = control_text
+         			set unpinned popup_box
+         			request popup_box(ident,"Decrement")
+       		   END 
+     	      END
+	END
+
+	IF popup_box == yes AND confirm == no THEN
+	BEGIN
+  	   IF control_code.e_value == checkback_code.e_value THEN
+  	      BEGIN
+
+    		IF control_code.e_value == inc_code OR control_code.e_value == dec_code THEN 
+    		   BEGIN
+      			IF increment== yes THEN
+      			   BEGIN
+     			   	set_e_value(db_address(int(e1) + cont_offset+1),src, inc_code)
+        				increment= no
+        				confirm = yes
+      			   END
+      			ELSE IF decrement== yes THEN
+      			   BEGIN
+        				set_e_value(db_address(int(e1) + cont_offset+1),src, dec_code)
+        				decrement= no
+        				confirm = yes
+      			   END
+   			ELSE decrement= no
+      			confirm = yes
+    		   END
+  	      END
+	END
+
+
+
+	IF popup_box == no AND confirm == no THEN
+	BEGIN
+  	   IF increment== yes THEN
+  	      BEGIN
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 9999)
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+    		set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+		set_b_value(db_address(int(b1) + b_offset + 38), src ,on)
+	  	set_b_value(db_address(int(b1) + b_offset + 38), src ,off)
+    		decrement= no
+    		increment= no
+   		confirm = yes
+  	      END
+  	   ELSE IF decrement== yes THEN
+  	      BEGIN
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 9999)  
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+    		set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+		set_b_value(db_address(int(b1) + b_offset + 38), src ,on)
+	  	set_b_value(db_address(int(b1) + b_offset + 38), src ,off)
+    		decrement= no
+    		increment= no
+    		confirm = yes
+  	      END
+
+	END
+
+
+
+	IF execute_code.e_value == 0 THEN
+	BEGIN
+  		confirm = no
+  		SET INVALID popup_box
+	END
+
+
+
+	! CONTROL FAIL !
+	IF INVALID accept THEN
+		accept = no
+
+
+	IF tap_status.b_value == 1 THEN
+	BEGIN
+  	   	IF  increment==yes THEN
+		BEGIN
+  	   		IF INVALID failure_box AND accept == no THEN
+  	      		BEGIN
+			     set top failure_box
+    			     set title failure_box = " "
+    			     set unpinned failure_box
+    			     request failure_box(ident,"CONTROL FAILED","Inc")
+  	      		END
+		END
+		IF  decrement==yes THEN
+		BEGIN
+  	   		IF INVALID failure_box AND accept == no THEN
+  	      		BEGIN
+			     set top failure_box
+    			     set title failure_box = " "
+    			     set unpinned failure_box
+    			     request failure_box(ident,"CONTROL FAILED","Dec")
+  	      		END
+		END
+	END
+
+
+	IF failure_box == YES AND accept == no THEN
+	BEGIN
+  	   set_b_value(db_address(int(b1) + b_offset + 38), src ,on)
+  	   set_b_value(db_address(int(b1) + b_offset + 38), src ,off)
+  	   accept = yes
+	END
+
+	IF tap_status.b_value == 0 THEN
+	BEGIN
+  	   SET INVALID failure_box
+  	   accept = no
+	END
+
+
+	! CONTROL IN PROGRESS !
+
+	IF in_progress == YES THEN
+	BEGIN
+		set top local_control_in_progress
+		set title local_control_in_progress = " "
+		set unpinned local_control_in_progress
+		request local_control_in_progress(ident,"CONTROL IN PROGRESS","Change")
+		in_progress = no
+	END
+END
+
+
+!-----------------------------------------------------------------------------						!
+! TRANSFORMER OBJECT TYPE 4                  -Monitoring Alarms and Tag Only for 3 Ring type       	!
+!-----------------------------------------------------------------------------						!
+OBJECT TXFR4(plc_offset=INT,num_alarms=INT,b_offset=INT,c_offset=INT,cont_offset=INT,src=SOURCE,ident=INT,col_1=string,col_2=string,fg)
+var plc_inputs 		= input b_bool_type[2]		! ** inputs ** !
+var alarm_inputs 		= input alarm_row_type[6]
+var tag_message_ip	= input c_db_row_type
+
+var main_menu		= MENU	string(40)		! ** menus** !
+var tag_message_panel	= PANEL panel_item_row
+
+var alarm1 = alarm_status
+var alarm2 = alarm_status
+var alarm3 = alarm_status
+var alarm4 = alarm_status
+var alarm5 = alarm_status
+var alarm6 = alarm_status
+
+var fg_col_1		= loopback colour		! ** loopbacks ** !
+var fg_col_2		= loopback colour
+var transformer_foreground	= loopback colour
+
+var special_comms_ip = input b_bool_type
+var special_alarm 		=onoff ! unique address used to animate fg magenta !
+
+BEGIN
+	if invalid get source plc_inputs then 
+	begin
+	   ! GET PLC INPUTS !
+	   set source plc_inputs = src
+	   set filter plc_inputs.db_addr = lim_ge
+	   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   set priority plc_inputs.db_addr = 15
+	   set persist plc_inputs
+	   set mayexist plc_inputs
+	   request plc_inputs
+
+	   ! GET RTU COMMS FAIL ADDRESS !
+	if cont_offset <> int and cont_offset <>0 then
+	begin
+		set source special_comms_ip = src
+		set filter special_comms_ip.db_addr = lim_ge
+		set limit special_comms_ip.db_addr = db_address(int(b1) + cont_offset - 1)
+		set priority special_comms_ip.db_addr = 15
+		set persist special_comms_ip
+		set mayexist special_comms_ip
+		request special_comms_ip
+	end
+
+	   ! GET TRANSFORMER TAG MESSAGE !
+	   set source tag_message_ip = src
+	   set filter tag_message_ip.db_addr = lim_eq
+	   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+	   set persist tag_message_ip
+	   request tag_message_ip
+	
+	   ! GET TRANSFORMER ALARM INPUTS !
+
+		if num_alarms ==int or num_alarms ==0 then
+		begin
+			! ** no alarms configured ** !
+		end
+		else
+		begin
+		   set source alarm_inputs = src
+		   set max_rows alarm_inputs = num_alarms
+		   set filter alarm_inputs.db_addr = lim_ge
+		   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+		   set priority alarm_inputs.db_addr = 15
+		   set persist alarm_inputs
+		   set mayexist alarm_inputs
+		   request alarm_inputs
+		end
+	end
+
+	if invalid special_comms_ip.b_value then special_alarm = off else
+		special_alarm = special_comms_ip.b_value
+
+	if invalid fg then fg=white
+
+	!-----------------------------------------------------------------------------!
+	!  SELECT FOREGROUND COLOURS                                                  !
+	!-----------------------------------------------------------------------------!
+
+	if num_alarms >= 1 then
+	begin
+		if invalid alarm_inputs[1].alarm_status then 
+			alarm1 = alarm_clear 
+		else 
+			alarm1 = alarm_inputs[1].alarm_status
+	end
+	else 
+			alarm1 = alarm_clear 
+
+	if num_alarms >= 2 then
+	begin
+		if invalid alarm_inputs[2].alarm_status then 
+			alarm2 = alarm_clear 
+		else 
+			alarm2 = alarm_inputs[2].alarm_status
+	end
+	else 
+			alarm2 = alarm_clear 
+
+	if num_alarms >= 3 then
+	begin
+		if invalid alarm_inputs[3].alarm_status then 
+			alarm3 = alarm_clear 
+		else 
+			alarm3 = alarm_inputs[3].alarm_status
+	end
+	else 
+			alarm3 = alarm_clear 
+
+	if num_alarms >= 4 then
+	begin
+		if invalid alarm_inputs[4].alarm_status then 
+			alarm4 = alarm_clear 
+		else 
+			alarm4 = alarm_inputs[4].alarm_status
+	end
+	else 
+			alarm4 = alarm_clear 
+
+	if num_alarms >= 5 then
+	begin
+		if invalid alarm_inputs[5].alarm_status then 
+			alarm5 = alarm_clear 
+		else 
+			alarm5 = alarm_inputs[5].alarm_status
+	end
+	else 
+			alarm5 = alarm_clear 
+
+	if num_alarms >= 6 then
+	begin
+		if invalid alarm_inputs[6].alarm_status then 
+			alarm6 = alarm_clear 
+		else 
+			alarm6 = alarm_inputs[6].alarm_status
+	end
+	else 
+			alarm6 = alarm_clear 
+
+
+	IF plc_inputs[1].b_value==1 AND plc_inputs[2].b_value==1 THEN
+	BEGIN
+		fg_col_1 = magenta
+		fg_col_2 = magenta
+	END
+	else if fg ==magenta then
+	BEGIN
+		fg_col_1 = magenta
+		fg_col_2 = magenta
+	END
+	else if special_alarm == on then
+	BEGIN
+		fg_col_1 = magenta
+		fg_col_2 = magenta
+	END
+	ELSE IF 	alarm1 == w_note or alarm2 == w_note OR alarm3 == w_note or alarm4 == w_note OR 
+		alarm5 == w_note or alarm6 == w_note THEN
+	BEGIN
+		fg_col_1 = flashred
+		fg_col_2 = flashred
+	END
+	ELSE IF 	alarm1 == w_clr or alarm2 == w_clr OR alarm3 == w_clr or alarm4 == w_clr OR 
+		alarm5 == w_clr or alarm6 == w_clr THEN
+	BEGIN
+		fg_col_1 = red
+		fg_col_2 = red
+	END
+	ELSE
+	BEGIN
+		if col_1 == "white" then 	fg_col_1 = white
+		if col_1 == "red" then 	fg_col_1 = red
+		if col_1 == "green" then	fg_col_1 = green4
+		if col_1 == "blue" then 	fg_col_1 = blue
+		if col_1 == "orange" then 	fg_col_1 = orange2
+		if col_1 == "black" then 	fg_col_1 = black
+		if col_1 == "" then		fg_col_1 = red
+
+		if col_2 == "white" then 	fg_col_2 = white
+		if col_2 == "red" then 	fg_col_2 = red
+		if col_2 == "green" then 	fg_col_2 = green4
+		if col_2 == "blue" then 	fg_col_2 = blue
+		if col_2 == "orange" then 	fg_col_2 = orange2
+		if col_2 == "black" then 	fg_col_2 = black
+		if col_2 == "" then 		fg_col_2 = black
+	END
+
+	IF tag_message_ip.c_value <> "" THEN
+	BEGIN
+	  x=1 y =1
+	  RECT(W=108,H=126,FG=yellow,just=centrecentre)
+	END
+	ELSE
+	  transformer_foreground = BLACK
+
+
+	just=centrecentre
+
+	! ** background rectangle ** !
+	x = 0 y = 0 RECT(W=99,H=119,FG=grey80)
+
+	! ** transformer symbol ** !
+	x = 0 y = -15 CIRCLE(LW=8,W=50,H=50,FG=fg_col_1)
+	x = -15 Y += 30 CIRCLE(LW=8,W=50,H=50,FG=fg_col_2)
+	x = 15 CIRCLE(LW=8,W=50,H=50,FG=fg_col_2)
+	x=0 y=-35 add y-=25 add line(lw=7,fg=fg_col_1) clear
+	x=-15 y=35 add y+=25 add line(lw=7,fg=fg_col_2) clear
+	x=15 y=35 add y+=25 add line(lw=7,fg=fg_col_2) clear
+
+	! ** line borders ** !
+	X=-50 Y=60 Add X=-50 Y=-60 Add X=50 Y=-60 Add line(lw=1, fg=white) clear
+	X=-50 Y=60 Add X=50 Y=60 Add X=50 Y=-60 Add line(lw=1, fg=black) clear
+
+	x = 65 y = 0 Add TEXT(TFG=black,CH=22,ident)
+
+	! TAG MESSAGE BOX !
+	just=centrecentre
+	x = 0 y = 0 w=100 h=120
+	IF SELB AND tag_message_ip.c_value <> "" THEN
+	BEGIN
+		MESSAGE_TEXT_BOX(tag_message_ip.c_value)
+	END
+	IF VALID tag_message_panel THEN
+	BEGIN
+		set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	END
+
+
+	!-----------------------------------------------------------------------------!
+	!  MAIN MENU                                                                  !
+	!-----------------------------------------------------------------------------!
+	just=centrecentre
+	x = 0 y = 0 w=100 h=120
+	set rect main_menu clear
+
+	SET TITLE main_menu = "Transformer "+ident
+	SET EMPTY main_menu
+	SET Remove main_menu = "Alter Tag Message"
+	SET Remove main_menu = "Clear Tag Message"
+	SET Add main_menu = "Alter Tag Message"
+	SET Add main_menu = "Clear Tag Message"
+
+
+	IF VALID main_menu THEN
+	BEGIN
+	   CASE main_menu OF
+
+	      "Alter Tag Message"
+  	      BEGIN
+    		SET TITLE tag_message_panel 	= "Modify Tag Message"	
+    		SET LABEL tag_message_panel.str	= "Tag Message :"
+    		SET UNPINNED tag_message_panel
+    		REQUEST tag_message_panel
+  	      END
+
+  	      "Clear Tag Message"
+    		set_c_value(db_address(int(c1) + c_offset - 1),src,"")
+
+  		DEFAULT
+  		  BEGIN
+  		  END
+
+  	      SET INVALID main_menu
+	END
+END
+
+
+!*******************************!
+!      Object Selection         !
+!*******************************!
+OBJECT transformer_select(transformer_type=string,plc_offset=INT,pos1_number=INT,b_offset=INT,c_offset=INT,cont_offset=INT,src=SOURCE,btm_text=STRING(8),top_text=STRING(8),ident=INT,cont_code=INT,col_1=string,col_2=string)
+var mod_node_ip = input b_db_row_type
+var mod_node = int
+var mod_char = string
+var mod_pos = string
+var mod_fg = colour
+
+Begin
+  case transformer_type of
+     ""		!*- This will be the default object -type 3 will be selected -*!
+     begin
+	TXFR3(plc_offset,pos1_number,b_offset,c_offset,cont_offset,src,btm_text,top_text,ident,cont_code,col_1,col_2)  
+     end
+     "TYPE1"	!*- The  type 1 transformer alarm monitoring - no tap control -*!
+     begin
+	TXFR1(plc_offset,pos1_number,b_offset,c_offset,cont_offset,src,ident,col_1,col_2)  
+     end
+
+     "TYPE2"	!*- The  type 2 transformer  -has no tap inc/dec*!
+     begin
+	TYPE2(c_offset,src,ident,col_1,col_2)
+     end
+     "TYPE3"	!*- The  type 3 transformer offers Secure Control over the Tap Changing -*!
+     begin		
+	TXFR3(plc_offset,pos1_number,b_offset,c_offset,cont_offset,src,btm_text,top_text,ident,cont_code,col_1,col_2)
+
+     end
+     "modbus"
+    	begin
+		mod_node =int(btm_text)
+
+         	  	if invalid get source mod_node_ip then 
+         	  	begin
+	   	set source mod_node_ip = src
+	   	set filter mod_node_ip.db_addr = lim_eq
+	   	set limit mod_node_ip.db_addr = db_address(int(b1) + mod_node -1)
+	   	set priority mod_node_ip.db_addr = 15
+	   	set persist mod_node_ip
+	   	set mayexist mod_node_ip
+	   	request mod_node_ip
+		end
+		mod_char="MODBUS "
+		if mod_node_ip.b_value == 1 then mod_fg = magenta else mod_fg=green4
+
+		TXFR3(plc_offset,pos1_number,b_offset,c_offset,cont_offset,src,"",top_text,ident,cont_code,col_1,col_2,fg=mod_fg)
+	end
+
+     "TYPE4"	!*- The  type 4 transformer alarm monitoring - no tap control, 3 ring type -*!
+     begin
+	TXFR4(plc_offset,pos1_number,b_offset,c_offset,cont_offset,src,ident,col_1,col_2)  
+     end
+
+	 default
+		begin
+		end
+End
+
+
+
+
+OBJECT main_object (bg,fg,w,h,tbg,tfg)
+BEGIN
+CLEAR
+
+
+SCALE = 160
+!********* EXAMPLES ***********!
+!x=0 transformer_select("TYPE3",PLC COMMS,POS NUMBER,alarms,tag,control,HEATHRO3,"33/11KV","TEST",1,code,magenta,black)!
+!TRANSFORMER_SELECT("modbus",8000,2350,8020,int,2351,HEATHRO3,"8010","33/11kV Tx1",5,10,"green","black")  CLEAR!
+END
+
+mimic = main_object w=500,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+
+

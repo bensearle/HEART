@@ -1,0 +1,751 @@
+!-----------------------------------------------------------------------------!
+!OBJECT                                         !
+!-----------------------------------------------------------------------------!
+
+load mimic_libutil
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+TYPE alarm_row_type 	= db_elements(old,alarm_status)
+TYPE b_bool_type 	= db_elements(b_value)
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+OBJECT COMMON_alarm_indication(plc_offset=INT,b_number=INT,src=SOURCE)
+! PLC INPUTS
+plc_inputs[1] = plca_comms_status
+plc_inputs[2] = plcb_comms_status
+!
+var plc_inputs = input b_bool_type[2]
+
+! ALARM INPUTS
+alarm_inputs[1] = entry_door_alarm
+alarm_inputs[2] = sump_alarm
+alarm_inputs[3] = 110_volt_battery_1_alarm
+alarm_inputs[4] = 110_volt_battery_2_alarm
+!
+var alarm_inputs = input alarm_row_type[4]
+
+! GENERAL !
+VAR foreground_colour = colour
+var common_alarm=int
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+if invalid plc_inputs then
+begin
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_number - 1)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+END
+
+!-----------------------------------------------------------------------------!
+!  DRAW SYMBOL                                                                !
+!-----------------------------------------------------------------------------!
+X=-80 Y=-120 W=160 H=240 ANGLE=0 JUST=TOPLEFT FG=DECOROFF FS=FILLSOLID ROTRECT clear
+Clear
+X=79 Y=-121 Add
+X=-79 Y=-121 Add
+X=-79 Y=121 Add
+FG=decorlight LS=SOLID LW=1 CS=CAPROUND LINE clear
+X=-80 Y=121 Add
+X=80 Y=121 Add
+X=80 Y=-121 Add
+FG=decorshadow LS=SOLID LW=1 CS=CAPROUND LINE clear
+JUST = CENTRECENTRE
+
+X = 0 Y = 0
+
+IF plc_inputs[1].b_value AND plc_inputs[2].b_value THEN
+  foreground_colour = MAGENTA
+
+else if alarm_inputs[1].alarm_status == w_note or
+alarm_inputs[2].alarm_status == w_note or
+alarm_inputs[3].alarm_status == w_note or
+alarm_inputs[4].alarm_status == w_note THEN
+
+  foreground_colour = FLASHRED
+
+ELSE IF alarm_inputs[1].alarm_status == w_clr or
+alarm_inputs[2].alarm_status == w_clr or
+alarm_inputs[3].alarm_status == w_clr or
+alarm_inputs[4].alarm_status == w_clr THEN
+
+  foreground_colour = RED
+
+ELSE   
+
+  foreground_colour =  green4
+
+
+!FG=DECOROFF!
+RECT(W=120,H=180,FG= DECOROFF)
+
+FG=foreground_colour
+!X += 60 Y -=90!
+BOX(W=100,H=160,LW=8) CLEAR
+y += 50
+DISK(W=24,H=24) CLEAR
+X=-20 Y=-45  Add 
+X=20 Y=-45  Add 
+X=5 Y=20  Add 
+X=-5 Y=20  Add 
+FILL
+X += 5 Y -= 70
+DISK(W=40,H=40) CLEAR
+Y += 65
+DISK(W=10,H=10) CLEAR
+
+ x = 0 y = -100 TEXT(TFG=foreground_colour,CH=21,"GENERAL") Clear
+
+if alarm_inputs[1].alarm_status == w_note or
+alarm_inputs[2].alarm_status == w_note or
+alarm_inputs[3].alarm_status == w_note or
+alarm_inputs[4].alarm_status == w_note or
+alarm_inputs[1].alarm_status == w_clr or
+alarm_inputs[2].alarm_status == w_clr or
+alarm_inputs[3].alarm_status == w_clr or
+alarm_inputs[4].alarm_status == w_clr 
+then begin 
+common_alarm=1
+end
+else begin 
+common_alarm=0
+end
+
+IF plc_inputs[1].b_value AND plc_inputs[2].b_value 
+then begin
+ 	x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21,"UNKNOWN") Clear
+       end
+else if common_alarm==1 then 
+            begin
+ 	x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," FAULT") Clear
+            end
+else 
+            begin
+ 	x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," HEALTHY") Clear
+            end
+         
+
+END
+
+OBJECT BUS_alarm_indicator(plc_offset=INT,b_number=INT,src=SOURCE)
+! PLC INPUTS
+plc_inputs[1] = plca_comms_status
+plc_inputs[2] = plcb_comms_status
+!
+var plc_inputs = input b_bool_type[2]
+
+! ALARM INPUTS
+alarm_inputs[1] = section_1_protection
+alarm_inputs[2] = section_2_protection
+alarm_inputs[3] = section_3_protection
+alarm_inputs[4] = section_1_service
+alarm_inputs[5] = section_2_service
+alarm_inputs[6] = section_3_service
+alarm_inputs[7] = section_1_tsf
+alarm_inputs[8] = section_2_tsf
+alarm_inputs[9] = section_3_tsf
+alarm_inputs[10] = bus_gas_press_alarm
+alarm_inputs[11] = bus_prot_chkzone_flt
+alarm_inputs[12] = bus_prot_dc_supp_flt
+alarm_inputs[13] = annunciator_unit_flt
+!
+var alarm_inputs = input alarm_row_type[13]
+
+! GENERAL !
+VAR foreground_colour = colour
+var section_alarm1=int
+var section_alarm2=int
+var section_alarm3=int
+var section_comm =int
+BEGIN
+
+! DATA RETRIEVAL !
+
+if invalid plc_inputs then
+begin
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_number - 1)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+END
+
+!-----------------------------------------------------------------------------!
+!  DRAW SYMBOL                                                                !
+!-----------------------------------------------------------------------------!
+
+X=-80 Y=-120 W=160 H=240 ANGLE=0 JUST=TOPLEFT FG=DECOROFF FS=FILLSOLID ROTRECT clear
+Clear
+X=79 Y=-121 Add
+X=-79 Y=-121 Add
+X=-79 Y=121 Add
+FG=decorlight LS=SOLID LW=1 CS=CAPROUND LINE clear
+X=-80 Y=121 Add
+X=80 Y=121 Add
+X=80 Y=-121 Add
+FG=decorshadow LS=SOLID LW=1 CS=CAPROUND LINE clear
+JUST = CENTRECENTRE
+
+X = 0 Y = 0
+
+IF plc_inputs[1].b_value AND plc_inputs[2].b_value THEN
+  foreground_colour = MAGENTA
+
+else if alarm_inputs[1].alarm_status == w_note or
+alarm_inputs[2].alarm_status == w_note or
+alarm_inputs[3].alarm_status == w_note or
+alarm_inputs[4].alarm_status == w_note or
+alarm_inputs[5].alarm_status == w_note or
+alarm_inputs[6].alarm_status == w_note or
+alarm_inputs[7].alarm_status == w_note or
+alarm_inputs[8].alarm_status == w_note or
+alarm_inputs[9].alarm_status == w_note or
+alarm_inputs[10].alarm_status == w_note or
+alarm_inputs[11].alarm_status == w_note or
+alarm_inputs[12].alarm_status == w_note or
+alarm_inputs[13].alarm_status == w_note  THEN
+
+ 	foreground_colour = FLASHRED
+
+ELSE IF alarm_inputs[1].alarm_status == w_clr or
+alarm_inputs[2].alarm_status == w_clr or
+alarm_inputs[3].alarm_status == w_clr or
+alarm_inputs[4].alarm_status == w_clr or
+alarm_inputs[5].alarm_status == w_clr or
+alarm_inputs[6].alarm_status == w_clr or
+alarm_inputs[7].alarm_status == w_clr or
+alarm_inputs[8].alarm_status == w_clr or
+alarm_inputs[9].alarm_status == w_clr or
+alarm_inputs[10].alarm_status == w_clr or
+alarm_inputs[11].alarm_status == w_clr or
+alarm_inputs[12].alarm_status == w_clr or
+alarm_inputs[13].alarm_status == w_clr  THEN
+
+  	foreground_colour = RED
+
+ELSE   
+	foreground_colour =  green4
+
+!FG=DECOROFF!
+RECT(W=120,H=180,FG= DECOROFF)
+
+FG=foreground_colour
+!X += 60 Y -=90!
+BOX(W=100,H=160,LW=8) CLEAR
+y += 50
+DISK(W=24,H=24) CLEAR
+X=-20 Y=-45  Add 
+X=20 Y=-45  Add 
+X=5 Y=20  Add 
+X=-5 Y=20  Add 
+FILL
+X += 5 Y -= 70
+DISK(W=40,H=40) CLEAR
+Y += 65
+DISK(W=10,H=10) CLEAR
+
+x = 0 y = -100 TEXT(TFG=foreground_colour,CH=21,"BUS IND") Clear
+
+if alarm_inputs[1].alarm_status == w_note or
+alarm_inputs[4].alarm_status == w_note or
+alarm_inputs[7].alarm_status == w_note  or
+alarm_inputs[1].alarm_status == w_clr or
+alarm_inputs[4].alarm_status == w_clr or
+alarm_inputs[7].alarm_status == w_clr 
+	then
+	begin 
+		section_alarm1=1
+	end
+	else
+	begin 
+		section_alarm1=0
+	end
+
+if alarm_inputs[2].alarm_status == w_note or
+alarm_inputs[5].alarm_status == w_note or
+alarm_inputs[8].alarm_status == w_note or
+alarm_inputs[2].alarm_status == w_clr or
+alarm_inputs[5].alarm_status == w_clr or
+alarm_inputs[8].alarm_status == w_clr then 
+	begin 
+		section_alarm2=1
+	end
+	else 
+	begin 
+		section_alarm2=0
+	end
+
+if alarm_inputs[3].alarm_status == w_note or
+alarm_inputs[6].alarm_status == w_note or
+alarm_inputs[9].alarm_status == w_note or
+alarm_inputs[3].alarm_status == w_clr or
+alarm_inputs[6].alarm_status == w_clr or
+alarm_inputs[9].alarm_status == w_clr then 
+	begin 
+		section_alarm3=1
+	end
+	else 
+	begin 
+		section_alarm3=0
+	end
+
+if alarm_inputs[10].alarm_status == w_note or
+alarm_inputs[11].alarm_status == w_note or
+alarm_inputs[12].alarm_status == w_note or
+alarm_inputs[13].alarm_status == w_note or
+alarm_inputs[10].alarm_status == w_clr or
+alarm_inputs[11].alarm_status == w_clr or
+alarm_inputs[12].alarm_status == w_clr or
+alarm_inputs[13].alarm_status == w_clr then 
+	begin 
+		section_comm=1
+	end
+	else 
+	begin 
+		section_comm=0
+	end
+
+IF plc_inputs[1].b_value AND plc_inputs[2].b_value 
+	then begin
+ 		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21,"UNKNOWN") Clear
+       	end
+else if section_comm==1 
+	then begin
+		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," COMMON") 
+       	end
+else if section_alarm1==1 AND section_alarm2==0 AND section_alarm3==0
+	then begin
+		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," SECTION 1") Clear
+       	end
+else if section_alarm1==0 AND section_alarm2==1 AND section_alarm3==0
+	then begin
+		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," SECTION 2") Clear
+	end
+else if section_alarm1==0 AND section_alarm2==0 AND section_alarm3==1
+	then begin
+ 		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," SECTION 3") Clear
+	end
+else if section_alarm1==1 AND section_alarm2==1 AND section_alarm3==0
+	then begin
+ 		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," SEC 1 & 2") Clear
+	end
+else if section_alarm1==1 AND section_alarm2==0 AND section_alarm3==1
+	then begin
+ 		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," SEC 1 & 3") Clear
+	end
+else if section_alarm1==0 AND section_alarm2==1 AND section_alarm3==1
+	then begin
+ 		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," SEC 2 & 3") Clear
+	end
+else if section_alarm1==1 AND section_alarm2==1 AND section_alarm3==1
+	then begin
+ 		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," SEC 1,2&3") Clear
+	end
+else
+	begin 
+		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," HEALTHY")
+       	end
+END
+
+! TRANSFORMER !
+OBJECT TRANSFORMER_indicator(plc_offset=INT,b_number=INT,src=SOURCE)
+! PLC INPUTS
+plc_inputs[1] = plca_comms_status
+plc_inputs[2] = plcb_comms_status
+!
+var plc_inputs = input b_bool_type[2]
+
+! ALARM INPUTS
+alarm_inputs[1] = tx1_sump_pump_fail
+alarm_inputs[2] = tx1_sump_oil_alarm
+alarm_inputs[3] = tx1_emergency_float_switch
+alarm_inputs[4] = tx2_sump_pump_fail
+alarm_inputs[5] = tx2_sump_oil_alarm
+alarm_inputs[6] = tx2_emergency_float_switch
+alarm_inputs[7] = tx1_aux_volt_sens_relay
+alarm_inputs[8] = tx1_standby_contactor
+alarm_inputs[9] = tx1_supply_override
+alarm_inputs[10] = tx2_aux_volt_sens_relay
+alarm_inputs[11] =  tx2_standby_contactor
+alarm_inputs[12] =  tx2_supply_override
+!
+var alarm_inputs = input alarm_row_type[12]
+! BOOLEAN INPUTS !
+var tx_inputs = input 	b_db_row_type[12]
+
+! GENERAL !
+VAR foreground_colour = colour
+var transformer1_alarm=int
+var transformer2_alarm=int
+var transformer_common=int
+BEGIN
+
+! DATA RETRIEVAL !
+if invalid plc_inputs then
+begin
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_number - 1)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   set source tx_inputs = src
+   set filter tx_inputs.db_addr = lim_ge
+   set limit tx_inputs.db_addr = db_address(int(b1) + b_number - 1)
+   set priority tx_inputs.db_addr = 15
+   set persist tx_inputs
+   set mayexist tx_inputs
+   request tx_inputs
+
+END
+
+!-----------------------------------------------------------------------------!
+!  DRAW SYMBOL                                                                !
+!-----------------------------------------------------------------------------!
+
+X=-80 Y=-120 W=160 H=240 ANGLE=0 JUST=TOPLEFT FG=DECOROFF FS=FILLSOLID ROTRECT clear
+Clear
+X=79 Y=-121 Add
+X=-79 Y=-121 Add
+X=-79 Y=121 Add
+FG=decorlight LS=SOLID LW=1 CS=CAPROUND LINE clear
+X=-80 Y=121 Add
+X=80 Y=121 Add
+X=80 Y=-121 Add
+FG=decorshadow LS=SOLID LW=1 CS=CAPROUND LINE clear
+JUST = CENTRECENTRE
+
+X = 0 Y = 0
+
+IF plc_inputs[1].b_value AND plc_inputs[2].b_value THEN
+  foreground_colour = MAGENTA
+
+else if alarm_inputs[1].alarm_status == w_note or
+alarm_inputs[2].alarm_status == w_note or
+alarm_inputs[3].alarm_status == w_note or
+alarm_inputs[4].alarm_status == w_note or
+alarm_inputs[5].alarm_status == w_note or
+alarm_inputs[6].alarm_status == w_note or
+alarm_inputs[7].alarm_status == w_note or
+alarm_inputs[8].alarm_status == w_note or
+alarm_inputs[9].alarm_status == w_note or
+alarm_inputs[10].alarm_status == w_note or
+alarm_inputs[11].alarm_status == w_note or
+alarm_inputs[12].alarm_status == w_note  THEN
+
+ 	foreground_colour = FLASHRED
+
+ELSE IF alarm_inputs[1].alarm_status == w_clr or
+alarm_inputs[2].alarm_status == w_clr or
+alarm_inputs[3].alarm_status == w_clr or
+alarm_inputs[4].alarm_status == w_clr or
+alarm_inputs[5].alarm_status == w_clr or
+alarm_inputs[6].alarm_status == w_clr or
+alarm_inputs[7].alarm_status == w_clr or
+alarm_inputs[8].alarm_status == w_clr or
+alarm_inputs[9].alarm_status == w_clr or
+alarm_inputs[10].alarm_status == w_clr or
+alarm_inputs[11].alarm_status == w_clr or
+alarm_inputs[12].alarm_status == w_clr  THEN
+
+  	foreground_colour = RED
+ELSE   
+	foreground_colour =  green4
+
+!FG=DECOROFF!
+RECT(W=120,H=180,FG= DECOROFF)
+
+FG=foreground_colour
+!X += 60 Y -=90!
+BOX(W=100,H=160,LW=8) CLEAR
+y += 50
+DISK(W=24,H=24) CLEAR
+X=-20 Y=-45  Add 
+X=20 Y=-45  Add 
+X=5 Y=20  Add 
+X=-5 Y=20  Add 
+FILL
+X += 5 Y -= 70
+DISK(W=40,H=40) CLEAR
+Y += 65
+DISK(W=10,H=10) CLEAR
+
+x = 0 y = -100 TEXT(TFG=foreground_colour,CH=20,"TRANSFORMER") Clear
+
+if tx_inputs[1].b_value == 1 or
+tx_inputs[2].b_value == 1 or
+tx_inputs[3].b_value == 1 or
+tx_inputs[7].b_value == 1 or
+tx_inputs[8].b_value == 1 or
+tx_inputs[9].b_value == 1
+then
+	
+	transformer1_alarm=1
+else 
+	
+	transformer1_alarm=0
+
+if tx_inputs[4].b_value == 1 or
+tx_inputs[5].b_value == 1 or
+tx_inputs[6].b_value == 1 or
+tx_inputs[10].b_value == 1 or
+tx_inputs[11].b_value == 1 or
+tx_inputs[12].b_value == 1
+then 
+	
+	transformer2_alarm=1
+else  
+	transformer2_alarm=0
+
+if transformer1_alarm==1 and transformer2_alarm==1
+then 
+	transformer_common=1
+else 
+	
+	transformer_common=0
+
+IF plc_inputs[1].b_value AND plc_inputs[2].b_value 
+	then begin
+ 		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21,"UNKNOWN") Clear
+       	end
+else if transformer_common==1 
+	then begin
+		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," COMMON") 
+       	end
+else if transformer1_alarm==1
+	then begin 
+		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," TX1 FAULT")
+       	end
+else if transformer2_alarm==1
+	then begin 
+		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," TX2 FAULT")
+       	end
+else if transformer1_alarm==0 AND transformer2_alarm==0 
+	then begin 
+		x = 0 y = 100 TEXT(TFG=foreground_colour,CH=21," HEALTHY")
+	end
+END
+
+! General Exclamation Mark !
+OBJECT alarms_indicator(num_alarms=string,plc_offset=INT,b_number=INT,src=SOURCE)
+var plc_inputs = input b_bool_type[2]
+var alarm_inputs = input alarm_row_type[12]
+var foreground_colour = colour
+var number_of_alarms = int
+var alarm1= alarm_status
+var alarm2= alarm_status
+var alarm3= alarm_status
+var alarm4= alarm_status
+var alarm5= alarm_status
+var alarm6= alarm_status
+var alarm7= alarm_status
+var alarm8= alarm_status
+var alarm9= alarm_status
+var alarm10= alarm_status
+var alarm11= alarm_status
+var alarm12= alarm_status
+BEGIN
+	number_of_alarms=int(num_alarms)
+	if invalid number_of_alarms then number_of_alarms = 1
+
+	! DATA RETRIEVAL !
+	if invalid plc_inputs then
+	begin
+		set source plc_inputs = src
+		set filter plc_inputs.db_addr = lim_ge
+		set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+		set priority plc_inputs.db_addr = 15
+		set persist plc_inputs
+		set mayexist plc_inputs
+		request plc_inputs
+
+		set source alarm_inputs = src
+		set filter alarm_inputs.db_addr = lim_ge
+		set limit alarm_inputs.db_addr = db_address(int(b1) + b_number - 1)
+		set priority alarm_inputs.db_addr = 15
+		set max_rows alarm_inputs = number_of_alarms
+		set persist alarm_inputs
+		set mayexist alarm_inputs
+		request alarm_inputs
+	END
+
+		alarm1	=alarm_inputs[1].alarm_status
+		alarm2	=alarm_inputs[2].alarm_status
+		alarm3	=alarm_inputs[3].alarm_status
+		alarm4	=alarm_inputs[4].alarm_status
+		alarm5	=alarm_inputs[5].alarm_status
+		alarm6	=alarm_inputs[6].alarm_status
+		alarm7	=alarm_inputs[7].alarm_status
+		alarm8	=alarm_inputs[8].alarm_status
+		alarm9	=alarm_inputs[9].alarm_status
+		alarm10	=alarm_inputs[10].alarm_status
+		alarm11	=alarm_inputs[11].alarm_status
+		alarm12	=alarm_inputs[12].alarm_status
+
+
+		if invalid alarm_inputs[1].alarm_status then alarm1=alarm_clear
+		if invalid alarm_inputs[2].alarm_status then alarm2=alarm_clear
+		if invalid alarm_inputs[3].alarm_status then alarm3=alarm_clear
+		if invalid alarm_inputs[4].alarm_status then alarm4=alarm_clear
+		if invalid alarm_inputs[5].alarm_status then alarm5=alarm_clear
+		if invalid alarm_inputs[6].alarm_status then alarm6=alarm_clear
+		if invalid alarm_inputs[7].alarm_status then alarm7=alarm_clear
+		if invalid alarm_inputs[8].alarm_status then alarm8=alarm_clear
+		if invalid alarm_inputs[9].alarm_status then alarm9=alarm_clear
+		if invalid alarm_inputs[10].alarm_status then alarm10=alarm_clear
+		if invalid alarm_inputs[11].alarm_status then alarm11=alarm_clear
+		if invalid alarm_inputs[12].alarm_status then alarm12=alarm_clear
+
+
+
+	!-----------------------------------------------------------------------------!
+	!  DRAW SYMBOL                                                                !
+	!-----------------------------------------------------------------------------!
+	
+	X = 0 Y = 0
+	if alarm1 == w_note or
+		alarm2 == w_note or
+		alarm3 == w_note or
+		alarm4 == w_note or
+		alarm5 == w_note or
+		alarm6 == w_note or
+		alarm7 == w_note or
+		alarm8 == w_note or
+		alarm9 == w_note or
+		alarm10 == w_note or
+		alarm11 == w_note or
+		alarm12 == w_note THEN
+
+ 			foreground_colour = FLASHRED
+
+	ELSE IF alarm1 == w_clr or
+		alarm2 == w_clr or
+		alarm3 == w_clr or
+		alarm4 == w_clr or
+		alarm5 == w_clr or
+		alarm6 == w_clr or
+		alarm7 == w_clr or
+		alarm8 == w_clr or
+		alarm9 == w_clr or
+		alarm10 == w_clr or
+		alarm11 == w_clr or
+		alarm12 == w_clr THEN
+
+  			foreground_colour = RED
+	ELSE   
+			foreground_colour =  green4
+
+	clear
+	FG=foreground_colour
+
+	if foreground_colour == flashred or foreground_colour == red or b_number==INT then
+	begin
+		X=-20 Y=-45  Add X=20 Y=-45  Add 
+		X=5 Y=20  Add X=-5 Y=20  Add FILL clear
+		x=-20 y=-70 DISK(W=40,H=40) clear
+		x=-5 Y += 85 DISK(W=10,H=10) clear
+		x-=6 Y += 25 DISK(W=24,H=24) clear
+	end
+END
+
+
+Object Alarm_Indication_TYPES(Alarm_Type=string,plc_offset=INT,b_number=INT,src=SOURCE)
+begin
+case Alarm_Type of
+     ""
+     begin
+	BUS_alarm_indicator(20000,20035,HEATHRO2)    
+     end
+     "COMMON"
+     begin
+ 	
+	COMMON_alarm_indication(plc_offset,b_number,src)  
+     end
+     "BUS"
+     begin
+        BUS_alarm_indicator(plc_offset,b_number,src)
+     end
+     "TRANSFORMER"
+     begin
+        TRANSFORMER_indicator(plc_offset,b_number,src)
+     end
+	 default
+	  begin
+        		alarms_indicator(alarm_type,plc_offset,b_number,src)
+	  end
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+scale=120
+!Alarm_Indication_TYPES("CB_TYPE4",20000,20035,HEATHRO2)!
+!x=80  Alarm_Indication_TYPES("BUS",20000,20030,HEATHRO2)!
+x=80  Alarm_Indication_TYPES("BUS",5500,5820,HEATHRO3)
+x=0  Alarm_Indication_TYPES("COMMON",5500,5840,HEATHRO3)
+x=-80  Alarm_Indication_TYPES("1",8000,9030,HEATHRO3)
+end
+
+mimic = main_object w=300,h=400,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+

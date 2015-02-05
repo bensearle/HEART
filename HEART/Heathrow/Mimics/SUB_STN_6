@@ -1,0 +1,73 @@
+load mimic_libutil
+load lv_generator
+load lv_contactor
+load ocb_barcis
+load ocb_monitored
+load transformer
+
+
+!*********** BUSBAR 6 ************!
+
+object busbar_6
+begin
+tfg = black x = 60 y = -55 add text ("6",ch = 25) clear
+lw = 2
+
+x = 50 y = 50 add
+y += 90 add
+line(fg=red) clear
+
+x = 80 y = 140 add
+y -= 100 add
+line(fg=red) clear
+
+x = 35 y = 140 add
+x += 60 add
+line(fg=red,lw=4) clear
+
+
+x = -75 y = -25 add x = 75 add line(lw=4,fg=red) clear
+
+x = -50  y = -25 add y -= 50 add line (fg=red) clear
+x = 0    y = -25 add y -= 50 add line (fg=red) clear
+x = 50   y = -25 add y += 50 add line (fg=red) clear
+
+
+scale = 120
+
+x =   -50 y = -50 ocb_mont(1000,1100,50,50,heathrow,1,"top")
+x =     0 y = -50 ocb_mont(1000,1110,51,51,heathrow,2,"top")
+x =    50 y = 0   ocb_mont(1000,1120,52,52,heathrow,3,"btm")
+
+scale = 140
+
+x = 90 y = 45 lv_generator(1000,1270,54,0,heathrow)
+
+scale = 100
+X =  50 Y = 45 transformer("LT 1","LOCAL") 
+
+scale = 120
+
+x = 65 y = 100 lv_changeover(1000,1260,53,heathrow)
+
+
+scale = 256
+just=centrecentre
+tfg=black
+ch=12
+x = -50 y = -100 text("SS8")
+x = -50 y = -85 text("P2")
+x = 0 y = -100 text("SS7")
+x = 0 y = -85 text("P1")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -12 y = -25 busbar_6
+
+end
+
+mimic = main_object w=300,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable

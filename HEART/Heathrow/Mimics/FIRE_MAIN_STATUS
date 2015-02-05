@@ -1,0 +1,323 @@
+! HEATHROW CMS - FIRE MAIN STATUS
+
+loaded by: FIRE_MAIN
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type confirm_states = enum(execute= "Execute",
+                           cancel="Cancel")
+
+type status_type = enum (pressurising="PRESSURISING",
+                         on_demand="ON DEMAND",
+                         shutdown="SHUTDOWN",
+                         startup="STARTUP",
+                         error="Error",
+			 shutting_down="SHUTTING DOWN")
+
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+!
+******************************************************************
+* WARNING BOX                                                    *
+* This object gives a warning in a popup.                        *
+******************************************************************
+!
+object mss_o(fg,bg,just)
+begin
+x = 0 y= -50
+text(tfg=flashred,ch=19,"Warning")
+y+=30
+text(tfg=black,ch=15,"Selecting shutdown -")
+y+=20
+text(tfg=black,ch=15,"pumps in remote control")
+end
+
+mimic mss_m = mss_o just=centrecentre,w=350,h=150,bg=decoroff
+
+object warning_box(fg,bg,lw,x,y,just)
+var mss = popup  mss_m
+begin
+set title mss= ""
+set x mss = 200
+set y mss = 80
+set fixed mss
+request mss
+end
+
+
+object fire_main_status(just,scale,plc_offset=int,display_offset=int,output_offset=int,shutdown_offset=int,src=source)
+
+!B INPUTS
+b_inputs[1] = pressurising_ip
+b_inputs[2] = on_demand_ip
+b_inputs[3] = shutdown_ip
+b_inputs[4] = startup_ip
+!
+var b_inputs = input b_db_row_type[4]
+
+!PLC INPUTS
+plc_inputs[1] = plc_a_failed
+plc_inputs[2] = plc_b_failed
+!
+var plc_inputs = input b_db_row_type[2]
+
+var pressure_remote = input  b_db_row_type
+var elec_remote = input  b_db_row_type
+
+!SD INPUTS
+sd_inputs[1] = select_shutdown
+sd_inputs[2] = shutdown_selected
+sd_inputs[3] = shutdown_execute
+sd_inputs[4] = select_startup
+!
+var sd_inputs = input b_db_row_type[4]
+
+var shutting_down_ip = input  b_db_row_type
+
+var status_menu = menu  string
+var confirm_panel = panel  confirm_states
+var sel_var = loopback  int
+var status_bg = loopback  colour
+var control_status = loopback  status_type
+var already_warned = loopback  int
+
+begin
+
+if invalid get source b_inputs then 
+   begin
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + display_offset - 1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source sd_inputs = src
+   set filter sd_inputs.db_addr = lim_ge
+   set limit sd_inputs.db_addr = db_address(int(b1) + output_offset - 1)
+   set priority sd_inputs.db_addr = 15
+   set persist sd_inputs
+   set mayexist sd_inputs
+   request sd_inputs
+
+   set source shutting_down_ip = src
+   set filter shutting_down_ip.db_addr = lim_eq
+   set limit shutting_down_ip.db_addr = db_address(int(b1)+shutdown_offset-1)
+   set persist shutting_down_ip
+   request shutting_down_ip
+
+   set source pressure_remote = src
+   set filter pressure_remote.db_addr = lim_eq
+   set limit pressure_remote.db_addr = B15031
+   set persist pressure_remote
+   request pressure_remote
+
+   set source elec_remote = src
+   set filter elec_remote.db_addr = lim_eq
+   set limit elec_remote.db_addr = B15029
+   set persist elec_remote
+   request elec_remote
+ 
+   end
+
+
+! SELECT OBJECT BG COLOUR !
+
+status_bg = decoroff
+
+
+! CASE MENU OPTIONS !
+
+if valid status_menu then
+   begin
+   case status_menu of
+       "Shutdown"
+       begin
+       set_b_value(db_address(int(b1)+output_offset - 1 ), src, on)
+       sel_var = 1
+       end
+
+       "Startup"
+       begin
+       set_b_value(db_address(int(b1)+output_offset + 2), src, on)
+       end
+
+      default begin end
+
+   set invalid status_menu
+   end
+
+
+! ESTABLISH CURRENT STATUS !
+
+if shutting_down_ip.b_value then
+   control_status = shutting_down
+
+else if b_inputs[1].b_value then
+   control_status = pressurising
+
+else if b_inputs[2].b_value then
+   control_status = on_demand
+
+else if b_inputs[4].b_value then
+   control_status = startup
+
+else if b_inputs[3].b_value then 
+   control_status = shutdown
+
+else
+    control_status = error
+
+
+! CONFIGURE MENU !
+
+w=140 h=40
+x=0 y=0
+set rect status_menu
+set title status_menu = "Fire Main Control"
+set empty status_menu
+
+if plc_inputs[1].b_value == 0 or
+   plc_inputs[2].b_value == 0 then
+   begin
+   if control_status == shutdown then
+      set add status_menu = "Startup"
+   else 
+      set add status_menu = "Shutdown"
+   end
+
+if valid confirm_panel then
+   begin
+   case confirm_panel of
+        execute 
+        begin
+        set_b_value(db_address(int(b1)+output_offset+1), src, on)
+        set invalid sel_var
+        set invalid already_warned
+        end
+     
+        cancel
+        begin
+        set_b_value(db_address(int(b1)+plc_offset+1), src, on)
+        set invalid sel_var
+        set invalid already_warned
+        end
+
+        default 
+        begin
+        set invalid sel_var
+        set invalid already_warned
+        end
+
+   set invalid confirm_panel
+   end
+
+
+if valid sel_var and sd_inputs[2].b_value then
+   begin
+   if (pressure_remote.b_value or elec_remote.b_value) and 
+      invalid already_warned then
+      begin
+      already_warned=1
+      warning_box
+      end
+   set fixed confirm_panel
+   set x confirm_panel = 20
+   set y confirm_panel = 110
+   set fixed confirm_panel
+   request confirm_panel
+   end
+
+
+! DRAW SYMBOL !
+
+rect(fg=status_bg,h=40,w=140) 
+x -= 70 y += 20 add y -= 40 add x += 140 add line(lw=1,fg=decorlight) clear
+x = 70 y = -20 add y += 40 add x -= 140 add line(lw=1,fg=decorshadow) clear
+x = 65 y=-2 add  x-=130 add 
+y+=19 add line(fg=decorshadow) clear 
+add
+x+=130 add y-=19 add
+line(fg=decorlight) clear
+
+tfg = black
+x = 0 y =-10 text(ch=17,"System Status: ")
+
+if control_status == shutdown then
+   tfg = flashred
+else
+   tfg = blue
+y=10 text(ch=17,control_status)
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=276
+just=centrecentre
+y=50
+fire_main_status(15000,15046,15050,15757,heathrow)
+
+
+end
+
+mimic = main_object w=400,h=240,just=centrecentre,fg=white,bg=black,resizable

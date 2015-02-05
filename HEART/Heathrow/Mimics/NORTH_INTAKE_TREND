@@ -1,0 +1,13 @@
+load mimic_libutil
+load a_test_trend_mimic
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+x = -200 y = -100 trend_2(w=400,h=200,font=font_bold,ch=12,tfg=black,fg=white,bg=black,
+        heathro2,511,e1522,yes,yes,yes,display_datetime,blue,blue,
+        red,blue,green,cyan,flashred,"MVA")
+
+
+end
+
+mimic = main_object w=600,h=400,just=centrecentre,bg=decoroff,resizable

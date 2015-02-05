@@ -1,0 +1,99 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+load oil_switch
+
+!***************************************!
+! Created by VIJAY KARA  !
+
+!  Dated  16th October 2006  !
+
+! This sub station is for Viewing purpose only and does not allow any
+  live CONTROL or MONITORING !
+
+
+
+!************ ISS *************!
+
+object busbar_smpn_107
+
+begin
+
+just = centrecentre
+
+
+tfg = black x = -210 y = -280 add text ("ISS  A",ch = 40) clear
+tfg = black x = -205 y = - 220 add text ("RINGMASTER",ch = 20) clear
+tfg = black x = -210 y = - 195 add text ("EXTENSIBLE",ch = 20) clear
+tfg = black x = -240 y = - 160 add text ("6.6 kV",ch = 20) clear
+
+lw = 2
+	x = -250 y = -78 add x += 450 add line(lw=4,fg=red) clear
+	x = 80 y = -160 add y += 80 add line (fg=black) clear !2!
+	x = 30 y = -160 add y += 80 add line (fg=black) clear  !1!
+	x =-180 y = 100 add y -= 180 add line (fg=black) clear  !AL!
+	x =-130 y = 100 add y -= 180 add line (fg=black) clear  !AL!
+
+
+scale = 120
+
+	
+	x = 30 y = -120 ocb_mont(0,15090,1890,8770,heathro4,1,"top") !P1!
+	x = 80 y = -120 ocb_mont(0,15100,1891,8771,heathro4,2,"top") !P2!
+	x = -80 y = -80 ocb_mont(0,15460,1928,8807,heathro4,1,"sect",angle=90) ! New added !
+
+ch=35
+
+x = 30 y = -240 text ("D")
+x = 30 y = -220 text ("S")
+x = 30 y = -200 text ("S")
+x = 30 y = -180 text ("8")
+x = 80 y = -240 text ("D")
+x = 80 y = -220 text ("S")
+x = 80 y = -200 text ("S")
+x = 80 y = -180 text ("7")
+
+ch=25
+x = 50 y = -90 text ("P1")
+x = 100 y = -90 text ("P2")
+
+ch=35
+x = -150 y = 130 text ("S & S")
+x = -150 y = 150 text ("OWNED")
+x = 80 y = -10 text ("BAA OWNED")
+
+
+!************ISS JUNCTION BORDER*****************!
+
+
+	x = -20 y = -260 add y += 480 add line (lw=6,fg=yellow) clear  !AL!
+	x = -20 y = -260 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = -230 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = -200 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = -170 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = -140 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = -110 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = -80 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = -50 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = -20 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = 10 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = 40 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = 70 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = 100 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = 130 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = 160 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+	x = -20 y = 190 add y += 15 add line (lw=5,fg=blue) clear  !AL!
+
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 50 y = 50 busbar_smpn_107
+
+end
+
+mimic = main_object w=700,h=600,just=centrecentre,fg=white,bg=aquamarine3,resizable

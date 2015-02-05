@@ -1,0 +1,91 @@
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+
+Load hv_lib
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object earth_symbol(fg)
+begin
+	just=topleft
+	lw=2
+	x = 0 y = 0 add x +=30 add line clear
+	x-= 25 y += 5 add x +=20 add line clear
+	x-= 15 y += 5 add x +=10 add line clear
+end
+
+object busbar_147
+var helpstr = help string(30)
+var y_default=int
+var x_default=int
+var line_col=colour
+begin
+   	scale=256
+   	just=centrecentre
+   	x=20 y=20  w=600 h=500
+
+	line_col=magenta3
+	just=centrecentre
+	lw=2
+	x = 150 y = 15 add text (tfg=black,"147",ch = 25) clear
+	x = -210 y = 0 add x += 375 add line(lw=4,fg=line_col) clear
+	x = -160 y = 0 add y -= 55 add line (fg=line_col) clear
+	x += 50 y = 0 add y += 55 add line (fg=line_col) clear
+	x += 10
+	x += 50
+	x += 10
+	x += 50 y = 0 add y += 55 add line (fg=line_col) clear
+	x += 50 y = 0 add y += 55 add line (fg=line_col) clear
+	x += 50 y = 0 add y -= 55 add line (fg=line_col) clear
+
+! *** Scaling for objects *** !
+	scale=320
+! *** Circuit Breaker objects *** !
+
+	x = -160 y = -25 hv_lib_breaker("eclipse",int,16000,1350,560,int,HEATHRO2,1,"TOP",int)
+	x += 50 y = 25 hv_lib_breaker("eclipse",int,16020,1351,561,int,HEATHRO2,2,"BTM",int)
+	x += 10
+	x += 50 y = 0 hv_lib_breaker("eclipse",int,16040,1352,562,int,HEATHRO2,3,"SECT",int)
+	x += 10
+	x += 50 y = 25 hv_lib_breaker("eclipse",int,16060,1353,563,int,HEATHRO2,4,"BTM",int)
+	x += 50 y = 25 hv_lib_breaker("eclipse",int,16080,1354,564,int,HEATHRO2,5,"BTM",int)
+	x += 50 y = -25 hv_lib_breaker("eclipse",int,16100,1355,565,int,HEATHRO2,6,"TOP",int)
+
+
+! *** Scaling for objects *** !
+	scale=256
+! *** Transformer objects *** !
+	x = -110 y = 75 add transformer_lib("Tx 1","")
+	x += 50
+	x += 70 y = 75 add transformer_lib("Tx 2","")
+	x += 50 y = 75 add transformer_lib("Tx 3","")
+
+! *** Labels *** !
+	scale=256
+	tfg=black ch=12
+	!**panel 1**!
+	x = -160 y = -80 text("SS 121")
+	y = -65 text("P16")
+
+	!**panel 2**!
+	x += 50 y = 110 text("Local")
+	y = 125 text("")
+
+	!**panel 4**!
+	x += 120 y = 110 text("Local")
+	y = 125 text("")
+
+	!**panel 5**!
+	x += 50 y = 110 text("Chilling")
+	y = 125 text("Station")
+
+	!**panel 6**!
+	x += 50 y = -80 text("SS 128")
+	y = -65 text("P11")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=20 Y=-20 busbar_147
+end
+mimic = main_object w=450,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

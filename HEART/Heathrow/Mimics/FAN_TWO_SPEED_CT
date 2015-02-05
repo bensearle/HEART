@@ -1,0 +1,477 @@
+! HEATHROW CMS - FAN TWO SPEED CT
+
+loaded by: CARGO_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type panel_item_row = table (str=string(30))
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+ 
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+************************************************************
+* VENTILATION FAN (TWO POSITION) CARGO TUNNEL OBJECT       *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object fan_two_speed_ct(fg,bg,plc_offset=int,b_offset=int,
+                          c_offset=int,src=source,ident=string)
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+!B INPUTS
+b_inputs[1] = manual_control_ip
+b_inputs[2] = available
+b_inputs[3] = fan_low_speed
+b_inputs[4] = fan_high_speed
+b_inputs[5] = set_fan_off
+b_inputs[6] = set_fan_low
+b_inputs[7] = set_fan_high
+b_inputs[19] = fan_remote_control
+!
+var b_inputs = input b_db_row_type[19]
+
+var tag_message_ip = input  c_db_row_type
+
+!ALARM INPUTS
+alarm_inputs[1] = not_avl_alarm
+alarm_inputs[7] = fan_failed_low
+alarm_inputs[8] = fan_failed_high
+alarm_inputs[9] = duty_failed
+alarm_inputs[10] = man_ctrl_discr
+alarm_inputs[11] = avl_discr
+alarm_inputs[12] = fan_low_discr
+alarm_inputs[13] = fan_high_discr
+alarm_inputs[14] = duty_failed_discr
+alarm_inputs[15] = set_fan_low_discr
+alarm_inputs[16] = set_fan_high_discr
+alarm_inputs[17] = set_fan_off_discr
+!
+var alarm_inputs = input alarm_row_type[17]
+
+! LOOPBACKS !
+VAR fan_fg = loopback  colour
+VAR fan_bg = loopback  colour
+VAR status_text_1 = loopback  string
+VAR status_text_2 = loopback  string
+var first_run = loopback  int
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+
+begin
+
+! INITIALISATION !
+
+if invalid first_run then 
+  begin 
+  status_text_1=""
+  if invalid status_text_2 then
+    status_text_2="Off"
+  first_run=1
+  end
+
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source plc_inputs then 
+
+   begin
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset-1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset - 1)
+   set priority tag_message_ip.db_addr = 15
+   set persist tag_message_ip
+   set mayexist tag_message_ip
+   request tag_message_ip
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   end
+
+
+! SELECT PUMP BG COLOUR ! 
+
+if b_inputs[1].b_value or b_inputs[19].b_value then
+   fan_bg = lightblue
+
+else if tag_message_ip.c_value <> "" then
+  fan_bg = yellow
+else
+  fan_bg = decoroff     
+
+
+! SELECT PUMP FG COLOUR !
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+
+   fan_fg = magenta
+
+else if alarm_inputs[1].alarm_status  == w_note or
+        alarm_inputs[7].alarm_status  == w_note or
+        alarm_inputs[8].alarm_status  == w_note or
+        alarm_inputs[9].alarm_status  == w_note or
+        alarm_inputs[10].alarm_status == w_note or 
+        alarm_inputs[11].alarm_status == w_note or
+        alarm_inputs[12].alarm_status == w_note or 
+        alarm_inputs[13].alarm_status == w_note or 
+        alarm_inputs[14].alarm_status == w_note or 
+        alarm_inputs[15].alarm_status == w_note or 
+        alarm_inputs[16].alarm_status == w_note or
+        alarm_inputs[17].alarm_status == w_note then
+   fan_fg = flashred
+
+else if alarm_inputs[1].alarm_status  == w_clr or
+        alarm_inputs[7].alarm_status  == w_clr or
+        alarm_inputs[8].alarm_status  == w_clr or
+        alarm_inputs[9].alarm_status  == w_clr or
+        alarm_inputs[10].alarm_status == w_clr or 
+        alarm_inputs[11].alarm_status == w_clr or
+        alarm_inputs[12].alarm_status == w_clr or 
+        alarm_inputs[13].alarm_status == w_clr or 
+        alarm_inputs[14].alarm_status == w_clr or 
+        alarm_inputs[15].alarm_status == w_clr or 
+        alarm_inputs[16].alarm_status == w_clr or
+        alarm_inputs[17].alarm_status == w_clr then
+   fan_fg = red
+   
+
+else if b_inputs[3].b_value or b_inputs[4].b_value then
+   fan_fg = green4
+ 
+else fan_fg = white
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w=90 h=70 
+set rect main_menu
+set title main_menu  = "Exhaust Fan Menu"
+set empty main_menu 
+set add main_menu = "Alter Tagged Message"
+set add main_menu = "Clear Tagged Message"
+
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+   case main_menu of
+
+      "Stop Fan"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 3), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 4), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+         end
+
+      "Start Low"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 4), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 3), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+         end
+ 
+      "Start High"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 5), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 3), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 4), src, off)
+         end
+
+       "Fan Remote Control"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 17), src, on)
+         end
+
+       "Fan Local Control"
+         begin
+         ! Stop fan and return to plc control !
+         set_b_value(db_address(int(b1) + b_offset + 3), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 4), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 17), src, off) 
+	 end
+
+       "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tagged Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+       "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+
+! TAG MESSAGE BOX !
+
+w=70 h=70
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+! MAIN MENU OPTIONS !
+
+if b_inputs[1].b_value or
+   (plc_inputs[1].b_value == 1 and
+    plc_inputs[2].b_value == 1) then
+   begin
+   set remove main_menu = "Stop Fan"
+   set remove main_menu = "Start Low"
+   set remove main_menu = "Start High"
+   set remove main_menu = "Fan Remote Control"
+   set remove main_menu = "Fan Local Control"
+   end
+else
+   begin
+   if b_inputs[19].b_value then
+     begin
+     set add main_menu = "Fan Local Control"
+
+     if b_inputs[3].b_value == off and
+        b_inputs[4].b_value == off then
+        begin
+        set add main_menu = "Start Low"
+        set add main_menu = "Start High"
+        end
+
+     if b_inputs[3].b_value then
+        begin
+        set add main_menu = "Stop Fan"
+        set add main_menu = "Start High"
+        end
+
+     if b_inputs[4].b_value then
+        begin
+        set add main_menu = "Stop Fan"
+        set add main_menu = "Start Low"
+        end
+   end
+ else
+   set add main_menu = "Fan Remote Control"
+
+end
+
+if b_inputs[3].b_value == off and
+   b_inputs[4].b_value == off then
+   begin
+   status_text_1 = ""
+   status_text_2 = "Off"
+   end
+
+if b_inputs[3].b_value then
+   begin
+   status_text_1 = ""
+   status_text_2 = "Low Speed"
+   end
+
+if b_inputs[4].b_value then
+   begin
+   status_text_1 = ""
+   status_text_2 = "High Speed"
+   end
+
+if b_inputs[3].b_value and
+   b_inputs[4].b_value then
+   begin
+   status_text_1 = ""
+   status_text_2 = "Error"
+   end
+
+! Failed interlock removed from here on 24-3-94 / for Ian !
+
+
+! DRAW FAN !
+
+bg=fan_fg
+fg=fan_bg
+just = centrecentre
+rect(h=70,w=70,fg=fan_bg)
+x -= 35 y += 35 add
+y -= 70 add
+x += 70 add line(fg=decorlight) clear
+x = 35 add
+y += 70 add
+x -= 70 add line(fg=decorshadow) clear
+x= -10 y = 0 add
+circle(h=10,w=20,fg=fan_fg,lw=2)
+x= 10 y = 0 add
+circle(h=10,w=20,fg=fan_fg,lw=2)
+x=0 y=-10
+circle(h=20,w=10,fg=fan_fg,lw=2)
+y=10
+circle(h=20,w=10,fg=fan_fg,lw=2)
+ch = 10
+x = 0 y = -27 add
+text (ident)
+ch = 10
+y += 35
+text (status_text_1)
+y += 19 add text (status_text_2)
+  if b_inputs[1].b_value then
+   text(y=-44,x=0,just=centrecentre,tfg=white,"Man Ctrl")
+clear
+
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 280
+
+fan_two_speed_ct(10000,10150,1,heathrow,"Exhaust E6")
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable
+

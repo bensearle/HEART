@@ -1,0 +1,175 @@
+load mimic_libutil
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type panel_row = table (str=string(79))
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,h=50,w=750,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string(100))
+var mss = popup  mss_m
+begin
+set x mss=0
+set y mss=0
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!
+****************************************************************
+* DISPLAY COMMAND BUTTON                                       *
+****************************************************************
+!
+
+object screen_tag_button(tag_offset = int,src = source)
+
+var tag_col = loopback  colour
+var tag_mes = input  c_db_row_type
+var tag_panel = panel  panel_row
+var tag_menu = menu  string
+
+begin
+just = centrecentre
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source tag_mes then
+   begin
+   set source tag_mes = src
+   set filter tag_mes.db_addr = lim_eq
+   set limit  tag_mes.db_addr = db_address(int(c1) + tag_offset - 1)
+   set persist tag_mes
+   request tag_mes
+   end
+
+
+! TAG MESSAGE BOX !
+
+just = centrecentre
+x = 0 y = 0 w = 150 h = 20
+if selb and tag_mes.c_value <> "" then
+   begin
+   message_text_box(tag_mes.c_value)
+   end
+
+
+! CASE MENU OPTIONS !
+
+if valid tag_menu then
+  begin
+  case tag_menu of
+       "Alter Screen Tag"
+       begin
+       set title tag_panel = "Alter Screen Tag"
+       set label tag_panel.str = "Tag Message: "
+       set unpinned tag_panel
+       request tag_panel
+       end
+ 
+       "Clear Screen Tag"
+       begin
+       set_c_value(db_address(int(c1) + tag_offset - 1), src, "") 
+       end
+
+       default
+       begin
+       end
+
+       set invalid tag_menu
+   end
+
+x = 0 y = 0 w = 150 h = 20
+set rect tag_menu
+set title tag_menu = "Tag Menu"
+set remove tag_menu = "Alter Screen Tag"
+set remove tag_menu = "Clear Screen Tag"
+set add tag_menu = "Alter Screen Tag"
+set add tag_menu = "Clear Screen Tag"
+
+if valid tag_mes then
+   begin
+   if tag_mes.c_value <> "" then
+      tag_col = yellow
+   else
+      tag_col = decoroff
+   end
+
+if valid tag_panel then
+   begin
+   set_c_value( db_address(int(c1) + tag_offset - 1),src,tag_panel.str)
+   set invalid tag_panel
+   end
+
+
+! DRAW BUTTON !
+
+clear
+
+just = centrecentre
+     
+W=200 H=18 X = 0 Y = 0 rect(fg=tag_col)
+
+x = 0 y = 0 text(tfg=red,ch=18,"Mimic Tag",just=centrecentre) clear
+
+x = -100 y = 10 add
+y -= 20 add
+x += 200 add
+line(fg=white) clear
+
+x = 100 y = -10 add
+y += 20 add
+x -= 200 add
+line(fg=decoron) clear
+
+!
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey) clear
+!
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y = 0 screen_tag_button(221,heathrow)
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=decoroff,resizable

@@ -1,0 +1,170 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!*******Hv EAST INTAKE**********!
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ammeter
+load transformer_meter
+load hv_menu_bar
+load hv_hierarchy
+
+
+!***********************************************************
+* EAST INTAKE OBJECT                                       *
+* this object is called by the Top Level variable (mimic)  *
+***********************************************************!
+
+object east_intake(lw,scale,angle)
+begin
+
+scale=256 just = centrecentre
+
+x = 85 y = -75 add text(scale=260,ch=21,tfg=orange3,"EAST INTAKE") clear
+
+scale = 256 just = centrecentre
+tfg = orange3 ch = 20
+x = -50 y = 25 text("Front")
+x = -50 y = -35 text("Rear")
+
+
+! REAR BAR !
+x = -500 y = -20 add
+x += 1100 add
+line(fg=orange2,lw=4) clear
+
+! FRONT BAR !
+x = -500 y = 40 add
+x += 1100 add
+line(fg=orange2,lw=4) clear
+
+lw=2
+x = 565 y = -20 add y -= 60 add line(fg=orange2) clear
+x = 525 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = 545 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = 485 y = -20 add y -= 60 add line(fg=orange2) clear
+x = 445 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = 465 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = 405 y = -20 add y -= 60 add line(fg=orange2) clear
+x = 365 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = 385 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = 325 y = -20 add y -= 60 add line(fg=orange2) clear
+x = 285 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = 305 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = -115 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -155 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = -135 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = -195 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -235 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = -215 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = -275 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -315 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = -295 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = -355 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -395 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = -375 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = -435 y = -20 add y -= 60 add line(fg=orange2) clear
+x = -475 y = 40 add y -= 120 add x += 40 add line(fg=orange2) clear
+x = -455 y = -80 add y -= 30 add line(fg=orange2) clear
+
+x = 35 y = -20 add y += 60 add line(fg=orange2) clear
+x = 135 y = -20 add y += 60 add line(fg=orange2) clear
+
+x = 195 y = 40 add y += 65 add line(fg=orange2) clear
+x = 245 y = -20 add y += 125 add x -=50 add line(fg=orange2) clear
+x = 220 y = 105 add y +=250 add line(fg=orange2) clear
+
+x = -65 y = 40 add y += 65 add x += 50 add line(fg=orange2) clear
+x = -15 y = -20 add y += 125 add line(fg=orange2) clear
+x = -40 y = 105 add y +=250 add line(fg=orange2) clear
+
+scale=120
+x = 565 y = -50 add ocb(2000,2520,125,200,heathrow,26,"top")
+x = 525 y = 10 add ocb(2000,2500,124,199,heathrow,25,"top")
+x = 485 y = -50 add ocb(2000,2480,123,198,heathrow,24,"top")
+x = 445 y = 10 add ocb(2000,2460,122,197,heathrow,23,"top")
+x = 405 y = -50 add ocb(2000,2440,121,196,heathrow,22,"top")
+x = 365 y = 10 add ocb(2000,2420,120,195,heathrow,21,"top")
+
+x = 325 y = -50 add ocb(2000,2400,119,194,heathrow,20,"top")
+x = 285 y = 10 add ocb(2000,2380,118,193,heathrow,19,"top")
+
+x = 195 y = 75 add ocb_mont(2000,2560,116,191,heathrow,17,"top")
+x = 245 y = 75 add ocb_mont(2000,2570,117,192,heathrow,18,"top")
+
+x = 135 y = 10 add ocb(2000,2360,115,190,heathrow,16,"top")
+x = 85 y = 40 add ocb(2000,2340,114,189,heathrow,15,"sect",angle=90)
+x = 85 y = -20 add ocb(2000,2320,113,188,heathrow,14,"sect",angle=-90)
+x = 35   y = 10 add ocb(2000,2300,112,187,heathrow,13,"top")
+
+x = -65 y = 75 add ocb_mont(2000,2540,110,185,heathrow,11,"top")
+x = -15 y = 75 add ocb_mont(2000,2550,111,186,heathrow,12,"top")
+
+x = -115 y = -50 add ocb(2000,2280,109,184,heathrow,10,"top")
+x = -155 y = 10 add ocb(2000,2260,108,183,heathrow,9,"top")
+x = -195 y = -50 add ocb(2000,2240,107,182,heathrow,8,"top")
+x = -235 y = 10 add ocb(2000,2220,106,181,heathrow,7,"top")
+x = -275 y = -50 add ocb(2000,2200,105,180,heathrow,6,"top")
+x = -315 y = 10 add ocb(2000,2180,104,179,heathrow,5,"top")
+x = -355 y = -50 add ocb(2000,2160,103,178,heathrow,4,"top")
+x = -395 y = 10 add ocb(2000,2140,102,177,heathrow,3,"top")
+x = -435 y = -50 add ocb(2000,2120,101,176,heathrow,2,"top")
+x = -475 y = 10 add ocb(2000,2100,100,175,heathrow,1,"top")
+
+
+scale = 100
+x = 220 y = 340 transformer("Tx 2","SEB")
+x = -40 y = 340 transformer("Tx 1","SEB")
+end
+
+
+object east_intake_mimic
+begin
+
+
+
+scale = 256
+x = 0 y = -60 east_intake
+
+scale = 200
+y = -245 x = 545 ammeter(160,heathrow,"0-400A","M1/13")
+y = -245 x = 465 ammeter(159,heathrow,"0-400A","M1/15")
+y = -245 x = 385 ammeter(158,heathrow,"0-400A","M1/9 4")
+y = -245 x = 305 ammeter(157,heathrow,"0-400A","M1/9 3")
+y = -245 x = -135 ammeter(154,heathrow,"0-400A","M1/9 2")
+y = -245 x = -215 ammeter(153,heathrow,"0-400A","M1/9 1")
+y = -245 x = -295 ammeter(152,heathrow,"0-400A","NORTH")
+y = -245 x = -375 ammeter(151,heathrow,"0-400A","M1/6")
+y = -245 x = -455 ammeter(150,heathrow,"0-400A","M1/3")
+
+scale=240
+x = -40 y = 150 transformer_meter(161,155,heathrow,"EAST","1","0-800A")
+x = 215 y = 150 transformer_meter(162,156,heathrow,"EAST","2","0-800A")
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+goto_menu
+x = 500 y = 270 command_button(198,heathrow)
+clear
+
+x = -50 y = -20 east_intake_mimic
+x = 0 y = 322 menu_bar
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

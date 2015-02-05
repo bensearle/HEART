@@ -1,0 +1,164 @@
+load RUSSLIB
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+!operator input -panels!
+!type panel_1_item = table (str=string)!
+
+	
+Object main_object(w,h,fg,bg)
+!var fillcolour = colour!
+!var rectcolour = colour!
+!var common_alarm = input db_elements(db_addr, alarm_status)!
+!var valveopen = onoff!
+!var valveclosed = onoff!
+!var enumber = real!
+!var edressed = int!
+!var cstring = string!
+!var my_menu = menu string!
+!var enumber2 = real!
+!var anglerotate = int!
+!var tag_message_panel = panel panel_1_item!
+
+Begin
+	!valveopen = bvalue(heathrow,b605)!
+	!valveclosed = bvalue(heathrow,b606)!
+	!enumber = evalue(heathrow,e8000)!
+	!edressed = int(evalue(heathrow,e8001))!
+	!cstring =  cvalue(heathrow,c2800)!
+	
+	
+	!common alarm!
+	!set source common_alarm = heathrow!
+	!set filter common_alarm.db_addr =  lim_eq!
+	!set limit common_alarm.db_addr = B609!
+	!request common_alarm!
+	
+	
+	
+	!code for string empty!
+	!if cstring <> "" then!
+	!	begin!
+	!	rectcolour = yellow!
+	!	end	!
+	!else if cstring == "" then!
+	!	begin!
+	!	rectcolour = white!
+	!	end	!
+	!if valveopen then!
+	!		begin	!
+	!		if valveclosed then!
+	!			begin!
+	!			fillcolour = red!
+	!			end!
+	!		else!
+	!			begin!
+	!			fillcolour = green!
+	!			end!
+	!		end !
+	!else if valveclosed then!
+	!			begin	!
+	!			!
+	!			fillcolour = white!
+	!			end!
+	!else if common_alarm.alarm_status == w_note then!
+	!			begin!
+	!			set alarm flashing waiting for acknowledgement!
+	!			fillcolour =flashred!
+	!			end!
+	!else if common_alarm.alarm_status == w_clr then!
+	!			begin!
+	!			alarm acknowledge, alarm still energised!
+	!			fillcolour = red!
+	!			end!
+	!else!
+	!			begin!
+	!			fillcolour = grey!
+	!			end!
+	
+	!angle = int (enumber*0.9)	!
+	
+	!position of valve one!
+	x =350 y=250 generic_valve(heathrow,b605,b606,b609,e8000,e8001,c2800)
+	!position of valve two!
+	x =350 y=400 generic_valve(heathrow,b625,b626,b629,e8002,e8004,c2801)
+		
+	!case edressed of!
+		!0!
+		!begin!
+		!angle = int (enumber*0.9)!
+		!bowtie(fillcolour, rectcolour, cstring, grey)!
+		!end!
+		!1 !
+		!begin!
+		!angle=0!
+		!bowtie(green, rectcolour, cstring, blue)!
+		!end!
+		!2!
+		!begin!
+		!angle=90!
+		!bowtie(white, rectcolour, cstring, blue)!
+		!end!
+		!default!
+		!begin!
+		!end!
+	
+	
+	
+	!right click menu!
+	!just = centrecentre
+	if valid my_menu then
+		begin
+		if my_menu == "Dress Valve Open" then
+			begin
+			evalue2 (heathrow,e8001,1)
+			end
+		else if my_menu == "Dress Valve Close" then
+			begin
+			evalue2 (heathrow,e8001,2)
+			end
+		else if my_menu =="Undress" then
+			begin
+			evalue2 (heathrow, e8001,0)
+			end
+		else if my_menu == "Edit Tag" then
+			begin!
+			!operator input- panels!
+	!			set title tag_message_panel = "Modify Tagged Message"
+				set label tag_message_panel.str = "Tag Message :"
+				set unpinned tag_message_panel
+				request tag_message_panel
+			end
+		else if my_menu == "Clear Tag" then
+			begin
+				set_c_value(heathrow,c2800,"")
+			end
+		set invalid my_menu
+		end
+	
+	set remove my_menu = "Dress Valve Open"
+	set remove my_menu = "Dress Valve Close"
+	set remove my_menu = "Undress"
+	set remove my_menu = "Edit Tag"
+	set remove my_menu = "Clear Tag"
+	
+	set add my_menu = "Dress Valve Open"
+	set add my_menu = "Dress Valve Close"
+	set add my_menu = "Undress"
+	set add my_menu = "Edit Tag"
+	set add my_menu = "Clear Tag"
+	
+	x=350 y=250 w=75 h=75
+	set rect my_menu
+	
+	if valid tag_message_panel then
+		begin
+			set_c_value(heathrow,c2800,tag_message_panel.str)
+			set invalid tag_message_panel
+		end
+	
+	
+	!
+End
+
+mimic = main_object w=700,h=700, bg=white,resizable

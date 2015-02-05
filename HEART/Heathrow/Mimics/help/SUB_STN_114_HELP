@@ -1,0 +1,426 @@
+helptext mimic_help = "\t\tSUB STATION 114\n
+This is the help for the sub station 114 mimic."
+
+helptext vcb_1 = "\t\tVCB 1\n
+This is the help for VCB 1.\n
+Possible states are:\n
+1 Closed: X symbol\n
+2 Open: Circled X symbol\n
+3 Isolated: Two T symbols\n
+4 Circuit Earth Off: Open switch + Earth symbol, connected to circuit side\n
+5 Circuit Earth On: Closed switch + Earth symbol, connected to circuit side\n
+6 Busbar Earth Off: Open switch + Earth symbol, connected to busbar side\n
+7 Busbar Earth On: Closed switch + Earth symbol, connected to busbar side\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Magenta: Comms failure\n
+White: Manually dressed\n
+Green: Normal\n
+\n
+Background colours:\n
+Orange: Permit to work\n
+Blue: Manually dressed\n
+Flashing Blue: Manually dressed (field inputs match operator selection)\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+Borders:\n
+Flashing Green: Selected for control\n
+Yellow: Tag message present\n
+\n
+Left click on symbol to view tag message.\n
+Right click on symbol to display menu of actions.\n
+\n
+See O&M manual section 3.1, page 3-3 for details."
+
+helptext vcb_2 = "\t\tVCB 2\n
+This is the help for VCB 2.\n
+Possible states are:\n
+1 Closed: X symbol\n
+2 Open: Circled X symbol\n
+3 Isolated: Two T symbols\n
+4 Circuit Earth Off: Open switch + Earth symbol, connected to circuit side\n
+5 Circuit Earth On: Closed switch + Earth symbol, connected to circuit side\n
+6 Busbar Earth Off: Open switch + Earth symbol, connected to busbar side\n
+7 Busbar Earth On: Closed switch + Earth symbol, connected to busbar side\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Magenta: Comms failure\n
+White: Manually dressed\n
+Green: Normal\n
+\n
+Background colours:\n
+Orange: Permit to work\n
+Blue: Manually dressed\n
+Flashing Blue: Manually dressed (field inputs match operator selection)\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+Borders:\n
+Flashing Green: Selected for control\n
+Yellow: Tag message present\n
+\n
+Left click on symbol to view tag message.\n
+Right click on symbol to display menu of actions.\n
+\n
+See O&M manual section 3.1, page 3-3 for details."
+
+helptext vcb_3 = "\t\tVCB 3\n
+This is the help for VCB 3.\n
+Possible states are:\n
+1 Closed: X symbol\n
+2 Open: Circled X symbol\n
+3 Isolated: Two T symbols\n
+4 Circuit Earth Off: Open switch + Earth symbol, connected to circuit side\n
+5 Circuit Earth On: Closed switch + Earth symbol, connected to circuit side\n
+6 Busbar Earth Off: Open switch + Earth symbol, connected to busbar side\n
+7 Busbar Earth On: Closed switch + Earth symbol, connected to busbar side\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Magenta: Comms failure\n
+White: Manually dressed\n
+Green: Normal\n
+\n
+Background colours:\n
+Orange: Permit to work\n
+Blue: Manually dressed\n
+Flashing Blue: Manually dressed (field inputs match operator selection)\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+Borders:\n
+Flashing Green: Selected for control\n
+Yellow: Tag message present\n
+\n
+Left click on symbol to view tag message.\n
+Right click on symbol to display menu of actions.\n
+\n
+See O&M manual section 3.1, page 3-3 for details."
+
+helptext vcb_4 = "\t\tVCB 4\n
+This is the help for VCB 4.\n
+Possible states are:\n
+1 Closed: X symbol\n
+2 Open: Circled X symbol\n
+3 Isolated: Two T symbols\n
+4 Circuit Earth Off: Open switch + Earth symbol, connected to circuit side\n
+5 Circuit Earth On: Closed switch + Earth symbol, connected to circuit side\n
+6 Busbar Earth Off: Open switch + Earth symbol, connected to busbar side\n
+7 Busbar Earth On: Closed switch + Earth symbol, connected to busbar side\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Magenta: Comms failure\n
+White: Manually dressed\n
+Green: Normal\n
+\n
+Background colours:\n
+Orange: Permit to work\n
+Blue: Manually dressed\n
+Flashing Blue: Manually dressed (field inputs match operator selection)\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+Borders:\n
+Flashing Green: Selected for control\n
+Yellow: Tag message present\n
+\n
+Left click on symbol to view tag message.\n
+Right click on symbol to display menu of actions.\n
+\n
+See O&M manual section 3.1, page 3-3 for details."
+
+helptext vcb_5 = "\t\tVCB 5\n
+This is the help for VCB 5.\n
+Possible states are:\n
+1 Closed: X symbol\n
+2 Open: Circled X symbol\n
+3 Isolated: Two T symbols\n
+4 Circuit Earth Off: Open switch + Earth symbol, connected to circuit side\n
+5 Circuit Earth On: Closed switch + Earth symbol, connected to circuit side\n
+6 Busbar Earth Off: Open switch + Earth symbol, connected to busbar side\n
+7 Busbar Earth On: Closed switch + Earth symbol, connected to busbar side\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Magenta: Comms failure\n
+White: Manually dressed\n
+Green: Normal\n
+\n
+Background colours:\n
+Orange: Permit to work\n
+Blue: Manually dressed\n
+Flashing Blue: Manually dressed (field inputs match operator selection)\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+Borders:\n
+Flashing Green: Selected for control\n
+Yellow: Tag message present\n
+\n
+Left click on symbol to view tag message.\n
+Right click on symbol to display menu of actions.\n
+\n
+See O&M manual section 3.1, page 3-3 for details."
+
+helptext vcb_6 = "\t\tVCB 6\n
+This is the help for VCB 6.\n
+Possible states are:\n
+1 Closed: X symbol\n
+2 Open: Circled X symbol\n
+3 Isolated: Two T symbols\n
+4 Circuit Earth Off: Open switch + Earth symbol, connected to circuit side\n
+5 Circuit Earth On: Closed switch + Earth symbol, connected to circuit side\n
+6 Busbar Earth Off: Open switch + Earth symbol, connected to busbar side\n
+7 Busbar Earth On: Closed switch + Earth symbol, connected to busbar side\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Magenta: Comms failure\n
+White: Manually dressed\n
+Green: Normal\n
+\n
+Background colours:\n
+Orange: Permit to work\n
+Blue: Manually dressed\n
+Flashing Blue: Manually dressed (field inputs match operator selection)\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+Borders:\n
+Flashing Green: Selected for control\n
+Yellow: Tag message present\n
+\n
+Left click on symbol to view tag message.\n
+Right click on symbol to display menu of actions.\n
+\n
+See O&M manual section 3.1, page 3-3 for details."
+
+helptext vcb_7 = "\t\tVCB 7\n
+This is the help for VCB 7.\n
+Possible states are:\n
+1 Closed: X symbol\n
+2 Open: Circled X symbol\n
+3 Isolated: Two T symbols\n
+4 Circuit Earth Off: Open switch + Earth symbol, connected to circuit side\n
+5 Circuit Earth On: Closed switch + Earth symbol, connected to circuit side\n
+6 Busbar Earth Off: Open switch + Earth symbol, connected to busbar side\n
+7 Busbar Earth On: Closed switch + Earth symbol, connected to busbar side\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Magenta: Comms failure\n
+White: Manually dressed\n
+Green: Normal\n
+\n
+Background colours:\n
+Orange: Permit to work\n
+Blue: Manually dressed\n
+Flashing Blue: Manually dressed (field inputs match operator selection)\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+Borders:\n
+Flashing Green: Selected for control\n
+Yellow: Tag message present\n
+\n
+Left click on symbol to view tag message.\n
+Right click on symbol to display menu of actions.\n
+\n
+See O&M manual section 3.1, page 3-3 for details."
+
+helptext vcb_8 = "\t\tVCB 8\n
+This is the help for VCB 8.\n
+Possible states are:\n
+1 Closed: X symbol\n
+2 Open: Circled X symbol\n
+3 Isolated: Two T symbols\n
+4 Circuit Earth Off: Open switch + Earth symbol, connected to circuit side\n
+5 Circuit Earth On: Closed switch + Earth symbol, connected to circuit side\n
+6 Busbar Earth Off: Open switch + Earth symbol, connected to busbar side\n
+7 Busbar Earth On: Closed switch + Earth symbol, connected to busbar side\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Magenta: Comms failure\n
+White: Manually dressed\n
+Green: Normal\n
+\n
+Background colours:\n
+Orange: Permit to work\n
+Blue: Manually dressed\n
+Flashing Blue: Manually dressed (field inputs match operator selection)\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+Borders:\n
+Flashing Green: Selected for control\n
+Yellow: Tag message present\n
+\n
+Left click on symbol to view tag message.\n
+Right click on symbol to display menu of actions.\n
+\n
+See O&M manual section 3.1, page 3-3 for details."
+
+helptext ammeter_1 = "\t\tAmmeter 1\n
+This is the help for Ammeter 1.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+
+
+helptext ammeter_2 = "\t\tAmmeter 2\n
+This is the help for Ammeter 2.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+
+helptext ammeter_3 = "\t\tAmmeter 3\n
+This is the help for Ammeter 3.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+
+helptext ammeter_4 = "\t\tAmmeter 4\n
+This is the help for Ammeter 4.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+
+helptext ammeter_5 = "\t\tAmmeter 5\n
+This is the help for Ammeter 5.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+
+helptext ammeter_6 = "\t\tAmmeter 6\n
+This is the help for Ammeter 6.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+
+helptext ammeter_7 = "\t\tAmmeter 7\n
+This is the help for Ammeter 7.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+
+helptext ammeter_8 = "\t\tAmmeter 8\n
+This is the help for Ammeter 8.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+
+helptext voltmeter_2 = "\t\tVoltmeter 2\n
+This is the help for Voltmeter 2.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+
+helptext voltmeter_10 = "\t\tVoltmeter 10\n
+This is the help for Voltmeter 10.\n
+\n
+Foreground colours:\n
+Flashing Red: Unacknowledged alarm\n
+Red: Acknowledged alarm\n
+Yellow: Normal (positive value)\n
+Green: Normal (negative value)\n
+\n
+Background colours:\n
+Yellow: Tag message present\n
+Grey: Normal\n
+\n
+See O&M manual section 3.2, page 3-7 for details."
+

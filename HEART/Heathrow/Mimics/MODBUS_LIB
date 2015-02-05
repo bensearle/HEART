@@ -1,0 +1,926 @@
+!**	HEATHRO2\MODBUS_LIB		**!
+!** 	Modified by ULTRA - 21 Nov 2006	**!
+!** 	Inclusion of OS24 MSCP Subs	**!
+
+load mx_sys_ipobjs
+load mx_table_l
+load fp_generic_server_request
+
+
+type main_menu_row = table (main_menu_items= string(27))
+type checked_type = enum(confirm="continue",
+                         cancel= "cancel")
+
+object main_title(width=int,height=int,title=string,text_col=colour)
+begin
+	clear	just = centrecentre
+	x=0 y=0 w=width h=height fg=grey80 fs=fillsolid rotrect clear
+	x=0 y=0 ch=14 font=font_bold fontname="arial" tfg=text_col text(title) clear
+
+	x=-(width/2) y=height/2 add y-=height add x+=width add line(fg=white) clear
+	x=-(width/2) y=height/2 add x+=width add y-=height add line(fg=grey40) 
+	clear
+end
+
+object box_object(width=int,height=int,title=string,pos=int,text_size=int,tfg)
+begin
+	clear
+	just=centrecentre
+	x=0 y=0 w=width h=height angle=0 fg=grey80 fs=fillsolid rotrect 
+	x=-width/2 y=height/2 add y-=height add x+=width add line(fg=white) clear
+	x=-width/2 y=height/2 add x+=width add y-=height add line(fg=grey40) clear
+
+	 if invalid text_size then ch=12 else ch=text_size
+
+	if pos==3 then
+	begin
+		x=0 y=0 text(just=centrecentre,title)
+	end	
+	else if pos==2 then
+	begin
+		x=0 y=28 text(just=centrecentre,title)
+	end	
+	else if pos==1 then
+	begin
+		x=0 y=-28 text(just=centrecentre,title)
+	end
+	else
+	begin
+		x=20 y=0 text(just=centreleft,title)
+	end
+	clear
+end
+
+
+
+object node(plc_offset=int,b_offset=int,c_offset=int,src=source,title=string,enable_config=yesno,angle)
+var dis_check_toggle = panel checked_type
+var en_check_toggle = panel checked_type
+var b_inputs = input b_db_row_type[5]
+var plc_inputs = input b_db_row_type[2]
+var alarm_inputs = input alarm_row_type
+var tag_message_ip = input  c_db_row_type
+
+var tag_message_panel = panel  panel_item_row
+var main_menu = menu  string(30)
+var enable_toggle_box=loopback yesno
+var disable_toggle_box=loopback yesno
+var display_fg=loopback colour
+var title_tfg=loopback colour
+var comms_failed =yesno
+begin
+	clear
+	if invalid get source plc_inputs then
+	  begin
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address("b" + plc_offset)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+   		set source b_inputs = src
+   		set filter b_inputs.db_addr = lim_ge
+   		set limit b_inputs.db_addr = db_address("b" + b_offset)
+   		set priority b_inputs.db_addr = 15
+   		set persist b_inputs
+   		set mayexist b_inputs
+   		request b_inputs
+
+		set source alarm_inputs = src
+		set filter alarm_inputs.db_addr = lim_eq
+		set limit alarm_inputs.db_addr = db_address("b" + b_offset)
+		set priority alarm_inputs.db_addr = 15
+		set persist alarm_inputs
+		set mayexist alarm_inputs
+		request alarm_inputs
+
+		set source tag_message_ip = src
+		set filter tag_message_ip.db_addr = lim_eq
+		set limit tag_message_ip.db_addr = db_address("c" + c_offset)
+		set priority tag_message_ip.db_addr = 15
+		set persist tag_message_ip
+		set mayexist tag_message_ip
+		request tag_message_ip
+	  end   
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+		comms_failed = yes
+	else
+		comms_failed = no
+
+	if comms_failed==yes then
+		display_fg = magenta
+	else if alarm_inputs.alarm_status == w_note then
+		display_fg = flashred
+	else if alarm_inputs.alarm_status == w_clr then
+		display_fg = red
+	else if b_inputs[5].b_value == on and enable_config ==yes then
+		display_fg =grey60
+	else
+		display_fg =green4
+
+       if c_offset==int or c_offset==0 then
+          begin
+          end
+       else
+          begin
+	!**** main menu ****!
+	just=centrecentre
+	x = 0 y=0  w=36 h=36
+	set rect main_menu
+	set title main_menu  = "node menu"
+	set remove main_menu = "alter tagged message"
+	set remove main_menu = "clear tagged message"
+	set remove main_menu = "node enable"
+	set remove main_menu = "node disable"
+	set add main_menu="alter tagged message"
+	set add main_menu="clear tagged message"
+
+	if enable_config == yes then
+	begin
+		set add main_menu = "node enable"
+		set add main_menu = "node disable"
+	end
+
+
+	!**** control menu ****!
+	if valid main_menu then
+	begin
+	   case main_menu of
+
+	   "alter tagged message"
+		begin
+			set title tag_message_panel = "modify tagged message"
+			set label tag_message_panel.str = "tag message :"
+			set unpinned tag_message_panel
+			request tag_message_panel
+		end
+
+	   "clear tagged message"
+		begin
+			set_c_value(db_address("c" + c_offset), src, "")
+		end
+
+	   "node enable"
+		begin
+			enable_toggle_box=yes 
+		end
+
+	   "node disable"
+		begin
+			disable_toggle_box=yes 
+		end
+
+		default
+		 begin
+		 end
+	   set invalid main_menu
+	end
+          end
+
+	! ** disable node ** !
+
+	if disable_toggle_box==yes then 
+	begin
+		set title dis_check_toggle = "disable node ?"
+		request dis_check_toggle
+		disable_toggle_box=no
+	end
+	
+	if get busy dis_check_toggle then
+		box(just=centrecentre,lw=6,x=0, y=0,w=35,h=35,fg=flashgreen)
+
+	if valid dis_check_toggle then ! ** disable node command ** !
+  	begin
+  		if dis_check_toggle==confirm then
+		begin
+			set_b_value(db_address("b" + (b_offset+1)), src, off)
+			set_b_value(db_address("b" + (b_offset+3)), src, on)
+  			set invalid dis_check_toggle 
+  		end
+  	end
+	else set invalid dis_check_toggle
+
+	! ** enable node ** !
+
+	if get busy en_check_toggle then
+		box(just=centrecentre,lw=6,x=0, y=0,w=35,h=35,fg=flashgreen)
+
+	if enable_toggle_box==yes then 
+	begin
+		set title en_check_toggle = "enable node ?"
+		request en_check_toggle
+		enable_toggle_box=no
+	end
+
+	if valid en_check_toggle then ! ** enable node command ** !
+  	begin
+  		if en_check_toggle==confirm then
+		begin
+			set_b_value(db_address("b" + (b_offset+3)), src, off)
+			set_b_value(db_address("b" + (b_offset+1)), src, on)
+  			set invalid en_check_toggle 
+  		end
+  	end
+	else set invalid en_check_toggle 
+
+	!**** tag message box ****!
+	just=centrecentre
+	x=0 y=0  w=35 h=35
+	if rotselb and tag_message_ip.c_value <> "" then
+	begin
+		message_text_box(tag_message_ip.c_value)
+	end
+
+	box_object(35,35,title,0,12)
+
+	fg = display_fg
+
+	x=-11 y=-4 w=22 h=16 just=topleft ls=solid lw=3 angle=0 rotbox clear
+	x=0 y=-4 add x=0 y=-22 add line(lw=3) clear
+
+	if b_inputs[5].b_value == on and enable_config==yes then
+	   begin
+		display_fg =grey60
+		clear x=0 y=2 text(just=centrecentre,font=font_bold,tfg=red,ch=12,"dis") clear
+	   end
+
+	!**** display tag message ****!
+	if tag_message_ip.c_value <> "" then
+	begin
+		just=centrecentre
+		x = 0 y = 0 box(lw=3,fg=yellow,w=35, h=35) clear
+	end
+
+	!**** tag message panel ****!
+	if valid tag_message_panel then
+	begin
+		set_c_value(db_address("c" + c_offset),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	end
+	clear
+end
+
+
+
+
+object plc_slots(slot_type=int,display_fg=colour,display_fg2=colour,res1=int)
+var fg1 = colour
+var fg2 = colour
+begin
+	clear
+	if slot_type==0 then	! ** blank slot ** !
+	begin
+		just = centrecentre 
+		x=0 y=0 w=40 h=100 fg=grey40 bg=grey fs=fillfgpatt patt=stripehor  rotrect clear
+		x=-20 y=50 add y=-50 add x=20 add line(fg=grey80) clear
+		x=-20 y=50 add x=20 add y=-50 add line(fg=black) clear
+	end
+
+	if slot_type==9 then	! ** prosoft modbus slot ** !
+	begin
+		clear just = centrecentre
+		x=0 y=0 w=40 h=100 fg=grey40 bg=grey fs=fillfgpatt patt=stripehor  rotrect
+		x=0 y=-35 w=36 h=24 fg=grey40 fs=fillsolid angle=0 rotrect
+		x=0 y=-47 w=36 h=3 fg=red4 fs=fillsolid angle=0 rotrect
+		x=-1 y=14 w=32 h=66 fg=grey60 rotrect
+
+		if invalid display_fg then fg1=grey40 else fg1 =display_fg 
+		if invalid display_fg2 then fg2=grey40 else fg2 =display_fg2
+
+		x=0 y=-8 add y=5 add x=-7 y=10 add y=-11 add  fill(fg=fg1) clear
+		x=0 y=27 add y=40 add x=-7 y=45 add y=24 add fill(fg=fg2) clear
+	
+		x=-20 y=50 add y=-50 add x=20 add line(fg=grey80) clear
+		x=-20 y=50 add x=20 add y=-50 add line(fg=black) clear
+		ch=14 font=font_bold tfg=yellow2 
+		x=8 y=-2 text("1")
+		x=8 y=32 text("2")
+	end
+	clear
+end
+
+object plc_module(plc_offset=int,b_offset=int,dty_sty=int,plc_reset=int,c_offset=int,src=source,title=string,no_slots=int,slot_config=string,num_inputs=int,res1=int)
+var b_inputs = input b_db_row_type[8]
+var duty_ip = input b_db_row_type
+var reset_ip = input b_db_row_type[3]
+var plc_inputs = input b_db_row_type[2]
+var alarm_inputs = input alarm_row_type
+var tag_message = input  c_db_row_type
+var reset_check_toggle = panel checked_type
+var tag_message_panel = panel  panel_item_row
+var main_menu = menu  string(30)
+var plc_fg=loopback colour
+var display_fg1a= colour
+var display_fg1b= colour
+var display_fg2a= colour
+var display_fg2b= colour
+var display_fg3a= colour
+var display_fg3b= colour
+var display_fg4a= colour
+var display_fg4b= colour
+var title_tfg=loopback colour
+var reset_toggle_box=loopback yesno
+var comms_failed =yesno
+var num_slots = int
+var slot1=int
+var slot2=int
+var slot3=int
+var slot4=int
+var slot5=int
+var slot6=int
+var slot7=int
+var slot8=int
+var slot9=int
+var slot10=int
+var slot11=int
+var slot12=int
+var slot13=int
+begin
+	clear
+   	if invalid get source plc_inputs then
+	  begin
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address("b" + plc_offset)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+   		set source b_inputs = src
+   		set filter b_inputs.db_addr = lim_ge
+   		set limit b_inputs.db_addr = db_address("b" + b_offset)
+   		set priority b_inputs.db_addr = 15
+   		set persist b_inputs
+   		set mayexist b_inputs
+   		request b_inputs
+
+	   	set source duty_ip = src
+	   	set filter duty_ip.db_addr = lim_eq
+	   	set limit duty_ip.db_addr = db_address("b" + dty_sty)
+	   	set priority duty_ip.db_addr = 15
+	   	set persist duty_ip 
+	   	set mayexist duty_ip 
+	   	request duty_ip 
+
+	   	set source reset_ip = src
+	   	set filter reset_ip.db_addr = lim_ge
+	   	set limit reset_ip.db_addr = db_address("b" + plc_reset)
+	   	set priority reset_ip.db_addr = 15
+	   	set persist reset_ip
+	   	set mayexist reset_ip
+	   	request reset_ip
+
+		set source alarm_inputs = src
+		set filter alarm_inputs.db_addr = lim_ge
+		set limit alarm_inputs.db_addr = db_address("b" + b_offset)
+		set priority alarm_inputs.db_addr = 15
+		set persist alarm_inputs
+		set mayexist alarm_inputs
+		request alarm_inputs
+
+	   	set source tag_message = src
+	   	set filter tag_message.db_addr = lim_eq
+	   	set limit tag_message.db_addr = db_address("c" + c_offset)
+	   	set persist tag_message
+	   	request tag_message
+	  end   
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+		comms_failed = yes
+	else
+		comms_failed = no
+
+		title_tfg = black
+
+	
+	
+
+	if comms_failed==yes then
+		plc_fg = magenta
+	else if duty_ip.b_value == on  then
+		plc_fg = green
+	else if duty_ip.b_value == off then 
+		plc_fg = yellow
+	else
+		plc_fg = gold4
+
+	if title=="" then scale=100
+
+
+	! ** psu module ** !
+		clear
+		just = centrecentre 
+		x=0 y=0 w=80 h=100 fg=grey40  bg=grey fs=fillsolid  rotrect
+		x=21 y=-38 w=11 h=6 fg=plc_fg fs=fillsolid rotrect box(fg=grey60)
+		x=0 y=-18 ch=22 font=font_normal fontname="arial" tfg=black text("plc")
+		x=0 y=10 ch=22 font=font_normal fontname="arial" tfg=black text(title)
+		x=-40 y=50 add y=-51 add x=40 add line(fg=grey80) clear
+		x=-39 y=50 add x=39 add y=-51 add line(fg=black) clear
+
+	if invalid slot_config or slot_config == "" then
+	begin
+		slot1=0
+		slot1=0
+		slot1=0
+		slot1=0
+	end
+	else
+	begin
+		slot1=int(getchar(1,slot_config))
+		slot2=int(getchar(2,slot_config))
+		slot3=int(getchar(3,slot_config))
+		slot4=int(getchar(4,slot_config))
+		slot5=int(getchar(5,slot_config))
+		slot6=int(getchar(6,slot_config))
+		slot7=int(getchar(7,slot_config))
+		slot8=int(getchar(8,slot_config))
+		slot9=int(getchar(9,slot_config))
+		slot10=int(getchar(10,slot_config))
+		slot11=int(getchar(11,slot_config))
+		slot12=int(getchar(12,slot_config))
+		slot13=int(getchar(13,slot_config))
+	end
+
+	if no_slots==4 then
+	  begin
+		if comms_failed==yes then
+		begin
+			x=60 y=0 plc_slots(slot1,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot2,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot3,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot4,magenta,magenta,int)
+		end
+		else
+		begin
+			if b_inputs[1].b_value == on then display_fg1a = red else display_fg1a = grey40
+			if b_inputs[2].b_value == on then display_fg1b = red else display_fg1b = grey40
+			if b_inputs[3].b_value == on then display_fg2a = red else display_fg2a = grey40
+			if b_inputs[4].b_value == on then display_fg2b = red else display_fg2b = grey40
+			if b_inputs[5].b_value == on then display_fg3a = red else display_fg3a = grey40
+			if b_inputs[6].b_value == on then display_fg3b = red else display_fg3b = grey40
+			if b_inputs[7].b_value == on then display_fg4a = red else display_fg4a = grey40
+			if b_inputs[8].b_value == on then display_fg4b = red else display_fg4b = grey40
+
+			x=60 y=0 plc_slots(slot1,display_fg1a,display_fg1b,int)
+			x+=40 y=0 plc_slots(slot2,display_fg2a,display_fg2b,int)
+			x+=40 y=0 plc_slots(slot3,display_fg3a,display_fg3b,int)
+			x+=40 y=0 plc_slots(slot4,display_fg4a,display_fg4b,int)
+		end
+	  end
+
+	else if no_slots==7 then
+	  begin
+		if comms_failed==yes then
+		begin
+			x=60 y=0 plc_slots(slot1,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot2,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot3,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot4,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot5,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot6,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot7,magenta,magenta,int)
+		end
+		else
+		begin
+			if b_inputs[1].b_value == on then display_fg1a = red else display_fg1a = grey40
+			if b_inputs[2].b_value == on then display_fg1b = red else display_fg1b = grey40
+			if b_inputs[3].b_value == on then display_fg2a = red else display_fg2a = grey40
+			if b_inputs[4].b_value == on then display_fg2b = red else display_fg2b = grey40
+			if b_inputs[5].b_value == on then display_fg3a = red else display_fg3a = grey40
+			if b_inputs[6].b_value == on then display_fg3b = red else display_fg3b = grey40
+			if b_inputs[7].b_value == on then display_fg4a = red else display_fg4a = grey40
+			if b_inputs[8].b_value == on then display_fg4b = red else display_fg4b = grey40
+
+			x=60 y=0 plc_slots(slot1,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot2,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot3,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot4,display_fg1a,display_fg1b,int)
+			x+=40 y=0 plc_slots(slot5,display_fg2a,display_fg2b,int)
+			x+=40 y=0 plc_slots(slot6,display_fg3a,display_fg3b,int)
+			x+=40 y=0 plc_slots(slot7,display_fg4a,display_fg4b,int)
+		end
+	  end
+
+	else if no_slots==10 then
+	  begin
+		if comms_failed==yes then
+		begin
+			x=60 y=0 plc_slots(slot1,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot2,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot3,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot4,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot5,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot6,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot7,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot8,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot9,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot10,magenta,magenta,int)
+		end
+		else
+		begin
+			if b_inputs[1].b_value == on then display_fg1a = red else display_fg1a = grey40
+			if b_inputs[2].b_value == on then display_fg1b = red else display_fg1b = grey40
+			if b_inputs[3].b_value == on then display_fg2a = red else display_fg2a = grey40
+			if b_inputs[4].b_value == on then display_fg2b = red else display_fg2b = grey40
+			if b_inputs[5].b_value == on then display_fg3a = red else display_fg3a = grey40
+			if b_inputs[6].b_value == on then display_fg3b = red else display_fg3b = grey40
+			if b_inputs[7].b_value == on then display_fg4a = red else display_fg4a = grey40
+			if b_inputs[8].b_value == on then display_fg4b = red else display_fg4b = grey40
+
+			x=60 y=0 plc_slots(slot1,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot2,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot3,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot4,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot5,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot6,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot7,display_fg1a,display_fg1b,int)
+			x+=40 y=0 plc_slots(slot8,display_fg2a,display_fg2b,int)
+			x+=40 y=0 plc_slots(slot9,display_fg3a,display_fg3b,int)
+			x+=40 y=0 plc_slots(slot10,display_fg4a,display_fg4b,int)
+		end
+	  end
+
+	else if no_slots==13 then
+	  begin
+		if comms_failed==yes then
+		begin
+			x=60 y=0 plc_slots(slot1,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot2,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot3,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot4,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot5,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot6,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot7,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot8,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot9,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot10,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot11,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot12,magenta,magenta,int)
+			x+=40 y=0 plc_slots(slot13,magenta,magenta,int)
+		end
+		else
+		begin
+			if b_inputs[1].b_value == on then display_fg1a = red else display_fg1a = grey40
+			if b_inputs[2].b_value == on then display_fg1b = red else display_fg1b = grey40
+			if b_inputs[3].b_value == on then display_fg2a = red else display_fg2a = grey40
+			if b_inputs[4].b_value == on then display_fg2b = red else display_fg2b = grey40
+			if b_inputs[5].b_value == on then display_fg3a = red else display_fg3a = grey40
+			if b_inputs[6].b_value == on then display_fg3b = red else display_fg3b = grey40
+			if b_inputs[7].b_value == on then display_fg4a = red else display_fg4a = grey40
+			if b_inputs[8].b_value == on then display_fg4b = red else display_fg4b = grey40
+
+			x=60 y=0 plc_slots(slot1,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot2,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot3,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot4,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot5,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot6,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot7,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot8,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot9,grey40,grey40,int)
+			x+=40 y=0 plc_slots(slot10,display_fg1a,display_fg1b,int)
+			x+=40 y=0 plc_slots(slot11,display_fg2a,display_fg2b,int)
+			x+=40 y=0 plc_slots(slot12,display_fg3a,display_fg3b,int)
+			x+=40 y=0 plc_slots(slot13,display_fg4a,display_fg4b,int)
+		end
+	  end
+
+	else
+	  begin
+	  end
+
+
+	!**** tag message panel ****!
+	if valid tag_message_panel then
+	begin
+		set_c_value( db_address("c" + c_offset),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	end
+
+
+	if invalid no_slots then num_slots = 4 else num_slots = no_slots
+
+       if c_offset==int or c_offset==0 then
+          begin
+          end
+       else
+          begin
+	!**** main menu ****!
+	just=topleft
+	x = -40 y=-50  w=80 + (num_slots*40) h=100
+	set rect main_menu
+	set title main_menu  = "plc menu"
+	set remove main_menu = "alter tagged message"
+	set remove main_menu = "clear tagged message"
+	set add main_menu="alter tagged message"
+	set add main_menu="clear tagged message"
+
+
+	!**** control menu ****!
+	if valid main_menu then
+	begin
+	   case main_menu of
+
+	   "alter tagged message"
+		begin
+			set title tag_message_panel = "modify tagged message"
+			set label tag_message_panel.str = "tag message :"
+			set unpinned tag_message_panel
+			request tag_message_panel
+		end
+
+	   "clear tagged message"
+		begin
+			set_c_value(db_address("c" + c_offset), src, "")
+		end
+
+		default
+		 begin
+		 end
+	   set invalid main_menu
+	end
+          end
+
+
+
+	!**** tag message box ****!
+	just=topleft
+	x = -40 y=-50  w=80 + (num_slots*40) h=100
+	if selb and tag_message.c_value <> "" then
+	begin
+		message_text_box(tag_message.c_value)
+	end
+
+	!**** display tag message ****!
+	if tag_message.c_value <> "" then
+	begin
+		just=topleft
+		x = -40 y=-50 box(lw=2,fg=yellow,w=80 + (num_slots*40), h=100) clear
+	end
+	clear
+
+
+	! ** reset plc ** !
+
+	if get busy reset_check_toggle then
+		box(just=topleft,lw=4,w=80 + (num_slots*40), h=100,fg=flashgreen)
+
+	if reset_ip[1].b_value == on then		! * check for MCM Timeout Fault * !
+	begin
+		X=0 Y=0 W=66 H=54 FG=GREY80 JUST=centrecentre FS=FILLSOLID ANGLE=0 ROTRECT Clear
+		if anyb then
+		begin
+			rotrect(fg=red4)
+			set_b_value(db_address("b" + (plc_reset+1)), src, on)
+		end
+
+		if comms_failed == yes then
+			tfg=magenta
+		else
+			tfg=flashred
+
+		X=-33 Y=27 Add X=-33 Y=-27 Add X=33 Y=-27 Add
+		FG=white LS=SOLID LW=3 CS=CAPROUND LINE clear
+		X=-33 Y=27 Add X=33 Y=27 Add X=33 Y=-27 Add
+		FG=black LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+		x=0 y=-16 ch=14 font=font_bold text("MODBUS")
+		x=0 y=0 text("PLC")
+		x=0 y=16 text("RESET")
+	end
+
+	if reset_ip[2].b_value == on  and reset_ip[3].b_value == on
+	then
+	begin
+		set_b_value(db_address("b" + (plc_reset+1)), src, off)
+	end
+end
+
+object d_switch(plc_offset=int,b_offset=int,c_offset=int,src=source,text_id=string,text_pos=int,res3=int,res2=int,res1=int)
+var b_inputs = input b_db_row_type
+var plc_inputs = input b_db_row_type[2]
+var alarm_inputs = input alarm_row_type
+var tag_message_panel = panel  panel_item_row
+var main_menu = menu  string(30)
+var display_fg=loopback colour
+var title_tfg=loopback colour
+var comms_failed =yesno
+var tag_message_ip = input  c_db_row_type
+var pos=int
+begin
+	clear	
+   	if invalid get source plc_inputs then
+	  begin
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address("b" + plc_offset)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+   		set source b_inputs = src
+   		set filter b_inputs.db_addr = lim_eq
+   		set limit b_inputs.db_addr = db_address("b" + b_offset)
+   		set priority b_inputs.db_addr = 15
+   		set persist b_inputs
+   		set mayexist b_inputs
+   		request b_inputs
+
+		set source alarm_inputs = src
+		set filter alarm_inputs.db_addr = lim_eq
+		set limit alarm_inputs.db_addr = db_address("b" + (b_offset+1))
+		set priority alarm_inputs.db_addr = 15
+		set persist alarm_inputs
+		set mayexist alarm_inputs
+		request alarm_inputs
+
+		set source tag_message_ip = src
+		set filter tag_message_ip.db_addr = lim_eq
+		set limit tag_message_ip.db_addr = db_address("c" + c_offset)
+		set priority tag_message_ip.db_addr = 15
+		set persist tag_message_ip
+		set mayexist tag_message_ip
+		request tag_message_ip
+	  end   
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+		comms_failed = yes
+	else
+		comms_failed = no
+
+	if comms_failed==yes then
+		display_fg = magenta
+	else if alarm_inputs.alarm_status == w_note then
+		display_fg = flashred
+	else if alarm_inputs.alarm_status == w_clr then
+		display_fg = red
+	else
+		display_fg = green4
+
+       if c_offset==int or c_offset==0 then
+          begin
+          end
+       else
+          begin
+	!**** main menu ****!
+	just=centrecentre
+	x = 0 y=0  w=36 h=36
+	set rect main_menu
+	set title main_menu  = "switch menu"
+	set remove main_menu = "alter tagged message"
+	set remove main_menu = "clear tagged message"
+	set add main_menu="alter tagged message"
+	set add main_menu="clear tagged message"
+
+
+	!**** control menu ****!
+	if valid main_menu then
+	begin
+	   case main_menu of
+
+	   "alter tagged message"
+		begin
+			set title tag_message_panel = "modify tagged message"
+			set label tag_message_panel.str = "tag message :"
+			set unpinned tag_message_panel
+			request tag_message_panel
+		end
+
+	   "clear tagged message"
+		begin
+			set_c_value(db_address("c" + c_offset), src, "")
+		end
+
+		default
+		 begin
+		 end
+	   set invalid main_menu
+	end
+          end
+
+	!**** tag message box ****!
+	just=centrecentre
+	x=0 y=0  w=35 h=35
+	if rotselb and tag_message_ip.c_value <> "" then
+	begin
+		message_text_box(tag_message_ip.c_value)
+	end
+
+	fg = display_fg
+
+	x=0 y=0 box_object(35,35,text_id,text_pos,14)
+	just=centrecentre
+
+	x=5 y=0 add x+=15 add line(lw=3, fg=display_fg) clear
+	x=-11 y=12 add x-=8 add line(lw=3, fg=display_fg) clear
+	x=-11 y=-12 add x-=8 add line(lw=3, fg=display_fg) clear
+	x=4 y=0 w=5 h=5 circle(lw=2, fg=green4) clear
+	x=-10 y=-12 w=5 h=5 circle(lw=2, fg=green4) clear
+	x=-10 y=12 w=5 h=5 circle(lw=2, fg=green4) clear
+
+	if b_inputs.b_value==on then 
+	begin
+		x=2 y=-12 ch=11 text("B") clear
+		x=3 y=-1 add x=-9 y=-11 add line(lw=4, fg=display_fg) clear
+	end
+	else if b_inputs.b_value==off then
+	begin
+		x=2 y=12 ch=11 tfg=grey40 text("A")
+		x=3 y=1 add x=-9 y=10 add line(lw=4, fg=display_fg) clear
+	end
+	else
+	begin
+		x=-4 y=0 ch=16 tfg=gold4 font=font_bold text("?")
+
+	end
+
+	!**** display tag message ****!
+	if tag_message_ip.c_value <> "" then
+	begin
+		just=centrecentre
+		x = 0 y = 0 box(lw=3,fg=yellow,w=35, h=35) clear
+	end
+
+	!**** tag message panel ****!
+	if valid tag_message_panel then
+	begin
+		set_c_value(db_address("c" + c_offset),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	end
+end
+
+object link_obj(b_offset=int,src=source,res1=int)
+begin
+	clear
+	x=-15 y=0 add x=15 y=0 add line(lw=3,fg=black) clear
+!
+	x=0 y=0 text(just=centrecentre,font=font_bold,tfg=red,ch=16,"x") clear
+!
+	clear
+end
+
+object fold_obj(plc_offset=int,src=source,title=string,pos=string,b_offset=int,c_offset=int,res2=int,res1=int)
+var plc_inputs = input b_db_row_type[2]
+var alarm_inputs = input alarm_row_type
+var comms_failed =yesno
+var display_fg=loopback colour
+begin
+	clear
+   	if invalid get source plc_inputs then
+	  begin
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address("b" + plc_offset)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+		set source alarm_inputs = src
+		set filter alarm_inputs.db_addr = lim_ge
+		set limit alarm_inputs.db_addr = db_address("b" + b_offset)
+		set priority alarm_inputs.db_addr = 15
+		set persist alarm_inputs
+		set mayexist alarm_inputs
+		request alarm_inputs
+	  end   
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+		comms_failed = yes
+	else
+		comms_failed = no
+
+	if comms_failed==yes then
+		display_fg = magenta
+	else if alarm_inputs.alarm_status == w_note then
+		display_fg = flashred
+	else if alarm_inputs.alarm_status == w_clr then
+		display_fg = red
+	else
+		display_fg = green4
+
+	just=centrecentre
+	if pos=="l" then
+	begin
+		x=-22 y=-8 w=8 h=8 fg=red4 fs=fillsolid sa=0 disk clear
+		x=-22 y=8 w=8 h=8 fg=flashgreen fs=fillsolid sa=0 disk clear
+	end
+	else
+	begin
+		x=26 y=-8 w=8 h=8 fg=red4 fs=fillsolid sa=0 disk clear
+		x=26 y=8 w=8 h=8 fg=flashgreen fs=fillsolid sa=0 disk clear
+	end
+
+	x=0 y=0 box_object(50,30,title,3,12,tfg=display_fg )
+	clear
+end
+
+Object obj1(w,h,fg,bg)
+begin
+!x=0 y=90 plc_module(8000,	8021,	8010,	8100,	2351,	heathro3,	"A",4,"9900",int,int)!
+End

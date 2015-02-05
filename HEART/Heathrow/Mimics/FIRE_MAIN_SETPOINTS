@@ -1,0 +1,517 @@
+! HEATHROW CMS - FIRE MAIN SETPOINTS
+
+loaded by: FIRE_MAIN
+!
+
+load mimic_libutil
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+ 
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the value of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=int)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+! 
+************************************************************
+* FIRE MAIN SETPOINTS OBJECT                               *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object fire_main_setpoints(comms_offset=int,lower_offset=int,
+                           upper_offset=int,src=source)
+
+var options_added = loopback  int
+var loopcounter = loopback  int
+var green_menu = menu  string
+var red_menu = menu  string
+var blue_menu = menu  string
+var time_delay_panel = panel  int
+var normal_psi_panel = panel  int
+var makeup_one_panel = panel  int
+var makeup_two_panel = panel  int
+var makeup_pressure_panel = panel  int
+var demand_one_panel = panel  int
+var demand_two_panel = panel  int
+var demand_three_panel = panel  int
+var demand_four_panel = panel  int
+var demand_five_panel = panel  int
+var demand_six_panel = panel  int
+var demand_seven_panel = panel  int
+var demand_eight_panel = panel  int
+var demand_nine_panel = panel  int
+var demand_ten_panel = panel  int
+
+!PLC INPUTS
+plc_inputs[1] = plc_a_failed
+plc_inputs[2] = plc_b_failed
+!
+var plc_inputs = input b_db_row_type[2]
+
+!LO INPUTS
+lo_inputs[1] = time_delay_ip
+lo_inputs[2] = normal_psi_ip
+lo_inputs[3] = make_up_one_ip
+lo_inputs[4] = make_up_two_ip
+lo_inputs[5] = make_up_three_ip
+!
+var lo_inputs = input e_db_row_type[5]
+
+!HI INPUTS
+hi_inputs[1] = demand_one_ip
+hi_inputs[2] = demand_two_ip
+hi_inputs[3] = demand_three_ip
+hi_inputs[4] = demand_four_ip
+hi_inputs[5] = demand_five_ip
+hi_inputs[6] = demand_six_ip
+hi_inputs[7] = demand_seven_ip
+hi_inputs[8] = demand_eight_ip
+hi_inputs[9] = demand_nine_ip
+hi_inputs[10] = demand_ten_ip
+!
+var hi_inputs = input e_db_row_type[10]
+
+begin
+just=centrecentre
+REALF=GENERAL4
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source lo_inputs then  
+   begin
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + comms_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source lo_inputs = src
+   set filter lo_inputs.db_addr = lim_ge
+   set limit lo_inputs.db_addr = db_address(int(e1) + lower_offset - 1)
+   set priority lo_inputs.db_addr = 15
+   set persist lo_inputs
+   set mayexist lo_inputs
+   request lo_inputs
+
+   set source hi_inputs = src
+   set filter hi_inputs.db_addr = lim_ge
+   set limit hi_inputs.db_addr = db_address(int(e1) + upper_offset - 1)
+   set priority hi_inputs.db_addr = 15
+   set persist hi_inputs
+   set mayexist hi_inputs
+   request hi_inputs
+
+  set invalid lo_inputs
+  end
+
+
+! DRAW SYMBOL !
+
+rect(h=242,w=106,fg=decoroff)
+
+x=-53y=121add
+x+=106 add
+y-=242 add
+line(lw=2,fg=decorshadow) ! Draw dark highlight !
+clear
+
+add
+x-=106 add
+y+=242add
+line(lw=2,fg=decorlight) ! Draw light highlight !
+clear
+
+y=-104 add
+loopcounter = 0
+while loopcounter<15 do  ! Draw box separators !
+   begin
+   x=-53 add
+   x+=106 add
+   line(lw=1,fg=decorshadow)
+   clear
+   y+=1 add
+   x-=106 add
+   line(lw=1,fg=decorlight)
+   y+=14 add
+   clear
+   loopcounter +=1
+   end
+
+
+x=0 y=-112
+tfg=black
+text(ch=16,"Setpoints")
+ch=15
+y+=15
+tfg=green4
+text("T/D "+int(lo_inputs[1].e_value)+" SECS")
+y+=15
+
+text("T/O "+int(lo_inputs[2].e_value)+"SECS")
+y+=15
+tfg=red
+text (realf=fixed0,"MF1 "+!int!(lo_inputs[3].e_value)+" GPM")
+y+=15
+text (realf=fixed0,"MF2 "+!int!(lo_inputs[4].e_value)+" GPM")
+y+=15
+text (realf=fixed0,"MP  "+!int!(lo_inputs[5].e_value)+" PSI")
+y+=15
+tfg=blue
+text(realf=fixed0,"DP1 "+!int!(hi_inputs[1].e_value)+" PSI")
+y+=15
+text(realf=fixed0,"DP2 "+!int!(hi_inputs[2].e_value)+" PSI")
+y+=15
+text(realf=fixed0,"DP3 "+!int!(hi_inputs[3].e_value)+" PSI")
+y+=15
+text(realf=fixed0,"DP4 "+!int!(hi_inputs[4].e_value)+" PSI")
+y+=15
+text(realf=fixed0,"DP5 "+!int!(hi_inputs[5].e_value)+" PSI")
+y+=15
+text(realf=fixed0,"DP6 "+!int!(hi_inputs[6].e_value)+" PSI")
+y+=15
+text(realf=fixed0,"DP7 "+!int!(hi_inputs[7].e_value)+" PSI")
+y+=15
+text(realf=fixed0,"DP8 "+!int!(hi_inputs[8].e_value)+" PSI")
+y+=15
+text(realf=fixed0,"DP9 "+!int!(hi_inputs[9].e_value)+" PSI")
+y+=15
+text(realf=fixed0,"DP10 "+!int!(hi_inputs[10].e_value)+" PSI")
+
+
+! CONFIGURE MENUS !
+
+! Green menu !
+
+if plc_inputs[1].b_value==0 or
+   plc_inputs[2].b_value==0 then
+   begin
+   h=30 w=150 
+   end
+else
+   begin
+   h=0 w=0
+   end
+
+x=0 y=-88
+set rect green_menu
+set title green_menu = "Setpoint Menu"
+if invalid options_added then
+   begin
+   set add green_menu = "Alter Time Delay"
+   set add green_menu = "Alter Time Off Delay"
+   options_added = 1
+   end
+
+
+! Red menu !
+
+if plc_inputs[1].b_value==0 or
+   plc_inputs[2].b_value==0 then
+   begin
+   h=45 w=150 
+   end
+else
+   begin
+   h=0 w=0
+   end
+
+x=0 y=-50
+set rect red_menu
+set title red_menu = "Makeup Menu"
+if options_added == 1 then
+   begin
+   set add red_menu = "Alter Flow SP One"
+   set add red_menu = "Alter Flow SP Two"
+   set add red_menu = "Alter Makeup Pressure"
+   options_added = 2
+   end   
+
+
+
+! Blue menu !
+
+if plc_inputs[1].b_value==0 or
+   plc_inputs[2].b_value==0 then
+   begin
+   h=150 w=150 
+   end
+else
+   begin
+   h=0 w=0
+   end
+
+x=0 y=47
+set rect blue_menu
+set title blue_menu = "Demand Menu"
+if options_added == 2 then
+   begin
+   set add blue_menu = "Alter DP1"
+   set add blue_menu = "Alter DP2"
+   set add blue_menu = "Alter DP3"
+   set add blue_menu = "Alter DP4"
+   set add blue_menu = "Alter DP5"
+   set add blue_menu = "Alter DP6"
+   set add blue_menu = "Alter DP7"
+   set add blue_menu = "Alter DP8"
+   set add blue_menu = "Alter DP9"
+   set add blue_menu = "Alter DP10"
+   options_added = 3
+   end
+
+
+! CASE MENU OPTIONS !
+
+if valid green_menu then
+   begin
+   case green_menu of
+
+      "Alter Time Delay"
+         begin 
+         request time_delay_panel
+         end
+
+     ! "Alter Normal PSI SP"! "Alter Time Off Delay"
+        begin 
+         request normal_psi_panel 
+         end
+
+      default begin end
+
+    set invalid green_menu
+
+    end
+    
+
+if valid red_menu then
+   begin
+   case red_menu of
+
+      "Alter Flow SP One"
+         begin 
+         request makeup_one_panel
+         end
+
+      "Alter Flow SP Two"
+         begin 
+         request makeup_two_panel 
+         end
+
+      "Alter Makeup Pressure"
+         begin
+         request makeup_pressure_panel
+         end
+
+      default begin end
+
+    set invalid red_menu
+
+    end
+
+
+if valid blue_menu then
+   begin
+   case blue_menu of
+
+      "Alter DP1"
+         begin 
+         request demand_one_panel
+         end
+
+      "Alter DP2"
+         begin 
+         request demand_two_panel
+         end
+
+      "Alter DP3"
+         begin 
+         request demand_three_panel
+         end
+
+      "Alter DP4"
+         begin 
+         request demand_four_panel
+         end
+
+      "Alter DP5"
+         begin 
+         request demand_five_panel
+         end
+
+      "Alter DP6"
+         begin 
+         request demand_six_panel
+         end
+
+      "Alter DP7"
+         begin 
+         request demand_seven_panel
+         end
+
+      "Alter DP8"
+         begin 
+         request demand_eight_panel
+         end
+
+      "Alter DP9"
+         begin 
+         request demand_nine_panel
+         end
+
+      "Alter DP10"
+         begin 
+         request demand_ten_panel
+         end
+
+      default begin end
+
+    set invalid blue_menu
+
+    end
+
+
+! VALIDATE INPUTS !
+
+if valid time_delay_panel and time_delay_panel > -1 and time_delay_panel <121 then
+  begin
+  set_e_value(db_address(int(e1) + lower_offset - 1), src, time_delay_panel)
+  set invalid time_delay_panel
+  end
+
+if valid normal_psi_panel then
+  begin
+  set_e_value(db_address(int(e1) + lower_offset), src, normal_psi_panel)
+  set invalid normal_psi_panel
+  end
+
+
+! WRITE MAKE UP SETPOINTS TO SERVER !
+
+if valid makeup_one_panel and makeup_one_panel < lo_inputs[4].e_value then
+  begin
+  set_e_value(db_address(int(e1) + lower_offset+1), src, makeup_one_panel)
+  set invalid makeup_one_panel
+  end
+else set invalid makeup_one_panel
+
+if valid makeup_two_panel and makeup_two_panel > lo_inputs[3].e_value then
+  begin
+  set_e_value(db_address(int(e1) + lower_offset+2), src, makeup_two_panel)
+  set invalid makeup_two_panel
+  end
+else set invalid makeup_two_panel
+
+if valid makeup_pressure_panel and makeup_pressure_panel > hi_inputs[1].e_value then
+  begin
+  set_e_value(db_address(int(e1) + lower_offset+3), src, makeup_pressure_panel)
+  set invalid makeup_pressure_panel
+  end
+else set invalid makeup_pressure_panel
+
+
+
+! WRITE DEMAND SETPOINT TO SERVER !
+
+if valid demand_one_panel and demand_one_panel > hi_inputs[2].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset-1), src, demand_one_panel)
+  set invalid demand_one_panel
+  end
+else set invalid demand_one_panel
+
+if valid demand_two_panel and demand_two_panel > hi_inputs[3].e_value and    demand_two_panel < hi_inputs[1].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset), src, demand_two_panel)
+  set invalid demand_two_panel
+  end
+else set invalid demand_two_panel
+
+if valid demand_three_panel and demand_three_panel > hi_inputs[4].e_value and    demand_three_panel < hi_inputs[2].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset+1), src, demand_three_panel)
+  set invalid demand_three_panel
+  end
+else set invalid demand_three_panel
+
+if valid demand_four_panel and demand_four_panel > hi_inputs[5].e_value and    demand_four_panel < hi_inputs[3].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset+2), src, demand_four_panel)
+  set invalid demand_four_panel
+  end
+else set invalid demand_four_panel
+
+if valid demand_five_panel and demand_five_panel > hi_inputs[6].e_value and    demand_five_panel < hi_inputs[4].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset+3), src, demand_five_panel)
+  set invalid demand_five_panel
+  end
+else set invalid demand_five_panel
+
+if valid demand_six_panel and demand_six_panel > hi_inputs[7].e_value and    demand_six_panel < hi_inputs[5].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset+4), src, demand_six_panel)
+  set invalid demand_six_panel
+  end                                                                                                                                             else set invalid demand_six_panel
+
+if valid demand_seven_panel and demand_seven_panel > hi_inputs[8].e_value and demand_seven_panel < hi_inputs[6].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset+5), src, demand_seven_panel)
+  set invalid demand_seven_panel
+  end
+else set invalid demand_seven_panel
+
+if valid demand_eight_panel and demand_eight_panel > hi_inputs[9].e_value and    demand_eight_panel < hi_inputs[7].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset+6), src, demand_eight_panel)
+  set invalid demand_eight_panel
+  end
+else set invalid demand_eight_panel
+
+if valid demand_nine_panel and demand_nine_panel > hi_inputs[10].e_value and    demand_nine_panel < hi_inputs[8].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset+7), src, demand_nine_panel)
+  set invalid demand_nine_panel
+  end
+else set invalid demand_nine_panel
+
+if valid demand_ten_panel and demand_ten_panel < hi_inputs[9].e_value then
+  begin
+  set_e_value(db_address(int(e1) + upper_offset+8), src, demand_ten_panel)
+  set invalid demand_ten_panel
+  end
+else set invalid demand_ten_panel
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+fire_main_setpoints(15000,1067,1087,heathrow)
+end
+
+mimic = main_object w=400,h=350,just=centrecentre,fg=white,bg=black,resizable

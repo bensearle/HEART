@@ -1,0 +1,150 @@
+!Function to return value of a B database point!
+object get_b_value(db_addr=db_address, src=source) = onoff
+var ip = input db_elements(db_addr, b_value)
+begin
+	set source ip = src   
+	set filter ip.db_addr = lim_eq   
+	set limit ip.db_addr = db_addr   
+	set persist ip    
+	request ip   
+	get_b_value = ip.b_value   
+end
+
+!Function to return value of an E database point!
+object get_c_value(db_addr=db_address, src=source) = string
+var ip = input db_elements(db_addr, c_value)
+begin
+	set source ip = src   
+	set filter ip.db_addr = lim_eq   
+	set limit ip.db_addr = db_addr   
+	set persist ip    
+	request ip   
+	get_c_value = ip.c_value   
+end
+
+!Function to return value of an E database point!
+object get_e_value(db_addr=db_address, src=source) = real
+var ip = input db_elements(db_addr, e_value)
+begin
+	set source ip = src   
+	set filter ip.db_addr = lim_eq   
+	set limit ip.db_addr = db_addr   
+	set persist ip    
+	request ip   
+	get_e_value = ip.e_value   
+end
+
+!Popup box displaying tag message!
+object msg (tag_mess=string,bg,just)
+begin
+	text (tag_mess)
+end
+mimic msg_box = msg bg=decoroff,just=centrecentre,w=300,h=50
+
+!Draw the valve shape!
+object DrawValve(col=colour,tagMessage=string,angle)
+var message_box = popup msg_box
+begin
+	just=centrecentre
+	
+	!Draw yellow background if tag message present!
+	if tagMessage <> "" then
+	begin
+		x=0 y=0 w=60 h=110
+		fg=yellow
+		rotrect
+		if rotselb then
+		begin
+			set title message_box = "Tag Message"
+			request message_box(tagMessage)
+		end
+	end
+		
+	!Draw bow tie shape!
+	x=0 y=0 add
+	x-=25 y-=50 add
+	x+=50 add
+	x-=50 y+=100 add
+	x+=50 add
+	fg=col
+	fill
+	fg=black
+	lw=3
+	polygon
+	
+	!Draw circle shape!
+	x=0 y=0 h=40 w=40 sa=0 aa=360
+	fg=lightgrey
+	pie
+	fg=black
+	arc	
+	
+	!Popup showing tag message if tag message present!
+	!if tagMessage <> "" then
+	begin
+		x=0 y=0 w=110 h=110
+		if selb then
+		begin
+			set title message_box = "Tag Message"
+			request message_box(tagMessage)
+		end
+	end!
+end
+
+Object main_object(w,h,fg,bg)
+var openInput = onoff
+var closedInput = onoff
+var percentOpen = real
+var tagMessage = string
+var valveAlarms = input db_elements(db_addr, alarm_status)[5]
+var valveColour = colour
+var i = int
+var WFN_found = int
+var WFC_found = int
+Begin
+	!Opened database read!
+	openInput = get_b_value(B50000, heathrow)
+	!Closed database read!
+	closedInput = get_b_value(B50001, heathrow)
+	!% Open database read!
+	percentOpen = get_e_value(E30000, heathrow)
+	!Tag message database read!
+	tagMessage = get_c_value(C3000, heathrow)
+	
+	!Alarms database read!
+	set source valveAlarms = heathrow
+	set filter valveAlarms.db_addr = lim_ge
+	set limit valveAlarms.db_addr = B50000
+	request valveAlarms
+	
+	!Scan for alarms!
+	WFN_found = 0
+	WFC_found = 0
+	for i from 1 to 5 do
+	begin
+		if valveAlarms[i].alarm_status == w_note then
+			WFN_found++
+		if valveAlarms[i].alarm_status == w_clr then
+			WFC_found++
+	end
+
+	!Set the valve colour!
+	if WFN_found > 0 then
+		valveColour = flashred
+	else if WFC_found > 0 then
+		valveColour = red
+	else if openInput then
+		valveColour = green
+	else if closedInput then
+		valveColour = white
+	else
+		valveColour = lightgrey
+	
+	!convert % open into an angle between 0 and 90!
+	percentOpen = 90 * (percentOpen / 100)
+	!Draw valve!
+	x=100 y=75 just=centrecentre
+	DrawValve(valveColour,tagMessage,angle=int(percentOpen))
+End
+
+mimic = main_object w=400,h=300,bg=lightblue,resizable

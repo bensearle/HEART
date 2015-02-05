@@ -1,0 +1,23 @@
+load fire_main_setpoints                   ! displays firemain setpoints !
+load fmorders_tmp                          ! displays pump start numbers !
+
+object firemain_control_popup (h,w,fg,bg)
+
+begin
+
+x= 140 y= 80
+pump_start_orders(15000,15047,15750,1065,15415,15430,15445,heathrow)
+!pump_start_orders(15000,15047,15750,1065,heathrow)!
+
+just = topcentre tfg = white ch = 12
+y += 50 text("WARNING - PP3 AS THE LEAD PUMP WILL")
+Y += ch text("CAUSE THE SYSTEM TO OVERPRESSURISE")
+
+x=360 y= 150
+fire_main_setpoints(15000,1067,1087,heathrow)
+
+end
+
+mimic = firemain_control_popup h=300,w=460,bg=grey
+
+

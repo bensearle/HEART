@@ -1,0 +1,11 @@
+load mimic_libutil
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y = 0 text(ch=30,"Test")
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,400 @@
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+
+!******** PIPE DIRECTION FOR PP1 *********!
+
+
+object pipe_direction_1(b_offset=int,src=source)=int
+
+var pipe_status_1   = int
+var pump_started_1    = input  b_db_row_type
+
+begin
+
+   set source pump_started_1 = src
+   set filter pump_started_1.db_addr = lim_eq
+   set limit pump_started_1.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_1 
+   request pump_started_1
+
+if pump_started_1.b_value then
+
+   pipe_status_1 = 1
+
+else
+
+   pipe_status_1 = 0
+
+pipe_direction_1 = pipe_status_1
+
+end
+
+
+!******** PIPE DIRECTION FOR PP2 *********!
+
+
+object pipe_direction_2(b_offset=int,src=source)=int
+
+var pipe_status_2   = int
+var pump_started_2    = input  b_db_row_type
+
+begin
+
+   set source pump_started_2 = src
+   set filter pump_started_2.db_addr = lim_eq
+   set limit pump_started_2.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_2 
+   request pump_started_2
+
+if pump_started_2.b_value then
+
+   pipe_status_2 = 1
+
+else
+
+   pipe_status_2 = 0
+
+pipe_direction_2 = pipe_status_2
+
+end
+
+!******** PIPE DIRECTION FOR PP3 *********!
+
+
+object pipe_direction_3(b_offset=int,src=source)=int
+
+var pipe_status_3   = int
+var pump_started_3    = input  b_db_row_type
+
+begin
+
+   set source pump_started_3 = src
+   set filter pump_started_3.db_addr = lim_eq
+   set limit pump_started_3.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_3 
+   request pump_started_3
+
+if pump_started_3.b_value then
+
+   pipe_status_3 = 1
+
+else
+
+   pipe_status_3 = 0
+
+pipe_direction_3 = pipe_status_3
+
+end
+
+
+!******** PIPE DIRECTION FOR EP1 *********!
+
+
+object pipe_direction_4(b_offset=int,src=source)=int
+
+var pipe_status_4   = int
+var pump_started_4    = input  b_db_row_type
+
+begin
+
+   set source pump_started_4 = src
+   set filter pump_started_4.db_addr = lim_eq
+   set limit pump_started_4.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_4 
+   request pump_started_4
+
+if pump_started_4.b_value then
+
+   pipe_status_4 = 1
+
+else
+
+   pipe_status_4 = 0
+
+pipe_direction_4 = pipe_status_4
+
+end
+
+
+!******** PIPE DIRECTION FOR EP2 *********!
+
+
+object pipe_direction_5(b_offset=int,src=source)=int
+
+var pipe_status_5   = int
+var pump_started_5    = input  b_db_row_type
+
+begin
+
+   set source pump_started_5 = src
+   set filter pump_started_5.db_addr = lim_eq
+   set limit pump_started_5.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_5 
+   request pump_started_5
+
+if pump_started_5.b_value then
+
+   pipe_status_5 = 1
+
+else
+
+   pipe_status_5 = 0
+
+pipe_direction_5 = pipe_status_5
+
+end
+
+
+!******** PIPE DIRECTION FOR EP3 *********!
+
+
+object pipe_direction_6(b_offset=int,src=source)=int
+
+var pipe_status_6   = int
+var pump_started_6    = input  b_db_row_type
+
+begin
+
+   set source pump_started_6 = src
+   set filter pump_started_6.db_addr = lim_eq
+   set limit pump_started_6.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_6 
+   request pump_started_6
+
+if pump_started_6.b_value then
+
+   pipe_status_6 = 1
+
+else
+
+   pipe_status_6 = 0
+
+pipe_direction_6 = pipe_status_6
+
+end
+
+
+!******** PIPE DIRECTION FOR EP4 *********!
+
+
+object pipe_direction_7(b_offset=int,src=source)=int
+
+var pipe_status_7   = int
+var pump_started_7    = input  b_db_row_type
+
+begin
+
+   set source pump_started_7 = src
+   set filter pump_started_7.db_addr = lim_eq
+   set limit pump_started_7.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_7 
+   request pump_started_7
+
+if pump_started_7.b_value then
+
+   pipe_status_7 = 1
+
+else
+
+   pipe_status_7 = 0
+
+pipe_direction_7 = pipe_status_7
+
+end
+
+
+!******** PIPE DIRECTION FOR EP5 *********!
+
+
+object pipe_direction_8(b_offset=int,src=source)=int
+
+var pipe_status_8   = int
+var pump_started_8    = input  b_db_row_type
+
+begin
+
+   set source pump_started_8 = src
+   set filter pump_started_8.db_addr = lim_eq
+   set limit pump_started_8.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_8 
+   request pump_started_8
+
+if pump_started_8.b_value then
+
+   pipe_status_8 = 1
+
+else
+
+   pipe_status_8 = 0
+
+pipe_direction_8 = pipe_status_8
+
+end
+
+
+!******** PIPE DIRECTION FOR EP6 *********!
+
+
+object pipe_direction_9(b_offset=int,src=source)=int
+
+var pipe_status_9   = int
+var pump_started_9    = input  b_db_row_type
+
+begin
+
+   set source pump_started_9 = src
+   set filter pump_started_9.db_addr = lim_eq
+   set limit pump_started_9.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_9 
+   request pump_started_9
+
+if pump_started_9.b_value then
+
+   pipe_status_9 = 1
+
+else
+
+   pipe_status_9 = 0
+
+pipe_direction_9 = pipe_status_9
+
+end
+
+
+!******** PIPE DIRECTION FOR EP7 *********!
+
+
+object pipe_direction_10(b_offset=int,src=source)=int
+
+var pipe_status_10   = int
+var pump_started_10    = input  b_db_row_type
+
+begin
+
+   set source pump_started_10 = src
+   set filter pump_started_10.db_addr = lim_eq
+   set limit pump_started_10.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_10 
+   request pump_started_10
+
+if pump_started_10.b_value then
+
+   pipe_status_10 = 1
+
+else
+
+   pipe_status_10 = 0
+
+pipe_direction_10 = pipe_status_10
+
+end
+
+
+!******** PIPE DIRECTION FOR DP8 *********!
+
+
+object pipe_direction_11(b_offset=int,src=source)=int
+
+var pipe_status_11   = int
+var pump_started_11    = input  b_db_row_type
+
+begin
+
+   set source pump_started_11 = src
+   set filter pump_started_11.db_addr = lim_eq
+   set limit pump_started_11.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_11 
+   request pump_started_11
+
+if pump_started_11.b_value then
+
+   pipe_status_11 = 1
+
+else
+
+   pipe_status_11 = 0
+
+pipe_direction_11 = pipe_status_11
+
+end
+
+
+!******** PIPE DIRECTION FOR DP9 *********!
+
+
+object pipe_direction_12(b_offset=int,src=source)=int
+
+var pipe_status_12   = int
+var pump_started_12    = input  b_db_row_type
+
+begin
+
+   set source pump_started_12 = src
+   set filter pump_started_12.db_addr = lim_eq
+   set limit pump_started_12.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_12 
+   request pump_started_12
+
+if pump_started_12.b_value then
+
+   pipe_status_12 = 1
+
+else
+
+   pipe_status_12 = 0
+
+pipe_direction_12 = pipe_status_12
+
+end
+
+
+!******** PIPE DIRECTION FOR DP10 *********!
+
+
+object pipe_direction_13(b_offset=int,src=source)=int
+
+var pipe_status_13   = int
+var pump_started_13    = input  b_db_row_type
+
+begin
+
+   set source pump_started_13 = src
+   set filter pump_started_13.db_addr = lim_eq
+   set limit pump_started_13.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist pump_started_13 
+   request pump_started_13
+
+if pump_started_13.b_value then
+
+   pipe_status_13 = 1
+
+else
+
+   pipe_status_13 = 0
+
+pipe_direction_13 = pipe_status_13
+
+end
+
+
+!********** PIPE SECTION 14A *************!
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+if pipe_direction_1(15410,heathrow) == 1 then
+   begin
+   x = 0 y = 0 add x += 100 add line(lw=6,ls=backward3,fg=blue) clear
+   end  
+
+else
+   begin
+   x = 0 y = 0 add x += 100 add line(lw=6,fg=blue) clear
+   end  
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

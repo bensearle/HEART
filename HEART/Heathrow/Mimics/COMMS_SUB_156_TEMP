@@ -1,0 +1,135 @@
+Load COMMS_SUB_156_HELP
+load modbus_lib
+load browser
+load lv_breaker
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var helpstr	= help string(30)
+Begin
+   	scale = 256
+   	just = centrecentre
+   	x = 20 y = 20 w =1140 h = 800
+   	set text helpstr = "comms_sub_156_help"
+	clear
+	x=161 y=-327 add
+	fg=black ls=solid lw=1 cs=capround line
+			!plc_module(plc_off,b_off,	dty_sty,	plc_res,	c_off,	src,	title=string,no_slots=int,slot_config=string,res2=int,res1=int)!
+	x=-521 y=-340	plc_module(43600,	44333,	43610,	43678,	1836,	heathrow,	"A",4,"9900",int,int)
+	x=-121 y=-340	plc_module(43600,	44339,	43611,	43681,	1837,	heathrow,	"B",4,"9900",int,int)
+
+	x=-66 y=-305 add x-=5 add y+=30 add x-=388 add y=153 add x=-298 add line(lw=3,fg=yellow4) clear
+	x=-66 y=-340 add x-=10 add y+=60 add x-=388 add y=228 add x=-298 add line(lw=3,fg=yellow4) clear
+
+	x=-466 y=-305 add x-=5 add y=177 add x=-270 add line(lw=3,fg=green4) clear
+	x=-466 y=-340 add x-=10 add y=253 add x=-270 add line(lw=3,fg=green4) clear
+	
+	! Valve Modbus lines from PLC A !
+	!x=-426 y=-305 add x-=5 add y=-38 add x=-300 add line(lw=3,fg=green4) clear!
+	x=-426 y=-340 add x-=10 add y=53 add x=-300 add line(lw=3,fg=green4) clear
+
+	! Valve Modbus lines from PLC B !
+	!x=-26 y=-305 add x-=5 add y+=50 add x-=388 add y=-62 add x=-298 add line(lw=3,fg=gold4) clear!
+	x=-26 y=-340 add x-=10 add y+=80 add x-=388 add y=28 add x=-298 add line(lw=3,fg=gold4) clear
+
+			!node(plc_offset	b_offset,	c_offset,	src,	title,	enable_config=yesno,angle)!
+
+	! Valve Modbus nodes !
+
+	x=300 y=40 add x=-260 add line(fg=green4, lw=4) clear
+	x=-90 y=65 	node(43600,44353,1842,heathrow,"40",no,angle=0)
+	x+=60		node(43600,44354,1843,heathrow,"50",no,angle=0)
+	x+=60		node(43600,44355,1844,heathrow,"60",no,angle=0)
+	x+=60		node(43600,44356,1845,heathrow,"130",no,angle=0)
+	x+=60		node(43600,44357,1846,heathrow,"131",no,angle=0)
+	x+=60		node(43600,44358,1847,heathrow,"150",no,angle=0)
+	x=-280 y=40	d_switch(43600,44349,1848,heathrow,"sw.2",2,int,int,int)
+
+
+
+	x=540 y=165 add x=-260 add line(fg=green4, lw=4) clear
+
+	x=-90 y=190 	node(43600,44321,1824,heathrow,"12",no,angle=0)
+	x+=60		node(43600,44322,1825,heathrow,"13",no,angle=0)
+	x+=60		node(43600,44323,1826,heathrow,"14",no,angle=0)
+	x+=60		node(43600,44324,1827,heathrow,"15",no,angle=0)
+	x+=60		node(43600,44325,1828,heathrow,"16",no,angle=0)
+	x+=60		node(43600,44326,1829,heathrow,"17",no,angle=0)
+	x+=60		node(43600,44327,1830,heathrow,"18",no,angle=0)
+	x+=60		node(43600,44328,1831,heathrow,"19",no,angle=0)
+	x+=60		!	node(43600,44329,1832,heathrow,"20",no,angle=0)	!
+	x+=60		!	node(43600,44330,1833,heathrow,"21",no,angle=0)	!
+
+	x=-280 y=165	d_switch(43600,44347,1835,heathrow,"sw.1",2,int,int,int)
+
+
+	x=540 y=240 add x=-260 add line(fg=green4, lw=4) clear
+	x=-90 y=265 	!	node(43600,44310,1813,heathrow,"1",no,angle=0)	!
+	x+=60		!	node(43600,44311,1814,heathrow,"2",no,angle=0)	!
+	x+=60		node(43600,44312,1815,heathrow,"3",no,angle=0)
+	x+=60		node(43600,44313,1816,heathrow,"4",no,angle=0)
+	x+=60		node(43600,44314,1817,heathrow,"5",no,angle=0)
+	x+=60		node(43600,44315,1818,heathrow,"6",no,angle=0)
+	x+=60		node(43600,44316,1819,heathrow,"7",no,angle=0)
+	x+=60		node(43600,44317,1820,heathrow,"8",no,angle=0)
+	x+=60		node(43600,44318,1821,heathrow,"9",no,angle=0)
+	x+=60		node(43600,44319,1822,heathrow,"10",no,angle=0)
+	x+=60		node(43600,44320,1823,heathrow,"11",no,angle=0)	
+	x=-280 y=240 	d_switch(43600,44345,1834,heathrow,"sw.0",2,int,int,int)
+
+
+	just = centrecentre ch=12
+	! * p1 * ! 		x=-90 y=290 	!	text("Future")	!
+	! * p2 * ! 		x=-30 y=290 	!	text("Future")	!
+	! * p3 * ! 		x=30 y=290 	text("Local") y+=12 text("TX1")
+	! * p4 * ! 		x=90 y=290 	text("TTS") y+=12 text("Supply")
+	! * p5 * ! 		x=150 y=290 	text("T5B") y+=12 text("TX22")
+	! * p6 * ! 		x=210 y=290 	text("T5B") y+=12 text("TX6")
+	! * p7 * ! 		x=270 y=290 	text("T5B") y+=12 text("TX14")
+	! * p8 * ! 		x=330 y=290 	text("Sub") y+=12 text("180")
+	! * p9 * ! 		x=390 y=290 	text("Incomer") y+=12 text("1")
+	! * p10 * ! 	x=450 y=290 	text("FEGP") y+=12 text("TX1")
+	! * p11 * ! 	x=510 y=290 	text("LHS")
+
+	! * p12 * ! 	x=-90 y=215 	text("RHS")
+	! * p13 * ! 	x=-30 y=215 	text("FEGP") y+=12 text("TX2")
+	! * p14 * ! 	x=30 y=215 	text("Incomer") y+=12 text("2")
+	! * p15 * ! 	x=90 y=215 	text("T5B") y+=12 text("TX3")
+	! * p16 * ! 	x=150 y=215 	text("T5B") y+=12 text("TX19")
+	! * p17 * ! 	x=210 y=215 	text("T5B") y+=12 text("TX9")
+	! * p18 * ! 	x=270 y=215 	text("Sub") y+=12 text("181")
+	! * p19 * ! 	x=330 y=215 	text("Local") y+=12 text("TX2")
+	! * p20 * !		x=390 y=215 	!	text("Future")	!
+	! * p21 * !		x=450 y=215 	!	text("Future")	!
+
+
+	! valve node labels !
+	just = centrecentre ch=12
+	! * 40 * ! 		x=-90 y=90 	text("MV") y+=12 text("1004")
+	! * 50 * ! 		x=-30 y=90 	text("MV") y+=12 text("1005")
+	! * 60 * ! 		x=30 y=90 	text("MV") y+=12 text("1006")
+	! * 130 * !		x=90 y=90 	text("MV") y+=12 text("1013-1")
+	! * 131 * !		x=150 y=90 	text("MV") y+=12 text("1013-2")
+	! * 150 * !		x=210 y=90 	text("MV") y+=12 text("1015")
+
+	x = -570 y = 310 browser(1750,heathrow,1140) clear
+
+	x=418 y=-383 main_title(300,30,"Modbus Communications - Outstation 97",black)
+	X=418 Y=-351 main_sub_call(grey80,300,30,"SUB 156","",blue4,18,yes,"t5_11kv_overview",heathrow,int,"string",int)
+	X=418 Y=-319 main_sub_call(grey80,300,30,"Non-Potable Ringmain","",blue4,18,yes,"t5_non_potable_water",heathro3,int,"string",int)
+
+	clear
+	font = font_italic
+	X=210 Y=25 CH=14 text("Note: The Following Node Numbers relate to the Non-Potable Motorised Valves")
+	X=210 Y=150 CH=14 text("Note: The Following Node Numbers correspond to Circuit Breaker Panels")
+
+	X=-240 Y=166 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Right Hand Side")
+	X=-240 Y=243 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Left Hand Side")
+end
+mimic = main_object w=1140, h=800, just=centrecentre, fg=white, bg=lightgrey, resizable
+
+
+
+
+
+
+

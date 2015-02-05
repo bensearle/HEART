@@ -1,0 +1,273 @@
+load mimic_libutil
+load ARCS_PLC_STATUS_HELP
+LOAD gadgets_libutil
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+TYPE b_bool_type 	= db_elements(b_value)
+TYPE e_db_row_type 	= db_elements(db_addr,e_value)
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  PLC STATUS POPUP BOX                                                       !
+!-----------------------------------------------------------------------------!
+
+OBJECT plc_popup(os_offset=INT,plc_offset=INT,plc=STRING(1),plc_text=STRING(5),src=SOURCE)
+
+! VARIABLE DECLARATION !
+
+VAR status_inputs = input b_bool_type[10]
+VAR os_comms = input b_bool_type[2]
+VAR plc_comms = input b_bool_type[2]
+
+VAR a_forces = ONOFF
+VAR a_battery_low = ONOFF
+VAR a_major_error = ONOFF
+VAR a_program_mode = ONOFF
+VAR a_b_failed = ONOFF
+VAR b_forces = ONOFF
+VAR b_battery_low = ONOFF
+VAR b_major_error = ONOFF
+VAR b_program_mode = ONOFF
+VAR b_a_failed = ONOFF
+
+VAR a_unknown = ONOFF
+VAR b_unknown = ONOFF
+
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+   set source os_comms = src
+   set filter os_comms.db_addr = lim_ge
+   set limit os_comms.db_addr = db_address(int(b1) + os_offset-1)
+   set priority os_comms.db_addr = 15
+   set persist os_comms
+   set mayexist os_comms
+   request os_comms
+
+   set source plc_comms = src
+   set filter plc_comms.db_addr = lim_ge
+   set limit plc_comms.db_addr = db_address(int(b1) + plc_offset+69)
+   set priority plc_comms.db_addr = 15
+   set persist plc_comms
+   set mayexist plc_comms
+   request plc_comms
+
+   set source status_inputs = src
+   set filter status_inputs.db_addr = lim_ge
+   set limit status_inputs.db_addr = db_address(int(b1) + plc_offset + 29)
+   set priority status_inputs.db_addr = 15
+   set persist status_inputs
+   set mayexist status_inputs
+   request status_inputs
+
+b_forces = status_inputs[1].b_value
+b_battery_low = status_inputs[3].b_value
+b_major_error = status_inputs[5].b_value
+b_program_mode = status_inputs[7].b_value
+b_a_failed = status_inputs[9].b_value
+
+a_forces = status_inputs[2].b_value
+a_battery_low = status_inputs[4].b_value
+a_major_error = status_inputs[6].b_value
+a_program_mode = status_inputs[8].b_value
+a_b_failed = status_inputs[10].b_value
+
+
+! ------------------------------- BACKGROUND -------------------------------- !
+
+W=280 H=200 RECT(FG=DECOROFF)
+
+
+! -------------------------------- TITLE ------------------------------------ !
+
+X=140 Y=27 TEXT(TFG=BLACK,CH=20,JUST=CENTRECENTRE,plc_text)
+
+X=10 Y=50 ADD
+X+=260 ADD
+LINE(FG=WHITE) CLEAR
+X=10 Y=52 ADD
+X+=260 ADD
+LINE(FG=DECORON,LW=2) CLEAR
+
+! ------------------------------ STATUS TEXT -------------------------------- !
+
+! PLC A !
+
+IF plc == "A" THEN
+BEGIN
+
+IF os_comms[1].b_value AND os_comms[2].b_value THEN
+  a_unknown = ON
+ELSE IF plc_comms[2].b_value THEN
+  a_unknown = ON
+ELSE IF b_a_failed THEN
+  a_unknown = ON
+ELSE
+  a_unknown = OFF
+
+x=15 y=70
+TEXT(TFG=BLACK,CH=15,"I/O FORCES")
+x=190
+IF a_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF a_forces THEN
+  TEXT(TFG=RED,CH=15,"ENABLED")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"DISABLED")
+
+x=15 y=90
+TEXT(TFG=BLACK,CH=15,"BATTERY")
+x=190
+IF a_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF a_battery_low THEN
+  TEXT(TFG=RED,CH=15,"LOW")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"HEALTHY")
+
+x=15 y=110
+TEXT(TFG=BLACK,CH=15,"PROCESSOR")
+x=190
+IF a_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF a_major_error THEN
+  TEXT(TFG=RED,CH=15,"ERROR")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"NORMAL")
+
+x=15 y=130
+TEXT(TFG=BLACK,CH=15,"PROCESSOR MODE")
+x=190
+IF a_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF a_program_mode THEN
+  TEXT(TFG=RED,CH=15,"PROGRAM")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"RUN")
+
+x=15 y=150
+TEXT(TFG=BLACK,CH=15,"PLC A TO B COMMS")
+x=190
+IF a_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF a_b_failed THEN
+  TEXT(TFG=RED,CH=15,"FAILED")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"HEALTHY")
+
+END
+
+! PLC B !
+
+ELSE IF plc == "B" THEN
+BEGIN
+
+IF os_comms[1].b_value AND os_comms[2].b_value THEN
+  a_unknown = ON
+ELSE IF plc_comms[1].b_value THEN
+  b_unknown = ON
+ELSE IF a_b_failed THEN
+  b_unknown = ON
+ELSE
+  b_unknown = OFF
+
+x=15 y=70
+TEXT(TFG=BLACK,CH=15,"I/O FORCES")
+x=190
+IF b_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF b_forces THEN
+  TEXT(TFG=RED,CH=15,"ENABLED")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"DISABLED")
+
+x=15 y=90
+TEXT(TFG=BLACK,CH=15,"BATTERY")
+x=190
+IF b_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF b_battery_low THEN
+  TEXT(TFG=RED,CH=15,"LOW")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"HEALTHY")
+
+x=15 y=110
+TEXT(TFG=BLACK,CH=15,"PROCESSOR")
+x=190
+IF b_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF b_major_error THEN
+  TEXT(TFG=RED,CH=15,"ERROR")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"NORMAL")
+
+x=15 y=130
+TEXT(TFG=BLACK,CH=15,"PROCESSOR MODE")
+x=190
+IF b_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF b_program_mode THEN
+  TEXT(TFG=RED,CH=15,"PROGRAM")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"RUN")
+
+x=15 y=150
+TEXT(TFG=BLACK,CH=15,"PLC A TO B COMMS")
+x=190
+IF b_unknown THEN
+  TEXT(TFG=MAGENTA,CH=15,"UNKNOWN")
+ELSE IF b_a_failed THEN
+  TEXT(TFG=RED,CH=15,"FAILED")
+ELSE 
+  TEXT(TFG=BLACK,CH=15,"HEALTHY")
+
+
+
+END
+
+END
+
+MIMIC plc_popup = plc_popup W=280,H=200
+
+
+
+OBJECT MAIN_OBJECT(BG,FG,W,H,TFG,TBG)
+
+VAR plc_window = popup	plc_popup
+
+BEGIN
+
+w=100 h=100 rect(fg=white)
+SET TITLE plc_window = ""
+IF SELB THEN
+  REQUEST plc_window(1,700,"A","PLC A",HEATHROW)
+!
+X=-150 Y=-150 plc_popup(1,700,"B","PLC B",HEATHROW)
+!
+END
+
+MIMIC = MAIN_OBJECT 
+W=400,H=400,JUST=CENTRECENTRE,FG=WHITE,BG=AQUAMARINE3
+

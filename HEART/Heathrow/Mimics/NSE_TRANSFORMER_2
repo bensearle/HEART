@@ -1,0 +1,182 @@
+
+LOAD mimic_libutil
+
+
+TYPE c_db_row_type 	= db_elements(db_addr,c_value)
+
+TYPE main_menu_row 	= table (main_menu_items= string(27))
+
+TYPE panel_item_row 	= table (str = string(40))
+
+
+
+!-----------------------------------------------------------------------------!
+!  READ CHARACTER ARRAY                                                       !
+!-----------------------------------------------------------------------------!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  TAG MESSAGE WINDOW                                                         !
+!-----------------------------------------------------------------------------!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!-----------------------------------------------------------------------------!
+! TRANSFORMER OBJECT                                                          !
+!-----------------------------------------------------------------------------!
+
+OBJECT nse_transformer_2(c_number=INT,src=SOURCE,ident=INT)
+
+! MENUS !
+VAR tag_message_panel		= PANEL		panel_item_row
+VAR main_menu			= MENU		STRING(40)
+
+VAR transformer_foreground	= COLOUR
+VAR tag_message_ip		= input 	c_db_row_type
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+
+! GET TAG MESSAGE !
+set source tag_message_ip = src
+set filter tag_message_ip.db_addr = lim_eq
+set limit tag_message_ip.db_addr = db_address(int(c1) + c_number -1)
+set persist tag_message_ip
+request tag_message_ip
+
+
+!-----------------------------------------------------------------------------!
+!  MAIN SYMBOL                                                                !
+!-----------------------------------------------------------------------------!
+
+IF tag_message_ip.c_value <> "" THEN
+BEGIN
+  x = 0 y = 0 w = 107 h = 127 RECT(FG=yellow,just=centrecentre)
+END
+ELSE
+  transformer_foreground = BLACK
+
+just=centrecentre
+x = 0 y = 0
+RECT(W=100,H=120,FG=DECOROFF)
+y = -15
+CIRCLE(LW=8,W=50,H=50,FG=GREEN)
+Y += 30
+CIRCLE(LW=8,W=50,H=50,FG=GREEN)
+CLEAR
+x = 0 y = -60 ADD
+y += 20 ADD
+LINE(LW=6,FG=GREEN)
+CLEAR
+x = 0 y = 60 ADD
+y -= 20 ADD
+LINE(LW=6,FG=GREEN)
+CLEAR
+
+X = 0 Y = 15
+x += 50 y -= 75 ADD
+x -= 100 ADD
+y += 120 ADD
+LINE(FG=WHITE) CLEAR
+
+ADD
+x += 100 ADD
+y -= 120 ADD
+LINE(FG=decoron) CLEAR
+
+x = 65 y = 0 ADD TEXT(tfg=white,ch=22,ident)
+
+
+!-----------------------------------------------------------------------------!
+!  MAIN MENU                                                                  !
+!-----------------------------------------------------------------------------!
+
+! TAG MESSAGE BOX !
+
+x = 0 y = 0 w = 100 h = 120 
+SET RECT main_menu
+SET TITLE main_menu = "Transformer "+ident
+IF SELB AND tag_message_ip.c_value <> "" THEN
+BEGIN
+  MESSAGE_TEXT_BOX(tag_message_ip.c_value)
+END
+IF VALID tag_message_panel THEN
+BEGIN
+  set_c_value(db_address(int(c1) + c_number -1),src,tag_message_panel.str)
+  set invalid tag_message_panel
+END
+
+SET EMPTY main_menu
+SET ADD main_menu = "Alter Tag Message"
+SET ADD main_menu = "Clear Tag Message"
+
+IF VALID main_menu THEN
+BEGIN
+
+  CASE main_menu OF
+
+  "Alter Tag Message"
+  BEGIN
+    SET TITLE tag_message_panel 	= "Modify Tag Message"	
+    SET LABEL tag_message_panel.str	= "Tag Message :"
+    SET UNPINNED tag_message_panel
+    REQUEST tag_message_panel
+  END
+
+  "Clear Tag Message"
+    set_c_value(db_address(int(c1) +c_number - 1),src,"")
+
+  DEFAULT
+  BEGIN
+  END
+
+  SET INVALID main_menu
+
+END
+
+clear
+
+END
+
+
+OBJECT main_object (bg,fg,w,h,tbg,tfg)
+BEGIN
+
+scale=160
+nse_transformer_2(544,heathro2,1)
+
+END
+
+mimic = main_object w=500,h=300,just=centrecentre,fg=white,bg=black,resizable

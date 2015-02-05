@@ -1,0 +1,191 @@
+load mimic_libutil
+
+
+!-----------------------------------------------------------------------------!
+!  CONFIRM / CANCEL                                                           !
+!-----------------------------------------------------------------------------!
+
+OBJECT confirm_popup(ident=INT) = yesno
+
+BEGIN
+  X = 0 Y = 0
+
+  RECT(H=100,W=300,FG=decoroff)
+
+  x = 10 y = 30 ADD
+  x = 290 ADD
+  LINE(FG=white) CLEAR
+
+  x = 10 y = 31 ADD
+  x = 290 ADD
+  LINE(FG=grey40) CLEAR
+!
+  x = 300 y = 0 ADD
+  x -= 300 ADD
+  y += 100 ADD
+  LINE(FG=white) CLEAR
+
+  x = 0 y = 100 ADD
+  x += 300 ADD
+  LINE(FG=grey40) CLEAR
+!
+  X = 150 Y = 15
+  JUST=CENTRECENTRE
+
+  TEXT(TFG=BLACK,CH=17,"Circuit Breaker "+ident+" Control")
+
+  !  CONFIRM  !
+  FG=DECOROFF
+  x = 15 y = 75 ADD
+  y -= 30 ADD
+  x += 120 ADD
+  LINE(FG=white) CLEAR
+  x = 15 y = 75 ADD
+  x += 120 ADD
+  y -= 30 ADD
+  LINE(FG=grey40) CLEAR
+  x = 75 y = 60
+  H=29 W=119 RECT(FG=decoroff)
+  TEXT(TFG=black,CH=15,"Confirm")
+  IF anyb THEN
+  BEGIN
+    x = 15 y = 75 ADD
+    y -= 30 ADD
+    x += 120 ADD
+    LINE(FG=grey40) CLEAR
+    x = 15 y = 75 ADD
+    x += 120 ADD
+    y -= 30 ADD
+    LINE(FG=white) CLEAR
+    x = 75 y = 60
+    H=29 W=119 RECT(FG=grey40)
+    TEXT(TFG=black,CH=15,"Confirm")
+    confirm_popup = yes
+    EXIT
+  END
+
+  !  CANCEL  !
+  FG=DECOROFF
+  x = 165 y = 75 ADD
+  y -= 30 ADD
+  x += 120 ADD
+  LINE(FG=white) CLEAR
+  x = 165 y = 75 ADD
+  x += 120 ADD
+  y -= 30 ADD
+  LINE(FG=grey40) CLEAR
+  x = 225 y = 60
+  H=29 W=119 RECT(FG=decoroff)
+  TEXT(TFG=black,CH=15,"Cancel")
+  IF anyb THEN
+  BEGIN
+    x = 165 y = 75 ADD
+    y -= 30 ADD
+    x += 120 ADD
+    LINE(FG=grey40) CLEAR
+    x = 165 y = 75 ADD
+    x += 120 ADD
+    y -= 30 ADD
+    LINE(FG=white) CLEAR
+    x = 225 y = 60
+    H=29 W=119 RECT(FG=grey40)
+    TEXT(TFG=black,CH=15,"Cancel")
+    confirm_popup = no
+    EXIT
+  END
+END 
+
+mimic confirm_popup = confirm_popup w = 300,h = 100
+
+
+!-----------------------------------------------------------------------------!
+!  CONTROL STATUS                                                             !
+!-----------------------------------------------------------------------------!
+
+OBJECT control_status(ident=INT,control_msg=STRING(50)) = yesno
+
+BEGIN
+  X = 0 Y = 0
+
+  RECT(H=100,W=300,FG=decoroff)
+  x = 10 y = 30 ADD
+  x = 290 ADD
+  LINE(FG=white) CLEAR
+
+  x = 10 y = 31 ADD
+  x = 290 ADD
+  LINE(FG=grey40) CLEAR
+!
+  x = 300 y = 0 ADD
+  x -= 300 ADD
+  y += 100 ADD
+  LINE(FG=white) CLEAR
+
+  x = 0 y = 100 ADD
+  x += 300 ADD
+  LINE(FG=grey40) CLEAR
+!
+  X = 150 Y = 15
+  JUST=CENTRECENTRE
+
+  TEXT(TFG=BLACK,CH=17,"Circuit Breaker "+ident+" Control")
+  Y += 30
+  TEXT(TFG=RED,CH=17,control_msg)
+
+  !  OK  !
+  FG=DECOROFF
+  x = 90 y = 90 ADD
+  y -= 30 ADD
+  x += 120 ADD
+  LINE(FG=white) CLEAR
+  x = 90 y = 90 ADD
+  x += 120 ADD
+  y -= 30 ADD
+  LINE(FG=grey40) CLEAR
+  x = 150 y = 75
+  H=29 W=119 RECT(FG=decoroff)
+  TEXT(TFG=black,CH=15,"Ok")
+  IF anyb THEN
+  BEGIN
+    x = 90 y = 90 ADD
+    y -= 30 ADD
+    x += 120 ADD
+    LINE(FG=grey40) CLEAR
+    x = 90 y = 90 ADD
+    x += 120 ADD
+    y -= 30 ADD
+    LINE(FG=white) CLEAR
+    x = 150 y = 75
+    H=29 W=119 RECT(FG=grey40)
+    TEXT(TFG=black,CH=15,"Ok")
+    control_status = yes
+    EXIT
+  END
+
+END
+
+mimic control_status = control_status w = 300,h = 100
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+VAR confirm 	= loopback	yesno
+VAR popup_box	= popup		confirm_popup
+VAR popup_done	= yesno
+VAR popup_result = yesno
+
+begin
+
+x = -350 y = 0 
+
+set unpinned popup_box
+set title popup_box = " "
+
+x = 0 y = 0 w = 100 h = 100 RECT(fg=green)
+IF anyb THEN
+  request popup_box(1)
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable
+

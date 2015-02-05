@@ -1,0 +1,287 @@
+! HEATHROW CMS - SENSOR WITH HIGH SETPOINT
+
+loaded by: CARGO_TUNNEL, FIRE_MAIN, MAIN_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+
+object sensor_w_high_sp(just,scale,plc_offset=int,measuring=string,
+                                   units=string,b_offset=int,
+                                   level_offset=int,e_plc_offset=int,
+                                   src=source)
+
+!E INPUTS
+e_inputs[1] = high_alarm_sp
+e_inputs[2] = ultra_alarm_sp
+e_inputs[3] = high_hysteresis
+e_inputs[4] = ultra_hysteresis
+!
+var e_inputs = input e_db_row_type[4]
+
+var co_level_ip = input e_db_row_type
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+!ALARM INPUTS
+alarm_inputs[1] = high_co_alarm
+alarm_inputs[2] = ultra_co_alarm
+!
+var alarm_inputs = input alarm_row_type[2]
+
+var sensor_bg = loopback  colour
+
+var box_text = loopback  string
+var box_width = loopback  int
+var menu_added = loopback  int
+var z = string
+var control_menu = menu  string
+
+var high_sp = panel  int
+var ultra_sp = panel  int
+var high_hyst = panel  int
+var ultra_hyst = panel  int
+
+begin
+
+REALF = GENERAL8
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source alarm_inputs then 
+   begin
+
+   set source e_inputs = src
+   set filter e_inputs.db_addr = lim_ge
+   set limit e_inputs.db_addr = db_address(int(e1) + e_plc_offset - 1)
+   set priority e_inputs.db_addr = 15
+   set persist e_inputs
+   set mayexist e_inputs
+   request e_inputs
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset - 1)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   set source co_level_ip = src
+   set filter co_level_ip.db_addr = lim_eq
+   set limit co_level_ip.db_addr = db_address(int(e1) + level_offset - 1)
+   set priority co_level_ip.db_addr = 15
+   set persist co_level_ip 
+   set mayexist co_level_ip
+   request co_level_ip
+
+   end
+
+
+! SELECT BG COLOUR !
+
+if alarm_inputs[1].alarm_status  == w_note or
+   alarm_inputs[2].alarm_status == w_note then
+   sensor_bg = flashred
+
+else if alarm_inputs[1].alarm_status  == w_clr or
+        alarm_inputs[2].alarm_status == w_clr then
+   sensor_bg = red
+
+else 
+   sensor_bg = decoroff
+
+
+! CASE MENU OPTIONS !
+
+if valid control_menu then
+   begin
+
+   case control_menu of
+         "Alter High Alarm Level (AH)"
+         begin
+         request high_sp
+         end
+
+         "Alter Ultra High Alarm Level (AHH)"
+         begin
+         request ultra_sp
+         end
+
+         "Alter High Hysteresis (KH)"
+         begin 
+         request high_hyst
+         end
+
+         "Alter Ultra High Hysteresis (KHH)"
+         begin 
+         request ultra_hyst
+         end
+      
+         default
+         begin end
+
+         set invalid control_menu
+    end
+
+
+! DRAW SYMBOL !
+
+box_text = measuring+" "+int(co_level_ip.e_value)+" "+units
+box_width = length(box_text)+10
+
+x = 0 y = 0
+rect(fg=sensor_bg,h=20,w=box_width) 
+text (tfg=black,ch=15,box_text)
+x -= box_width/2
+y +=10     add 
+y -=20     add 
+x += box_width add 
+line(lw=1,fg=decorlight) clear
+add y +=20 add 
+x -= box_width add 
+line(lw=1,fg=decorshadow) clear
+
+
+! CONFIGURE MENU !
+
+if invalid menu_added then
+   begin
+   set title ultra_sp     = "Alter Ultra High Alarm Level (AHH)"
+   set unpinned ultra_sp
+   set title high_sp      = "Alter High Alarm Level (AH)"
+   set unpinned high_sp
+   set title ultra_hyst   = "Alter Ultra High Hysteresis (KHH)"
+   set label ultra_hyst   = "Minutes 1-10"
+   set unpinned ultra_hyst
+   set title high_hyst    = "Alter High Hysteresis (KH)"
+   set label high_hyst    = "Minutes 1-10"
+   set unpinned high_hyst
+   set add control_menu   = "Alter Ultra High Alarm Level (AHH)"
+   set add control_menu   = "Alter High Alarm Level (AH)"
+   set add control_menu   = "Alter Ultra High Hysteresis (KHH)"
+   set add control_menu   = "Alter High Hysteresis (KH)"
+   menu_added = 1
+   end
+
+set title control_menu = " AHH= "+int(e_inputs[2].e_value)+"  AH = "+int(e_inputs[1].e_value)+"  KHH= "+int(e_inputs[4].e_value)+"  KH= "+int(e_inputs[3].e_value)
+
+
+! WRITE DATA TO SERVER !
+
+if valid high_sp and high_sp < e_inputs[2].e_value then
+   begin
+   set_e_value(db_address(int(e1) + e_plc_offset -1), src, high_sp)
+   set invalid high_sp
+   end
+
+if valid ultra_sp and ultra_sp > e_inputs[1].e_value then
+   begin
+   set_e_value(db_address(int(e1) + e_plc_offset), src, ultra_sp)
+   set invalid ultra_sp
+   end
+
+if valid high_hyst and high_hyst > -1 and high_hyst < 11 then
+   begin
+   set_e_value(db_address(int(e1) + e_plc_offset +1), src, high_hyst)
+   set invalid high_hyst
+   end
+
+if valid ultra_hyst and ultra_hyst > -1 and ultra_hyst < 11 then
+   begin
+   set_e_value(db_address(int(e1) + e_plc_offset +2), src, ultra_hyst)
+   set invalid ultra_hyst
+   end
+
+x=0 y=0
+
+if plc_inputs[1].b_value==0 or
+   plc_inputs[2].b_value==0 then
+   begin
+   h=20 
+   w=box_width
+   end
+else
+   begin
+   h=0
+   w=0
+   end
+
+set rect control_menu
+
+
+end
+
+object main_object (just,bg,fg,w,h,tbg,tfg)
+begin
+just=centrecentre
+y = 50 sensor_w_high_sp(10000,"CO =","ppm",15036,1053,1057,heathrow)
+
+end
+ 
+mimic = main_object w=200,h=240,just=centrecentre,fg=white,bg=black,resizable

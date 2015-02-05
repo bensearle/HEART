@@ -1,0 +1,124 @@
+! HEATHROW CMS - HV EAST
+
+loaded by: HV_OVERVIEW
+!
+
+load paul_lib
+
+
+object east_intake_substations (fg,bg)
+begin
+fg = orange
+X=227 Y=-47 os("M1/5") !m1/5!
+end
+object east_intake_lines (fg,bg)
+begin
+!******************orange line lw=3*********************!
+!distrubtion bars!
+lw=3
+fg=orange
+X=392 Y=-91  ADD
+Y=-16  ADD
+line
+clear
+X=392 Y=-3  ADD
+Y=128  ADD
+line
+clear
+X=302 Y=-51  ADD
+Y=-11  ADD
+line
+clear
+X=302 Y=0  ADD
+Y=40  ADD
+line
+clear
+
+
+!m1/4b , m1/4/a!
+X=225 Y=37  ADD
+Y=57  ADD
+line 
+clear
+X=245 Y=37  ADD
+Y=57  ADD
+line 
+clear
+
+!****************************line orange lw = 2**************!
+lw=2
+X=392 Y=-22  ADD
+X=398 Y=-22  ADD
+line
+clear
+X=393 Y=2  ADD
+X=398 Y=2  ADD
+line
+clear
+
+X=301 Y=-42  ADD
+X=238 ADD
+line 
+clear
+
+X=215 Y=-42  ADD
+X=201 ADD
+Y=14  ADD
+X=300 ADD
+line 
+clear
+
+
+X=300 Y=-26  ADD
+X=276 ADD
+Y=41  ADD
+X=224 ADD
+line 
+clear
+
+X=302 Y=31  ADD
+X=288 ADD
+Y=54  ADD
+X=225 ADD
+line
+clear
+
+!east front to m1/9!
+X=303 Y=-48  ADD
+X=391 ADD
+line
+clear
+X=303 Y=-30  ADD
+X=391 ADD
+line
+clear
+X=303 Y=20  ADD
+X=391 ADD
+line
+clear
+X=303 Y=38  ADD
+X=391 ADD
+line
+clear
+
+!east transformer supply!
+X=392 Y=-32  ADD
+X=430 Y=-32  ADD
+line 
+clear
+X=392 Y=13  ADD
+X=430 Y=13  ADD
+line 
+clear
+X=392 Y=55  ADD
+X=430 Y=55  ADD
+line 
+clear
+end
+
+object east_intake
+begin
+
+east_intake_lines
+east_intake_substations
+end

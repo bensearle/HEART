@@ -1,0 +1,53 @@
+load mimic_libutil
+load transformer
+load fuse_sw
+load oil_switch
+load ocb_monitored
+
+!object highlight_box(fg,height=int,width=int)
+begin
+just=centrecentre
+x=0 y=0
+rect(w=width,h=height)
+x = -(width/2) y = (height/2) x += width add y -= height add line(fg=decorshadow) clear
+x -= width add y += height add line(fg=decorlight) clear
+end!
+
+
+!*********** BUSBAR 95 *************!
+
+object busbar_95
+begin
+fg=green4
+tfg = black x = 30 y = -30 add text ("95",ch = 25) clear
+x = -130 y = 0 add x = 30 add line(lw=4) clear
+
+lw=2
+x = -100 y = 0 add  y -=50 add line clear
+x = -50 y = 0 add  y -=50 add line clear
+x =  0 y =  0 add y += 50 add line clear
+
+scale = 120
+x = -100 y = -25 oil_switch(25118,284,1396,heathrow,"c")
+x = -50 y = -25 oil_switch(25119,285,1397,heathrow,"c")
+x = 0 y = 25 ocb_mont(0,25120,286,1398,heathrow,3,"c")
+
+clear
+
+scale = 256
+tfg = black ch=12
+just=centrecentre
+x = -100 y = -60 text("Spare")
+x = -50 y = -60 text("23 P8")
+x = 0 y = 60 text("Local Tx")
+x = -85 y = -25 text("1")
+x = -35  y = 19 text("2")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+x = 50 just=centrecentre
+busbar_95
+end
+
+mimic = main_object w=450,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

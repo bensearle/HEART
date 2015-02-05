@@ -1,0 +1,17 @@
+load mimic_libutil
+load isdn_control
+load SYSTEM_CONTROL_HELP
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+just = centrecentre
+
+x = -1 y = -89 text(ch=16,tfg=black,"System Control")
+x = 0 y = -90 text(ch=16,tfg=white,"System Control")
+
+x = 0 y = -40 isdn(7000,800,1090,heathrow,"heart")
+x = 0 y = 40 isdn(16000,16120,1091,heathrow,"maid")
+
+end
+
+mimic = main_object w=400,h=240,just=centrecentre,fg=white,bg=grey40,noresizable

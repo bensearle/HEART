@@ -1,0 +1,25 @@
+load mimic_libutil
+load max_demand_meter
+
+
+object max_demand_meter_popup
+begin
+
+just=centrecentre
+
+scale=192
+
+x = 0 y = 0 demand_meter(992,2200,heathrow,"wattmeter","Max Demand")
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+max_demand_meter_popup
+
+end
+
+mimic = main_object w=300,h=300,just=centrecentre,fg=white,bg=aquamarine4,resizable

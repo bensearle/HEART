@@ -1,0 +1,99 @@
+! Control an Monitoring System !
+!------------------------------!
+
+!*********Hv Ring 3************!
+
+
+load mimic_libutil
+load hv_3_sub_stations
+load ocb
+load ammeter
+load hv_cable_ident
+Load BROWSER
+
+
+!************* SUB 73 ****************!
+
+object sub_73
+
+begin
+
+sub_symbol_73
+
+lw = 2
+x = 0 y = 25 add y -= 80 add line (fg=blue) clear
+x = 50 y = 25 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(3000,3560,172,301,heathrow,1,"top")
+x = 50 y = 0 ocb_mont(3000,3540,175,299,heathrow,4,"top")
+
+
+scale = 256
+x = 0 y = -125 chp_meter(271,heathrow,"9.5-12.5KV","CHP",scale=200)
+x = 50 y = -200 text ("Generator",tfg=black,ch=20)
+x = 50 y = -178 text ("15 MVA Capacity",tfg=black,ch=20)
+scale = 200
+y = 100 x = 280 ammeter(268,heathrow,"0-800A","SUB 73")
+
+
+end
+
+
+!************** WEST INTAKE **************!
+
+object hv_3_west_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "west_intake"
+
+W=200 H=25 X=-50 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"West Intake New",just=centrecentre) clear
+
+x = 150 y = 25 add x -= 200 add y += 25 add line (fg=white) clear
+x = 150 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear
+
+lw=2
+x = 100  y = 25 add y = -25 add line (fg=blue) clear
+
+scale = 120
+x = 100 y = 0 ocb(3000,3480,171,296,heathrow,16,"top")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+clear
+lw = 2
+
+! WI-NEW P16 TO SS73-4 !
+x = 49 y = 129 add 
+y -= 15 add 
+x += 150 add
+y -= 250 add
+x -= 173 add
+y += 15 add
+line(fg=blue) clear
+x = 110 y = -136 cable_ident("blue","maggot","16") clear
+
+x = -25 y = -100 sub_73
+x = -50 y = 150 hv_3_west_intake
+
+x = -570 y = 310 browser(1063,heathrow,1140)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

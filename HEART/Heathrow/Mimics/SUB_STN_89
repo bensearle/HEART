@@ -1,0 +1,69 @@
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: SUB_STN_89                               **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 09/05/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 1.0 (For RTU29-05 FAT)              **!
+!** Date: 02/04/12                                       **!
+!** Changes made:                                        **!
+!**  - Points re-mapped from old OS08 to new OS29.       **!
+!**  - These changes have been made as part of the A1    **!
+!**    Centre decommissioning project.                   **!
+!**********************************************************!
+
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+object busbar_89
+begin
+
+tfg = black x = 70 y = -55 add text ("89",ch = 25) clear
+ch=12
+just=centrecentre
+x = -75 y = -100 add text("SUB 32") clear
+x = -75 y = -85 add text("P3") clear
+x = -25 y = -85 add text("SI P16") clear
+x = -100 y = -25 add x = 150 add line(lw=4,fg=green4) clear
+
+lw=2
+x = -75 y = -25 add y -= 50 add line (fg=green4) clear
+x = -25 y = -25 add y -= 50 add line (fg=green4) clear
+x =  25 y = -25 add y += 50 add line (fg=green4) clear
+x =  75 y = -25 add y += 50 add line (fg=green4) clear
+x = 125 y = -25 add y += 50 add line (fg=green4) clear
+
+scale = 120
+
+x = -75 y = -50 ocb_mont(32700,34330,3030,8206,heathro2,1,"top")
+x = -25 y = -50 ocb_mont(32700,34340,3031,8207,heathro2,2,"top")
+x =  25 y = 0   ocb_mont(32700,34350,3032,8208,heathro2,3,"btm")
+x =  75 y = 0   ocb_mont(32700,34360,3033,8209,heathro2,4,"btm")
+x = 125 y = 0   ocb_mont(32700,34370,3034,8210,heathro2,5,"btm")
+
+
+scale = 100
+
+X =  25 Y = 45 add transformer("LT 1","LOCAL")
+X =  75 Y = 45 add transformer("LT 2","LOCAL")
+X = 125 Y = 45 add transformer("LT 3","LOCAL")
+ 
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+x = -25 busbar_89
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

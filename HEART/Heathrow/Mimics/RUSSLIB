@@ -1,0 +1,281 @@
+!operator input -panels!
+type panel_1_item = table (str=string)
+
+!b database read!
+object bvalue (src = string, b_number = db_address) = onoff
+var bread = input db_elements(db_addr, b_value)
+begin
+	!code to reuse and poll database b values!
+	set source bread = src
+	set filter bread.db_addr =  lim_eq
+	set limit bread.db_addr = b_number
+	request bread
+	bvalue = bread.b_value
+end
+
+!e datavase read!
+object evalue (src = source, e_number = db_address) = real
+var eread = input db_elements(db_addr,e_value)
+begin
+	!code to reuse and poll database e values!
+	set source eread = src
+	set filter eread.db_addr = lim_eq
+	set limit eread.db_addr = e_number
+	set persist eread
+	request eread
+	evalue = eread.e_value	
+end
+
+!e database write!
+object evalue2 (src = source,e_number = db_address,enumber2 =real) 
+var ewrite = output db_elements(db_addr, e_value)
+begin
+	set source ewrite = src
+	set default ewrite
+	set old_default ewrite
+	set value ewrite.db_addr = e_number
+	set old_value ewrite.db_addr = e_number
+	set value ewrite.e_value = enumber2
+	set old_off ewrite.e_value
+	request ewrite
+end
+
+!c database read!
+object cvalue (src = string,c_number = db_address) = string
+var cread = input db_elements(db_addr, c_value)
+begin
+	!code to reuse and poll database c values!
+	set source cread = src
+	set filter cread.db_addr = lim_eq
+	set limit cread.db_addr = c_number
+	set persist cread
+	request cread
+	cvalue = cread.c_value	
+end	
+
+	
+!c database set value!
+object set_c_value (src = source,c_number = db_address, csvalue = string)
+var cwrite = output db_elements(db_addr, c_value) 
+begin
+	set source cwrite = src
+	set default cwrite
+	set old_default cwrite
+	set value cwrite.db_addr = c_number
+	set old_value cwrite.db_addr = c_number
+	set value cwrite.c_value = csvalue
+	set old_off cwrite.c_value
+	request cwrite
+end
+
+	
+!left mouse click functionality!	
+object msg (tag_mess=string,bg,just)
+	begin
+	text(tag_mess)
+	end
+mimic msg_box = msg bg=decoroff, just=centrecentre, w=300, h=50
+
+
+
+
+object bowtie (fillcolour = colour,rectcolour = colour, cstring = string, circleCol = colour, angle)
+var message_box = popup msg_box
+	begin
+	if cstring <> "" then
+		begin
+	clear
+	!variables for rectangle!
+	just = centrecentre
+	lw=2
+	x=0  y=0
+	h=75 w=75
+	fg=rectcolour
+	rotrect
+	
+	!variables for clicky!
+
+		h=75 w=75
+		if rotselb then
+			begin
+			set title message_box = "Message"
+			request message_box (cstring)
+			end
+	end
+	
+	!variables for bow tie!
+	clear
+	just = centrecentre
+	lw=2
+	x=0  y=0 add
+	x-=30  y-=30 add
+		   y+=60 add
+	x+=60  y-=60 add
+		   y+=60 add
+			
+		!variables for full colour!
+		fg=fillcolour
+		fill
+		!variables for outline!
+		fg=black
+		polygon
+ 
+	!variables for circle!
+	clear
+	just = centrecentre
+	x=0 y=0 !centre circle!
+	w=30 h=30
+	sa=0 aa=360
+		!variables for fill colour!
+		fg=circleCol
+		pie
+		!variables for outline!
+		fg=black
+		arc
+	end
+
+object generic_valve (src=source,gopen = db_address,gclosed= db_address,gcom = db_address, gpercento = db_address, ghds = db_address, gtag = db_address)
+var fillcolour = colour
+var rectcolour = colour
+var common_alarm = input db_elements(db_addr, alarm_status)
+var valveopen = onoff
+var valveclosed = onoff
+var enumber = real
+var edressed = int
+var cstring = string
+var my_menu = menu string
+var enumber2 = real
+var anglerotate = int
+var tag_message_panel = panel panel_1_item
+
+	begin
+	valveopen = bvalue(src,gopen)
+	valveclosed = bvalue(src,gclosed)
+	enumber = evalue(src,gpercento)
+	edressed = int(evalue(src,ghds))
+	cstring =  cvalue(src,gtag)
+	
+	!common alarm!
+	set source common_alarm = src
+	set filter common_alarm.db_addr =  lim_eq
+	set limit common_alarm.db_addr = gcom
+	request common_alarm
+	
+	!code for string empty!
+	if cstring <> "" then
+		begin
+		rectcolour = yellow
+		end	
+	else if cstring == "" then
+		begin
+		rectcolour = white
+		end	
+	if valveopen then
+			begin	
+			if valveclosed then
+				begin
+				fillcolour = red
+				end
+			else
+				begin
+				fillcolour = green
+				end
+			end 
+	else if valveclosed then
+				begin	
+				!!
+				fillcolour = white
+				end
+	else if common_alarm.alarm_status == w_note then
+				begin
+				!set alarm flashing waiting for acknowledgement!
+				fillcolour =flashred
+				end
+	else if common_alarm.alarm_status == w_clr then
+				begin
+				!alarm acknowledge, alarm still energised!
+				fillcolour = red
+				end
+	else
+				begin
+				fillcolour = grey
+				end
+				
+				
+	angle = int (enumber*0.9)
+	
+	case edressed of
+		0
+		begin
+		angle = int (enumber*0.9)
+		bowtie(fillcolour, rectcolour, cstring, grey)
+		end
+		1 
+		begin
+		angle=0
+		bowtie(green, rectcolour, cstring, blue)
+		end
+		2
+		begin
+		angle=90
+		bowtie(white, rectcolour, cstring, blue)
+		end
+		default
+		begin
+		end
+	
+	!right click menu!
+	just = centrecentre
+	if valid my_menu then
+		begin
+		if my_menu == "Dress Valve Open" then
+			begin
+			evalue2 (src,ghds,1)
+			end
+		else if my_menu == "Dress Valve Close" then
+			begin
+			evalue2 (src,ghds,2)
+			end
+		else if my_menu =="Undress" then
+			begin
+			evalue2 (src, ghds,0)
+			end
+		else if my_menu == "Edit Tag" then
+			begin
+			!operator input- panels!
+				set title tag_message_panel = "Modify Tagged Message"
+				set label tag_message_panel.str = "Tag Message :"
+				set unpinned tag_message_panel
+				request tag_message_panel
+			end
+		else if my_menu == "Clear Tag" then
+			begin
+				set_c_value(src,gtag,"")
+			end
+		set invalid my_menu
+		end
+	
+	set remove my_menu = "Dress Valve Open"
+	set remove my_menu = "Dress Valve Close"
+	set remove my_menu = "Undress"
+	set remove my_menu = "Edit Tag"
+	set remove my_menu = "Clear Tag"
+	
+	set add my_menu = "Dress Valve Open"
+	set add my_menu = "Dress Valve Close"
+	set add my_menu = "Undress"
+	set add my_menu = "Edit Tag"
+	set add my_menu = "Clear Tag"
+	
+	x=0 y=0 w=75 h=75
+	set rect my_menu
+	
+		if valid tag_message_panel then
+		begin
+			set_c_value(src,gtag,tag_message_panel.str)
+			set invalid tag_message_panel
+		end
+	end
+	
+		
+		

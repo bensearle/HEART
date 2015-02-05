@@ -1,0 +1,50 @@
+! HEATHROW CMS - LV GENERATOR (controllable)
+
+loaded by: FEGP_T2,T3,T4
+           
+************************************************************
+* DRAW CONTACTOR                                           *
+*                                                          *
+************************************************************
+!
+
+object start_contactor
+
+begin
+
+fg=green4
+just = centrecentre
+rect(h=70,w=62,fg=decoroff)
+
+x -= 30 y += 35 add
+y -= 70 add
+x += 60 add line(fg=decorlight) clear
+x = 30 add
+y += 70 add
+x -= 60 add line(fg=decorshadow) clear
+fg = green4
+
+x=0 y-=55
+circle(lw=4,h=10,w=10)
+y=15 circle(lw=4,h=10,w=10)
+x=-12 y=-2 rect(h=50,w=5,fg=green4)
+X=0 Y=20 add
+x=0 y=45 add line(lw=2,fg=green4)
+clear
+X=0 Y=-45 add
+x=0 y=-25add line(lw=2,fg=green4)
+clear
+
+clear
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 270
+x = 5
+start_contactor
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,bg=decoroff,resizable
+

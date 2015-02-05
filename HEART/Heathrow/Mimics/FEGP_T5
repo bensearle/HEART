@@ -1,0 +1,321 @@
+!**	HEATHROW\FEGP_T5			**!
+!** 	Modified by ULTRA - 8 Aug 2007		**!
+!** 	Inclusion of SUB 182 and EWC2 FEGP	**!
+!** 						**!
+
+!Load FEGP_T5_HELP!
+Load browser
+load lv_breaker
+load transformer_types
+
+object stand_obj(ident=string,fg)
+begin
+	scale=256 just=centrecentre fontname="Arial"
+	X=0 Y=1 W=60 H=34 rotrect(fg=white)
+	X=1 Y=3 W=60 H=34 rotrect(fg=black)
+	X=0 Y=1 W=59 H=33 rotrect(fg=grey80)
+	X=0 Y=0 CH=12 TEXT(ident)
+end
+
+object fegp_156
+var FEGP_WDOG_col = colour
+begin
+	! ** connecting lines ** !
+	lw=3
+	X=-185 Y=0 Add X=115 Y=0 Add line(lw=4, fg=white) clear	! ** BUS ** !
+	X=-140 Y=0 add y-=100 add line(fg=white) clear			! ** ACB 1 ** !
+	X=70 Y=0 add y-=100 add line(fg=white) clear			! ** ACB 2 ** !
+
+	X=-175 Y=0 add y+=220 add line(fg=white) clear		! ** MCCB 1 ** !
+	x+=70  Y=0 add y+=260 add line(fg=white) clear		! ** MCCB 2 ** !
+	x+=70  Y=0 add y+=140 add line(fg=white) clear		! ** MCCB 3 ** !
+	x+=70  Y=0 add y+=140 add line(fg=white) clear		! ** MCCB 4 ** !
+	x+=70  Y=0 add y+=220 add line(fg=white) clear		! ** MCCB 5 ** !
+
+	! ** DASHED LINE ** !
+	X=-35 Y=-50 Add X=-35 Y=-60 Add line(fg=white) clear
+	X=-35 Y=-65 Add X=-35 Y=-75 Add line(fg=white) clear
+	X=-120 Y=-50 Add X=-110 Y=-50 Add line(fg=white) clear
+	X=-100 Y=-50 Add X=-90 Y=-50 Add line(fg=white) clear
+	X=-80 Y=-50 Add X=-70 Y=-50 Add line(fg=white) clear
+	X=-60 Y=-50 Add X=-50 Y=-50 Add line(fg=white) clear
+	X=-40 Y=-50 Add X=-30 Y=-50 Add line(fg=white) clear
+	X=-20 Y=-50 Add X=-10 Y=-50 Add line(fg=white) clear
+	X=0 Y=-50 Add X=10 Y=-50 Add line(fg=white) clear
+	X=20 Y=-50 Add X=30 Y=-50 Add line(fg=white) clear
+	X=40 Y=-50 Add X=50 Y=-50 Add line(fg=white) clear
+		
+	! ** circuit breakers ** !
+	scale=220
+
+		! lv_breaker(cb_type,plc_offset,b_offset,c_offset,e_offset,src,ident,pos,num_alarms,res2,res1=int,angle)!
+	X=-140 Y=-50 lv_breaker("no_open",43600,44175,1802,6540,heathrow,"","top",int,int,int)	! ** ACB 1 ** !
+	X=70 Y=-50 lv_breaker("no_open",43600,44180,1803,6541,heathrow,"","top",int,int,int)		! ** ACB 2 ** !
+
+	X=-175 Y=50	lv_breaker("no_open",43600,44185,1804,6542,heathrow,"1","top",int,int,int)		! ** MCCB 1 ** 
+!
+	x+=70		lv_breaker("no_open",43600,44190,1805,6543,heathrow,"2","top",int,int,int)		! ** MCCB 2 ** 
+!
+	x+=70		lv_breaker("no_open",43600,44195,1806,6544,heathrow,"3","top",int,int,int)		! ** MCCB 3 ** 
+!
+	x+=70		lv_breaker("no_open",43600,44200,1807,6545,heathrow,"4","top",int,int,int)		! ** MCCB 4 ** 
+!
+	x+=70		lv_breaker("no_open",43600,44205,1808,6546,heathrow,"5","top",int,int,int)		! ** MCCB 5 ** 
+!
+
+	Clear
+	! ** transformers ** !
+	X=-140 Y=-130 transformer_select("TYPE1",43600,5,44135,1838,INT,heathrow,"TX1","Local",1,INT,white,green,scale=150)	
+! ** TX 1 ** !
+	X=70 Y=-130 transformer_select("TYPE1",43600,5,44140,1839,INT,heathrow,"TX2","Local",2,INT,white,green,scale=150)	
+! ** TX 2 ** !
+
+	! ** stands ** !
+	scale=220
+	X=-175 Y=100 stand_obj("541")	!** MCCB 1 **!
+	X=-175 Y+=40 stand_obj("542")	!** MCCB 1 **!
+	X=-175 Y+=40 stand_obj("543")	!** MCCB 1 **!
+	X=-175 Y+=40 stand_obj("548")	!** MCCB 1 **!
+
+	X=-105 Y=100 stand_obj("539")	!** MCCB 2 **!
+	X=-105 Y+=40 stand_obj("538")	!** MCCB 2 **!
+	X=-105 Y+=40 stand_obj("537")	!** MCCB 2 **!
+	X=-105 Y+=40 stand_obj("536")	!** MCCB 2 **!
+	X=-105 Y+=40 stand_obj("535")	!** MCCB 2 **!
+
+	X=-35 Y=100 stand_obj("544")	!** MCCB 3 **!
+	X=-35 Y+=40 stand_obj("545")	!** MCCB 3 **!
+	
+	X=35 Y=100 stand_obj("546")	!** MCCB 4 **!
+	X=35 Y+=40 stand_obj("547")	!** MCCB 4 **!
+	
+	X=105 Y=100 stand_obj("534")	!** MCCB 5 **!
+	X=105 Y+=40 stand_obj("533")	!** MCCB 5 **!
+	X=105 Y+=40 stand_obj("532")	!** MCCB 5 **!
+	X=105 Y+=40 stand_obj("531")	!** MCCB 5 **!
+
+!************** FEGP 110V DC WATCHDOG ALARM ****************!
+	FEGP_WDOG_col = lv_alarm_test(44212,1,heathrow)
+
+	if FEGP_WDOG_col == flashred then
+		tfg = flashred
+	else if FEGP_WDOG_col == red then
+		tfg = red
+	else
+		tfg = aquamarine3
+	x = -80 y = -180 text("FEGP 110V DC")
+	x+=10 y+= 15 text("WATCHDOG")
+	x+=15 y+= 15 text("FAILED")
+
+	! ** labels** !
+	scale=256 just=centrecentre fontname="Arial" tfg=black
+	X=-185 Y=-50 CH=12 TEXT("ACB1")
+	X=115 Y=-50 CH=12 TEXT("ACB2")
+	X=-35 Y=-85 CH=12 TEXT("(INTERLOCKED)")
+	X=-225 Y=40 CH=12 TEXT("MCCB")
+	X=-225 Y=100 CH=10 TEXT("STANDS")
+
+
+	X=-35 Y=-230 CH=14 text("FEGP - Substation 156")
+	X=-35 Y=-200 main_sub_call(grey80,100,25,"Sub 156","",blue4,14,yes,"t5_11kv_overview",heathrow,int,"string",int)
+end
+
+
+object fegp_182
+begin
+	! ** connecting lines ** !
+	lw=3
+	X=-185 Y=0 Add X=45 Y=0 Add line(lw=4, fg=white) clear	! ** BUS ** !
+	X=-140 Y=0 add y-=100 add line(fg=white) clear			! ** ACB 1 ** !
+	X=-10 Y=0 add y-=100 add line(fg=white) clear			! ** ACB 2 ** !
+
+	X=-105 Y=0 add y+=180 add line(fg=white) clear		! ** MCCB 1 ** !
+	x+=70  Y=0 add y+=180 add line(fg=white) clear		! ** MCCB 2 ** !
+	
+	! ** DASHED LINE ** !
+	X=-75 Y=-50 Add X=-75 Y=-60 Add line(fg=white) clear
+	X=-75 Y=-65 Add X=-75 Y=-75 Add line(fg=white) clear
+	X=-120 Y=-50 Add X=-110 Y=-50 Add line(fg=white) clear
+	X=-100 Y=-50 Add X=-90 Y=-50 Add line(fg=white) clear
+	X=-80 Y=-50 Add X=-70 Y=-50 Add line(fg=white) clear
+	X=-60 Y=-50 Add X=-50 Y=-50 Add line(fg=white) clear
+	X=-40 Y=-50 Add X=-30 Y=-50 Add line(fg=white) clear
+			
+	! ** circuit breakers ** !
+	scale=220
+
+		! lv_breaker(cb_type,plc_offset,b_offset,c_offset,e_offset,src,ident,pos,num_alarms,res2,res1=int,angle)!
+	X=-140 Y=-50 lv_breaker("no_open",2000,2729,1545,4604,heathrow,"","top",int,int,int)	! ** ACB 1 ** !
+	X=-10 Y=-50 lv_breaker("no_open",2000,2739,1546,4605,heathrow,"","top",int,int,int)	! ** ACB 2 ** !
+
+	X=-105 Y=50	lv_breaker("no_open",2000,2759,1547,4606,heathrow,"1","top",int,int,int)		! ** MCCB 1 ** 
+!
+	x+=70		lv_breaker("no_open",2000,2749,1548,4607,heathrow,"2","top",int,int,int)		! ** MCCB 2 ** 
+!
+
+	Clear
+	! ** transformers ** !
+	X=-140 Y=-130 transformer_select("TYPE1",2000,1,2768,1538,INT,heathrow,"TX1","Local",1,INT,white,green,scale=150)	
+! ** TX 1 ** !
+	X=-10 Y=-130 transformer_select("TYPE1",2000,1,2769,1539,INT,heathrow,"TX2","Local",2,INT,white,green,scale=150)	
+! ** TX 2 ** !
+
+	! ** stands ** !
+	scale=220
+	X=-105 Y=100 stand_obj("568")	!** MCCB 1 **!
+	X=-105 Y+=40 stand_obj("567")	!** MCCB 1 **!
+	X=-105 Y+=40 stand_obj("566")	!** MCCB 1 **!
+	
+	X=-35 Y=100 stand_obj("553")	!** MCCB 2 **!
+	X=-35 Y+=40 stand_obj("552")	!** MCCB 2 **!
+	X=-35 Y+=40 stand_obj("551")	!** MCCB 2 **!
+
+	! ** labels** !
+	scale=256 just=centrecentre fontname="Arial"
+	X=-185 Y=-50 CH=12 TEXT("ACB1")
+	X=35 Y=-50 CH=12 TEXT("ACB2")
+	X=-75 Y=-85 CH=12 TEXT("(INTERLOCKED)")
+	X=-155 Y=40 CH=12 TEXT("MCCB")
+	X=-155 Y=100 CH=10 TEXT("STANDS")
+
+
+	X=-75 Y=-230 CH=14 text("FEGP - Substation 182")
+	X=-75 Y=-200 main_sub_call(grey80,100,25,"Sub 182","",blue4,14,yes,"t5_11kv_overview",heathrow,int,"string",int)
+end
+
+
+object fegp_EWC2
+var FEGP_WDOG_col = colour
+var FEGP_BATT_col = colour
+begin
+	! ** connecting lines ** !
+	lw=3
+	X=-185 Y=0 Add X=115 Y=0 Add line(lw=4, fg=white) clear	! ** BUS ** !
+	X=-135 Y=0 add y-=100 add line(fg=white) clear			! ** ACB 24 ** !
+	X=65 Y=0 add y-=100 add line(fg=white) clear			! ** ACB 25 ** !
+
+	X=-175 Y=0 add y+=220 add line(fg=white) clear		! ** MCCB 1 ** !
+	x+=70  Y=0 add y+=260 add line(fg=white) clear		! ** MCCB 2 ** !
+	x+=70  Y=0 add y+=340 add line(fg=white) clear		! ** MCCB 3 ** !
+	x+=70  Y=0 add y+=260 add line(fg=white) clear		! ** MCCB 4 ** !
+	x+=70  Y=0 add y+=220 add line(fg=white) clear		! ** MCCB 5 ** !
+
+	! ** DASHED LINE ** !
+	X=-35 Y=-50 Add X=-35 Y=-60 Add line(fg=white) clear
+	X=-35 Y=-65 Add X=-35 Y=-75 Add line(fg=white) clear
+	X=-120 Y=-50 Add X=-110 Y=-50 Add line(fg=white) clear
+	X=-100 Y=-50 Add X=-90 Y=-50 Add line(fg=white) clear
+	X=-80 Y=-50 Add X=-70 Y=-50 Add line(fg=white) clear
+	X=-60 Y=-50 Add X=-50 Y=-50 Add line(fg=white) clear
+	X=-40 Y=-50 Add X=-30 Y=-50 Add line(fg=white) clear
+	X=-20 Y=-50 Add X=-10 Y=-50 Add line(fg=white) clear
+	X=0 Y=-50 Add X=10 Y=-50 Add line(fg=white) clear
+	X=20 Y=-50 Add X=30 Y=-50 Add line(fg=white) clear
+	X=40 Y=-50 Add X=50 Y=-50 Add line(fg=white) clear
+	! ** circuit breakers ** !
+	scale=220
+
+	! ** object 
+lv_breaker(cb_type=string,plc_offset=int,b_offset=int,c_offset=int,e_offset=int,src=source,ident=string,position=string(4),num_
+alarms=int,spec_addr=int,res1=int,angle) ** !
+
+	X=-135 Y=-50 lv_breaker("",23700,24865,1721,2291,heathro2,"","top",int,24830,int)	! ** ACB 25 ** !
+	X=65 Y=-50 lv_breaker("",23700,24860,1720,2290,heathro2,"","top",int,24830,int)	! ** ACB 24 ** !
+
+	X=-175 Y=50	lv_breaker("",23700,24880,1724,2292,heathro2,"1","top",int,24830,int)	! ** MCCB 1 ** !
+	x+=70		lv_breaker("",23700,24885,1725,2293,heathro2,"2","top",int,24830,int)	! ** MCCB 2 ** !
+	x+=70		lv_breaker("",23700,24890,1726,2294,heathro2,"3","top",int,24830,int)	! ** MCCB 3 ** !
+	x+=70		lv_breaker("",23700,24895,1727,2295,heathro2,"4","top",int,24830,int)	! ** MCCB 4 ** !
+	x+=70		lv_breaker("",23700,24900,1728,2296,heathro2,"5","top",int,24830,int)	! ** MCCB 5 ** !
+
+	Clear
+	! ** transformers ** !
+	! ** SS151-T5A-TX25 ** !
+	X=-135 Y=-130 
+transformer_select("TYPE1",23700,1,24875,1723,24830,heathro2,"T5A-TX25","SS151-",25,INT,white,green,scale=150)	! ** TX 25 ** !
+	! ** SS152-T5A-TX24 ** !
+	X=65 Y=-130 
+transformer_select("TYPE1",23700,1,24870,1722,24830,heathro2,"T5A-TX24","SS152-",24,INT,white,green,scale=150)	! ** TX 24 ** !
+
+	! ** stands ** !
+	scale=220
+	X=-175 Y=100 stand_obj("501")	!** MCCB 1 **!
+	X=-175 Y+=40 stand_obj("502")	!** MCCB 1 **!
+	X=-175 Y+=40 stand_obj("503")	!** MCCB 1 **!
+	X=-175 Y+=40 stand_obj("505")	!** MCCB 1 **!
+
+	X=-105 Y=100 stand_obj("506")	!** MCCB 2 **!
+	X=-105 Y+=40 stand_obj("507")	!** MCCB 2 **!
+	X=-105 Y+=40 stand_obj("508")	!** MCCB 2 **!
+	X=-105 Y+=40 stand_obj("509")	!** MCCB 2 **!
+	X=-105 Y+=40 stand_obj("511")	!** MCCB 2 **!
+
+	X=-35 Y=100 stand_obj("512")	!** MCCB 3 **!
+	X=-35 Y+=40 stand_obj("513")	!** MCCB 3 **!
+	X=-35 Y+=40 stand_obj("514")	!** MCCB 3 **!
+	X=-35 Y+=40 stand_obj("515")	!** MCCB 3 **!
+	X=-35 Y+=40 stand_obj("516")	!** MCCB 3 **!
+	X=-35 Y+=40 stand_obj("517")	!** MCCB 3 **!
+	X=-35 Y+=40 stand_obj("518")	!** MCCB 3 **!
+
+	X=35 Y=100 stand_obj("519")	!** MCCB 4 **!
+	X=35 Y+=40 stand_obj("520")	!** MCCB 4 **!
+	X=35 Y+=40 stand_obj("521")	!** MCCB 4 **!
+	X=35 Y+=40 stand_obj("522")	!** MCCB 4 **!
+	X=35 Y+=40 stand_obj("523")	!** MCCB 4 **!
+
+	X=105 Y=100 stand_obj("524")	!** MCCB 5 **!
+	X=105 Y+=40 stand_obj("525")	!** MCCB 5 **!
+	X=105 Y+=40 stand_obj("526")	!** MCCB 5 **!
+	X=105 Y+=40 stand_obj("527")	!** MCCB 5 **!
+
+!************** FEGP 110V DC WATCHDOG ALARM ****************!
+	FEGP_WDOG_col = lv_alarm_test(24905,1,heathro2)
+
+	if FEGP_WDOG_col == flashred then
+		tfg = flashred
+	else if FEGP_WDOG_col == red then
+		tfg = red
+	else
+		tfg = aquamarine3
+	x = -80 y = -180 text("FEGP 110V DC")
+	x+=0 y+= 15 text("UNIT COMMON")
+	x+=25 y+= 15 text("ERROR")
+
+!************** FEGP 110V BATTERY FAULT ****************!
+	FEGP_BATT_col = lv_alarm_test(24906,1,heathro2)
+
+	if FEGP_BATT_col == flashred then
+		tfg = flashred
+	else if FEGP_BATT_col == red then
+		tfg = red
+	else
+		tfg = aquamarine3
+	x = -65 y = -130 text("FEGP 110V")
+	x-=18 y+= 15 text("BATTERY FAULT")
+
+	! ** labels** !
+	scale=256 just=centrecentre fontname="Arial" tfg=black
+	X=-185 Y=-55 CH=12 TEXT("T5A-151")
+	X=-185 Y=-40 CH=12 TEXT("-TX25")
+	X=115 Y=-55 CH=12 TEXT("T5A-152")
+	X=115 Y=-40 CH=12 TEXT("-TX24")
+	X=-35 Y=-85 CH=12 TEXT("(INTERLOCKED)")
+	X=-225 Y=40 CH=12 TEXT("MCCB")
+	X=-225 Y=100 CH=10 TEXT("STANDS")
+
+
+	X=-35 Y=-230 CH=14 text("FEGP - East Wing Central 2")
+	X=-35 Y=-200 main_sub_call(grey80,130,25,"T5 Concourse A","",blue4,14,yes,"t5_hv_concourse_a",heathro2,int,"string",int)
+end
+
+Object main_object(w,h,fg,bg)
+Begin
+	x = -570 y = 340 browser(1840,heathrow,1140)
+	X=-313 Y=-113 fegp_156
+	X=75 Y=-113 fegp_182
+	X=410 Y=-113 fegp_EWC2
+End
+
+
+mimic = main_object w=1140,h=860,just=centrecentre,fg=white,bg=aquamarine3,resizable

@@ -1,0 +1,244 @@
+!===============================================================================!
+!===============================================================================!
+!===	Cargo Tunnel PAVA Control							             ===!
+!===										             ===!
+!===	Designed By: Tom Adams (P Ducker Systems Ltd)				             ===!
+!===	Designed On: 01/05/2013							             ===!
+!===										             ===!
+!===	Modifications:								             ===!
+!===	None									             ===!
+!===============================================================================!
+!===============================================================================!
+
+!=================================================!
+!=== LOAD LIBRARIES===!
+!=================================================!
+
+Load CARGO_TUNNEL_PAVA_CONTROL_HELP
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load CARGO_TUNNEL_PAVA_LIBRARY
+Load BROWSER
+
+!=================================================!
+!=== BEGIN MIMIC ===!
+!=================================================!
+
+Object main_object(w,h,fg,bg)
+
+Begin
+
+	!=== Mimic Title ===!
+
+	x=500 y =50
+	titling_object_lib(300, 40, "CARGO TUNNEL PAVA", 16, blue, no)
+
+!=================================================!
+!=== CONTROL BOX ===!
+!=================================================!
+
+	!=== Control Box ===!
+	
+	x=280 y=75
+	pava_control_box_cargo(10600, 11100, 11000,11040,11016, 4851, heathrow)	
+	
+	!=== Control Panel Button ===!
+
+	x=x+20 y=y+115
+	pava_cargo_control_pan_button(10600, 11100, 4850, ch=18, font=font_bold, "CONTROL", 120, heathrow)
+	clear
+
+	!=== Stop Message Button ===!
+
+	x=x+130
+	stop_message_button_cargo(ch=18, font=font_bold, "STOP", 120, 10600, 11100, heathrow)
+
+	!=== Maintanence Panel Button ===!
+
+	x=x+130
+	pava_cargo_maint_pan_button(10600, 11115, 4819, ch=18, font=font_bold, "MAINT", 120, heathrow)
+	clear
+
+!=================================================!
+!=== PLANT ROOMS ===!
+!=================================================!
+
+	!=== North Plant Room ===!
+
+	clear
+	x=820 y=270 h=160 w=450 fg=grey80 rect 
+	x=820 y=270 h=160 w=450 fg=grey40 ls=solid lw=5 box 
+	x=825 y=275 ch=15 tfg=black font=font_bold fontname="arial" text("NORTH PLANT ROOM")
+	x=1000 y=300
+	controller(10600, 10743 , 10745, 11012, 10747, 10745, 2796, 4730, "PA Controller", "NORTH PA CONTROLLER", heathrow)
+	x=950 y=340
+	amplifier(10600, 10900, 11020, 11020, 2781 ,"Amplifier NA", heathrow)
+	x=1050 y=340
+	amplifier(10600, 10900, 11021, 11021,  2782 ,"Amplifier NB", heathrow)
+	x=850 y=380
+	psu(10600, 10635, 10635, 2785 ,"PSU/N/001", heathrow)
+	x=950 y=380
+	switch(10600, 10637, 10637, 2791, "ES/N/001", heathrow)
+	x=1050 y=380
+	switch(10600, 10638, 10638, 2792 ,"ES/N/002", heathrow)
+	x=1175 y=380
+	psu(10600, 10636, 10636, 2786 ,"PSU/N/002", heathrow)
+	x=1180 y=300
+	microphone(10600, 11014, 11018, 11016, 10692, 11014, 11014, 2793, "Microphone", "NORTH MIC", heathrow)
+	clear
+
+	!=== South Plant Room ===!
+
+	x=20 y=270 h=160 w=450 fg=grey80 rect 
+	x=20 y=270 h=160 w=450 fg=grey40 ls=solid lw=5  box 
+	x=25 y=275 ch=15 tfg=black font=font_bold fontname="arial" text("SOUTH PLANT ROOM")
+	x=200 y=300
+	controller(10900, 11043, 11045, 11044, 11046, 11043, 2795, 4830, "PA Controller", "SOUTH PA CONTROLLER", heathrow)
+	x=150 y=340
+	amplifier(10900, 10600, 11022, 11022, 2783 ,"Amplifier SA", heathrow)
+	x=250 y=340
+	amplifier(10900, 10600, 11023, 11023, 2784 ,"Amplifier SB", heathrow)
+	x=50 y=380
+	psu(10900, 10935, 10935, 2787 ,"PSU/S/001", heathrow)
+	x=150 y=380
+	switch(10900, 10937, 10937, 2789 ,"ES/S/001", heathrow)
+	x=250 y=380
+	switch(10900, 10938, 10938, 2790 ,"ES/S/002", heathrow)
+	x=380 y=380
+	psu(10900, 10936, 10936, 2788 ,"PSU/S/002", heathrow)
+	x=385 y=300
+	microphone(10900, 11015, 11019, 11017, 10939, 11015, 11015, 2794, "Microphone", "SOUTH MIC",  heathrow)
+	clear
+	
+!=================================================!
+!=== TUNNEL BACKGROUND ===!
+!=================================================!
+
+	x=0 y=455 w=1290 h=295 fg=grey60 rect
+	clear
+	x=150 y=455 h=295 w=1000 fg=grey40 rect
+	clear
+
+!=================================================!
+!=== TUNNEL WALLS ===!
+!=================================================!
+
+	x=0 y=455 add x=1290 y=455 add fg=darkgrey lw=2 line 
+	clear
+	x=150 y=458 add x=1150 y=458 add fg=orange4 lw=6 line  
+	clear
+	x=0 y=750 add x=1290 y=750 add fg=darkgrey lw=2 line 
+	clear
+	x=150 y=463 add x=1150 y=463 add fg=orange4 lw=16 line 
+	clear
+	x=150 y=742 add x=1150 y=742 add fg=orange4 lw=16 line 
+	clear
+
+!=================================================!
+!=== WHITE ROAD MARKINGS ===!
+!=================================================!
+
+	x=100 y=600 add x=50y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=1150 y=600 add x=1200y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=1250 y=600 add x=1300y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=150 y=600 add x=200y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=250 y=600 add x=300y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=350 y=600 add x=400y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=450 y=600 add x=500y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=550 y=600 add x=600y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=650 y=600 add x=700y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=750 y=600 add x=800y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=850 y=600 add x=900y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=950 y=600 add x=1000y=600 add fg=white ls=solid lw=5 line
+	clear
+	x=1050 y=600 add x=1100y=600 add fg=white ls=solid lw=5 line
+	clear
+
+!=================================================!
+!=== ROAD LABELS ===!
+!=================================================!
+
+	x=645 y=586 ch=18 font=font_bold just=centrecentre fontname="arial" text("CARGO")
+	x=645 y=614 ch=18 font=font_bold just=centrecentre fontname="arial" text("TUNNEL")
+	x=70 y=586 ch=18 font=font_bold just=centrecentre  fontname="arial" text("SOUTH")
+	x=70 y=614 ch=18 font=font_bold just=centrecentre  fontname="arial" text("PORTAL")
+	x=1220 y=586 ch=18 font=font_bold just=centrecentre  fontname="arial" text("NORTH")
+	x=1220 y=614 ch=18 font=font_bold just=centrecentre  fontname="arial" text("PORTAL")
+
+
+!=================================================!
+!=== CARGO TUNNEL SPEAKERS ===!
+!=================================================!
+	
+	x=150 y=490
+	speakerright(10600, 10900, 11011, 11011, 2780, "CT020", heathrow)
+	x=195 y=490
+	speakerright(10600, 10900, 11010, 11010, 2779, "CT019", heathrow)
+	x=250 y=490
+	speakerright(10600, 10900, 11009, 11009, 2778, "CT018", heathrow)
+	x=305 y=490
+	speakerright(10600, 10900, 11008, 11008, 2777, "CT017", heathrow)
+	x=360 y=490
+	speakerright(10600, 10900, 11007, 11007, 2776, "CT016", heathrow)
+	x=415 y=490
+	speakerright(10600,10900,  11006, 11006, 2775, "CT015", heathrow)
+	x=470 y=490
+	speakerright(10600, 10900, 11005, 11005, 2774, "CT014", heathrow)
+	x=525 y=490
+	speakerright(10600,10900,  11004, 11004, 2773, "CT013", heathrow)
+	x=580 y=490
+	speakerright(10600,10900,  11003, 11003, 2772, "CT012", heathrow)
+	x=635 y=490
+	speakerright(10600, 10900, 11002, 11002, 2771, "CT011", heathrow)
+	x=690 y=490
+	speakerright(10600,10900,  11001, 11001, 2770, "CT010", heathrow)
+	x=745 y=490
+	speakerright(10600, 10900, 11000, 11000, 2769, "CT009", heathrow)
+	x=800 y=490
+	speakerright(10600, 10900, 10999, 10999, 2768, "CT008", heathrow)
+	x=855 y=490
+	speakerright(10600, 10900, 10998, 10998, 2767, "CT007", heathrow)
+	x=910 y=490
+	speakerright(10600, 10900, 10997, 10997, 2766, "CT006", heathrow)
+	x=965 y=490
+	speakerright(10600,10900,  10996, 10996, 2765, "CT005", heathrow)
+	x=1020 y=490
+	speakerright(10600, 10900, 10995, 10995, 2764, "CT004", heathrow)
+	x=1075 y=490
+	speakerright(10600,10900,  10994, 10994, 2763, "CT003", heathrow)
+
+!=================================================!
+!=== NORTH PORTAL SPEAKERS ===!
+!=================================================!
+
+	x=1150 y=490
+	speakerright(10600, 10900, 10993, 10993, 2762, "CT002", heathrow)
+
+!=================================================!
+!=== SOUTH PORTAL SPEAKERS ===!
+!=================================================!
+
+	x=130 y=520
+	speakerleft(10600, 10900, 10992, 10992, 2761, "CT001", heathrow)
+	
+!=================================================!
+!=== BROWSER ===!
+!=================================================!
+	clear
+	scale = 256
+	x =0 y = 813 browser(401, heathro4, 1290)
+
+End		         
+
+mimic = main_object w=1290,h=900 ,just=topleft,bg=grey, resizable

@@ -1,0 +1,38 @@
+! HEATHROW CMS - MONITOR
+
+loaded by:  FEGP_T2, FEGP_T3, FEGP_T4
+!
+
+load mimic_libutil
+
+! 
+****************************************************************
+* MONITOR OBJECT                                               *
+* this object is called from the Top Level variable (mimic)    *
+****************************************************************
+!
+object monitor(bg,fg)
+
+begin
+just = centrecentre
+ch = 15
+fg = black
+rect(w=120,h=105,fg=decoron)
+y -= 2 add
+rect(w=100,h=90,fg=blue)
+text ("Terminal")
+fg = decoroff
+clear
+y += 45 x -= 50 add
+x += 100 add
+y -= 90 add line clear
+fg=black
+x -= 1 add
+x -= 100 add
+y +=90 add line clear
+x+= 70 y += 5 add disk(h=5,w=5)
+x+= 8 add disk(h=5,w=5)
+y +=13 x -= 28 add rect(w=60,h=10,fg=decoron)
+y +=10  add rect(w=105,h=5,fg=decoron)
+end
+

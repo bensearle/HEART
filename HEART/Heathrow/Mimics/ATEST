@@ -1,0 +1,73 @@
+type arow = table (scale = int(1,1000),angle=int(0,360))
+
+object ashape (fg,bg,x,y,just,scale,angle,bg_colour = colour,fg_colour = colour)
+begin
+rotrect(fg = bg_colour,just=topcentre,w=80,h=115)
+fg=fg_colour
+lw = 5
+add y += 10 add line clear
+x-=10 add x+=20 add line clear
+y+=20
+add x-=20 add line clear
+y+=10 
+x-=5 add x+=30 add line clear
+y +=10 
+x+=5  add x-=40 add line clear
+x=0 add y+=13 add line clear
+disk(w = 12,h = 12)
+lw = 7
+add y+=40 add line clear
+disk(w = 12,h = 12)
+lw=5
+add y+=13 add line clear
+
+end
+
+object o
+var bg_colour = loopback  colour
+var fg_colour = loopback  colour
+var aangle = panel  arow
+var acolour = panel  colour
+var acolour2 = panel  colour
+begin
+
+if selb(x = -300,y = -300,w = 600,h = 600) then
+   begin
+   set title aangle = " Scale / Angle "
+   request aangle
+   end
+if adjb(x = -300,y = -300,w = 600,h = 600) then
+   begin
+   set title acolour = "bg_colour"
+   request acolour
+   end
+if menb(x = -300,y = -300,w = 600,h = 600) then
+   begin
+   set title acolour2 = "fg_colour"
+   request acolour2
+   end
+
+if valid aangle then
+   begin
+   angle = aangle.angle
+   scale = aangle.scale
+   end
+
+if valid acolour then
+   bg_colour = acolour
+if valid acolour2 then
+   fg_colour = acolour2
+
+if invalid bg_colour then
+   bg_colour = black
+if invalid fg_colour then
+    fg_colour = yellow
+
+just = centrecentre
+
+
+ashape(bg_colour,fg_colour)
+
+end
+
+mimic atest = o w = 600,h = 600,just = centrecentre

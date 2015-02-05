@@ -1,0 +1,236 @@
+! HEATHROW CMS - HV SOUH
+
+loaded by: HV_OVERVIEW 
+!
+
+load paul_lib
+
+object south_intake_substations (fg,bg)
+begin
+fg=gold
+X=-30 Y=40 os("28") !28!
+X=-199 Y=77 os("33") !33!
+X=-30 Y=105 os("27") !27!
+X=-199 Y=128 os("34") !34!
+X=-30 Y=185 os("46") !46!
+X=-199 Y=183 os("58") !58!
+X=213 Y=-249 os("63") !63!
+X=175 Y=-226 os("1/8") !M1/8!
+X=213 Y=-201 os("76") !76!
+X=243 Y=-155 os("70") !70!
+X=213 Y=-120 os("68") !68!
+X=270 Y=87 os("1/13") !M1/13!
+X=314 os("1/15") !M1/15!
+X=101 Y=122 os("1/11") !M1/11!
+X=175 Y=140 os("1/12") !M1/12!
+end
+object south_intake_lines (fg,bg)
+begin
+!*********************green line lw=2*****************!
+
+FG = gold4 
+lw=3
+
+X=-231 Y=-315  ADD
+X=-183 Y=-315  ADD
+line
+clear
+X=-152 Y=-23  ADD
+X=-152 Y=27  ADD
+line
+clear
+X=-73 Y=-53  ADD
+X=-73 Y=-17  ADD
+line
+clear
+X=-73 Y=-7  ADD
+X=-73 Y=65  ADD
+line
+clear
+X=417 Y=-4  ADD
+X=417 Y=128 ADD
+line
+clear
+X=-210 Y=285  ADD
+X=-4 Y=285  ADD
+line
+clear
+X=10 Y=285  ADD
+X=269 Y=285  ADD
+line
+clear
+
+
+!*********************green lines lw = 1*********************!
+lw=2
+
+!south intake to ss58,34,33!
+X=-199 Y=285  ADD
+Y=194  ADD
+line
+clear
+X=-199 Y=184  ADD
+Y=139  ADD
+line
+clear
+X=-199 Y=128  ADD
+Y=88  ADD
+line
+clear
+X=-199 Y=77  ADD
+Y=13  ADD
+X=-153 ADD
+line
+clear
+
+!bar 32 to bar 23!
+X=-152 Y=0  ADD
+X=-73 ADD
+line
+clear
+
+!main ss28,27,46!
+X=-73 Y=13  ADD
+X=-30 ADD
+Y=40 ADD
+line
+clear
+X=-30 Y=51  ADD
+Y=105  ADD
+line
+clear
+X=-30 Y=116  ADD
+Y=185  ADD
+line
+clear
+X=-30 Y=197  ADD
+y=284  ADD
+line
+clear
+
+X=-223 Y=-314  ADD
+Y=-258  ADD
+X=175 ADD
+Y=-226 ADD
+line
+clear
+line
+clear
+X=175 Y=-215  ADD
+Y=140  ADD
+line
+clear
+X=175 Y=151  ADD
+Y=285  ADD
+line
+clear
+
+
+!north intake to south via ss76,68,70,63,m1/12!
+X=-211 Y=-315  ADD
+Y=-242  ADD
+X=118 ADD
+Y=-196  ADD
+X=202 ADD
+line
+clear
+X=212 Y=-190  ADD
+y=-121  ADD
+line
+clear
+X=225 Y=-114  ADD
+X=243 ADD
+line
+clear
+X=243 Y=-155  ADD
+Y=-195  ADD
+X=225 ADD
+line
+clear
+X=213 Y=-201  ADD
+Y=-237  ADD
+line
+clear
+X=203 Y=-192  ADD
+X=191 Y=-172  ADD
+X=100 ADD
+Y=122  ADd
+line
+clear
+X=100 Y=133  ADD
+Y=284  ADD
+line
+clear
+X=244 Y=-113  ADD
+X=244 Y=-144  ADD
+line
+clear
+X=220 Y=284  ADD
+Y=92  ADD
+X=258 ADD
+line
+clear
+X=282 Y=92  ADD
+X=303 ADD
+line
+clear
+X=325 Y=92  ADD
+X=389 ADD
+X=417 ADD
+line
+clear
+
+!south intake to east!
+X=83 Y=285  ADD
+Y=107  ADD
+X=416 ADD
+line
+clear
+
+!south intake to bar 32!
+X=-151 Y=21  ADD
+X=-129 ADD
+Y=285  ADD
+line
+clear
+
+!south intake green front to rear!
+X=-75 Y=286  ADD
+Y=293  ADD
+line
+clear
+X=148 Y=293  ADD
+Y=286  ADD
+line
+clear
+
+!transformers south!
+X=-93 Y=318  ADD
+Y=286  ADD
+line
+clear
+X=-53 Y=318  ADD
+Y=286  ADD
+line
+clear
+X=128 Y=317  ADD
+Y=286  ADD
+line
+clear
+X=167 Y=318  ADD
+Y=286  ADD
+line
+clear
+
+!east front to rear!
+X=409 Y=2  ADD
+X=416 ADD
+line
+clear
+end
+
+object south_intake 
+begin
+south_intake_lines
+south_intake_substations
+end

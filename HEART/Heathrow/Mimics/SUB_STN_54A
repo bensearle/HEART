@@ -1,0 +1,72 @@
+load mimic_libutil
+load transformer
+load hv_lib
+
+!***********************busbar 54A	*********************!
+
+object busbar_54a
+begin
+	just=centrecentre
+
+	tfg = black x = 230 y =0 add text ("54A",ch = 25) clear
+
+
+! ** connecting lines **!
+x = -200 y = 0 add x = 200 add line(fg=blue,lw=4) clear
+lw = 2
+
+
+x = -180 y = 0 add y-= 40 add line (fg=blue) clear
+x = -130 y = 0 add y+= 50 add line (fg=blue) clear
+x = -80 y = 0 add y+= 50 add line (fg=blue) clear
+x = 30 y = 0 add y+= 50 add line (fg=blue) clear
+x = 80 y = 0 add y+= 50 add line (fg=blue) clear
+x = 130 y = 0 add y+= 50 add line (fg=blue) clear
+x = 180 y = 0 add y-= 40 add line (fg=blue) clear
+
+
+! ** dress only circuit breakers ** !
+
+	!	ocb_mont_lib(plc_offset,b_offset,c_offset,e_offset,source,ident,top_btm_sect,angle) !
+
+	x =-180 y = -25 ocb_mont_lib(int,11950,1561,8391,heathro4,1,"top")
+	x =-130 y = 25 ocb_mont_lib(int,11960,1562,8392,heathro4,2,"btm")
+	x = -80 y = 25 ocb_mont_lib(int,11970,1563,8393,heathro4,3,"btm")
+	x = -25 y = 0 ocb_mont_lib(int,11980,1564,8394,heathro4,4,"sect",angle = 90)
+	x = 30 y = 25 ocb_mont_lib(int,11990,1565,8395,heathro4,5,"btm")
+	x = 80 y = 25 ocb_mont_lib(int,12000,1566,8396,heathro4,6,"btm")
+	x = 130 y = 25 ocb_mont_lib(int,12010,1567,8397,heathro4,7,"btm")
+	x = 180 y = -25 ocb_mont_lib(int,12020,1568,8398,heathro4,8,"top")
+
+! ** transformers ** !
+
+	X = -130 Y = 70 add transformer_lib("Tx10","1a")
+	X = -80 Y = 70 add transformer_lib("Tx11","2a")
+	X = 30 Y = 70 add transformer_lib("LT 1","")
+	x = 80 y = 70 add transformer_lib("Tx12","1b")
+	X = 130 Y = 70 add transformer_lib("Tx13","2b")
+
+! ** labels ** !
+	ch=12 tfg=black
+	x=-180 y=-70 text ("SUB 54") y+=15 text("P5")
+	x=-130 y=100 text ("HAFCo") y+=15 text("(1a)")
+	x=-80 y=100 text ("HAFCo") y+=15 text("(2a)")
+
+	x=-25 y=-30 text ("Bus Section") y+=15 text("")
+
+	x=30 y=100 text ("Local") y+=15 text("Tx1")
+	x=80 y=100 text ("HAFCo") y+=15 text("(1b)")
+	x=130 y=100 text ("HAFCo") y+=15 text("(2b)")
+	x=180 y=-70 text ("SUB 141") y+=15 text("P2")
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+X=-13 Y=-23 busbar_54A
+
+end
+
+mimic = main_object w=500,h=280,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

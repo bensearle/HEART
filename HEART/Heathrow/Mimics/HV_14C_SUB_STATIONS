@@ -1,0 +1,50 @@
+load mimic_libutil
+load sub_stn_111
+
+
+!************** SUB 111 **************!
+
+object sub_symbol_111
+
+var call_var = popup  sub_stn_111
+
+begin
+	set title call_var = "Sub Station 111"
+
+	w=100 h=25 x=-175 y=25 rect(fg=decoroff)
+	if anyb then
+	  begin
+	    request call_var
+	  end
+	x = -100 y = 38 text(tfg=white,ch=25,"",just=centrecentre) clear
+	x = -75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+	x = -75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+	w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+	if anyb then
+	  begin
+	    request call_var
+	  end
+	x = 25 y = 38 text(tfg=white,ch=25,"Sub 111",just=centrecentre) clear
+	x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+	x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+ 
+	w=100 h=25 x=125 y=25 rect(fg=decoroff)
+	if anyb then
+	  begin
+	    request call_var
+	  end
+	x = 150 y = 38 text(tfg=white,ch=25,"",just=centrecentre) clear
+	x = 225 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+	x =225 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+
+X=0 y=0 sub_symbol_111
+end
+
+mimic = main_object w=500,h=250,just=centrecentre,fg=white,bg=black,resizable

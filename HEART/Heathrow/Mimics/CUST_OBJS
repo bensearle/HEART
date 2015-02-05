@@ -1,0 +1,311 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!       Copyright (c) Servelec Ltd                                         !
+!       Modification  or copying of this file is strictly prohibited       !
+!       in line with the terms of the SCOPE Software Licence.              !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+load cust_name
+load libutil
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+type e_db_row_type =  db_elements(db_addr, e_value)
+type logical_row_type =  logical_names(logical_name, translation)
+
+
+object get_and_display_time_and_date(just)
+var date_and_time = input  b_db_row_type
+var date_offset = loopback  int
+begin
+date_offset=19989
+set source date_and_time = heathro2
+set filter date_and_time.db_addr = lim_eq
+set limit date_and_time.db_addr = db_address(int(b1) + date_offset -1)
+set persist date_and_time
+request date_and_time
+end
+
+
+object get_logical_name_value(src = source,
+		ip = input logical_row_type, 
+		name = string)
+begin
+set source  ip = src
+set filter  ip.logical_name = lim_eq
+set limit   ip.logical_name = name
+set persist ip
+request     ip
+end
+
+
+object display_scope_status(just, mode = int) =string
+
+var heathrow_scope_state = input  logical_row_type
+var heathrow2_scope_state = input  logical_row_type
+var heathrow3_scope_state = input  logical_row_type
+var heathrow4_scope_state = input  logical_row_type
+var heathrow5_scope_state = input  logical_row_type
+
+begin
+get_logical_name_value(heathrow, heathrow_scope_state,  "MACHINE_MODE")
+
+get_logical_name_value(heathro2, heathrow2_scope_state,  "MACHINE_MODE")
+
+get_logical_name_value(heathro3, heathrow3_scope_state,  "MACHINE_MODE")
+
+get_logical_name_value(heathro4, heathrow4_scope_state,  "MACHINE_MODE")
+
+get_logical_name_value(heathro5, heathrow5_scope_state,  "MACHINE_MODE")
+
+display_scope_status = ""
+if mode == 0 then
+   begin
+   if invalid heathrow_scope_state then
+      display_scope_status = "AB No Login "
+   else
+      begin
+      if heathrow_scope_state.translation <> "DUTY_D_U_" and
+         heathrow_scope_state.translation <> "DUTY_U_D_" and
+         heathrow_scope_state.translation <> "DUTY_D_5_" and
+         heathrow_scope_state.translation <> "DUTY_5_D_" then
+         display_scope_status = "AB Changing"
+      else if heathrow_scope_state.translation == "DUTY_D_U_" then
+         display_scope_status += "A Single"
+      else if heathrow_scope_state.translation == "DUTY_U_D_" then
+         display_scope_status += "B Single"
+      else if heathrow_scope_state.translation == "DUTY_D_5_" then
+         display_scope_status += "A Dual"
+      else if heathrow_scope_state.translation == "DUTY_5_D_" then
+         display_scope_status += "B Dual"
+      else
+         display_scope_status += "Unknown"
+      end
+      
+   if invalid heathrow2_scope_state then
+      display_scope_status += " CD No Login "
+   else
+      begin
+      if heathrow2_scope_state.translation <> "DUTY_D_U_" and
+         heathrow2_scope_state.translation <> "DUTY_U_D_" and
+         heathrow2_scope_state.translation <> "DUTY_D_5_" and
+         heathrow2_scope_state.translation <> "DUTY_5_D_" then
+         display_scope_status += " CD Changing"
+      else if heathrow2_scope_state.translation == "DUTY_D_U_" then
+         display_scope_status += " C Single"
+      else if heathrow2_scope_state.translation == "DUTY_U_D_" then
+         display_scope_status += " D Single"
+      else if heathrow2_scope_state.translation == "DUTY_D_5_" then
+         display_scope_status += " C Dual"
+      else if heathrow2_scope_state.translation == "DUTY_5_D_" then
+         display_scope_status += " D Dual"
+      else
+         display_scope_status += " Unknown"
+      end
+   end
+else
+   begin
+   if invalid heathrow3_scope_state then
+      display_scope_status = "EF No Login "
+   else
+      begin
+      if heathrow3_scope_state.translation <> "DUTY_D_U_" and
+         heathrow3_scope_state.translation <> "DUTY_U_D_" and
+         heathrow3_scope_state.translation <> "DUTY_D_5_" and
+         heathrow3_scope_state.translation <> "DUTY_5_D_" then
+         display_scope_status = "EF Changing"
+      else if heathrow3_scope_state.translation == "DUTY_D_U_" then
+         display_scope_status += "E Single"
+      else if heathrow3_scope_state.translation == "DUTY_U_D_" then
+         display_scope_status += "F Single"
+      else if heathrow3_scope_state.translation == "DUTY_D_5_" then
+         display_scope_status += "E Dual"
+      else if heathrow3_scope_state.translation == "DUTY_5_D_" then
+         display_scope_status += "F Dual"
+      else
+         display_scope_status += "Unknown"
+      end
+   if invalid heathrow4_scope_state then
+      display_scope_status += " GH No Login "
+   else
+      begin
+      if heathrow4_scope_state.translation <> "DUTY_D_U_" and
+         heathrow4_scope_state.translation <> "DUTY_U_D_" and
+         heathrow4_scope_state.translation <> "DUTY_D_5_" and
+         heathrow4_scope_state.translation <> "DUTY_5_D_" then
+         display_scope_status += " GH Changing"
+      else if heathrow4_scope_state.translation == "DUTY_D_U_" then
+         display_scope_status += " G Single"
+      else if heathrow4_scope_state.translation == "DUTY_U_D_" then
+         display_scope_status += " H Single"
+      else if heathrow4_scope_state.translation == "DUTY_D_5_" then
+         display_scope_status += " G Dual"
+      else if heathrow4_scope_state.translation == "DUTY_5_D_" then
+         display_scope_status += " H Dual"
+      else
+         display_scope_status += " Unknown"
+      end
+   if invalid heathrow5_scope_state then
+      display_scope_status += " IJ No Login "
+   else
+      begin
+      if heathrow5_scope_state.translation <> "DUTY_D_U_" and
+         heathrow5_scope_state.translation <> "DUTY_U_D_" and
+         heathrow5_scope_state.translation <> "DUTY_D_5_" and
+         heathrow5_scope_state.translation <> "DUTY_5_D_" then
+         display_scope_status += "IJ Changing"
+      else if heathrow5_scope_state.translation == "DUTY_D_U_" then
+         display_scope_status += " I Single"
+      else if heathrow5_scope_state.translation == "DUTY_U_D_" then
+         display_scope_status += " J Single"
+      else if heathrow5_scope_state.translation == "DUTY_D_5_" then
+         display_scope_status += " I Dual"
+      else if heathrow5_scope_state.translation == "DUTY_5_D_" then
+         display_scope_status += " J Dual"
+      else
+         display_scope_status += " Unknown"
+      end
+   end
+end
+
+
+
+object vol_mss_o(fg,bg,just,tag_mess=string)
+
+begin
+y=-10
+text("*** System Message ***")
+y=10
+text(tag_mess)
+end
+
+mimic vol_mss_m = vol_mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object vol_message_text_box(tag_mess=string)
+
+ var mss = popup  vol_mss_m
+
+ begin
+ set title mss = "Message"
+ request mss(tag_mess)
+ end
+
+
+object volume_o(fg,bg,w,h,just)
+
+ var data_source = panel  source
+ var new_volume = panel  int
+ var my_local_src = loopback  source
+ var master_volume = loopback  int
+ var volume_ip = input  e_db_row_type
+ var volume_op = output  e_db_row_type
+ var op_port = filewrite  string
+ var push = int
+
+ begin
+ x = w - 12
+ y = h - 25
+
+ if invalid my_local_src then my_local_src = source(0)
+
+ ! EXIT !
+
+ push = right_button ("Exit")
+ x -= abs push + 6
+ if push > 0 then
+ exit
+
+ ! SOURCE !
+
+ push = right_fixed_width_button(w=90,my_local_src)
+ x -= abs push + 6
+ if push > 0 then
+    begin
+    set unpinned data_source
+    set title data_source = "Source"
+    request data_source
+    end
+
+if valid data_source then
+   begin
+   my_local_src = data_source
+   set invalid data_source
+   end
+
+! CONFIGURE !
+
+push = right_fixed_width_button(w=120,"ADJUST VOLUME")
+if push > 0 then
+   begin
+   set unpinned new_volume
+   set title new_volume = "Adjust Volume"
+   request new_volume
+   end
+
+if valid new_volume then
+   begin
+   if new_volume > 100 then
+      vol_message_text_box("Volume Too High...")
+
+   else if new_volume < 0 then
+      vol_message_text_box("Volume Too Low...")
+
+   else
+     begin
+     set source         volume_op = my_local_src
+     set default        volume_op
+     set old_default    volume_op
+     set value          volume_op.db_addr = e2000
+     set old_value      volume_op.db_addr = e2000
+     set value          volume_op.e_value = new_volume
+     set old_off        volume_op.e_value
+     request volume_op
+     end
+
+    set value new_volume = 0
+    set invalid new_volume
+    end
+
+! TEST !
+
+x = w - 110
+y = h -50
+push = right_fixed_width_button(w=100,"T E S T")
+if push > 0 then
+   begin
+   set reset op_port
+   set file op_port = "/usr/wrkstn/alarm_dir/npipe"
+   op_port = "/usr/wrkstn/alarm_dir/play -v " +
+	     master_volume +
+	     " /usr/wrkstn/alarm_dir/tone_5 &"
+   request op_port
+   end
+
+set source   volume_ip = my_local_src
+set filter   volume_ip.db_addr = lim_eq
+set limit    volume_ip.db_addr = e2000
+set persist  volume_ip
+request      volume_ip
+
+master_volume = int(volume_ip.e_value)
+
+x = 50
+y = 20
+text(tfg=black,"Current Volume Level :- "+master_volume)
+
+
+end
+
+mimic volume_m = volume_o just=topleft, w=300, h=100, fg=black, bg=decoroff
+
+
+object volume_control(w,h,fg,bg,just)
+
+var vol = popup  volume_m
+
+begin
+set title vol = "Volume Control"
+set unpinned vol
+request vol
+end

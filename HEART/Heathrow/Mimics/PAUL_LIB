@@ -1,0 +1,260 @@
+! HEATHROW CMS - PAUL LIBRARY
+
+loaded by: HV_BATH, HV_EAST, HV_INCL2, HV_INCL3, HV_NORTH, 
+           HV_SOUTH, HV_WEST
+!
+
+load mimic_libutil
+
+type string_2 = string(2)
+
+type string_4 = string(4)
+
+object os(os_num=string_2,fg,lw) 
+begin
+just = centrecentre
+
+
+x=0 y=5 add rect(h=18,w=36,fg=decoroff)
+clear
+y -= 9 x += 18 add 
+y += 18 add
+x -= 35 add line(fg=decorshadow) clear
+x -= 1 add
+y -= 18 add 
+x += 36 add line(fg=decorlight) clear
+x = 0  y = 5
+text(ch=15,os_num,tfg=black)
+clear
+end
+
+
+object ss(os_num=string_4,fg,lw) 
+begin
+SA=270 AA=180
+W=10 H=10 X=0 Y=0 ARC(SA=270,AA=180)
+W=10 H=10 X=-11  Y=0 ARC(SA=90,AA=180)
+Clear
+X=5 Y=0 ADD
+X=-6 Y=0 ADD
+LINE
+clear
+x=5 y=10 add
+x=-6 y=10 add
+line
+x=-9 y=2 text(ch=9,os_num,tfg=white)
+end
+
+object transformer(fg,lw)
+begin
+W=15 H=15 X=0 Y=0  CIRCLE
+w=15 h=15 x=10 y=0  circle
+end
+
+object transformer_2(fg,lw)
+begin
+w=15 h=15 x=0 y=0 circle
+w=15 h=15 x=0 y=10 circle
+end
+
+object cross (fg)
+begin
+clear
+x=0 y=0 add
+x=5 y=5 add
+line
+clear
+x=5 y=0 add
+x=0 y=5 add
+line
+clear
+end
+
+object paw_grid (fg,bg)
+begin
+x=-500 y=-350 add
+x=500 add
+line
+clear
+x=-500 y=-300 add
+x=500 add
+line
+clear
+x=-500 y=-250 add
+x=500 add
+line
+clear
+x=-500 y=-300 add
+x=500 add
+line
+clear
+x=-500 y=-250 add
+x=500 add
+line
+clear
+x=-500 y=-200 add
+x=500 add
+line
+clear
+x=-500 y=-150 add
+x=500 add
+line
+clear
+x=-500 y=-100 add
+x=500 add
+line
+clear
+x=-500 y=-50 add
+x=500 add
+line
+clear
+x=-500 y=0 add
+x=500 add
+line
+clear
+x=-500 y=50 add
+x=500 add
+line
+clear
+x=-500 y=100 add
+x=500 add
+line
+clear
+x=-500 y=150 add
+x=500 add
+line
+clear
+x=-500 y=200 add
+x=500 add
+line
+clear
+x=-500 y=250 add
+x=500 add
+line
+clear
+x=-500 y=300 add
+x=500 add
+line
+clear
+x=-500 y=350 add
+x=500 add
+line
+clear
+x=-500 y=400 add
+x=500 add
+line
+clear
+
+x=-450 y=400 add
+y=-400 add
+line
+clear
+x=-400 y=400 add
+y=-400 add
+line
+clear
+x=-350 y=400 add
+y=-400 add
+line
+clear
+x=-300 y=400 add
+y=-400 add
+line
+clear
+x=-250 y=400 add
+y=-400 add
+line
+clear
+x=-200 y=400 add
+y=-400 add
+line
+clear
+x=-150 y=400 add
+y=-400 add
+line
+clear
+x=-100 y=400 add
+y=-400 add
+line
+clear
+x=-50 y=400 add
+y=-400 add
+line
+clear
+x=0 y=400 add
+y=-400 add
+line
+clear
+x=50 y=400 add
+y=-400 add
+line
+clear
+x=100 y=400 add
+y=-400 add
+line
+clear
+x=150 y=400 add
+y=-400 add
+line
+clear
+x=200 y=400 add
+y=-400 add
+line
+clear
+x=250 y=400 add
+y=-400 add
+line
+clear
+x=300 y=400 add
+y=-400 add
+line
+clear
+x=350 y=400 add
+y=-400 add
+line
+clear
+x=400 y=400 add
+y=-400 add
+line
+clear
+x=450 y=400 add
+y=-400 add
+line
+clear
+ch=10
+X=460 Y=-370  TEXT ("y=-350")
+Y=-320  TEXT ("y=-300")
+Y=-270  TEXT ("y=-250")
+Y=-220  TEXT ("y=-200")
+Y=-170  TEXT ("y=-150")
+y=-120  TEXT ("y=-100")
+y=-70  TEXT ("y=-50")
+Y=-20  TEXT ("y=0")
+Y=30  TEXT ("y=50")
+Y=80  TEXT ("y=100")
+Y=130  TEXT ("y=150")
+Y=180  TEXT ("y=200")
+Y=230  TEXT ("y=250")
+Y=280  TEXT ("y=300")
+Y=330  TEXT ("y=350")
+
+X=-450 Y=-390  TEXT ("x=-450")
+X=-400 TEXT ("x=-400")
+X=-350 TEXT ("x=-350")
+X=-300 TEXT ("x=-300")
+X=-250 TEXT ("x=-250")
+X=-200 TEXT ("x=-200")
+X=-150 TEXT ("x=-150")
+X=-100 TEXT ("x=-100")
+X=-50 TEXT ("x=-50")
+X=0 TEXT ("x=0")
+X=50 TEXT ("x=50")
+X=100 TEXT ("x=100")
+X=150 TEXT ("x=150")
+X=200 TEXT ("x=200")
+X=250 TEXT ("x=250")
+X=300 TEXT ("x=300")
+X=350 TEXT ("x=350")
+X=400 TEXT ("x=400")
+X=450 TEXT ("x=450")
+end

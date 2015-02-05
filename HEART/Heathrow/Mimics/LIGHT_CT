@@ -1,0 +1,425 @@
+! HEATHROW CMS - LIGHT CT
+
+loaded by: CARGO_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type light_status_type = enum(approach,night,day_basic,first_stage,second_stage,full_on)
+
+
+!
+************************************************************
+* LIGHT CT OBJECT                                          *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object light_ct(odd_offset=int,status_offset=int,ident=string,zone_number=int,light_number=int,src=source)
+
+
+var odd_day_ip = input  b_db_row_type
+
+!B INPUTS
+b_inputs[1] = approach_on_ip
+b_inputs[2] = night_on_ip
+b_inputs[3] = day_basic_ip
+b_inputs[4] = first_stage_ip
+b_inputs[5] = second_stage_ip
+b_inputs[6] = full_on_ip
+!
+var b_inputs = input b_db_row_type[6]
+
+var light_status = loopback  light_status_type
+var light_on = loopback  int 
+var day_odd = loopback  int
+var light_bg = loopback  colour
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source odd_day_ip then 
+   begin
+
+   set source odd_day_ip = src
+   set filter odd_day_ip.db_addr = lim_eq
+   set limit odd_day_ip.db_addr = db_address(int(b1) + odd_offset - 1)
+   set persist odd_day_ip 
+   request odd_day_ip
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + status_offset-1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   end
+
+
+! CONFIGURE DAY !
+
+if odd_day_ip.b_value then
+   day_odd = 1
+else
+   day_odd = 0
+
+
+! CONFIGURE ZONE !
+
+if zone_number == 1 then
+   begin
+   if b_inputs[1].b_value then
+      light_on = 1
+   else
+      light_on = 0
+   end
+
+else
+   begin
+   if b_inputs[2].b_value then
+      light_status = night
+
+   if b_inputs[3].b_value then
+      light_status = day_basic
+
+   if b_inputs[4].b_value then
+      light_status = first_stage 
+ 
+   if b_inputs[5].b_value then
+      light_status = second_stage
+
+   if b_inputs[6].b_value then
+      light_status = full_on
+
+ 
+   case light_status of
+        
+        night
+        begin
+        if zone_number == 2 then
+           begin
+           case light_number of
+                1
+                begin
+                light_on = 0 + day_odd
+                end
+
+                2
+                begin
+                light_on = 1 - day_odd
+                end
+ 
+                3 
+                begin
+                light_on = 0
+                end
+     
+                4 
+                begin
+                light_on = 0
+                end
+
+                default 
+                begin 
+                end
+           end
+   
+        else
+        if zone_number == 3 then
+           begin
+           light_on = day_odd
+           end
+
+        else
+        if zone_number == 4 then
+           begin
+           light_on = 1 - day_odd
+           end
+ 
+        else 
+        if zone_number == 5 then
+           begin
+           case light_number of
+                1
+                begin
+                light_on = day_odd
+                end
+
+                2
+                begin
+                light_on = 1 - day_odd
+                end
+ 
+                3
+                begin
+                light_on = day_odd
+                end
+
+                4
+                begin
+                light_on = 1 - day_odd
+                end
+           
+                default
+                begin
+                end
+            end
+        end        
+
+        day_basic 
+        begin
+        if zone_number == 2 then
+           begin
+           case light_number of
+                1
+                begin
+                light_on = day_odd
+                end
+            
+                2
+                begin
+                light_on = 1- day_odd
+                end
+     
+                3
+                begin
+                light_on = day_odd
+                end
+            
+                4
+                begin
+                light_on = 1- day_odd
+                end
+
+                default begin end
+
+           end
+        else
+        if zone_number == 3 then
+           begin
+           case light_number of 
+                1
+                begin
+                light_on = day_odd
+                end
+ 
+                2
+                begin
+                light_on = 1 - day_odd
+                end
+
+                default begin end
+           end
+
+        else
+        if zone_number == 4 then
+           light_on = 1 - day_odd
+ 
+        else 
+        if zone_number == 5 then
+           begin
+           case light_number of 
+                1
+                begin
+                light_on = day_odd
+                end
+
+                2
+                begin
+                light_on = 1 - day_odd
+                end
+
+                3
+                begin
+                light_on = day_odd
+                end
+
+                4
+                begin
+                light_on = 1 - day_odd
+                end
+ 
+                default begin end
+           end
+        end
+
+        first_stage 
+        begin 
+        if zone_number == 2 then
+           begin
+           case light_number of
+                1
+                begin
+                light_on = day_odd
+                end
+            
+                2
+                begin
+                light_on = 1- day_odd
+                end
+
+                3
+                begin
+                light_on = day_odd
+                end
+            
+                4
+                begin
+                light_on = 1- day_odd
+                end
+
+                default begin end
+           end
+
+        else
+        if zone_number == 3 then
+           light_on = 1
+
+        else 
+        if zone_number == 4 then
+           light_on = 1
+
+        else
+        if zone_number == 5 then
+           begin
+           case light_number of
+                1
+                begin
+                light_on = day_odd
+                end
+            
+                2
+                begin
+                light_on = 1- day_odd
+                end
+
+                3
+                begin
+                light_on = day_odd
+                end
+            
+                4
+                begin
+                light_on = 1- day_odd
+                end
+
+                default begin end
+           end
+                  
+        end
+
+        second_stage 
+        begin 
+        if zone_number == 2 then
+           begin
+           case light_number of
+                1
+                begin
+                light_on = day_odd
+                end
+
+                2
+                begin
+                light_on = 1 
+                end
+                
+                3
+                begin
+                light_on = 1 
+                end
+
+                4
+                begin
+                light_on = 1- day_odd
+                end
+
+                default begin end
+           end
+        
+        else
+        if zone_number == 3 then
+           light_on = 1
+ 
+        else
+        if zone_number == 4 then
+           light_on = 1
+
+        else
+        if zone_number == 5 then
+           begin
+           case light_number of
+                1
+                begin
+                light_on = day_odd
+                end
+
+                2 
+                begin
+                light_on = 1
+                end
+
+                3
+                begin
+                light_on = 1
+                end
+            
+                4
+                begin
+                light_on = 1- day_odd
+                end
+default begin end
+           end
+
+        end
+
+        full_on 
+        begin 
+        light_on = 1
+        end  
+        
+        default
+        begin
+        end
+
+   end
+
+       
+if light_on then
+   light_bg = yellow
+else 
+   light_bg = decoroff
+
+
+just = centrecentre
+
+if zone_number==1 then
+  begin
+  rect(fg=light_bg,h=40,w=40)
+  x=-20 y+=20 add y-=40 add x+=40 add line(lw=1,fg=decorlight) clear
+  x = 20 y = -20 add y += 40 add x-=40 add line(lw=1,fg=decorshadow) clear
+  x=0 y=-1 text(tfg=black,ch=18,"App")
+  end
+else
+  begin
+  rect(fg=light_bg,h=20,w=130) 
+  x -= 65 y += 10 add y -= 20 add x += 130 add line(lw=1,fg=decorlight) clear
+  x = 65 y = -10 add y += 20 add x -= 130 add line(lw=1,fg=decorshadow) clear
+  x = 0 y = -1 text (tfg=black,ch=18,ident)
+  end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=200
+light_ct(10013,10033,"Low Power",1,1,heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

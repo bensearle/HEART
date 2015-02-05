@@ -1,0 +1,52 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!******************* BUSBAR 85 *********************!
+
+object busbar_85
+begin
+tfg = black x = 95 y = -25 add text ("85",ch = 25) clear
+
+lw=2
+x = -125 y = -25 add x = 125 add line(lw=4,fg=green4) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=green4) clear
+x =  -50  y = -25 add y += 50 add line (fg=green4) clear
+x =    0  y = -25 add y += 50 add line (fg=green4) clear
+x =   50  y = -25 add y += 50 add line (fg=green4) clear
+x =  100  y = -25 add y -= 50 add line (fg=green4) clear
+
+scale = 120
+
+x = -100 y = -50 ocb_mont(2500,2290,75,144,heathro2,1,"top")
+x = -50  y = 0   ocb_mont(2500,2300,76,145,heathro2,2,"btm")
+x = 0    y = 0 ocb_mont(2500,2310,77,146,heathro2,3,"btm")
+x = 50   y = 0   ocb_mont(2500,2320,78,147,heathro2,4,"btm")
+x = 100  y = -50 ocb_mont(2500,2330,79,148,heathro2,5,"top")
+
+scale = 100
+X =  -50 Y = 45 transformer("LT 1","")
+X =   50 Y = 45 transformer("LT 2","")
+X = 0 Y = 45 transformer("Tx","")
+scale=256
+just=centrecentre
+tfg=black ch=12
+x = -100 y = -85 add text ("SI P8") clear !ADD FOR SI PROJECT!
+x = 0 y = 85 add text ("Swindon") clear
+x = 0 y = 95 add text ("Rd") clear
+x = 100 y = -85 add text ("60 P5") clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+busbar_85
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

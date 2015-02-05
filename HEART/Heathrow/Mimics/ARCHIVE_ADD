@@ -1,0 +1,61 @@
+Load ARCHIVE_ADD_HELP
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+TYPE ID = INT (1, 2147483647)
+const CREATED_BY_MIMICEDITOR_V2 = 1
+TYPE CS_TIME = TIME ("CENTISECONDS")
+TYPE STREAM = INT (1, 1023)
+type stream_name = string(30)
+TYPE KEYNUMBER = INT (1, 1048575)
+TYPE KEYED_TWO_A_VALUES = TABLE (
+                                                                 !  R  !  STREAM_NAME = STREAM_NAME,
+                                                                 !  R  !       KEYNUMBER = KEYNUMBER,
+                                                                 ! 2RW !    TIME = CS_TIME,
+                                                                 !  RW !    KEYED_TWO_A_VALUES_1 = REAL,
+                                                                 !  RW !    KEYED_TWO_A_VALUES_2 = REAL )
+
+type input_panel = table(time = cs_time, value1 = real, value2 = real)
+Object main_object(w,h,fg,bg)
+var add_pan = panel input_panel
+var op = output keyed_two_a_values
+var ip = input keyed_two_a_values
+var old_time = loopback cs_time
+begin
+if invalid ip then
+   begin
+   set source ip = arhsource("arh24")
+   set filter ip.keynumber = lim_eq
+   set limit ip.keynumber = 70001
+   set filter ip.stream_name = lim_eq
+   set limit ip.stream_name = "HEATHRO2 B_STATS"
+   set filter ip.time = lim_eq
+   set limit ip.time = old_time
+   set persist ip
+   request ip
+   end
+x=300 y=100 w=100 h=20
+rect(fg=red,just=centrecentre)
+text(font=font_bold,tfg=black,"ADD POINT",just=centrecentre)
+if selb(just=centrecentre) then
+   begin
+   request add_pan
+   end
+
+if valid add_pan then
+   begin
+   set source op = arhsource("arh24")
+   set old_invalid op
+   set default op
+   set value op.keyed_two_a_values_1 = add_pan.value1
+   set value op.keyed_two_a_values_2 = add_pan.value2
+   set value op.stream_name = "HEATHRO2 B_STATS"
+   set value op.keynumber = 70001
+   set value op.time = add_pan.time
+   old_time = add_pan.time
+   request op
+   set invalid add_pan
+   set invalid ip
+   end
+text(tfg=black,x=200,y=200,ch=20,"TIME OF LAST ADD :"+ip.time)
+end
+mimic = main_object w=700,h=500,resizable

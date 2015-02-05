@@ -1,0 +1,60 @@
+load mimic_libutil
+load gadgets_libutil
+load hv_overview_key_hotkeys
+
+object help_text_popup
+begin
+
+y = -180
+x = - 240 add x += 480 add line(lw=1,fg=decorlight) clear
+
+y = -179
+x = - 240 add x += 480 add line(lw=1,fg=decorshadow) clear
+
+y = -140
+x = - 240 add x += 480 add line(lw=1,fg=decorlight) clear
+
+y = -139
+x = - 240 add x += 480 add line(lw=1,fg=decorshadow) clear
+
+x = -3 y = -157 add text(ch=30,font=font_bold,tfg=blue,just=centrecentre,"HELP")
+x = 0 y = -160 add text(ch=30,font=font_bold,tfg=red,just=centrecentre,"HELP")
+
+clear
+
+rect(x=0,y=30,h=300,w=460,fg=white,just=centrecentre) clear
+
+x = -230 y = -120 add x += 460 add y += 300 add x -= 460 add y -= 300 add line(lw=1,fg=black) clear
+
+x = -210
+y = -100 add text(ch=12,"This mimic will display all OCB alarm conditions. If an alarm occurs")
+y += 12 add text(ch=12,"on the HV network then it will be highlighted on this mimic.")
+y += 24 add text(ch=12,font=font_bold,"KEY")
+
+scale = 192
+x = -190
+y += 35 flash_key
+y += 40 non_flash_key
+
+scale = 256
+x = -160
+y = -40 add text(ch=12,"- Indicates that a sub-station on this particular ring is Waiting")
+y += 12 add text(ch=12,"   for Note and has just appeared in the Alarm View window")
+y = 0 add text(ch=12,"- Indicates that a sub-station on this particular ring is Waiting")
+y += 12 add text(ch=12,"   for Clear, therefore the alarm is still in alarm in the Alarm")
+y += 12 add text(ch=12,"   View window")
+
+x = -210
+y += 32 add text(ch=12,"If an alarm is present on this mimic then the HotKey button can be")
+y += 12 add text(ch=12,"pressed to automatically direct you to the relevant mimic.")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin 
+
+help_text_popup
+
+end
+
+mimic = main_object w=500,h=400,just=centrecentre,fg=white,bg=decoroff,resizable

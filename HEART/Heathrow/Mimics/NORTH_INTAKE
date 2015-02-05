@@ -1,0 +1,246 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!********Hv North Intake********!
+
+
+load mimic_libutil
+load ammeter
+load transformer_meter
+load ocb
+load ocb_monitored
+load transformer
+load nse_transformer
+load arcs_status_file
+load sel_in_progress_fix
+Load BROWSER
+
+!
+************************************************************
+* NORTH INTAKE OBJECT                                      *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object north_intake(lw,angle)
+begin
+just = centrecentre
+lw=4
+scale = 260
+fg = red
+x = 520 y = 0 add
+x = -520 add line clear
+!********************************lines*********************************!
+scale=120
+lw =5 
+x = -500  
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,100,1,25,heathrow,1,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,120,2,26,heathrow,2,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb_mont(1,460,20,44,heathrow,4,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,180,5,29,heathrow,6,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,200,6,30,heathrow,7,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,220,7,31,heathrow,9,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,260,9,33,heathrow,11,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,280,10,34,heathrow,13,"top")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb_mont(1,300,11,35,heathrow,14,"top")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,320,12,36,heathrow,16,"top")
+
+x += 50 y = -70 
+y += 70 add
+y += 70 add line(lw=5) clear
+y -= 45 add
+ocb(1,340,13,37,heathrow,17,"btm")
+
+x += 100 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,380,15,39,heathrow,19,"top")
+
+x += 50 y = -70
+y += 70 add
+y += 70 add line(lw=5) clear
+y -= 45 add
+ocb(1,400,16,40,heathrow,20,"btm")
+
+x += 50 y = 0 
+y -= 15 add
+y += 15 add line(lw=5) clear
+y -= 25 add
+ocb(1,420,17,41,heathrow,21,"top")
+
+angle = 90
+x = -400 y = 0
+ocb(1,140,3,27,heathrow,3,"sect")
+angle = 0
+
+angle = 90
+x = -50 y = 0
+ocb(1,240,8,32,heathrow,10,"sect")
+angle = 0
+
+angle = 90
+x = 350 y = 0
+ocb(1,360,14,38,heathrow,18,"sect")
+angle = 0
+
+scale =260
+x = -190 y = -80 text ("SUB 296",ch=12,tfg=black)
+x = -200 y = -65 text ("P1",ch=12,tfg=black)
+x = -100 y = -100 text ("South Intake P11",ch=12,tfg=black)
+x = -100 y = -85 text ("Interconnector",ch=12,tfg=black)
+x = -100 y = -70 text ("10MVA",ch=12,tfg=black)
+
+end
+
+object north_intake_unit
+begin
+
+just = centrecentre
+fg=red
+x = -500 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = -450 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = -350 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = -250 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = 0 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = 100 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = 150 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = 250 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = 400 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+x = 500 y = 0 add y -= 150 add line(fg=red,lw=2) clear
+
+
+x = 0 y = 0 north_intake
+scale = 200
+y = -150 x = -500 ammeter(1,heathrow,"0-400A","SS 127")
+y = -150 x = -450 ammeter(2,heathrow,"0-400A","SPARE")
+y = -150 x = -350 ammeter(14,heathrow,"0-400A","SS 75")
+y = -150 x = -300 ammeter(3,heathrow,"0-400A","SS 3")
+y = -150 x = -250 ammeter(4,heathrow,"0-400A","SS 47")
+y = -150 x =    0 ammeter(6,heathrow,"0-400A","SS 87")
+y = -150 x =  100 ammeter(8,heathrow,"0-400A","SS 37")
+y = -150 x =  150 ammeter(9,heathrow,"0-400A","SS 134")
+y = -150 x =  200 ammeter(11,heathrow,"0-400A","EI I/C")
+y = -150 x =  250 ammeter(10,heathrow,"0-400A","SS 5")
+y = -150 x =  400 ammeter(12,heathrow,"0-400A","M1/2")
+!y = -150 x =  450 ammeter(13,heathrow,"0-400A","EI P3")!
+y = -150 x =  500 ammeter(17,heathrow,"0-400A","EI I/C")
+
+scale=256
+x = 200 y = -275 text(ch=12,just=centrecentre,tfg=black,"10 MVA") clear
+x = 450 y = 110 text(ch=12,just=centrecentre,tfg=black,"Caesar Tx") clear
+
+x = -300      
+y = 0 add              
+y = -65 add   
+line(lw=2) clear
+
+x = 200
+y = 0 add
+y = -65 add
+line (lw=2) clear
+
+x = 50
+y = 0 add
+y = 25 add
+x = 150 add
+y = 350 add
+line (lw=2) clear
+
+x = -150
+y = 0 add
+y = 25 add
+x = -250 add
+y = 350 add
+line (lw=2) clear
+
+scale = 100 
+x = 300 y = 80 transformer("LT 1","") 
+x = 450 y = 80 transformer("LT","") 
+
+scale=200
+x = -250 y = 180 
+transformer_meter(15,5,heathrow,"NORTH","33/11kV Tx 1","0-1200A")
+x =  150 y = 180 
+transformer_meter(16,7,heathrow,"NORTH","33/11kV Tx 2","0-1200A")
+
+scale = 120
+x = -300 y = -25 ocb(1,480,18,42,heathrow,5,"top")
+x = -250 y = 70 ocb(1,520,19,43,heathrow,8,"btm")
+x = 150  y = 70 ocb(1,160,4,28,heathrow,12,"btm")
+x = 200  y = -25 ocb_mont(1,470,21,45,heathrow,15,"top")
+
+scale = 130
+x = -250 y = 355 tap_change(20000,20599,1600,550,HEATHRO2,"33/11KV","24MVA",1,red,black)
+x = 150 y = 355 tap_change(20000,20655,1601,551,HEATHRO2,"33/11KV","24MVA",2,red,black)
+
+x = -50 y = 40 add text(scale=260,ch=20,tfg=red,"NORTH INTAKE") clear
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = - 460 y = 275 deselect_box (1,4,heathrow,"Control Status")
+clear
+
+x = 0 
+y = -100 north_intake_unit
+
+scale = 215
+X=266 Y=90 status_box(1,700,3000,3700,heathrow)
+scale=256
+x = -570 y = 310 browser(1075,heathrow,1140)
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

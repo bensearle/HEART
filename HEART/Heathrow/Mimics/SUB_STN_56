@@ -1,0 +1,86 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+!load lv_generator_nrc1!
+load lv_generator
+load lv_contactor
+!load lv_contactor_nrc!
+
+
+!************ BUSBAR 56 ***********!
+
+object busbar_56
+begin
+
+just = centrecentre
+
+tfg = black
+x = -25 y = -40 text("56",ch =25) clear
+
+ch = 12
+x =-105 y =30 text("Pier 3")
+x =-125 y =45 text("LV 36 Section 2")
+
+x = -100 y = -85 text("108 P3")
+x = 50 y = -85 text("56A P1")
+x = 15 y = 85 text ("Output from LT2 feeds into LV56")
+x = 15 y = 100 text ("Switchboard before Fixed Set")
+
+lw=2
+scale = 260
+X=100 Y=110  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=100 Y=60  ADD
+Y=75  ADD
+line (fg=red) clear
+
+X=129 Y=110  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=95 Y=135  ADD
+x=135  ADD
+line (fg=red,lw=2) clear
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y -= 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+x =  100  y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x =   -100 y = -50 ocb_mont(6000,6100,196,450,heathro2,1,"top")
+x =   -50  y =  0  ocb_mont(6000,6110,197,451,heathro2,2,"btm")
+x =     0  y =  0  ocb_mont(6000,6120,198,452,heathro2,3,"btm")
+x =    50  y = -50 ocb_mont(6000,6130,199,453,heathro2,4,"top")
+x =   100  y =   0 ocb_mont(6000,6140,200,454,heathro2,5,"btm")
+
+
+scale = 100
+
+!X =  -50 Y = 45 transformer("BA","FEGP")!
+X =  0   Y = 45 transformer("LT 1","LOCAL")
+X =  100 Y = 45 transformer("LT 2","LOCAL")
+X =  -50 Y = 45 transformer("TX 2","LOCAL")
+
+scale = 140
+x = 140 y = 95 lv_generator(6000,6200,206,0,heathro2)
+scale = 120
+x = 115 y = 145 lv_changeover(6000,6190,205,heathro2)
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -10 y = -25 busbar_56
+
+end
+
+mimic = main_object w=400,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable

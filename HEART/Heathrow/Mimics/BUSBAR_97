@@ -1,0 +1,54 @@
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ocb_barcis
+load ocb_hand_dressed
+
+!******************* BUSBAR 97 ******************!
+
+object busbar_97
+begin
+
+scale = 260
+tfg = white x = 90 y = -27 add text ("97",ch = 25) clear
+
+x = 0 y = 0 add x = 310 add line(fg=lightblue3,lw=4) clear
+lw=2
+x = 30 y = 0 add y -= 50 add line (fg=lightblue3) clear
+x = 80 y = 0 add y += 50 add line (fg=lightblue3) clear
+x = 130 y = 0 add y += 50 add line (fg=lightblue3) clear
+x = 230 y = 0 add y += 50 add line (fg=lightblue3) clear
+x = 280 y = 0 add y -= 50 add line (fg=lightblue3) clear
+
+scale = 120
+x = 30 y = -25 ocb_hand(26031,2031,heathrow,1,"top")
+x = 80 y = 25 ocb_hand(26032,2032,heathrow,2,"top")
+x = 130 y = 25 ocb_hand(26033,2033,heathrow,3,"btm")
+angle = 90 
+x = 180 y = 0 ocb_hand(26034,2034,heathrow,4,"sect")
+angle = 0
+x = 230 y = 25 ocb_hand(26035,2035,heathrow,5,"btm")
+x = 280 y = -25 ocb_hand(26036,2036,heathrow,6,"btm")
+
+scale = 100
+x = 80 y = 70 add transformer("T 2","")
+x = 130 y = 70 add transformer("LT 1","")
+x = 230 y = 70 add transformer("LT 2","")
+
+scale = 260
+just = centrecentre
+tfg=white
+ch=12
+x = 80 y = 100 text ("Pier 4A")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -165 y = -25 busbar_97
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,385 @@
+! HEATHROW CMS - AERATOR 
+
+loaded by: FIRE_MAIN
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type panel_item_row = table (str=string(30))
+
+type checked_type = enum(i_have="Yes - to continue",
+                         i_havent= "No - to cancel")
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+ 
+!
+************************************************************
+* AERATOR OBJECT                                           *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object aerator(plc_offset=int,b_offset=int,c_offset=int,src=source)
+
+!PLC INPUTS!
+VAR plca_comms_ip = input  b_db_row_type
+VAR plcb_comms_ip = input  b_db_row_type
+
+!INPUTS!
+VAR start_pump = input  b_db_row_type
+VAR pump_started = input  b_db_row_type
+VAR transfer_of_service = input  b_db_row_type
+
+! ALARMS !
+VAR pump_started_discr = input  alarm_row_type
+VAR start_pump_discr = input  alarm_row_type
+VAR failed_to_start = input  alarm_row_type
+
+!CHARACTER INPUTS!
+VAR tag_message_ip = input  c_db_row_type
+
+! LOOPBACKS !
+VAR pump_fg = loopback  colour
+VAR pump_bg = loopback  colour
+VAR status_text_1 = loopback  string
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR check_camera = panel  checked_type
+VAR main_menu = menu  string(30)
+
+var obj_help = help  string(30)
+
+begin
+
+! INITIALISATION !
+! REQUEST BOOLEANS FROM SCOPE !
+if invalid get source start_pump then 
+
+   begin
+ 
+   set source start_pump = src
+   set filter start_pump.db_addr = lim_eq
+   set limit start_pump.db_addr = db_address(int(b1) + b_offset - 1)
+   set persist start_pump 
+   request start_pump
+
+   set source pump_started = src
+   set filter pump_started.db_addr = lim_eq
+   set limit pump_started.db_addr = db_address(int(b1) + b_offset)
+   set persist pump_started 
+   request pump_started
+
+   set source start_pump_discr = src
+   set filter start_pump_discr.db_addr = lim_eq
+   set limit start_pump_discr.db_addr = db_address(int(b1) + b_offset + 1)
+   set persist start_pump_discr 
+   request start_pump_discr
+
+   set source pump_started_discr = src
+   set filter pump_started_discr.db_addr = lim_eq
+   set limit pump_started_discr.db_addr = db_address(int(b1) + b_offset + 2)
+   set persist pump_started_discr 
+   request pump_started_discr
+
+   set source failed_to_start = src
+   set filter failed_to_start.db_addr = lim_eq
+   set limit failed_to_start.db_addr = db_address(int(b1) + b_offset + 3)
+   set persist failed_to_start 
+   request failed_to_start
+   
+   set source transfer_of_service = src
+   set filter transfer_of_service.db_addr = lim_eq
+   set limit transfer_of_service.db_addr = db_address(int(b1) + b_offset + 4)
+   set persist transfer_of_service 
+   request transfer_of_service
+
+   set source plca_comms_ip = src
+   set filter plca_comms_ip.db_addr = lim_eq
+   set limit plca_comms_ip.db_addr = db_address(int(b1) + plc_offset - 1)
+   set persist plca_comms_ip 
+   request plca_comms_ip
+
+   set source plcb_comms_ip = src
+   set filter plcb_comms_ip.db_addr = lim_eq
+   set limit plcb_comms_ip.db_addr = db_address(int(b1) + plc_offset )
+   set persist plcb_comms_ip 
+   request plcb_comms_ip
+
+ 
+
+!REQUEST TEXT FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   end
+
+! SELECT AERATOR BG COLOUR ! 
+
+if transfer_of_service.b_value then
+   pump_bg = orange
+
+else if tag_message_ip.c_value <> "" then
+   pump_bg = yellow
+
+else 
+   pump_bg = decoroff
+
+! SELECT AERATOR FG COLOUR !
+
+if plca_comms_ip.b_value and plcb_comms_ip.b_value then
+   pump_fg = magenta
+
+else if start_pump_discr.alarm_status   == w_note or
+        pump_started_discr.alarm_status == w_note or
+        failed_to_start.alarm_status    == w_note then
+        pump_fg = flashred
+
+else if start_pump_discr.alarm_status   == w_clr or
+        pump_started_discr.alarm_status == w_clr or
+        failed_to_start.alarm_status    == w_clr then
+        pump_fg = red
+
+else if pump_started.b_value then
+        pump_fg = green4
+
+else if pump_started.b_value == off then
+        pump_fg = white
+
+else pump_fg = black
+
+tfg = black
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w=90 h=70 
+set rect main_menu
+set title main_menu  = "Aerator"
+set remove main_menu = "Alter Tagged Message"
+set remove main_menu = "Clear Tagged Message"
+set remove main_menu = "Alter Transfer of Service"
+set remove main_menu = "Start Aerator"
+set remove main_menu = "Stop Aerator"
+set add main_menu = "Alter Tagged Message"
+set add main_menu = "Clear Tagged Message"
+set add main_menu = "Alter Transfer of Service"
+
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+   case main_menu of
+
+      "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tagged Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Transfer of Service"
+         begin
+         if transfer_of_service.b_value then
+           set_b_value(db_address(int(b1) + b_offset + 4), src, off)
+         else
+           set_b_value(db_address(int(b1) + b_offset + 4), src, on)
+         end
+
+      "Start Aerator"
+         begin
+         request check_camera
+         end
+
+      "Stop Aerator"
+         begin
+         set_b_value(db_address(int(b1) + b_offset +5), src, on)
+         end
+ 
+         default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+set title check_camera = "Have you checked the camera"
+set y check_camera = 700
+set x check_camera = 500
+set fixed check_camera
+if valid check_camera then
+  begin
+  if check_camera==i_have then
+    set_b_value(db_address(int(b1) + b_offset -1), src, on)
+  set invalid check_camera
+  end
+
+
+! TAG MESSAGE BOX !
+
+w = 60 h = 60
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+! DRAW FAN !
+
+just = centrecentre
+x=0 y=0 w=70 h=70
+set obj_help = "aeratorhelp"
+ 
+rect(h=70,w=70,fg=pump_bg)
+
+x -= 35 y += 35 add
+y -= 70 add
+x += 70 add line(fg=decorlight) clear
+x = 35 add
+y += 70 add
+x -= 70 add line(fg=decorshadow) clear
+
+x=-15 y=-1
+circle(h=15,w=30,fg=pump_fg,lw=5)
+x +=30  
+circle(h=15,w=30,fg=pump_fg,lw=5)
+x-=15 y=-15 
+circle(h=30,w=15,fg=pump_fg,lw=5)
+y+=30 
+circle(h=30,w=15,fg=pump_fg,lw=5)
+
+if plca_comms_ip.b_value == 0 or plcb_comms_ip.b_value == 0 then
+  begin
+  if pump_started.b_value then
+    set add main_menu = "Stop Aerator"
+  else
+    set add main_menu = "Start Aerator"
+  end
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=160
+aerator(15000,15100,750,heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=white,resizable
+

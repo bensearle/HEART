@@ -1,0 +1,289 @@
+!-----------------------------------------------------------------------------!
+!  Busbar earth switch		                      !
+!-----------------------------------------------------------------------------!
+
+LOAD bus_earth_switch_help
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+type c_db_row_type = db_elements(db_addr,c_value)
+type e_db_row_type =  db_elements(db_addr,e_value)
+type alarm_row_type =  db_elements(old,alarm_status)
+type panel_item_row = table (str=string(30))
+
+!-----------------------------------------------------------------------------!
+!  Write Char Array Function	                                    !
+!-----------------------------------------------------------------------------!
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+   if not get busy op then
+   begin
+      set source op = src
+      set default op
+      set old_default op
+      set value op.db_addr = db_addr
+      set old_value op.db_addr = db_addr
+      set value op.c_value = val
+      set old_off op.c_value
+      request op
+   end
+end
+
+!-----------------------------------------------------------------------------!
+!  Tag Message Window Function                             !
+!-----------------------------------------------------------------------------!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+   y=-10text ("*** Tag Message ***")
+   y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+   set title mss= "Message"
+   request mss(tag_mess)
+end
+
+!*******************************************************************
+* Earth Switch Symbol				*
+* this object is called by the Top Level variable (mimic)	*
+*******************************************************************!
+object earth_switch(plc_comms=int,b_offset=int,c_offset=int,src=source,position=STRING(4))
+
+!*** PLC COMMS***!
+var plc_comms_alarms = input b_db_row_type[2]
+
+!*** B INPUTS
+b_inputs[1] = earth on
+b_inputs[2] = earth off
+***!
+var b_inputs = input b_db_row_type[2]
+
+!*** Alarm INPUTS
+alarm_inputs = earthed on
+***!
+var alarm_inputs = input alarm_row_type
+
+var tag_message_ip = input  c_db_row_type
+
+!*** LOOPBACKS ***!
+VAR switch_fg = loopback  colour
+VAR switch_bg = loopback  colour
+
+!*** PANELS ***!
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+VAR helpstr = help string(30)
+
+begin
+
+!*** REQUEST DATA FROM SERVER ***!
+if invalid get source plc_comms_alarms then 
+   begin
+
+   set source plc_comms_alarms= src
+   set filter plc_comms_alarms.db_addr = lim_ge
+   set limit plc_comms_alarms.db_addr = db_address("b" + plc_comms)
+   set priority plc_comms_alarms.db_addr = 15
+   set persist plc_comms_alarms
+   set mayexist plc_comms_alarms
+   request plc_comms_alarms
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address("b" + b_offset)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address("c" + c_offset)
+   set priority tag_message_ip.db_addr = 15
+   set persist tag_message_ip
+   set mayexist tag_message_ip
+   request tag_message_ip
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address("b" + b_offset)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+end
+
+!*** DETERMINE PANEL BG COLOUR ***!
+if tag_message_ip.c_value <> "" then
+  switch_bg = yellow
+else
+  switch_bg = decoroff     
+
+!*** DETERMINE BREAKER STATUS ***!
+!* Comms Failure *!
+if (plc_comms_alarms[1].b_value and plc_comms_alarms[2].b_value) then
+   switch_fg = magenta
+!* Alarms *!
+else if alarm_inputs.alarm_status == w_note then
+   switch_fg = flashred
+else if alarm_inputs.alarm_status  == w_clr then
+   switch_fg = red
+else
+   switch_fg = green4
+
+!*** TAG MESSAGE PANEL***!
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+!*** TAG MESSAGE BOX ***!
+w=150 h=70
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+!*** MAIN MENU ***!
+just = centrecentre
+w=150 h=50
+set rect main_menu
+set title main_menu  = "Busbar Earth Switch Menu"
+set empty main_menu 
+set add main_menu = "Alter Tagged Message"
+set add main_menu = "Clear Tagged Message"
+
+!*** CONTROL MENU***!
+if valid main_menu then
+   begin
+   case main_menu of
+
+  "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tagged Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+         default
+         begin
+         end
+   set invalid main_menu
+   end
+
+
+just=centrecentre
+
+! Draw switch!
+   clear
+   JUST = CENTRECENTRE
+
+   ! Draw Box & Bevel !
+   X = 0 Y = 0 w = 66 h = 80 ROTRECT(fg=switch_bg) clear
+   X = 0 Y = 0 W = 66 H = 80 SET RECT MAIN_MENU
+   X -= 33 Y += 40 ADD
+  Y -= 80 ADD
+  X += 66 ADD LINE(FG=DECORLIGHT) CLEAR
+  Y += 1 ADD
+  Y += 79 ADD
+  X -= 66 ADD LINE(FG=DECORSHADOW) CLEAR
+
+IF position == "BTM" THEN
+BEGIN
+   ! Draw switch !
+   FG = switch_fg
+   LW=4
+   X = 0 y = -40 ADD
+   Y +=20 ADD LINE CLEAR
+   DISK(W=10,H=10) 
+
+   ! If earthed close switch !
+   IF (b_inputs[1].b_value==1) THEN
+   BEGIN
+     Y = -20 ADD
+     Y += 25 ADD LINE CLEAR
+   END
+   ELSE
+   BEGIN
+     Y = -20 ADD
+     x=20 Y += 20 ADD LINE CLEAR
+   END
+
+   X=0
+   y=5
+   DISK(W=10,H=10)
+   Y += 3 ADD
+   Y += 6 ADD LINE
+   X += 15 ADD
+   X -= 30 ADD LINE CLEAR
+   X += 5 y += 10 ADD
+   X += 20 ADD LINE CLEAR
+   X -= 6 y += 9 ADD
+   X -= 8 ADD LINE CLEAR
+END
+ELSE IF position=="TOP" THEN
+BEGIN
+   ! Draw switch !
+   FG = switch_fg
+   LW=4
+   X = 0 y = 40 ADD
+   Y -=20 ADD LINE CLEAR
+   DISK(W=10,H=10) 
+
+   ! If earthed close switch !
+   IF (b_inputs[1].b_value==1) THEN
+   BEGIN
+     Y = 20 ADD
+     Y -= 25 ADD LINE CLEAR
+   END
+   ELSE
+   BEGIN
+     Y =20 ADD
+     x=20 Y -= 20 ADD LINE CLEAR
+   END
+
+   X=0
+   y=-5
+   DISK(W=10,H=10)
+   Y -= 3 ADD
+   Y -= 6 ADD LINE
+   X += 15 ADD
+   X -= 30 ADD LINE CLEAR
+   X += 5 y -= 10 ADD
+   X += 20 ADD LINE CLEAR
+   X -= 6 y -= 9 ADD
+   X -= 8 ADD LINE CLEAR
+END
+
+just = centrecentre
+   x = 0 y = 0
+   w = 80 h = 80 
+   set text helpstr = "bus_earth_switch_help"
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+!earth_switch(5515,5860,158,heathro3,"TOP")!
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=lightgrey,resizable
+
+
+
+
+
+

@@ -1,0 +1,63 @@
+load mimic_libutil
+load ocb_alarm_test
+
+
+!************* SOUTH INTAKE ALARM STATUS ***************!
+
+object south_intake_alarm_status = int
+begin
+
+if sub_alarm(1000,1100,heathrow) > 0
+or sub_alarm(1000,1120,heathrow) > 0
+or sub_alarm(1000,1140,heathrow) > 0
+or sub_alarm(1000,1160,heathrow) > 0
+or sub_alarm(1000,1180,heathrow) > 0
+or sub_alarm(1000,1200,heathrow) > 0
+or sub_alarm(1000,1220,heathrow) > 0
+or sub_alarm(1000,1240,heathrow) > 0
+or sub_alarm(1000,1700,heathrow) > 0
+or sub_alarm(1000,1710,heathrow) > 0
+or sub_alarm(1000,1260,heathrow) > 0
+or sub_alarm(1000,1720,heathrow) > 0
+or sub_alarm(1000,1730,heathrow) > 0
+or sub_alarm(1000,1280,heathrow) > 0
+or sub_alarm(1000,1300,heathrow) > 0
+or sub_alarm(1000,1320,heathrow) > 0
+or sub_alarm(1000,1340,heathrow) > 0
+or sub_alarm(1000,1360,heathrow) > 0
+or sub_alarm(1000,1380,heathrow) > 0
+or sub_alarm(1000,1400,heathrow) > 0
+or sub_alarm(1000,1420,heathrow) > 0
+or sub_alarm(1000,1440,heathrow) > 0
+or sub_alarm(1000,1460,heathrow) > 0
+or sub_alarm(1000,1740,heathrow) > 0
+or sub_alarm(1000,1750,heathrow) > 0
+or sub_alarm(1000,1480,heathrow) > 0
+or sub_alarm(1000,1760,heathrow) > 0
+or sub_alarm(1000,1770,heathrow) > 0
+or sub_alarm(1000,1500,heathrow) > 0
+or sub_alarm(1000,1520,heathrow) > 0
+or sub_alarm(1000,1540,heathrow) > 0
+or sub_alarm(1000,1560,heathrow) > 0
+or sub_alarm(1000,1580,heathrow) > 0
+or sub_alarm(1000,1600,heathrow) > 0
+or sub_alarm(1000,1620,heathrow) > 0
+or sub_alarm(1000,1640,heathrow) > 0
+or sub_alarm(1000,1660,heathrow) > 0
+or sub_alarm(1000,1680,heathrow) > 0 
+then
+  south_intake_alarm_status = 1
+else
+  south_intake_alarm_status = 0
+
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

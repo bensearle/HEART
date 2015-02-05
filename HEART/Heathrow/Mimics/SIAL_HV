@@ -1,0 +1,503 @@
+
+!***********SIAL_HV***********!
+
+load mimic_libutil
+load hv_lib
+load sial_hv_sub_stations
+load hv_cable_ident
+load oil_switch
+load transformer
+Load BROWSER
+!load SIAL_HV_HELP!
+
+!*************************************************!
+! Created by VIJAY KARA !
+
+!  Date:- 11th July 2006  !
+! Modified 31st October 2007 --By V. J. Kara !
+
+!****************** DSS 9 *******************!
+
+object sub_smpn_110
+
+begin
+
+sub_symbol_smpn_110
+
+lw = 2
+x = 50 y = 25 add y +=-100 add line (fg=black) clear !3!
+x = -50 y = 50 add y +=70 add line (fg=black) clear  !1!
+scale = 120
+
+x =  51 y = -15 ocb_mont(0,15440,1926,8805,heathro4,3,"top") !P3!
+x =  50 y = -70 transformer("Tx ","LOCAL")
+x = -50 y = 90 oil_switch(15000,1860,8740,heathro4,"btm")!P1!
+x = 10 y = 90 oil_switch(15001,8761,8741,heathro4,"btm")!P2!
+
+ch=25
+x = -70 y = -20 text ("RINGMASTER")
+x = -70 y = -5 text ("RMU")
+x = 80 y = -70 text ("500kVA")
+x = 0 y = -130 text ("Reverse Rotation",tfg=blue)
+x = 20 y = -110 text ("L3 - L2 - L1",tfg=magenta)
+
+ch=100
+x = 200 y = -160 text ("SOUTHAMPTON  H.V.  Network")
+
+ch=25
+x = -70 y = 52 text ("P1")
+x = -15 y = 52 text ("P2")
+x = 25 y = 10 text ("P3")
+
+end
+
+
+!****************** ISS B (CCT 1) *******************!
+
+object sub_smpn_109
+
+begin
+
+sub_symbol_smpn_109
+
+lw = 2
+x = 0 y = 50 add y+=190 add line (fg=black) clear !5!
+x =-55 y = 25 add y += -160 add line (fg=black) clear  !4!
+x = 40 y = 25 add y += -525 add line (fg=black) clear  !6!
+
+
+scale = 120
+
+x = -55 y = -15 ocb_mont(0,16760,1932,8811,heathro4,4,"top")!P4!
+x = 40 y = -15 ocb_mont(0,16780,1933,8812,heathro4,6,"top")!P6!
+x = 0 y = 85 ocb_mont(0,16770,1934,8813,heathro4,5,"btm")!P5!
+
+ch=25
+x = 90 y = 20 text ("F.K.I.")
+x = 90 y = 35 text ("ECLIPSE")
+
+x = 10 y = 140 text ("EASN")
+x = 10 y = 155 text ("33 / 11kV")
+x = 10 y = 170 text ("CCT 1",tfg=red)
+x = 10 y = 185 text ("E2L5")
+
+x = -20 y = 240 text ("S + SE")
+x = -20 y = 255 text ("INCOMER 1")
+
+ch=25
+x = -75 y = 10 text ("P4")
+x = -25 y = 52 text ("P5")
+x = 20 y = 10 text ("P6")
+
+end
+
+!****************** ISS B - (CCT 2) *******************!
+
+object sub_smpn_108
+
+begin
+
+sub_symbol_smpn_108
+
+lw = 2
+x = 0 y = 50 add y +=190 add line (fg=black) clear  !2!
+
+x =55 y = 25 add y += -160 add line (fg=black) clear  !3!
+
+scale = 120
+
+x = -40 y = -15 ocb_mont(0,15470,1929,8808,heathro4,1,"top")!P1!
+x = 55 y = -15 ocb_mont(0,15480,1930,8809,heathro4,3,"top")!P3!
+x = 0 y = 85 ocb_mont(0,15490,1931,8810,heathro4,2,"btm")!P2!
+
+
+
+ch=25
+x = -130 y = -15 text ("F.K.I.")
+x = -130 y = 0 text ("ECLIPSE")
+
+x = 10 y = 140 text ("EASN")
+x = 10 y = 155 text ("33 / 11kV")
+x = 10 y = 170 text ("CCT 2",tfg=red)
+x = 10 y = 185 text ("E23L5")
+
+x = -20 y = 240 text ("S + SE")
+x = -20 y = 255 text ("INCOMER 2")
+
+ch=25
+x = -60 y = 10 text ("P1")
+x = -25 y = 52 text ("P2")
+x = 30 y = 10 text ("P3")
+
+end
+
+
+
+
+!****************** DSS 3 *******************!
+
+object sub_smpn_102
+
+begin
+
+sub_symbol_smpn_102
+
+lw = 2
+x =-55 y = 25 add y += -160 add line (fg=black) clear  !1!
+x =-0 y = 25 add y += -130 add line (fg=black) clear  !2!
+x =75 y = 25 add y += -215 add line (fg=black) clear  !4!
+x =40 y = 50 add y += 80 add line (fg=black) clear  !3!
+
+scale = 120
+	x = -55 y = -15 oil_switch(15002,1862,8742,heathro4,"top")!P1!
+	x = 0 y = -15 oil_switch(15003,1863,8743,heathro4,"top")!P2!
+	x = 40 y = 80 ocb_mont(0,15030,1884,8764,heathro4,3,"btm")!P3!
+	x =  40 y = 130 transformer("Tx ","LOCAL")
+	x =75 y = -15 ocb_mont(0,15450,1927,8806,heathro4,4,"top")!P4!
+
+ch=25
+x = -120 y = 60 text ("RINGMASTER")
+x = -120 y = 75 text ("EXTENSIBLE")
+x = -120 y = 90 text ("(MT Compound)")
+
+x = -80 y = 5 text ("P1")
+x = -25 y = 5 text ("P2")
+x = 0 y = 73 text ("P3")
+x = 80 y = 5 text ("P4")
+
+
+ch=25
+x = 70 y = 110 text ("DSS 3")
+x = 70 y = 125 text ("Local Tx")
+x = 70 y = 140 text ("800kVA")
+
+x = -20 y = 160 text ("Reverse Rotation",tfg=blue)
+x = 0 y = 180 text ("L3 - L2 - L1",tfg=magenta)
+
+end
+
+
+!****************** DSS 5 *******************!
+
+object sub_smpn_103
+
+begin
+
+sub_symbol_smpn_103
+
+lw = 2
+	x = 10 y = 25 add y += -120 add line (fg=black) clear !3!
+	x = -45 y = 25 add y += -185 add line (fg=black) clear  !1!
+	x = 75 y = 25 add y += -160 add line (fg=black) clear  !4!
+	x =-20 y = 50 add y += 90 add line (fg=black) clear  !2!
+
+
+scale = 120
+	x = -45 y = -15 ocb_mont(0,15040,1885,8765,heathro4,1,"top")!P1!
+	x = 10 y =-15 oil_switch(15009,1869,8749,heathro4,"top")!P3!
+	x = -20 y = 95 ocb_mont(0,15050,1886,8766,heathro4,2,"btm")!P2!
+	x =  -20 y = 150 transformer("Tx ","LOCAL")
+	x = 75 y = -15 oil_switch(15010,1870,8750,heathro4,"top")!P4!
+
+
+ch=25
+x = 50 y = 60 text ("RINGMASTER")
+x = 50 y = 80 text ("EXTENSIBLE")
+x = 50 y = 100 text ("Control Tower")
+
+ch=25
+x = -100 y = 130 text ("DSS 5")
+x = -100 y = 145 text ("Local Tx")
+x = -100 y = 160 text ("500kVA")
+
+x = -75 y = 180 text ("Reverse Rotation",tfg=blue)
+x = -60 y = 195 text ("L3 - L2 - L1",tfg=magenta)
+
+ch=25
+x = -70 y = -70 text ("Spare")
+x = -70 y = 5 text ("P1")
+x = 20 y = 5 text ("P3")
+x = -10 y = 55 text ("P2")
+x = 85 y = 5 text ("P4")
+
+
+end
+
+
+!************** DSS 2 ****************!
+
+object sub_smpn_104
+
+begin
+
+sub_symbol_smpn_104
+	
+lw=2
+	
+	x = 10 y = -70 add y += 95 add line (fg=black) clear !2!
+	x = -45 y = 25 add y += -330 add line (fg=black) clear  !1!
+	x =70 y = 50 add y += 70 add line (fg=black) clear  !3!
+
+
+scale=120
+	x = -45 y = -15 oil_switch(15012,1872,8752,heathro4,"top")!P1!
+	x = 10 y =-15 oil_switch(15013,1873,8753,heathro4,"top")!P2!
+	x = 70 y = 75 ocb_mont(0,15060,1887,8767,heathro4,3,"btm")!P3!
+	x = 70 y = 125 transformer("Tx ","LOCAL")
+	
+ch=25
+x = 110 y = 50 text ("RINGMASTER")
+x = 110 y = 65 text ("RMU")
+x = 110 y = 80 text ("Car Park")
+
+ch=25
+x = -10 y = 100 text ("DSS 2")
+x = -10 y = 115 text ("Local Tx")
+x = -10 y = 130 text ("800kVA")
+
+x = 10 y = 155 text ("Conventional Rotation",tfg=blue)
+x = 30 y = 170 text ("L1 - L2 - L3",tfg=red)
+
+x = -70 y = 5 text ("P1")
+x = -15 y = 5 text ("P2")
+x = 30 y = 70 text ("P3")
+	
+end
+
+
+!****************** DSS 7 *******************!
+
+object sub_smpn_105
+
+begin
+
+sub_symbol_smpn_105
+
+lw = 2
+	
+	x = 30 y = 25 add y += -350 add line (fg=black) clear !2!
+	x = -35 y = 25 add y += -105 add line (fg=black) clear  !1!
+	x =70 y = 50 add y += 80 add line (fg=black) clear  !3!
+
+scale = 120
+
+	
+	x = -35 y = -15 oil_switch(15015,1875,8755,heathro4,"top")!P1!
+	x = 30 y =-15 oil_switch(15016,1876,8756,heathro4,"top")!P2!
+	x = 70 y = 85 ocb_mont(0,15070,1888,8768,heathro4,3,"btm")!P3!
+	x = 70 y = 140 transformer("Tx ","LOCAL")
+	
+ch=25
+x = 80 y = -30 text ("RINGMASTER")
+x = 80 y = -15 text ("RMU")
+x = 80 y = 0 text ("Terminal Bldg.")
+
+ch=25
+x = -20 y = 120 text ("DSS 7")
+x = -20 y = 135 text ("Local Tx")
+x = -20 y = 150 text ("1000kVA")
+
+x = -60 y = 5 text ("P1")
+x = 5 y = 5 text ("P2")
+x = 30 y = 80 text ("P3")
+
+x = 10 y = 170 text ("Reverse Rotation",tfg=blue)
+x = 30 y = 190 text ("L3 - L2 - L1",tfg=magenta)
+
+end
+
+
+!****************** DSS 8 *******************!
+
+object sub_smpn_106
+
+begin
+
+sub_symbol_smpn_106
+
+lw = 2
+
+	x = 20 y = -120 add y += 145 add line (fg=black) clear !2!
+	x = -35 y = -55 add y += 80 add line (fg=black) clear  !1!
+	x =60 y = 50 add y += 100 add line (fg=black) clear  !3!
+
+scale = 120
+	
+	x = -35 y = -15 oil_switch(15018,1878,8758,heathro4,"top")!P1!
+	x = 20 y =-15 oil_switch(15019,1879,8759,heathro4,"top")!P2!
+	x = 60 y = 85 ocb_mont(0,15080,1889,8769,heathro4,3,"btm")!P3!
+	x = 60 y = 140 transformer("Tx ","LOCAL")
+
+ch=25
+x = 90 y = -5 text ("RINGMASTER")
+x = 90 y = 10 text ("RMU")
+!x = -200 y = 60 text ("COACH STATION")!
+!x = -200 y = 75 text ("(ISS Compound)")!
+
+ch=25
+x = 100 y = 120 text ("DSS 8")
+x = 100 y = 135 text ("Local Tx")
+x = 100 y = 150 text ("500kVA")
+
+x = -80 y = 130 text ("Reverse Rotation",tfg=blue)
+x = -70 y = 150 text ("L3 - L2 - L1",tfg=magenta)
+
+x = -60 y = 5 text ("P1")
+x = 25 y = 5 text ("P2")
+x = 20 y = 80 text ("P3")
+
+end
+
+!****************** ISS A *******************!
+
+object sub_smpn_107
+
+begin
+
+sub_symbol_smpn_107
+
+lw = 2
+
+	x = 80 y = 25 add y += -315 add line (fg=black) clear !2!
+	x = 30 y = -55 add y += 80 add line (fg=black) clear  !1!
+	x =-60 y = 50 add y += 70 add line (fg=black) clear  !AL!
+	x =-30 y = 50 add y += 70 add line (fg=black) clear  !AL!
+
+
+scale = 120
+
+	
+	x = 30 y = -15 ocb_mont(0,15090,1890,8770,heathro4,1,"top")!P1!
+	x = 80 y =-15 ocb_mont(0,15100,1891,8771,heathro4,2,"top")!P2!
+	
+
+ch=25
+x = 120 y = 30 text ("RINGMASTER")
+x = 120 y = 45 text ("EXTENSIBLE")
+x = 10 y = 60 text ("BAA")
+x = 10 y = 80 text ("OWNED")
+
+ch=25
+x = -80 y = 130 text ("S & S")
+x = -80 y = 150 text ("OWNED")
+
+x = 40 y = 5 text ("P1")
+x = 90 y = 5 text ("P2")
+
+end
+
+
+!******************MAIN OBJECT******************!
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	clear
+	lw = 2
+	
+
+	! ISS B (1) TO DSS 5 !
+	x = 255 y = -380 add
+	x -= 545 add
+	line(fg=black) clear
+
+			
+	! DSS 9 TO DSS 3 !
+	x = -85 y = -410 add
+	x -= 300 add
+	y = -200 add
+	x = -50 x -=550 add line	
+	line(fg=black) clear
+	
+	! DSS 9 to ISS B (2) !
+	x =-540 y = 150 add 
+	y += -430 add line 
+	LINE (fg=black) clear  !1!
+
+
+
+	! ISS B (1) TO ISS B (2) !
+	x = -385 y = -15 add
+	x -= 60 add
+	line(fg=black) clear
+
+	
+	! DSS 3 TO DSS 5 !
+	x = 375 y = -355 add
+	x -= 590 add
+	line(fg=black) clear
+	
+	! DSS 3 TO DSS 2 !
+	x = 55 y = -325 add
+	x -= 215 add
+	line(fg=black) clear
+
+	
+	
+	! DSS 8 TO ISS  A !
+	x = -85 y = 165 add
+	x = 290 add
+	line(fg=black) clear
+	
+	! DSS 5 TO DSS 7 !
+	x = 480 y = -315 add
+	x -= 170 add
+	line(fg=black) clear
+
+	! ISS A TO DSS 7 !
+	x = 340 y = -70 add
+	x = 415 add
+	line(fg=black) clear
+
+	
+	! DSS 2 TO DSS 8 !
+	x = -30 y = 100 add
+	y -= 190 add
+	x= 110 add
+	line(fg=black) clear
+
+	
+
+	!************ISS A JUNCTION BORDER*****************!
+
+
+	x = 245 y = 190 add y += 200 add line (fg=yellow) clear  !AL!
+	x = 245 y = 180 add y += 15 add line (fg=blue) clear  !AL!
+	x = 245 y = 220 add y += 15 add line (fg=blue) clear  !AL!
+	x = 245 y = 260 add y += 15 add line (fg=blue) clear  !AL!
+	x = 245 y = 290 add y += 15 add line (fg=blue) clear  !AL!
+	x = 245 y = 320 add y += 15 add line (fg=blue) clear  !AL!
+	x = 245 y = 350 add y += 15 add line (fg=blue) clear  !AL!
+	x = 245 y = 380 add y += 15 add line (fg=blue) clear  !AL!
+
+
+	!************ISS B JUNCTION BORDER*****************!
+
+
+	x = -415 y = 80 add y += 200 add line (fg=yellow) clear  !AL!
+	x = -415 y = 100 add y += 15 add line (fg=black) clear  !AL!
+	x = -415 y = 130 add y += 15 add line (fg=black) clear  !AL!
+	x = -415 y = 160 add y += 15 add line (fg=black) clear  !AL!
+	x = -415 y = 190 add y += 15 add line (fg=black) clear  !AL!
+	x = -415 y = 220 add y += 15 add line (fg=black) clear  !AL!
+	x = -415 y = 250 add y += 15 add line (fg=black) clear  !AL!
+	x = -415 y = 280 add y += 15 add line (fg=black) clear  !AL!
+
+
+	!******************Sub STATIONS***********************!
+
+
+	x = -550 y = -320 sub_smpn_110   !DSS 9!
+	x = -160 y = -220 sub_smpn_102        !DSS 3!
+	x = 300 y = -220 sub_smpn_103   !DSS 5!
+	x =100 y = -20 sub_smpn_104             !DSS 2!
+	x = 450 y = 10 sub_smpn_105     !DSS 7!
+	x =-50 y = 220 sub_smpn_106           !DSS 8!
+	x = 260 y =220 sub_smpn_107     ! ISS A !
+	x = -500 y =120 sub_smpn_108     ! ISS B - CCT 2 !
+	x = -330 y =120 sub_smpn_109     ! ISS B - CCT 1 !
+
+	x = -600 y = 400 browser(1061,heathrow,1200)
+end
+
+mimic = main_object w=1275,h=975,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

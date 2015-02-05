@@ -1,0 +1,755 @@
+
+:ALARMS
+
+    ALARMS
+
+Creates an Alarm View window. This can be used to
+examine the current alarm lists and to accept,
+redirect and disable alarms.
+#
+
+
+:ANNOTATE
+
+    ANNOTATATE [source:]db_element message
+
+Sets the annotation text for the specified
+database element to the supplied message. The
+database element must have no annotation text for
+this command to succeed.
+
+See also UNANNOTATATE and SHOW ANNOTATE command.
+#
+
+
+:AVAILABLE
+
+    AVAILABLE PRINTER [source:]printer
+    AVAILABLE [WRKSTN] [source:][workstation]
+
+Sets a printer or workstation available. If no
+workstation is supplied then this workstation is
+assumed.
+
+An available workstation will receive alarms and
+system messages. An unavailable workstation will
+have it's alarms redirected to it's failure
+fallback workstation (if any). An available
+printer will receive printouts directed to it. An
+unavailable printer will have it's printouts
+redirected to it's failure fallback printer (if
+any).
+
+See also UNAVAILABLE command.
+#
+
+
+:BYE
+
+    BYE
+
+Removes all your access_levels. Releases all the
+FORs you have mastered.
+
+See also HELLO command.
+#
+
+
+:CONFIG_UPDAT
+
+    CONFIG_UPDATE [source:]outstation
+
+Requests a config update of the specified
+outstation.  Writable (TX always or change) values
+are read from the SCOPE database and sent to the
+outstation, then readable (RX yes) values are read
+from the outstation and written to the SCOPE
+database.
+
+As the values are written into the SCOPE database
+they are checked for alarms, trended, archived etc
+as configured.
+
+The purpose of a CONFIG_UPDATE is to allow static
+configuration held within SCOPE to be downloaded
+to the outstation. This command is only available
+for Seprol outstations.
+
+See also FETCH, STATUS_UPDATE and UPDATE commands.
+#
+
+
+:DATE
+
+    DATE
+
+Displays the current date and time on the
+workstation.
+#
+
+
+:DECREMENT
+
+    DECREMENT [source:]db_element [value]
+
+Analogue values - decrements the value of the
+database element by the  supplied value or by 1 if
+none supplied.
+
+Digital values - toggles the state.
+
+To decrement a database element you must have -
+    access_level == element's protection.
+    mastership of the element's FOR.
+
+See also SET and INCREMENT commands. see also
+HELLO and MASTER commands.
+#
+
+
+:DISABLE
+
+    DISABLE ALARM [source:]db_element
+    DISABLE GROUP [source:]alarm_group
+    DISABLE LINE [source:]line_number
+    DISABLE [source:]db_element
+
+Disables alarms for a database element, alarms for
+all database elements in an alarm_group, a comms
+line or a database element, respectively.
+
+While alarms for a database element are disabled,
+no alarm checking is performed when the element is
+written to, if alarms are later enabled for the
+element the alarm checks will be rechecked on the
+current value.
+
+While a database element is disabled, writes to
+that element are ignored.
+
+While a line is disabled it cannot be used for
+communications to outstations.
+
+See also ENABLE command.
+#
+
+
+:ENABLE
+
+    ENABLE ALARM [source:]db_element
+    ENABLE GROUP [source:]alarm_group
+    ENABLE LINE [source:]line_number
+    ENABLE [source:]db_element
+
+Enables alarms for a database element, alarms for
+all database elements in an alarm_group, a comms
+line or a database element, respectively.
+
+While alarms for a database element are enabled,
+all it's alarm checks are performed each time the
+element is written to.
+
+While a database element is enabled, writes to
+that element are performed when a value is
+received from an outstation, RTL program or
+operator (manual).
+
+While a line is enabled it can be used for
+communications to outstations.
+
+See also DISABLE command.
+#
+
+
+:FETCH
+
+    FETCH [source:]outstation
+
+Requests a fast update of the specified
+outstation. Writable (TX always) values are read
+from the SCOPE database and sent to the
+outstation, then readable (RX yes) values are read
+from the outstation and written to the SCOPE
+database.
+
+As the values are written into the SCOPE database
+they are checked for alarms, trended, archived etc
+as configured.
+See also CONFIG_UPDATE, STATUS_UPDATE and UPDATE
+commands.
+#
+
+
+:GROUP
+
+    GROUP INSERT [source:]outstation group
+    GROUP REMOVE [source:]outstation group
+    GROUP INSERT [source:]outstation SCAN scan
+    GROUP REMOVE [source:]outstation SCAN scan
+    GROUP START [source:]os_group
+    GROUP STOP [source:]os_group
+
+Group Insert and Remove, insert or remove a single
+outstation from an outstation group or an
+outstation scan.
+
+Group Start and Stop, start and stop scanning of a
+whole group of  outstations.  Group Start
+initiates a single scan of an outstation group.
+Group Stop will interrupt this scan.
+#
+
+
+:HELLO
+
+    HELLO user
+
+Prompts you for a password, then sets your
+access_levels and authorised fields of
+responibility (FORs) according to the supplied
+user. Will attempt  this on all the systems that
+are accessible.
+
+See also BYE, MASTER and SET PASSWORD commands.
+#
+
+
+:HELP
+
+    HELP [topic]
+
+If a topic is supplied then the syntax of the
+topic is displayed.
+
+If no topic or an invalid topic is supplied then a
+help window is displayed from which you can obtain
+help about all the commands. For detailed help on
+a particular command, point to the command and
+press the help key.
+
+Syntax of commands
+
+   Keywords are shown in upper case.
+   Parameters are shown in lower case.
+   Optional parameteters are in [  ].
+
+Commands which have source: in their syntax are
+executed on a single server only (eg SET a
+database element). Other commands are executed on
+all servers in parallel (eg HELLO and MASTER) or
+are internal to the workstation (eg HELP).
+
+For commands which have [source:] in their syntax,
+when an entity (eg a  database element or an
+outstation) is specified without the optional
+source: then all sources are searched
+automatically for the entity. If it is found on
+more than one source then a Resolve_clash window
+is displayed for the operator to select the source
+to be used. Normally, names of entities are unique
+across all sources so no clash occurs. If an
+address (eg B100) is used instead of a name then a
+clash is quite likely. If the name or address of
+the entity is prefixed by one or more source: then
+only those source(s) will be searched.
+
+During the entity searching phase the status of a
+command will be displayed as "Searching". Once the
+entity has been found (and any clash resolved  by
+the operator using the Resolve_clash window) then
+the command will be  started, this is displayed as
+"Doing". Once the command has completed or  failed
+the result will be displayed. If the command
+completes successfully and the action has actualy
+been performed then "Done" is displayed. If the
+command completes but the action has only been
+queued (eg Outstation update) then "Acknowledged"
+is displayed. If the command fails then an Output
+error window may be displayed, the operator must
+acknowledge the error by clicking on "Continue" in
+this window. The error will then be displayed in
+the command window.
+#
+
+
+:INCREMENT
+
+    INCREMENT [source:]db_element [value]
+
+Analogue values - increments the value of the
+database element by the  supplied value or by 1 if
+none supplied.
+
+Digital values - toggles the state. 
+
+To increment a database element you must have -
+    access_level == element's protection.
+    mastership of the element's FOR.
+
+See also SET and DECREMENT commands. see also
+HELLO and MASTER commands.
+#
+
+
+:MAIL
+
+    MAIL ALL [source:] message
+    MAIL USER [source:]user message
+    MAIL [WRKSTN] [source:]workstation message
+
+Sends the single line message to all workstations,
+all workstations logged on as a specified user, or
+a specified workstation.
+
+The mail message will appear in the alarm_banner
+window of the specified workstation(s).
+#
+
+
+:MASTER
+
+    MASTER ALL
+    MASTER AUTHORISED
+    MASTER DEFAULT
+    MASTER for(s)
+
+Master one or more fields of responsibility (FOR).
+
+Each database element and outstation belongs to
+one FOR. To exclude other operators from a FOR you
+are working on and to prevent you (accidentally)
+interfering with another operator working on a
+FOR, you must master a FOR before manually setting
+any database elements or updating outstations in
+that FOR.
+
+If you attempt to set an element or update an
+outstation without mastership of it's FOR, SCOPE
+will ask you to master the FOR first. If you
+attempt to master a FOR that another workstation
+in a different workstation group has already
+mastered, a message will be sent to that
+workstation requesting that the FOR be released,
+you will be told that the FOR has been requested.
+
+Workstations in the same room may want to share
+mastership of a FOR. To do this, the workstations
+must be in the same workstation_group.
+
+See also RELEASE, HELLO and BYE commands.
+#
+
+
+:MIMIC
+
+    MIMIC [source:]mimic [parameters]
+
+Replaces the contents of the previous window
+created with the specified mimic. If there is no
+previous window then a new window is created. Any
+parameters specified will be passed to the new
+mimic.
+
+This command is identical to SWAP.
+
+See also SWAP and WINDOW commands.
+#
+
+
+:MUTE
+
+    MUTE ALARM source:
+    MUTE alarm_level
+
+A SCOPE system may be configured with an external
+alarm analogue (E) database element that is
+automatically updated by SCOPE with the
+alarm_level of the highest level alarm to have
+occured on the system so far.
+
+The MUTE ALARM command resets the external alarm
+database element of the specified SCOPE system to
+0.
+
+The MUTE command sets the alarm_level above which
+alarms are sent to this workstation. Alarms at or
+below the specified level will not appear on the
+alarm_banner window until the mute level drops
+below the alarm's level.
+
+The effect of a mute command expires after a short
+time (typically 30 minutes) after which the mute
+level reverts to it's normal level derived from
+the quiet_time specifier for the workstation (see
+the Wrkstn_config and Alarm_times_config
+utilities).
+
+MUTE 0 ensures that all alarms directed to this
+workstation will appear in the alarm_banner window
+until the mute command expires.
+
+MUTE 7 ensures that no alarms will appear in the
+alarm_banner window until the mute command
+expires.
+
+See also SILENCE command.
+#
+
+
+:NAME
+
+    NAME OUTSTATION [source:]outstation
+    NAME [source:]db_element
+
+Finds the name and address of an outstation or
+database element respectively. Either a name or
+address can be specified for the search. If no
+source is specified, then all sources will be
+searched. If the specified name or address is
+found on more than one source then the elements
+found are displayed in a popup window.
+
+See also SHOW command.
+#
+
+
+:OK
+
+    OK [source:]db_element
+
+Clears the SUSPECT flag for the specified database
+element.
+
+Each database element has a suspect flag which can
+be used by operators to mark the element, for
+example when the value it contains is known to be
+questionable. The suspect flag is archived with
+the database element.
+
+See also SUSPECT command.
+#
+
+
+:RELEASE
+
+    RELEASE ALL
+    RELEASE AUTHORISED
+    RELEASE DEFAULT
+    RELEASE for(s)
+
+Unmasters FORs previously mastered for exclusive
+access using the master command. All FORs are also
+released automatically by the bye command. The
+hello command automatically releases FORs that are
+nolonger authorised.
+
+See also MASTER command.
+#
+
+
+:REPORT
+
+    REPORT CREATE [source:]report
+    REPORT PRINT [source:]report printer
+    REPORT [source:]report
+
+Report commands allow a specified report to be
+created, printed or viewed respectively.
+#
+
+
+:RUN
+
+    RUN [source:]rtlprog
+
+Executes an RTL program once immediately.
+
+The RTL program must be configured for the
+Operator run method in the rtl_scheduler_util.
+#
+
+
+:SCAN
+
+    SCAN INSERT [source:]db_element
+    SCAN REMOVE [source:]db_element
+    SCAN START [source:]db_scan_group
+    SCAN STOP [source:]db_scan_group
+
+Adds or removes a database element from the
+temporary database scan, starts or stops a
+database scan respectively.
+#
+
+
+:SEQUENCE
+
+    SEQUENCE
+
+Enters the sequence_util. This window allows you
+to create a list of up to 10 SET commands, then
+execute them all in one go. 
+#
+
+
+:SET
+
+    SET [DB] [source:]db_element value
+    SET PASSWORD user
+
+Sets the value of a database element to the
+specified value or allows you to modify your
+password. 
+
+Analoge (E), Digital (B) and character_string (C)
+elements can be set.  The source of the element
+becomes MANUAL.
+To set a database element you must have -
+    access_level == element's protection.
+    mastership of the element's FOR.
+
+When changing your password you are presented with
+a window in which you must type your old password
+and then your new password twice. The change will
+only be allowed if the entries of the new password
+are the same.
+
+See also INCREMENT and DECREMENT commands. See
+also HELLO and MASTER commands.
+#
+
+
+:SHOW
+
+    SHOW ANNOTATE [source:]db_element
+    SHOW FOR [source:]for
+    SHOW [DB] [source:]db_element
+    SHOW EXTRA [source:]db_element
+    SHOW FILE [source:]file
+    SHOW LOG [source:]logical_name
+    SHOW REPORT [source:]report
+    SHOW SYSTEM [source:]
+    SHOW WRKSTN [source:][workstation]
+
+Displays information about the specified item.
+
+ANNOTATE information shows the current annotation
+text for a database element.
+
+FOR information shows who currently masters the
+specified FOR.
+
+[DB] information shows the name, identity, value,
+whether the element is disabled, alarm_status (in
+brackets) and quality flags.
+
+EXTRA database information shows the name,
+identity, time last updated, database source and
+FOR.
+
+FILE displays a whole text file of data in a
+window from the specified source. Note that if no
+source is specified, SHOW FILE does not search all
+sources, the default source is used.
+
+LOG displays the value of the specified logical
+name from the specified source. Note that if no
+source is specified, SHOW LOG does not search all
+sources, the default source is used.
+
+REPORT displays a whole SCOPE report in a window.
+
+SYSTEM information shows which sources are
+connected and which workstion this is on a
+particular source.
+
+WRKSTN information shows the current user, access
+levels, whether it is available, mute level,
+silence level (if different from mute level) and
+quiet fallback workstation.
+#
+
+
+:SILENCE
+
+    SILENCE alarm_level
+
+The SILENCE command sets the alarm_level above
+which alarms generate an alarm sound when they
+arrive on the workstation's banner. Alarms at or
+below the specified level will not sound until the
+silence level drops below the alarm's level.
+
+The effect of a silence command expires after a
+short time (typically 30 minutes) after which the
+silence level reverts to it's normal level derived
+from the quiet_time specifier for the workstation
+(see the Wrkstn_config and Alarm_times_config
+utilities).
+
+SILENCE 0 ensures that all alarms directed to this
+workstation will sound until the silence command
+expires.
+
+SILENCE 7 ensures that no alarms will sound until
+the mute command expires.
+
+See also MUTE command.
+#
+
+
+:STATUS_UPDAT
+
+    STATUS_UPDATE [source:]outstation
+
+Requests a normal UPDATE of the outstation
+followed by continuous read of the outstation for
+5 minutes.
+
+See also CONFIG_UPDATE, FETCH and UPDATE commands.
+#
+
+
+:SUSPECT
+
+    SUSPECT [source:]db_element
+
+Sets the SUSPECT flag for the specified database
+element.
+
+Each database element has a suspect flag which can
+be used by operators to mark the element, for
+example when the value it contains is known to be
+questionable. The suspect flag is archived with
+the database element.
+
+See also OK command.
+#
+
+
+:SWAP
+
+    SWAP [source:]mimic [parameters]
+
+Replaces the contents of the previous window
+created with the specified mimic. If there is no
+previous window then a new window is created. Any
+parameters specified will be passed to the new
+mimic.
+
+See also MIMIC and WINDOW commands.
+#
+
+
+:TIME
+
+    TIME
+
+Displays the current date and time on the
+workstation.
+#
+
+
+:TRENDS
+
+    TRENDS
+
+Creates an Trend View window. This can be used to
+examine up to 10 trends.
+#
+
+
+:UNANNOTATE
+
+    UNANNOTATATE [source:]db_element 
+
+Clears the annotation text for the specified
+database element to the supplied message. The
+database element must have no annotation text
+before it can be annotated using the ANNOTATE
+command.
+
+See also ANNOTATATE command.
+#
+
+
+:UNAVAILABLE
+
+    UNAVAILABLE PRINTER [source:]printer
+    UNAVAILABLE [WRKSTN] [source:][workstation]
+
+Sets a printer or workstation unavailable. If no
+workstation is supplied then this workstation is
+assumed.
+
+An available workstation will receive alarms and
+system messages. An unavailable workstation will
+have it's alarms redirected to it's failure
+fallback workstation (if any). An available
+printer will receive printouts directed to it. An
+unavailable printer will have it's printouts
+redirected to it's failure fallback printer (if
+any).
+
+See also AVAILABLE command.
+#
+
+
+:UPDATE
+
+    UPDATE [source:]outstation
+
+Requests a update of the specified outstation.
+Readable (Rx yes) Historical (archive) values are
+read from the outstation and written to the SCOPE
+database, writable (TX always) values are read
+from the SCOPE database and sent to the
+outstation, then readable (RX yes) values are read
+from the outstation and written to the SCOPE
+database.
+
+As the values are written into the SCOPE database
+they are checked for alarms, trended, archived etc
+as configured.
+
+See also CONFIG_UPDATE, FETCH and STATUS_UPDATE
+commands.
+#
+
+
+:WRKSTNS
+
+    WRKSTNS
+
+Creates an Wrkstn_config utility window. This
+displays the name, type, availability, fallback
+workstations and fallback levels for each
+workstation.
+#
+
+
+:WINDOW
+
+    WINDOW [source:]mimic [parameters]
+
+Creates a new window containing the specified
+mimic. Any parameters specified will be passed to
+the new mimic.
+
+See also MIMIC and SWAP commands.
+#
+
+
+:UTILITY
+
+    UTILITY [source:]utility [parameters]
+
+Creates a new window containing the specified
+utility. Any parameters specified will be passed
+to the utility.
+
+There are the following utilities
+
+
+#
+

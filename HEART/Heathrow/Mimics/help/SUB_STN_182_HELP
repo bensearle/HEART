@@ -1,0 +1,30 @@
+
+helptext sub_stn_182_help =
+ "
+ **** SUB STATION 182 POPUP MIMIC ****
+ ------------------------------------------------- -------------------------------------------------
+Sub Station 182 Phase 1
+ ------------------------------------------------- -------------------------------------------------
+The primary function of Substation 182 is to provide supplies to the T5 Concourse C 
+building at Phase 2 of the project. In Phase 1 of the project the substation is required
+to be operational as part of the Southern Taxiway and Apron Development Project (STAAD),
+to supply the Fixed Electrical Ground Power (FEGP) equipment for the 'early stands'.
+
+This Mimic displays circuit breaker status, current and voltage for Panels on new Substation 182.
+
+
+The Circuit Breakers are Control and Monitoring. 
+
+
+The Analogue meters display high and low alarms together with under/over/invalid ranges.
+
+
+
+References:
+------------------
+Operation and Maintenance Manual 	- 
+
+Keypages from the Mimic Menu Object -  for information on mimic objects used (HV Area)
+ ------------------
+
+ "

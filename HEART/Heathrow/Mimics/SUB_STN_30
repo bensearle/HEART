@@ -1,0 +1,81 @@
+!**************************************************************************!
+!**********		      MODIFIED BY CCS	          **********!
+!**********		      Name : HASAN SHAH 	          **********!
+!**********		      Date : 12/08/2013 	          **********!
+! Modifications : Moved LT2 to Sub 293 and added text on         !
+! Panel 2 to show connection to Sub 293 P7.		        !
+
+
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: SUB_STN_30                               **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 23/04/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 1.0 (For OS27 FAT)                  **!
+!** Date: 02/04/12                                       **!
+!** Changes made:                                        **!
+!**  - Points re-mapped from old OS08 to new OS29.       **!
+!**  - These changes have been made as part of the A1    **!
+!**    Centre decommissioning project.                   **!
+!**********************************************************!
+
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!***************** BUSBAR 30 **************!
+
+object busbar_30
+begin
+lw=2
+tfg = black x = -120 y = -60 add text ("30",ch = 30) clear
+X = -100 Y = 80 text("FEGP",tfg=black,ch=12,just=centrecentre)
+X = -50 Y = 30 text("SUB 293",tfg=black,ch=12,just=centrecentre)
+X = -50 Y = 45 text("P7",tfg=black,ch=12,just=centrecentre)
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 40 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+x =   100 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x =   -100 y =  0    ocb_mont(5000,5200,3070,8300,heathro2,1,"btm")
+x =   -50  y =  0    ocb_mont(5000,5210,3071,8301,heathro2,2,"btm")
+x =     0  y =  -50  ocb_mont(5000,5220,3072,8302,heathro2,3,"top")
+x =    50  y =  -50  ocb_mont(5000,5230,3073,8303,heathro2,4,"top")
+x =    100  y = 0    ocb_mont(5000,5240,3074,8304,heathro2,5,"btm")
+
+scale = 100
+X =  -100 Y = 45 transformer("LT 1","")
+X =  100   Y = 45 transformer(".",".")
+
+just = centrecentre scale=256
+tfg = black ch=12
+x = 100 y = 75 text("Spare")
+x = 0 y = -100 text("SUB 1")
+x = 0 y = -85 text("P2")
+x = 50 y = -100 text("SUB 31")
+x = 50 y = -85 text("P2")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+busbar_30
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

@@ -1,0 +1,54 @@
+
+load new_hex_calmu_libutil 
+
+load calmu_config_119
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object calmu_meter (src=source,scale_val=int,e_db_offset=int,trend_address=db_address,
+                 comms_address=int,rqst_blk=int,meter_no=int,sub_no=int,hist_cnt=int,
+                    max_no=int,min_no=int)
+
+var init = loopback int
+var calpop1_det=popup calmu_mim_detailed
+var calmu_trend1 = popup calmu_trend
+
+var calmu_config_pan_119 = popup calmu_config_119
+var calmen1=menu string
+begin
+
+scale = scale_val
+if invalid init then
+   begin
+   set title calmen1 = "Meter " + meter_no + " Selection"
+   set add calmen1 = "Detailed Meter Information"
+   set add calmen1 = "Meter Trend Information"
+   set add calmen1 = "Meter Configuration"
+   init = 1
+   end
+
+w=270
+h=170
+
+set rect calmen1 
+
+calmu_met_basic(src,e_db_offset,meter_no,comms_address)
+
+if valid calmen1 then
+   begin
+   if calmen1 == "Detailed Meter Information" then
+      request calpop1_det(src,e_db_offset,rqst_blk,meter_no,sub_no,hist_cnt,comms_address) 
+   else
+      if calmen1 == "Meter Trend Information" then
+         request calmu_trend1(src,trend_address,max_no,min_no,meter_no)
+   else 
+      if calmen1 == "Meter Configuration" then
+          if sub_no == 119 then
+              request calmu_config_pan_119(src)
+
+   set invalid calmen1
+   end
+end
+
+
+

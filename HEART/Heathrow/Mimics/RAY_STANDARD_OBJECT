@@ -1,0 +1,401 @@
+!**********************************************************************!
+!****                 RAY EDWARDS STANDARD OBJECT                  ****!
+!****                 ---------------------------                  ****!
+!****                                                              ****!
+!**********************************************************************!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type panel_item_row = table (str=string(30))
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10 text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+ 
+!
+************************************************************
+* STANDARD OBJECT                                          *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object standard_object(b_offset=int,c_offset=int,src=source)
+
+!*** DEFINING VARIABLES ***!
+
+!*** Boolean Inputs ***!
+
+!
+b_inputs[1] = label_1
+b_inputs[2] = label_2
+!
+
+var b_inputs = input b_db_row_type[2]
+
+!*** Character String Inputs ***!
+
+var tag_message_ip = input  c_db_row_type
+
+!*** Alarm Inputs ***!
+
+!
+alarm_inputs[1] = label_1_alarm
+alarm_inputs[2] = label_2_alarm
+!
+
+var alarm_inputs = input alarm_row_type[2]
+
+!***  LOOPBACKS *** !
+
+var object_bg = loopback  colour
+var object_fg = loopback  colour
+
+!*** PANELS ***!
+
+var tag_message_panel = panel  panel_item_row
+var main_menu = menu  string(30)
+
+
+begin
+
+!*** REQUEST DATA FROM SERVER ***!
+
+set source b_inputs = src
+set filter b_inputs.db_addr = lim_ge
+set limit b_inputs.db_addr = db_address(int(b1) + b_offset-1)
+set priority b_inputs.db_addr = 15
+set persist b_inputs
+set mayexist b_inputs
+request b_inputs
+
+set source tag_message_ip = src
+set filter tag_message_ip.db_addr = lim_eq
+set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset - 1)
+set priority tag_message_ip.db_addr = 15
+set persist tag_message_ip
+set mayexist tag_message_ip
+request tag_message_ip
+
+set source alarm_inputs = src
+set filter alarm_inputs.db_addr = lim_ge
+set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset)
+set priority alarm_inputs.db_addr = 15
+set persist alarm_inputs
+set mayexist alarm_inputs
+request alarm_inputs
+
+
+!*** SELECT OBJECT BG COLOUR ***!
+!*** -----------------------------------------------***!
+
+!*** Background colour for Tagged message ***!
+
+if tag_message_ip.c_value <> "" then
+  object_bg = yellow
+
+!*** Background colour for State 1 ***!
+
+else if b_inputs[1].b_value == 0 and b_inputs[2].b_value == 0 then
+  object_bg = decoroff
+
+!*** Background colour for State 2 ***!
+
+else if b_inputs[1].b_value == 0 and b_inputs[2].b_value == 1 then
+  object_bg = decoroff
+
+!*** Background colour for State 3 ***!
+
+else if b_inputs[1].b_value == 1 and b_inputs[2].b_value == 0 then
+  object_bg = decoroff
+
+!*** Background colour for State 4 ***!
+
+else if b_inputs[1].b_value == 1 and b_inputs[2].b_value == 1 then
+  object_bg = decoroff
+
+else 
+  object_bg = decoroff
+
+
+!*** SELECT OBJECT FG COLOUR ***!
+!*** ---------------------------------------------- ***!
+
+!*** Checks alarm state on database elements ***!
+
+if alarm_inputs[1].alarm_status  == w_note or
+   alarm_inputs[2].alarm_status  == w_note then
+   object_fg = flashred
+
+else if alarm_inputs[1].alarm_status  == w_clr or
+   alarm_inputs[2].alarm_status  == w_clr then  
+   object_fg = red
+
+!*** If no alarm exists then check database values to decide foreground colour ***!
+
+else if b_inputs[1].b_value == 0 and b_inputs[2].b_value == 0 then
+  object_fg = red
+
+else if b_inputs[1].b_value == 0 and b_inputs[2].b_value == 1 then
+  object_fg = green4
+
+else if b_inputs[1].b_value == 1 and b_inputs[2].b_value == 0 then
+  object_fg = white
+
+else if b_inputs[1].b_value == 1 and b_inputs[2].b_value == 1 then
+  object_fg = flashred
+
+else
+  object_fg = decoron
+
+
+!*** TAG MESSAGE PANEL ***!
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+!*** MAIN MENU ***!
+
+!*** Set main menu working area ***!
+
+just = centrecentre
+w=60 h=60
+
+set rect main_menu
+
+!*** Menu title ***!
+
+set title main_menu  = "Object Menu"
+
+!*** Menu Options ***!
+
+set remove main_menu = "Alter Tagged Message"
+set remove main_menu = "Clear Tagged Message"
+set remove main_menu = "Object Control On"
+set remove main_menu = "Object Control Off"
+
+set add main_menu="Alter Tagged Message"
+set add main_menu="Clear Tagged Message"
+set add main_menu = "Object Control On"
+set add main_menu = "Object Control Off"
+
+!*** CONTROL MENU ***!
+
+if valid main_menu then
+   begin
+   case main_menu of
+
+  "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tagged Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+  "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+  "Object Control On"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 2), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 1), src, on)
+         end
+
+  "Object Control Off"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 1), src, off)
+         set_b_value(db_address(int(b1) + b_offset + 2), src, on)
+         end
+
+         default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+!*** TAG MESSAGE BOX ***!
+
+!*** Defines area in which the select button can be pressed to display a tag message ***!
+
+w = 60 h = 60
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+!*** DRAW OBJECT ***!
+
+just = centrecentre
+
+!*** Draw box 60 by 60 pixels with colour defined by object_bg) ***!
+
+x = 0 y = 0 add
+rect (w=60,h=60,fg=object_bg)
+clear
+
+!*** Draw shading around top and left hand sections of object ***!
+
+x = 30 y = -30 add
+x = -30 add
+y = 30 add
+line(fg=decorlight)
+clear
+
+!*** Draw shading around bottom and right hand sections of object ***!
+
+x = 30 y = -30 add
+y = 30 add
+x = -30 add
+line(fg=decorshadow)
+clear
+
+!*** Draw object foreground representing State 1 ***!
+
+if b_inputs[1].b_value == 0 and b_inputs[2].b_value == 0 then
+  begin
+  x=0 y=0
+  circle (h=45,w=45,fg=object_fg,lw=3)
+  x = 15 y = -15 add
+  x = -15 y = 15 add line(fg=object_fg,lw=3) clear
+  x = 15 y = -15 add
+  x = 8 y = -15 add line(fg=object_fg,lw=3) clear
+  x = 15 y = -15 add
+  x = 15 y = -8 add line(fg=object_fg,lw=3) clear
+  x = -15 y = 15 add
+  x = -15 y = 8 add line(fg=object_fg,lw=3) clear
+  x = -15 y = 15 add
+  x = -8 y = 15 add line(fg=object_fg,lw=3) clear
+  end
+
+!*** Draw object foreground representing State 2 ***!
+
+if b_inputs[1].b_value == 0 and b_inputs[2].b_value == 1 then
+  begin
+  x=0 y=0
+  circle (h=45,w=45,fg=object_fg,lw=3)
+  x = 0 y = 20 add
+  x = -5 y = 15 add line(fg=object_fg,lw=3) clear
+  x = 0 y = 20 add
+  x = 5 y = 15 add line(fg=object_fg,lw=3) clear
+  x = 0 y = -20 add
+  x = -5 y = -15 add line(fg=object_fg,lw=3) clear
+  x = 0 y = -20 add
+  x = 5 y = -15 add line(fg=object_fg,lw=3) clear
+  end
+
+!*** Draw object foreground representing State 3 ***!
+
+if b_inputs[1].b_value == 1 and b_inputs[2].b_value == 0 then
+  begin
+  x=0 y=0
+  lw = 4
+  circle (h=45,w=45,fg=object_fg)
+  x = -20 y = 0 add
+  x = 20 add line(fg=object_fg,lw=3) clear
+  x = -20 y = 0 add
+  x = -15 y = -5 add line(fg=object_fg,lw=3) clear
+  x = -20 y = 0 add
+  x = -15 y = 5 add line(fg=object_fg,lw=3) clear
+  x = 20 y = 0 add
+  x = 15 y = -5 add line(fg=object_fg,lw=3) clear
+  x = 20 y = 0 add
+  x = 15 y = 5 add line(fg=object_fg,lw=3) clear
+  end
+
+!*** Draw object foreground representing State 4 ***!
+
+if b_inputs[1].b_value == 1 and b_inputs[2].b_value == 1 then
+  begin
+  x=0 y=0
+  lw = 4
+  circle (h=45,w=45,fg=object_fg)
+  x = 0 y = 0 add text(tfg=black,ch=30,"?") clear
+  end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+standard_object(30000,907,heathro2)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=red,bg=lightblue2,resizable

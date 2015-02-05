@@ -1,0 +1,416 @@
+! HEATHROW CMS - OIL SWITCH
+
+loaded by: HV_2,4,6,7,8,9,10,13,14,15, EAST_INTAKE, NORTH_INTAKE, 
+           SOUTH_INTAKE, SUB_STN_23, SUB_STN_32, SUB_STN_62, 
+           WEST_INTAKE
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type panel_item_row = table (str=string(30))
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+ 
+!
+************************************************************
+* HV OIL SWITCH OBJECT                                     *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object oil_switch_2(fg,bg,b_offset=int,c_offset=int,e_offset=int,
+                    src=source,normal_status=string(1),angle)
+
+!INPUTS!
+VAR permit_to_work_ip = input  b_db_row_type
+VAR normally_open = input  b_db_row_type
+
+
+!REAL INPUTS!
+VAR manually_dress_ip = input  e_db_row_type
+
+!CHARACTER INPUTS!
+VAR tag_message_ip = input  c_db_row_type
+
+! LOOPBACKS !
+VAR oil_sw_bg = loopback  colour
+VAR oil_sw_fg = loopback  colour
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source permit_to_work_ip then 
+   begin
+
+   set source permit_to_work_ip = src
+   set filter permit_to_work_ip.db_addr = lim_eq
+   set limit permit_to_work_ip.db_addr = db_address(int(b1) + b_offset -1)
+   set persist permit_to_work_ip 
+   request permit_to_work_ip
+
+   set source normally_open = src
+   set filter normally_open.db_addr = lim_eq
+   set limit normally_open.db_addr = db_address(int(b1) + b_offset)
+   set persist normally_open 
+   request normally_open
+ 
+!REQUEST TEXT FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+!REQUEST REAL FROM SCOPE!  
+
+   set source manually_dress_ip = src
+   set filter manually_dress_ip.db_addr = lim_eq
+   set limit manually_dress_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist manually_dress_ip 
+   request manually_dress_ip
+
+   end
+
+! SELECT SWITCH BG COLOUR ! 
+
+if permit_to_work_ip.b_value then
+  begin
+  oil_sw_bg = orange
+  end
+
+else if tag_message_ip.c_value <> "" then 
+  begin
+  oil_sw_bg = yellow
+  end
+
+else
+  oil_sw_bg = decoroff     
+
+
+! SELECT SWITCH FG COLOUR !
+
+if int(manually_dress_ip.e_value) == 1 and
+      normal_status == "c" then
+   oil_sw_fg = green4
+
+else if int(manually_dress_ip.e_value) == 2 and
+      normal_status == "o" then
+   oil_sw_fg = green4
+
+else if int(manually_dress_ip.e_value) == 3 then
+   oil_sw_fg = white
+
+else 
+   oil_sw_fg = red
+ 
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+!MAIN MENU!
+
+just = centrecentre
+w=40 h=80 
+set rect main_menu
+set title main_menu  = "Oil Switch Main Menu"
+set remove main_menu = "Alter Tagged Message"
+set remove main_menu = "Clear Tagged Message"
+set remove main_menu = "Alter Permit to Work"
+set remove main_menu = "OPEN Oil Switch"
+set remove main_menu = "CLOSE Oil Switch"
+set remove main_menu = "SWITCH to Feeder Earth"
+set remove main_menu = "Undress"
+
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+   case main_menu of
+      "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Permit to Work"
+         begin
+         if permit_to_work_ip.b_value then
+            begin
+            set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+            end
+         else if permit_to_work_ip.b_value == off then
+            begin
+            set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+            end
+         end
+
+      "CLOSE Oil Switch"
+         begin
+         set_e_value(db_address(int(e1) + e_offset - 1), src, 1)
+         end
+
+      "OPEN Oil Switch"
+         begin
+         set_e_value(db_address(int(e1) + e_offset - 1), src, 2)
+         end
+
+      "SWITCH to Feeder Earth"
+         begin
+         set_e_value(db_address(int(e1) + e_offset - 1), src, 3)
+         end
+
+      "Undress"
+         begin
+         if normally_open.b_value then
+            set_e_value(db_address(int(e1) + e_offset - 1), src, 2)
+         else
+            set_e_value(db_address(int(e1) + e_offset - 1), src, 1)
+         end
+
+      default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+
+! TAG MESSAGE BOX !
+
+x=0 y=0
+w=40 h=80
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+! MAIN MENU OPTIONS !
+
+set add main_menu = "Alter Tagged Message"
+set add main_menu = "Clear Tagged Message"
+set add main_menu = "Alter Permit to Work"
+
+
+! DRAW OIL SWITCH !
+
+bg=oil_sw_bg
+fg=oil_sw_fg
+just = centrecentre
+rect (w=80,h=40,fg=bg)
+clear
+x -= 20 y += 40 add
+y -= 80 add
+x += 40 add line (fg=decorlight) clear 
+y += 1 add
+y += 79 add
+x -= 40 add line (fg=decorshadow) clear
+
+if int(manually_dress_ip.e_value) == 1 then
+! IF CLOSED DRAW SYMBOL !
+begin
+   lw = 6
+   x = 0 y = -40 add
+   y += 80 add line (fg=oil_sw_fg) clear
+   y -= 55 add disk(h=14,w=14,fg=oil_sw_fg)
+   y += 30 add line(fg=oil_sw_fg,lw=4)
+           disk(h=14,w=14,fg=oil_sw_fg)  
+   
+   set add main_menu = "OPEN Oil Switch"
+   !set add main_menu = "Undress"!
+   clear
+end
+
+else if int(manually_dress_ip.e_value) == 2 then
+! IF OPEN DRAW SYMBOL !
+begin
+   lw = 6
+   x = 0 y = -40 add
+   y += 25 add line (fg=oil_sw_fg) clear
+   y += 30 add    
+   y += 25 add line (fg=oil_sw_fg) clear       
+
+   y -= 55 add disk(h=10,w=10,fg=white)
+               circle(h=10,w=10,fg=oil_sw_fg)
+   y += 30 add disk(h=10,w=10,fg=white)  
+               circle(h=10,w=10,fg=oil_sw_fg) clear
+   y = 0 x = -10 add
+   x = 11 add line(lw=6) clear
+   set add main_menu = "CLOSE Oil Switch"
+   set add main_menu = "SWITCH to Feeder Earth"
+   !set add main_menu = "Undress"!
+end
+
+else if int(manually_dress_ip.e_value) == 3 then
+! DRAW FEEDER EARTH SYMBOL !
+begin
+      x= 0 y = 0
+      lw=2
+      y -= 40 add
+      y += 8 add line clear
+      disk (w=8,h=8)
+      lw=4
+      y += 1 add
+      y += 20 add line clear
+      disk (w=8,h=8)
+      lw=2
+      y += 1 add
+      y += 8 add line 
+      x -= 11 add
+      x += 22 add line clear
+      x -= 4 y += 5 add
+      x -= 14 add line clear
+      x += 4 y += 5 add
+      x += 6 add line clear
+      y += 24 add
+      x -= 6 add line clear
+      x += 3 add
+      y += 8 add line clear
+
+   set add main_menu = "OPEN Oil Switch"
+   !set add main_menu = "Undress"!
+end
+
+else
+begin
+   x= 0 y = 0 add
+   tfg = red
+   ch = 40 
+   text ("?")
+   set add main_menu = "OPEN Oil Switch"
+   set add main_menu = "CLOSE Oil Switch"
+   set add main_menu = "SWITCH to Feeder Earth"
+   clear
+end
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 260
+x = 50
+oil_switch_2(3,2,1300,heathrow,"o",angle=90)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=red,bg=black,resizable
+

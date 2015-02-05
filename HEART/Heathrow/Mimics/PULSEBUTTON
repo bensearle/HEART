@@ -1,0 +1,935 @@
+!*****************************************	
+  Created by Bill Armstrong		
+       08 March 2001		
+       updated		
+       16 April 2002		
+*****************************************!
+
+load mimic_libutil
+!load PULSEBUTTON_HELP!
+
+type e_db_row_type 	= db_elements(db_addr,e_value)
+type menu_options_type = enum(tag_message = "Alter Tagged Message",untag_message = "Clear Tagged Message")
+
+!*** GRAPH SETUP ***!
+type panel_row = table (str=string(79))
+type c_db_row_type = db_elements(db_addr,c_value)
+type panel_item_row = table (str = string(40))
+type main_menu_row = table (main_menu_items= string(26))
+
+type time_base_opt = enum(p30m="30 Minutes",
+			  p1h="1 Hour",
+			  p2h="2 Hours",
+			  p4h="4 Hours",
+			  p6h="6 Hours",
+			  p8h="8 Hours",
+			  p10h="10 Hours",
+			  p12h="12 Hours",
+			  p18h="18 Hours",
+			  p24h="24 Hours",
+			  p36h="36 Hours",
+			  p2d="2 Days",
+			  p3d="3 Days",
+			  p4d="4 Days",
+			  p5d="5 Days",
+			  p6d="6 Days",
+			  p1w="1 Week",
+			  p2w="2 Weeks",
+			  p4w="4 Weeks",
+			  p8w="8 Weeks",
+			  p12w="12 Weeks",
+			  p16w="16 Weeks",
+			  p20w="20 Weeks",
+			  p26w="26 Weeks",
+			  p1yr="1 Year",
+			  p2yr="2 Years",
+			  p3yr="3 Years")
+
+
+!-----------------------------------------------------------------------------!
+!  WRITE ENGINEERING VALUE                               !
+!-----------------------------------------------------------------------------!
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************!
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE text                        *
+* This object displays a tag message. *
+***************************************!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+	y=-10text ("*** Tag Message ***")
+	y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,h=50,w=750,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string(100))
+var mss = popup  mss_m
+begin
+	set x mss=0
+	set y mss=0
+	set title mss= "Message"
+	request mss(tag_mess)
+end
+
+object num_0(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"0") clear
+end
+
+object num_1(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"1") clear
+end
+
+object num_2(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"2") clear
+end
+
+object num_3(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"3") clear
+end
+
+object num_4(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"4") clear
+end
+
+object num_5(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"5") clear
+end
+
+object num_6(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"6") clear
+end
+
+object num_7(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"7") clear
+end
+
+object num_8(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"8") clear
+end
+
+object num_9(tfg)
+begin
+just=centrecentre
+x = 0 y = 0 rect(w=14,h=18,fg=white) clear
+x = -8 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = 7 y = -9 add y += 19 add line(fg=black,lw=1) clear
+x = -7 y = -10 add x += 14 add line(fg=black,lw=1) clear
+x = -7 y = 10 add x += 14 add line(fg=black,lw=1) clear
+x = 0 y = 0 add text(ch=16,font=font_bold,just=centrecentre,"9") clear
+end
+
+object screw_head
+begin
+just=centrecentre
+x = 0 y = 0 disk(fg=decoron,w=11,h=11)
+x = -3 y = 3 add x = 3 y = -3 add line(lw=2,fg=white) clear
+x = 0 y = 0 circle(fg=black,lw=1,w=11,h=11) clear
+x = -2 y = 4 add x = 4 y = -2 add line(lw=1,fg=black) clear
+x = -4 y = 2 add x = 2 y = -4 add line(lw=1,fg=black) clear
+end
+
+!------------ kWH DIAL  ------------------!
+object pulse_reading_kwh(kwh_last_tx=real,src=source)
+
+var pulse_reading_ip = input e_db_row_type
+var first_dig_real = real
+var second_dig_real = real
+var third_dig_real = real
+var forth_dig_real = real
+var fifth_dig_real = real
+var sixth_dig_real = real
+var seventh_dig_real = real
+
+var first_dig = int
+var second_dig = int
+var third_dig = int
+var forth_dig = int
+var fifth_dig = int
+var sixth_dig = int
+var seventh_dig = int
+
+begin
+!**** FIRST DIGIT MATHS ****!
+
+if kwh_last_tx > 1000000 then
+   begin
+   first_dig_real = 1
+   end
+else
+   begin
+   first_dig_real = 0
+   end
+first_dig = int(first_dig_real)
+
+!**** SECOND DIGIT MATHS ****!
+
+if kwh_last_tx < 1000000 then
+   begin
+   second_dig_real = (kwh_last_tx/100000)
+   end
+else
+   begin
+   second_dig_real = ((kwh_last_tx - 1000000)/100000)
+   end
+second_dig = int(second_dig_real)
+
+!**** THIRD DIGIT MATHS ****!
+
+if kwh_last_tx < 1000000 then
+   begin
+   third_dig_real = ((kwh_last_tx/10000) - (second_dig * 10))
+   end
+else
+   begin
+   third_dig_real = ((kwh_last_tx - 1000000)/10000 - (second_dig * 10))
+   end
+third_dig = int(third_dig_real)
+
+!**** FORTH DIGIT MATHS ****!
+
+if kwh_last_tx < 1000000 then
+   begin
+   forth_dig_real = (kwh_last_tx/1000) - ((third_dig * 10) + (second_dig * 100))
+   end
+else
+   begin
+   forth_dig_real = ((kwh_last_tx - 1000000)/1000) - ((third_dig * 10) + (second_dig * 100))
+   end
+forth_dig = int(forth_dig_real)
+
+!**** FIFTH DIGIT MATHS ****!
+
+if kwh_last_tx < 1000000 then
+   begin
+   fifth_dig_real = (kwh_last_tx/100) - ((forth_dig * 10) + (third_dig * 100) + (second_dig * 1000))
+   end
+else
+   begin
+   fifth_dig_real = ((kwh_last_tx - 1000000)/100) - ((forth_dig * 10) + (third_dig * 100) + (second_dig * 1000))
+   end
+fifth_dig = int(fifth_dig_real)
+
+!**** SIXTH DIGIT MATHS ****!
+
+if kwh_last_tx < 1000000 then
+   begin
+   sixth_dig_real = (kwh_last_tx/10) - ((fifth_dig * 10) + (forth_dig * 100) + (third_dig * 1000) + (second_dig * 10000))
+   end
+else
+   begin
+   sixth_dig_real = ((kwh_last_tx - 1000000)/10) - ((fifth_dig * 10) + (forth_dig * 100) + (third_dig * 1000) + (second_dig * 10000))
+   end
+sixth_dig = int(sixth_dig_real)
+
+!**** SEVENTH DIGIT REAL ****!
+
+if kwh_last_tx < 1000000 then
+   begin
+   seventh_dig_real = kwh_last_tx - ((sixth_dig * 10) + (fifth_dig * 100) + (forth_dig * 1000) + (third_dig * 10000) + (second_dig * 100000))
+   end
+else
+   begin
+   seventh_dig_real = (kwh_last_tx - 1000000) - ((sixth_dig * 10) + (fifth_dig * 100) + (forth_dig * 1000) + (third_dig * 10000) + (second_dig * 100000))
+   end
+seventh_dig = int(seventh_dig_real)
+
+!**** DRAW HOURS RUN DISPLAY ****!
+
+just = centrecentre
+
+x = 0 y = 0
+rect(w=200,h=90,fg=black) clear
+x = -100 y = 45 add x += 200 add y -= 90 add line(fg=decorshadow) clear
+x = -100 y = 45 add y -= 90 add x += 200 add line(fg=decorlight) clear
+x = -80 y = 30 add x += 160 add y -= 60 add x -= 160 add y += 60 add fill(fg=lightblue3) clear
+
+x = -80 y = 30 add x += 160 add x += 5 y += 5 add x -= 170 add x += 5 y -= 5 add fill(fg=decoroff) clear
+x = -80 y = 30 add y -= 60 add x -= 5 y -= 5 add y += 70 add x += 5 y -= 5 add fill(fg=decorshadow) clear
+x = -80 y = -30 add x += 160 add x += 5 y -= 5 add x -= 170 add x += 5 y += 5 fill(fg=decorshadow) clear
+x = 80 y = 30 add y -= 60 add x += 5 y -= 5 add y += 70 add x -= 5 y -= 5 fill(fg=decoroff) clear
+
+
+
+!**** FIRST DIGIT DISPLAY ****!
+
+x = -1 y = 15 text(tfg=lightblue4,ch=20,"kWh ") clear
+x = -2 y = 14 text(tfg=black,ch=20,"kWh") clear
+
+y = -10
+x = -54
+if first_dig == 0 then num_0
+else num_1
+
+!**** SECOND DIGIT DISPLAY ****!
+
+x = -36
+if second_dig == 0 then num_0
+else if second_dig == 1 then num_1
+else if second_dig == 2 then num_2
+else if second_dig == 3 then num_3
+else if second_dig == 4 then num_4
+else if second_dig == 5 then num_5
+else if second_dig == 6 then num_6
+else if second_dig == 7 then num_7
+else if second_dig == 8 then num_8
+else if second_dig == 9 then num_9
+else num_0
+
+!**** THIRD DIGIT DISPLAY ****!
+
+x = -18
+if third_dig == 0 then num_0
+else if third_dig == 1 then num_1
+else if third_dig == 2 then num_2
+else if third_dig == 3 then num_3
+else if third_dig == 4 then num_4
+else if third_dig == 5 then num_5
+else if third_dig == 6 then num_6
+else if third_dig == 7 then num_7
+else if third_dig == 8 then num_8
+else if third_dig == 9 then num_9
+else num_0
+
+!**** FORTH DIGIT DISPLAY ****!
+
+x = 0
+if forth_dig == 0 then num_0
+else if forth_dig == 1 then num_1
+else if forth_dig == 2 then num_2
+else if forth_dig == 3 then num_3
+else if forth_dig == 4 then num_4
+else if forth_dig == 5 then num_5
+else if forth_dig == 6 then num_6
+else if forth_dig == 7 then num_7
+else if forth_dig == 8 then num_8
+else if forth_dig == 9 then num_9
+else num_0
+
+!**** FIFTH DIGIT DISPLAY ****!
+
+x = 18
+if fifth_dig == 0 then num_0
+else if fifth_dig == 1 then num_1
+else if fifth_dig == 2 then num_2
+else if fifth_dig == 3 then num_3
+else if fifth_dig == 4 then num_4
+else if fifth_dig == 5 then num_5
+else if fifth_dig == 6 then num_6
+else if fifth_dig == 7 then num_7
+else if fifth_dig == 8 then num_8
+else if fifth_dig == 9 then num_9
+else num_0
+
+!**** SIXTH DIGIT DISPLAY ****!
+
+x = 36
+if sixth_dig == 0 then num_0
+else if sixth_dig == 1 then num_1
+else if sixth_dig == 2 then num_2
+else if sixth_dig == 3 then num_3
+else if sixth_dig == 4 then num_4
+else if sixth_dig == 5 then num_5
+else if sixth_dig == 6 then num_6
+else if sixth_dig == 7 then num_7
+else if sixth_dig == 8 then num_8
+else if sixth_dig == 9 then num_9
+else num_0
+
+!**** SEVENTH DIGIT DISPLAY ****!
+
+x = 54
+if seventh_dig == 0 then num_0
+else if seventh_dig == 1 then num_1
+else if seventh_dig == 2 then num_2
+else if seventh_dig == 3 then num_3
+else if seventh_dig == 4 then num_4
+else if seventh_dig == 5 then num_5
+else if seventh_dig == 6 then num_6
+else if seventh_dig == 7 then num_7
+else if seventh_dig == 8 then num_8
+else if seventh_dig == 9 then num_9
+else num_0
+end
+
+object dial_display(kwh_last_tx=real,src=source)
+begin
+	just=centrecentre
+	x = 22 y =-50 box(w=490,h=150,fg=black,lw=1) clear
+	scale=160
+	x = -84 y = -84 screw_head
+	x = 86 y = -84 screw_head
+	x = -84 y =-6 screw_head
+	x = 86 y = -6 screw_head
+	scale =140
+	x = 0 y = 0 text(ch=20,tfg=black,"kWh UNITS USED")
+	x = 0 y = 15 text(ch=20,tfg=black,"WITHIN HALF HOUR")
+	scale = 280
+	x = 20 y = -105 text(ch=20,tfg=grey,"Pulse Monitor kWh Display ")
+	x -= 1 y -= 1 text(ch=20,tfg=decorlight,"Pulse Monitor kWh Display ")
+	scale=200
+	x = 0 y =- 45 pulse_reading_kwh(kwh_last_tx,src)
+end
+
+!*trend mimic*!
+object trend_2(w, h, font, ch, tfg, fg, bg, 
+              src=source,tag_offset=int,id=db_address,
+              time_now=yesno, 
+              lines=yesno, values=yesno, start_end=s_e_time_type,
+              program_col=colour, manual_col=colour,
+              outstn_col=colour, disabled_col=colour, trend_col=colour,
+              stats_col=colour,invalid_col=colour,ident=string)
+
+var i 			= loopback value_row_type
+var i2			= loopback value_row_type
+var trend_span		= int
+var last_trend_span	= int
+var tmin			= dynam_time
+var tmax			= dynam_time
+var d_src			= string
+var interval 		= loopback  int
+var grats			= loopback  max_min_row_type
+var horiz 			= loopback  ta_sb_r_type
+var verti			= loopback  ta_sb_r_type
+var current_mode		= onoff
+var first_run		= loopback  int
+var first_run_2 		= loopback  int
+var first_run_3 		= loopback  int
+var v_max		= real
+var v_min 		= real
+var error_text		= string(80)
+
+var  trend_message_ip          = input c_db_row_type
+var time_base_options	= panel time_base_opt
+var main_menu_panel 	= menu string(30)
+var time_base_panel 	= panel panel_item_row
+var tag_panel 		= panel panel_row
+var upper_limit_panel 	= panel real
+var lower_limit_panel 	= panel real
+var time_base_duration	= string
+var upper_limit		= int
+var lower_limit		= int
+
+begin
+	if invalid get source trend_message_ip then
+	begin
+   		set source trend_message_ip= src
+   		set filter trend_message_ip.db_addr = lim_eq
+   		set limit trend_message_ip.db_addr = db_address(int(c1) + tag_offset -1)
+   		set persist trend_message_ip
+   		request trend_message_ip
+	end
+
+	! TAG MESSAGE PANEL !
+	if valid  tag_panel then
+	   begin
+	   	set_c_value( db_address(int(c1) + tag_offset - 1),src,tag_panel.str)
+	   	set invalid  tag_panel
+	   end
+
+	if trend_message_ip.c_value <> "" then
+  	   begin
+	    	x = 200 y = 100 rect(just=centrecentre,w=560,h=260,fg=yellow) clear
+  	   end
+	else 
+	   begin
+	    	x = 200 y = 100 rect(just=centrecentre,w=560,h=260,fg=white) clear
+	   end
+
+	lw=1 fg=black
+	x = -80 y = 230 add
+	x += 560 add
+	y -= 260 add
+	x -= 560 add
+	y += 260 add line clear
+
+	x = -80 y = -50 add
+	x += 560 add line(lw=1,fg=decorshadow) clear
+	x = -80  y += 1 add
+	x += 560 add line(lw=1,fg=decorlight) clear
+
+	x = -80 y = 250 add
+	x += 560 add line(lw=1,fg=decorshadow) clear
+	x = -80  y += 1 add
+	x += 560 add line(lw=1,fg=decorlight) clear
+	
+	x = 0 y = 0
+	w = 400 h = 200
+	set rect main_menu_panel
+	set title main_menu_panel = "Trend Menu"
+	set remove main_menu_panel = "Alter Time Base"
+	set remove main_menu_panel = "Alter Y-Axis Upper"
+	set remove main_menu_panel = "Alter Y-Axis Lower"
+	set remove main_menu_panel = "Alter Trend Tag"
+	set remove main_menu_panel = "Clear Trend Tag"
+	set add main_menu_panel = "Alter Time Base"
+	set add main_menu_panel = "Alter Y-Axis Upper"
+	set add main_menu_panel = "Alter Y-Axis Lower"
+	set add main_menu_panel = "Alter Trend Tag"
+	set add main_menu_panel = "Clear Trend Tag"
+	
+	if valid main_menu_panel then
+	   begin
+		case main_menu_panel of
+		"Alter Time Base"
+		begin
+			set title time_base_options = "Time Base Options"
+	        		set unpinned time_base_options
+	        		request time_base_options
+		end
+
+		"Alter Y-Axis Upper"
+		begin
+			set title upper_limit_panel = "Y-Axis Upper Setpoint"
+			set apply upper_limit_panel
+			request upper_limit_panel
+		end
+
+		"Alter Y-Axis Lower"
+		begin
+			set title lower_limit_panel = "Y-Axis Lower Setpoint"
+			set apply lower_limit_panel
+			request lower_limit_panel
+		end
+
+		"Alter Trend Tag"
+		begin
+			set title tag_panel = "Alter Screen Tag"
+			set label tag_panel.str = "Tag Message: "
+			set unpinned tag_panel
+			request tag_panel
+		end
+ 
+		"Clear Trend Tag"
+		begin
+			set_c_value(db_address(int(c1) + tag_offset - 1), src, "") 
+		end
+
+		default
+		   begin
+		   end
+
+        	      set invalid main_menu_panel
+
+	   end
+
+	if invalid first_run_2 then
+	   begin
+   		v_max=1000
+   		first_run_2=1
+	   end
+	else if valid upper_limit_panel then
+	   begin
+   		v_max = upper_limit_panel
+   		set invalid upper_limit_panel
+   	   end
+
+	if invalid first_run_3 then
+	   begin
+   		v_min=0
+   		first_run_3=1
+   	   end
+	else if valid lower_limit_panel then
+	   begin
+	   	v_min = lower_limit_panel
+   		set invalid lower_limit_panel
+   	   end
+  
+	if v_max > v_min then
+	   begin
+   		error_text=""
+   		y+=h
+   		d_src=string(src)
+   		set default horiz
+   		set default verti
+   		set value horiz.offset = 0
+   		set value horiz.units_displayed = 1 
+   		set value verti.offset = 0
+   		set value verti.units_displayed = 1
+   		current_mode = on
+
+   	         case time_base_options of
+
+      		p30m  begin trend_span = 1800 time_base_duration = "30 Minutes" end
+      		p1h   begin trend_span = 3600 time_base_duration = "1 Hour" end
+      		p2h   begin trend_span = 7200 time_base_duration = "2 Hours" end
+      		p4h   begin trend_span = 14400 time_base_duration = "4 Hours" end
+      		p6h   begin trend_span = 21600 time_base_duration = "6 Hours" end
+      		p8h   begin trend_span = 28800 time_base_duration = "8 Hours" end
+      		p10h  begin trend_span = 36000 time_base_duration = "10 Hours" end
+      		p12h  begin trend_span = 43200 time_base_duration = "12 Hours" end
+      		p18h  begin trend_span = 64800 time_base_duration = "18 Hours" end
+      		p24h  begin trend_span = 86400 time_base_duration = "24 Hours" end
+      		p36h  begin trend_span = 129600 time_base_duration = "36 Hours" end
+      		p2d   begin trend_span = 172800 time_base_duration = "2 Days" end
+      		p3d   begin trend_span = 259200 time_base_duration = "3 Days" end
+      		p4d   begin trend_span = 345600 time_base_duration = "4 Days" end
+      		p5d   begin trend_span = 432000 time_base_duration = "5 Days" end
+      		p6d   begin trend_span = 518400 time_base_duration = "2 Days" end
+      		p1w   begin trend_span = 604800 time_base_duration = "1 Week" end
+      		p2w   begin trend_span = 1209600 time_base_duration = "2 Weeks" end
+      		p4w   begin trend_span = 2419200 time_base_duration = "4 Weeks" end
+      		p8w   begin trend_span = 4838400 time_base_duration = "8 Weeks" end
+      		p12w  begin trend_span = 7257600 time_base_duration = "12 Weeks" end
+      		p16w  begin trend_span = 9676800 time_base_duration = "16 Weeks" end
+      		p20w  begin trend_span = 12096000 time_base_duration = "20 Weeks" end
+      		p26w  begin trend_span = 15724800 time_base_duration = "26 Weeks" end
+      		p1yr  begin trend_span = 31449600 time_base_duration = "1 Year" end
+      		p2yr  begin trend_span = 62899200 time_base_duration = "2 Years" end
+      		p3yr  begin trend_span = 94348800 time_base_duration = "3 Years" end
+     
+		default
+	 	   begin
+			if invalid first_run then
+			   begin
+				trend_span=86400
+				time_base_duration = "24 Hours"		
+				first_run=1
+			   end
+			else
+			   begin
+			   end
+		end
+
+   		if valid interval then
+   		   interval = grats.interval
+   		else 
+   		   interval = 1
+	
+		   if time_now == yes then
+		      tmax = current_time
+		   else
+		      tmax = current_time + (interval - (current_time % interval))
+	
+		   tmin = tmax - trend_span
+	
+	      if start_end <> none then
+	         begin
+	            case start_end of
+		    display_date      
+		       begin
+			timef=local_dmy
+			while length (string(tmax)) > w/3 and ch <> 0 do
+			ch --
+		       end
+	   	    display_datetime  
+		       begin
+			timef=local_dmy_hms
+			while length (string(tmax)) > w/2 and ch <> 0 do
+			ch --
+		       end
+	   	    display_time      
+		       begin
+			timef=local_hms
+			while length (string(tmax)) > w/5 and ch <> 0 do
+			ch --
+		       end
+	   	    default
+	   	       begin
+	   	       end
+         	             ch ++   
+	         end
+
+  	 	set default grats 
+   		if lines == yes then
+  	 	  begin
+	   	        grats = axis(tmin,tmax,v_min,v_max,on,off,horiz,verti,no,values,axis1)
+	   	  end
+	   	else
+	   	  begin  
+	   	        grats = axis(tmin,tmax,v_min,v_max,off,off,horiz,verti,no,values,axis1)
+	     	  end  
+	
+	   	set default i
+	
+		i=mimic_graph(tmin,tmax,v_min,v_max,d_src,
+			 id,no,yes,yes,current_mode,
+			 program_col,manual_col,outstn_col,disabled_col,
+			 trend_col,stats_col,invalid_col)
+	
+		set default i2
+
+	  	if start_end <> none then
+	  	    begin
+	  	    	y += (ch+5)
+	  	    	text(just=centrecentre,tmin)
+	  	    	text(x=w,just=centrecentre,tmax)
+	  	    end
+   	   end
+ 	else
+	   error_text = "Please Re-enter Y-Axis Upper and Lower Limits"
+
+	if error_text <> "" then 
+	   begin
+		y = 180
+		xv_message
+		(just=centrecentre,fg=decoroff,x = x + w/2,y=y-h/2,"Warning",error_text)
+	   end
+	y = 260
+	x = -20 add text(tfg=black,ch=15,"Time Base Duration :")
+	x = 150 add text(tfg=blue,ch=15,time_base_duration)
+	y = -70  
+	x = 0 add text(tfg=black,just=centrecentre,ch=15,"Y-Axis Upper Limit :")
+	x = 145 add text(tfg=blue,just=centreright,ch=15,v_max)
+	x = 150 add text(tfg=blue,just=centreleft,ch=15,ident)
+	x = 300 add text(tfg=black,just=centrecentre,ch=15,"Y-Axis Lower Limit :")
+	x = 445 add text(tfg=blue,just=centreright,ch=15,v_min)
+	x = 450 add text(tfg=blue,just=centreleft,ch=15,ident)
+
+	! TAG MESSAGE BOX !
+	just=centrecentre
+	x = 200 y = 100
+	w=560 h=260
+	if ROTselb and trend_message_ip.c_value <> "" then
+	   begin
+	      message_text_box(trend_message_ip.c_value)
+	   end
+end
+
+!-----------------------------------------------------------------------------------	!
+!*** PULSE DETAIL POPUP MIMIC -with TREND DISPLAY ***!
+!-----------------------------------------------------------------------------------	!
+object pulse_det(MAIN_TITLE=string,e_offset=int,src=source,c_offset=int,e_verify=int)
+var kwh_input = input e_db_row_type
+! VAR Counting !
+var count_msb =int
+var count_mid_sb =int
+var count_lsb = int
+var count_w1=real !Lowest!
+var count_w2=real !Med-range!
+var count_w3=real !Highest!
+var kwh_last_tx =int
+var kwh_status =real
+var trend_last_half_hr = db_address
+var trend_axis = time_base_opt 
+begin
+	!REQUEST REAL FROM SCOPE! 
+	if invalid get source kwh_input then
+	begin
+		set source kwh_input = src
+		set filter kwh_input.db_addr = lim_eq
+		set limit kwh_input.db_addr = db_address(int(e1) + e_offset - 1) 
+		set priority kwh_input.db_addr = 15
+		set persist kwh_input
+		set mayexist kwh_input
+		request kwh_input
+	end
+
+	!*** MAIN BOX***!
+	x=-297 y=-342 w=593 h=202 angle=0 just=TOPLEFT fg=DECOROFF fs=fillsolid rotrect
+	x=-291 y=-337 w=583 h=191 angle=0 just=TOPLEFT fg=GREY80 fs=fillsolid rotrect Clear
+	
+	!*** LAST VALUE TRANSMITTED ****** LAST VALUE KWh***!
+	! calculation for last value !
+	kwh_last_tx=int(kwh_input.e_value)
+
+	scale=300
+	x=-25 y=-180 dial_display(kwh_last_tx,src)
+	scale=256
+
+	!*** TRENDING *** !
+	Clear
+	x=-297y=-135 w=593 h=59 angle=0 just=TOPLEFT fg=DECOROFF fs=fillsolid rotrect
+	x=-291 y=-127 w=583 h=42 angle=0 just=TOPLEFT fg=GREY80 fs=fillsolid rotrect Clear
+	x=0 y=-105 Ch=21 font=font_normal fontname="Arial" tfg=black  just=CENTRECENTRE text(MAIN_TITLE)
+	x=-293 y=-85 Add
+	x=-293 y=-127 Add
+	x=293 y=-127 Add
+	fg=white ls=solid lw=1 cs=capround line
+	CLEAR
+	x=-293 y=-85 Add
+	x=293 y=-85 Add
+	x=293 y=-127 Add
+	fg=DECORSHADOW ls=solid lw=1 cs=capround line clear
+
+	x=-297y=-70 w=593 h=408 angle=0 just=TOPLEFT fg=DECOROFF fs=fillsolid rotrect
+	x=-291 y=-60 w=583 h=391 angle=0 just=TOPLEFT fg=GREY80 fs=fillsolid rotrect Clear
+	Clear
+	x=-293 y=330 Add
+	x=-293 y=-60 Add
+	x=293 y=-60 Add
+	fg=white ls=solid lw=1 cs=capround line
+	CLEAR
+	x=293 y=-60 Add
+	x=293 y=330 Add
+	x=-293 y=330 Add
+	fg=DECORSHADOW ls=solid lw=1 cs=capround line clear
+
+	trend_last_half_hr =kwh_input.db_addr
+	x=-200 y=50 trend_2(w=400,h=200,font=font_bold,ch=12,tfg=black,fg=white,bg=black,src,c_offset,trend_last_half_hr,yes,yes,yes,display_datetime,blue,blue,red,blue,green,cyan,flashred,"kWh")
+end
+mimic pulse_det = pulse_det w=600,h=690,just=centrecentre,resizable
+
+!***PULSE BUTTON***!
+Object kwh_detail(MAIN_TITLE=string,e_offset=int,src=source,c_offset=int,e_verify=int)
+var  trend_message_ip          = input c_db_row_type
+var  tag_message_ip	= input c_db_row_type
+var pulse_detail = popup pulse_det
+begin
+	if invalid get source tag_message_ip then
+	begin
+	   	set source tag_message_ip = src
+	   	set filter tag_message_ip.db_addr = lim_eq
+	   	set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+	   	set persist tag_message_ip
+	   	request tag_message_ip
+
+   		set source trend_message_ip= src
+   		set filter trend_message_ip.db_addr = lim_eq
+   		set limit trend_message_ip.db_addr = db_address(int(c1) +  c_offset )
+   		set persist trend_message_ip
+   		request trend_message_ip
+	end
+
+	!*draw pushbutton*!
+	!*display yellow rectangle if a tag message exists on pulse meter*!
+	if trend_message_ip.c_value<>"" or tag_message_ip.c_value<>"" then
+		fg=yellow
+	else fg=decoroff
+	
+  	x=0 y=0 w=50 h=17 just=centrecentre fs=fillsolid angle=0 rotrect Clear
+	x=0 y=1 Ch=14 font=font_normal fontname="Arial" tfg=Black just=centrecentre text("kWh") Clear
+	Clear
+	x=25 y=-8 Add
+	x=25 y=10 Add
+	x=-23 y=10 Add
+	fg=grey60 ls=solid lw=1 cs=capround line Clear
+	x=-24 y=9 Add
+	x=-24 y=-8 Add
+	x=24 y=-8 Add
+	fg=decorlight ls=solid lw=1 cs=capround line
+	clear
+	
+	!*call pulse information popup if pressed*!
+	x=0 y=0 w=50 h=17
+	if   ROTselb then 
+	begin
+		x=0 y=0 w=50 h=17 fg=grey40 just=centrecentre fs=fillsolid angle=0 rotrect Clear
+		request pulse_detail(MAIN_TITLE,e_offset,src,c_offset,e_verify)
+		Clear
+			x=25 y=-8 Add
+			x=25 y=10 Add
+			x=-23 y=10 Add
+			fg=grey60 ls=solid lw=1 cs=capround line Clear
+			x=-24 y=9 Add
+			x=-24 y=-8 Add
+			x=24 y=-8 Add
+			fg=grey60 ls=solid lw=1 cs=capround line
+		clear
+	end
+end
+
+!*** MAIN OBJECT ***!
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+!kwh_detail(MAIN_TITLE=string,b_offset=int,src=source,tag_offset=int,id1=db_address,id2=db_address)!
+!kwh_detail("PULSE MONITOR P1 kWh v Time",2062,heathro3,161,e1498,e1499,159,2076)!
+y+=30 !kwh_detail("PULSE MONITOR P1 kWh v Time",954,heathro3,400,981)!
+ 
+
+
+
+end
+
+mimic = main_object w=210,h=200,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+

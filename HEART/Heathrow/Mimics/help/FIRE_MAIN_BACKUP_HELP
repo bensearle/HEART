@@ -1,0 +1,26 @@
+helptext backup_help = "
+
+FIRE MAIN BACKUP HELP PAGE
+--------------------------
+This object gives the user complete control over the backup panel located at the Fire main pumphouse.
+
+The backup panel is located adjacent to the side entrance door at M1/14, opposite to the entrance to the HV Room.
+
+The backup panel is set to start pumps when the pressure is reduced to below 90 PSI, this is as long as the panel is enabled.
+
+The panel is normally left in the enabled state.
+
+It is possible send various controls to the backup panel, these are highlighted as follows:
+
+
+ENABLE BACKUP
+-------------
+If this control options is selected then a CONFIRM/CANCEL box is presented and the panel will be automatically enabled, the indication of this is highlighted in the object.
+
+DISABLE BACKUP
+--------------
+This control works in the same way as the enable control but leaves the backup panel in the disabled state.
+
+NORMAL STOP
+-----------
+"

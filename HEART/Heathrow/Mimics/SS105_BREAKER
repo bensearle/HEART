@@ -1,0 +1,964 @@
+!-----------------------------------------------------------------------------!
+!  Substation 105 Breaker Object	                      !
+!-----------------------------------------------------------------------------!
+
+!  SETUP  !
+
+LOAD mimic_libutil
+LOAD SS105_BREAKER_HELP
+! LOAD gadgets_libutil!
+LOAD ss105_cb_confirm
+
+TYPE e_db_row_type 	= db_elements(db_addr,e_value)
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+TYPE c_db_row_type 	= db_elements(db_addr,c_value)
+TYPE b_bool_type 	= db_elements(b_value)
+TYPE alarm_row_type 	= db_elements(old,alarm_status)
+TYPE main_menu_row 	= table (main_menu_items= string(27))
+TYPE confirm_state 	= enum(execute = "Execute",cancel = "Cancel")
+TYPE panel_item_row 	= table (str = string(40))
+
+!-----------------------------------------------------------------------------!
+!  Write Boolean Value Function                                !
+!-----------------------------------------------------------------------------!
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+   if not get busy op then
+   begin
+      set source op = src
+      set default op
+      set old_default op
+      set value op.db_addr = db_addr
+      set old_value op.db_addr = db_addr
+      set value op.b_value = val
+      set old_off op.b_value
+      request op
+   end
+end
+
+!-----------------------------------------------------------------------------!
+!  Write Char Array Function	                                    !
+!-----------------------------------------------------------------------------!
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+   if not get busy op then
+   begin
+      set source op = src
+      set default op
+      set old_default op
+      set value op.db_addr = db_addr
+      set old_value op.db_addr = db_addr
+      set value op.c_value = val
+      set old_off op.c_value
+      request op
+   end
+end
+
+!-----------------------------------------------------------------------------!
+!  Write Eng Value Function                                      !
+!-----------------------------------------------------------------------------!
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+   if not get busy op then
+   begin
+      set source op = src
+      set default op
+      set old_default op
+      set value op.db_addr = db_addr
+      set old_value op.db_addr = db_addr
+      set value op.e_value = val
+      set old_off op.e_value
+      request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  Tag Message Window Function                             !
+!-----------------------------------------------------------------------------!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+   y=-10text ("*** Tag Message ***")
+   y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+   set title mss= "Message"
+   request mss(tag_mess)
+end
+
+!-----------------------------------------------------------------------------!
+!  Closed Symbol                                                     !
+!-----------------------------------------------------------------------------!
+OBJECT closed_ocb_fdr(ocb_fg = COLOUR)
+BEGIN
+  JUST = CENTRECENTRE
+  FG = ocb_fg
+  LW=6
+  Y = 75
+  Y -= 50 X -= 25 ADD
+  Y -= 50 X += 50 ADD LINE CLEAR
+  Y += 50 ADD
+  X -= 50 Y -= 50 ADD LINE CLEAR
+  X += 25 Y += 25 ADD CLEAR
+  X = 0 Y = 40 ADD Y = -40 ADD LINE CLEAR
+END
+
+OBJECT closed_ocb_bus(ocb_fg = COLOUR)
+BEGIN
+  JUST = CENTRECENTRE
+  FG = ocb_fg
+  LW=6
+  Y = 75
+  Y -= 50 X -= 25 ADD
+  Y -= 50 X += 50 ADD LINE CLEAR
+  Y += 50 ADD
+  X -= 50 Y -= 50 ADD LINE CLEAR
+  X += 25 Y += 25 ADD CLEAR
+  X = -40 Y = 0 ADD x += 80 ADD LINE CLEAR
+END
+
+
+!-----------------------------------------------------------------------------!
+!  Open/Tripped Symbol                                            !
+!-----------------------------------------------------------------------------!
+OBJECT tripped_ocb_fdr(ocb_fg = COLOUR)
+BEGIN
+  JUST = CENTRECENTRE
+  FG = ocb_fg
+  LW=6
+  Y = -20
+  Y += 40 X -= 20 ADD
+  Y -= 40 X += 40 ADD LINE CLEAR
+  Y += 40 ADD
+  X -= 40 Y -= 40 ADD LINE CLEAR
+  X += 20 Y += 20 ADD
+  X = 0 Y = 0 CIRCLE(H=56,W=56) CLEAR
+  X = 0 Y = -27 ADD Y = -40 ADD LINE CLEAR
+  X = 0 Y = 27 ADD Y = 40 ADD LINE CLEAR
+END
+
+OBJECT tripped_ocb_bus(ocb_fg = COLOUR)
+BEGIN
+  JUST = CENTRECENTRE
+  FG = ocb_fg
+  LW=6
+  Y = -20
+  Y += 40 X -= 20 ADD
+  Y -= 40 X += 40 ADD LINE CLEAR
+  Y += 40 ADD
+  X -= 40 Y -= 40 ADD LINE CLEAR
+  X += 20 Y += 20 ADD
+  X = 0 Y = 0 CIRCLE(H=56,W=56) CLEAR
+  X = 25 Y = 0 ADD X += 15 ADD LINE CLEAR
+  X = -25 Y = 0 ADD X -= 15 ADD LINE CLEAR
+END
+
+
+!-----------------------------------------------------------------------------!
+!  Isolated Symbol                                                    !
+!-----------------------------------------------------------------------------!
+OBJECT isolated_ocb_fdr(ocb_fg=COLOUR)
+BEGIN
+  FG = ocb_fg
+  LW=6
+  Y = -40 ADD
+  Y += 20 ADD
+  X -= 7 ADD
+  X += 14 ADD LINE CLEAR
+  Y += 60 X -= 7 ADD
+  Y -= 20 ADD
+  X -= 7 ADD
+  X += 14 ADD LINE CLEAR
+END
+
+OBJECT isolated_ocb_bus(ocb_fg=COLOUR)
+BEGIN
+  FG = ocb_fg
+  LW=6
+  x = -40 ADD
+  x += 20 ADD
+  y -= 7 ADD
+  y += 14 ADD LINE CLEAR
+  y -= 7
+  x += 67 X -= 7 ADD
+  x -= 20 ADD
+  y -= 7 ADD
+  y += 14 ADD LINE CLEAR
+END
+
+
+!-----------------------------------------------------------------------------!
+!  Earthed Symbols                                                   !
+!-----------------------------------------------------------------------------!
+OBJECT earthed_ocb_btm(ocb_fg=COLOUR)
+BEGIN
+  JUST = CENTRECENTRE
+  FG = ocb_fg
+  LW=4
+  X = 0
+  Y += 40 ADD
+  Y -= 8 ADD LINE CLEAR 
+  DISK(W=10,H=10) 
+  LW=6
+  !X += 2!
+  Y -= 1 ADD
+  Y -= 20 ADD LINE CLEAR
+  DISK(W=10,H=10)
+  LW=4
+  Y -= 3 ADD
+  Y -= 6 ADD LINE
+  X += 15 ADD
+  X -= 30 ADD LINE CLEAR
+  X += 5 y -= 10 ADD
+  X += 20 ADD LINE CLEAR
+  X -= 6 y -= 9 ADD
+  X -= 8 ADD LINE CLEAR
+END
+
+OBJECT earthed_ocb_top(ocb_fg=COLOUR)
+BEGIN
+  JUST = CENTRECENTRE
+  FG = ocb_fg
+  LW=4
+  X = 0 y = -80
+  Y += 40 ADD
+  Y += 8 ADD LINE CLEAR 
+  DISK(W=10,H=10) 
+  LW=6
+  !X += 2!
+  Y += 1 ADD
+  Y += 20 ADD LINE CLEAR
+  DISK(W=10,H=10)
+  LW=4
+  Y += 3 ADD
+  Y += 6 ADD LINE
+  X += 15 ADD
+  X -= 30 ADD LINE CLEAR
+  X += 5 y += 10 ADD
+  X += 20 ADD LINE CLEAR
+  X -= 6 y += 9 ADD
+  X -= 8 ADD LINE CLEAR
+END
+
+OBJECT earthed_ocb_rgt(ocb_fg=COLOUR)
+BEGIN
+  JUST = CENTRECENTRE
+  FG = ocb_fg
+  LW=4
+  X += 40 ADD
+  X -= 40 ADD LINE CLEAR
+  X += 32
+  DISK(W=10,H=10) 
+  LW=6
+  X -= 1 ADD
+  X -= 20 ADD LINE CLEAR
+  DISK(W=10,H=10)
+  LW=4
+  X -= 1
+  X -= 3 ADD
+  X -= 6 ADD LINE
+  Y += 15 ADD
+  Y -= 30 ADD LINE CLEAR
+  Y += 5 X -= 10 ADD
+  Y += 20 ADD LINE CLEAR
+  Y -= 6 X -= 9 ADD
+  Y -= 8 ADD LINE CLEAR
+END
+
+OBJECT earthed_ocb_lft(ocb_fg=COLOUR)
+BEGIN
+  JUST = CENTRECENTRE
+  FG = ocb_fg
+  LW=4
+  X -= 40 ADD
+  X += 40 ADD LINE CLEAR
+  X -= 32
+  DISK(W=10,H=10) 
+  LW=6
+  X += 1 ADD
+  X += 20 ADD LINE CLEAR
+  DISK(W=10,H=10)
+  LW=4
+  X += 1
+  X += 3 ADD
+  X += 6 ADD LINE
+  Y += 15 ADD
+  Y -= 30 ADD LINE CLEAR
+  Y += 5 X += 10 ADD
+  Y += 20 ADD LINE CLEAR
+  Y -= 6 X += 9 ADD
+  Y -= 8 ADD LINE CLEAR
+END
+
+
+!-----------------------------------------------------------------------------!
+!  Breaker Object                                                     !
+!-----------------------------------------------------------------------------!
+
+OBJECT SS105_BREAKER(plc_offset=INT,b_offset=INT,c_offset=INT,e_offset=INT,ctrl_offset=INT,
+		  src=SOURCE,ident= INT,position=STRING(4),code=INT)
+
+
+!-----------------------------------------------------------------------------!
+! Variable Declarations !
+
+! PLC INPUTS
+var plc_inputs[1] = plca_comms_status
+var plc_inputs[2] = plcb_comms_status
+!
+var plc_inputs 		= input 		b_bool_type[2]
+
+! OCB INPUTS
+ocb_inputs[1] = ocb_ptw
+ocb_inputs[2] = ocb_closed
+ocb_inputs[3] = ocb_open
+ocb_inputs[4] = ocb_tripped
+ocb_inputs[5] = ocb_earth
+ocb_inputs[6] = ocb_isolated
+ocb_inputs[7] = ocb_in_service
+ocb_inputs[8] = ocb_trip_supervision
+ocb_inputs[9] = ocb_vt_supervision
+ocb_inputs[10] = ocb_control_failure
+!
+var ocb_inputs 		= input 		b_bool_type[11]
+
+! ALARM INPUTS
+alarm_inputs[3] = ocb_open
+alarm_inputs[4] = ocb_tripped
+alarm_inputs[5] = ocb_earth
+alarm_inputs[6] = ocb_isolated
+alarm_inputs[7] = 
+alarm_inputs[8] = ocb_trip_supervision
+alarm_inputs[9] = ocb_vt_supervision
+alarm_inputs[10] = ocb_control_failure
+!
+var alarm_inputs = input alarm_row_type[11]
+
+! CONTROL CODES !
+VAR control_code		= input		e_db_row_type
+VAR checkback_code	= input		e_db_row_type
+VAR execute_code	= input		e_db_row_type
+
+! MANUALLY DRESSED STATUS !
+VAR manual_dress	= input		e_db_row_type
+
+! TAG MESSAGE !
+VAR tag_message		= input		c_db_row_type
+
+! LOOPBACK VARIABLES !
+VAR ocb_foreground	= loopback	colour
+VAR ocb_background	= loopback	colour
+VAR confirm		= loopback	yesno
+VAR accept		= loopback 	yesno
+VAR close_ocb_control	= loopback	yesno
+VAR open_ocb_control	= loopback	yesno
+
+! MENUS !
+VAR main_menu		= menu		string(40)
+VAR tag_message_panel 	= panel		panel_item_row
+VAR popup_box		= popup		confirm_popup
+VAR failure_box		= popup		control_status
+VAR local_control_in_progress 	= popup		control_status
+	
+! GENERAL !
+VAR close_code		= INT
+VAR open_code		= INT
+VAR control_text		= STRING(10)
+VAR in_progress		= yesno
+VAR helpstr 		= help string(30)
+
+!-----------------------------------------------------------------------------!
+BEGIN
+!-----------------------------------------------------------------------------!
+
+   ! DATA RETRIEVAL !
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address("b" + plc_offset)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source ocb_inputs = src
+   set filter ocb_inputs.db_addr = lim_ge
+   set limit ocb_inputs.db_addr = db_address("b" + b_offset)
+   set priority ocb_inputs.db_addr = 15
+   set persist ocb_inputs
+   set mayexist ocb_inputs
+   request ocb_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address("b" + b_offset)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   ! GET OCB MANUAL DRESS STATUS !
+   set source manual_dress = src
+   set filter manual_dress.db_addr = lim_eq
+   set limit manual_dress.db_addr = db_address("e" + e_offset)
+   set persist manual_dress 
+   request manual_dress
+
+   ! GET CONTROL CODES !
+   set source control_code = src
+   set filter control_code.db_addr = lim_eq
+   set limit control_code.db_addr = db_address("e" + ctrl_offset)
+   set persist control_code 
+   request control_code
+
+   ! GET CHECKBACK CODE !
+   set source checkback_code = src
+   set filter checkback_code.db_addr = lim_eq
+   set limit checkback_code.db_addr = db_address("e" + (ctrl_offset+1))
+   set persist checkback_code 
+   request checkback_code
+
+   ! GET EXECUTE CODE !
+   set source execute_code = src
+   set filter execute_code.db_addr = lim_eq
+   set limit execute_code.db_addr = db_address("e" + (ctrl_offset+2))
+   set persist execute_code
+   request execute_code
+
+   ! GET OCB TAG MESSAGE !
+   set source tag_message = src
+   set filter tag_message.db_addr = lim_eq
+   set limit tag_message.db_addr = db_address("c" + c_offset)
+   set persist tag_message
+   request tag_message
+
+   ! Only determine codes if the breaker os controllable !
+   IF code >0 THEN   
+   BEGIN
+      open_code = code 
+      close_code = code +  1
+   END
+   ELSE
+   BEGIN
+      open_code=-1
+      close_code=-1
+   END
+
+   !-----------------------------------------------------------------------------!
+   ! OCB COLOUR SELECTION !
+
+   ! OCB FOREGROUND !
+   IF plc_inputs[1].b_value AND plc_inputs[2].b_value THEN
+      ocb_foreground = MAGENTA
+   ELSE IF alarm_inputs[3].alarm_status == w_note OR alarm_inputs[4].alarm_status == w_note OR
+	  alarm_inputs[6].alarm_status == w_note OR  alarm_inputs[8].alarm_status == w_note OR
+	  alarm_inputs[9].alarm_status == w_note OR  alarm_inputs[10].alarm_status == w_note THEN
+      ocb_foreground = FLASHRED
+   ELSE IF alarm_inputs[3].alarm_status == w_clr OR alarm_inputs[4].alarm_status == w_clr OR
+	  alarm_inputs[6].alarm_status == w_clr OR alarm_inputs[8].alarm_status == w_clr OR
+	  alarm_inputs[9].alarm_status == w_clr OR alarm_inputs[10].alarm_status == w_clr THEN
+      ocb_foreground = RED
+   ELSE IF INT(manual_dress.e_value) >0 AND INT(manual_dress.e_value) <= 5 THEN
+      ocb_foreground = WHITE
+   ELSE
+      ocb_foreground = GREEN4
+	
+   ! OCB BACKGROUND !
+   ! If PTW !
+   IF ocb_inputs[1].b_value then
+      ocb_background = ORANGE
+   ELSE IF INT(manual_dress.e_value) >= 1 AND
+      INT(manual_dress.e_value) <= 5 THEN
+      BEGIN
+         CASE INT(manual_dress.e_value) OF
+	1   ! Dressed to On !
+   	IF ocb_inputs[2].b_value == 1 THEN
+   	   ocb_background = FLASHBLUE
+	ELSE
+	   ocb_background = BLUE
+	2   ! Dressed to Off !
+	IF ocb_inputs[3].b_value == 1 OR ocb_inputs[4].b_value == 1 THEN
+  	   ocb_background = FLASHBLUE
+	ELSE
+	   ocb_background = BLUE
+	3   ! Dressed to Isolate !
+	IF ocb_inputs[6].b_value == 1 THEN
+	   ocb_background = FLASHBLUE
+	ELSE
+	   ocb_background = BLUE
+	4   ! Dressed to Feeder Earth !
+ 	IF ocb_inputs[5].b_value == 1 THEN
+	   ocb_background = FLASHBLUE
+	ELSE
+	   ocb_background = BLUE
+	5   ! Dressed to Bus Bar Earth !
+ 	 IF ocb_inputs[5].b_value == 1 THEN
+	   ocb_background = FLASHBLUE
+	ELSE
+	   ocb_background = BLUE
+	DEFAULT
+	BEGIN
+	END
+      END
+   ELSE IF tag_message.c_value <> "" THEN
+      ocb_background = YELLOW
+   ELSE
+      ocb_background = DECOROFF
+
+
+!-----------------------------------------------------------------------------!
+! MAIN SYMBOL !
+
+!*** Help***!
+just = centrecentre
+x = 0 y = 0
+w=80 h=80
+set text helpstr = "ss105_breaker_help"
+
+X = 0 Y = 0
+JUST = CENTRECENTRE
+   
+! DRAW BORDER AROUND BREAKER !
+! IF BUS SECTION BREAKER !
+IF position == "SECT" THEN
+BEGIN
+   ! If breaker control is selected !
+   IF control_code.e_value == open_code OR control_code.e_value == close_code THEN
+      RECT(W=95,H=85,FG=FLASHGREEN)
+
+   ! If Breaker has a Tagged Message !
+   IF tag_message.c_value <> "" THEN
+   BEGIN
+      ! If Breaker Is (Dressed & Not PTW)  OR (PTW & Not Dressed) !
+      IF manual_dress.e_value > 0 XOR ocb_inputs[1].b_value ==1 THEN
+         RECT(W=89,H=75,FG=YELLOW) 
+      ! If Breaker Is Dressed & PTW !
+      ELSE IF ocb_inputs[1].b_value == 1 AND manual_dress.e_value> 0 THEN
+      BEGIN
+         RECT(W=95,H=80,FG=YELLOW) 
+         RECT(W=89,H=75,FG=BLUE) 
+      END
+   END
+   ROTRECT(W=80,H=66,FG=OCB_BACKGROUND) CLEAR
+   W=80 H=66 SET RECT MAIN_MENU
+   CLEAR
+END
+! Other Type of breaker !
+ELSE
+BEGIN
+   ! If breaker control is selected !
+   IF control_code.e_value == open_code OR control_code.e_value == close_code THEN
+     RECT(W=81,H=97,FG=FLASHGREEN)
+   ! If Breaker has a Tagged Message !
+   IF tag_message.c_value <> "" THEN
+   BEGIN
+      ! If Breaker Is (Dressed & Not PTW)  OR (PTW & Not Dressed) !
+      IF manual_dress.e_value > 0 XOR ocb_inputs[1].b_value ==1 THEN
+         RECT(W=75,H=89,FG=YELLOW) 
+      ! If Breaker Is Dressed & PTW !
+      ELSE IF ocb_inputs[1].b_value == 1 AND manual_dress.e_value> 0 THEN
+      BEGIN
+         RECT(W=80,H=95,FG=YELLOW) 
+         RECT(W=75,H=89,FG=BLUE) 
+      END
+   END
+   x = 0 y = 0 w = 66 h = 80 ROTRECT(fg=OCB_BACKGROUND) clear
+   x = 0 y = 0 W = 66 H = 80 SET RECT MAIN_MENU
+   CLEAR
+END
+
+! TAG MESSAGE BOX !
+IF SELB AND tag_message.c_value <> "" THEN
+BEGIN
+  MESSAGE_TEXT_BOX(tag_message.c_value)
+END
+
+! Draws 3D box around symbol !
+IF position == "SECT" THEN
+BEGIN
+  X -= 40 Y += 33 ADD
+  Y -= 66 ADD
+  X += 80 ADD LINE(FG=DECORLIGHT) CLEAR
+  Y += 1 ADD
+  Y += 66 ADD
+  X -= 79 ADD LINE(FG=DECORSHADOW) CLEAR
+  FG = OCB_FOREGROUND
+  CLEAR
+END
+ELSE
+BEGIN
+  X -= 33 Y += 40 ADD
+  Y -= 80 ADD
+  X += 66 ADD LINE(FG=DECORLIGHT) CLEAR
+  Y += 1 ADD
+  Y += 79 ADD
+  X -= 66 ADD LINE(FG=DECORSHADOW) CLEAR
+  FG = OCB_FOREGROUND
+  CLEAR
+END
+
+IF position == "SECT" THEN
+	SET TITLE main_menu = "Bus Section Breaker"
+ELSE
+	SET TITLE main_menu = "Controllable OCB "+ident
+
+SET EMPTY main_menu
+SET ADD main_menu = "Alter Tag Message"
+SET ADD main_menu = "Clear Tag Message"
+SET ADD main_menu = "Alter Permit To Work"
+
+! Only add options for controlling breaker if breaker is contrable!
+IF code > 0 THEN
+  BEGIN
+    SET ADD main_menu = "Switch to Off"
+    SET ADD main_menu = "Switch to On"
+  END
+X = 0 Y = 0
+
+! TRIPPED/OPEN !
+! If Tripped & not dressed & not isolated  or manually dressed to tripped !
+IF (( ocb_inputs[3].b_value == 1 OR ocb_inputs[4].b_value == 1)
+      AND manual_dress.e_value == 0 AND ocb_inputs[6].b_value == 0) OR manual_dress.e_value == 2 THEN
+BEGIN
+   IF position == "SECT" THEN
+     tripped_ocb_bus(ocb_foreground)
+   ELSE
+     tripped_ocb_fdr(ocb_foreground)
+   ANGLE = 90
+   SET ADD main_menu = "Dress to On"
+   SET ADD main_menu = "Dress to Isolated"
+END
+! CLOSED !
+ELSE IF (ocb_inputs[2].b_value == 1 AND manual_dress.e_value == 0 AND ocb_inputs[6].b_value == 0) OR manual_dress.e_value == 1  THEN
+BEGIN
+   IF position == "SECT" THEN
+      closed_ocb_bus(ocb_foreground)
+   ELSE
+     closed_ocb_fdr(ocb_foreground)
+  SET ADD main_menu = "Dress to Off/Tripped"
+END
+
+! EARTH ON !
+ELSE IF (ocb_inputs[5].b_value == 1 AND manual_dress.e_value == 0) OR 	      
+	manual_dress.e_value == 4 OR manual_dress.e_value == 5 THEN
+BEGIN
+   ! Determine position of earth !
+   CASE position OF
+   "TOP"
+      earthed_ocb_top(ocb_foreground)
+   "BTM"
+      earthed_ocb_btm(ocb_foreground)
+   "SECT"
+      earthed_ocb_rgt(ocb_foreground)
+   DEFAULT
+   BEGIN
+   END   
+   SET ADD main_menu = "Dress to Isolated"
+END
+! ISOLATED !
+ELSE IF (ocb_inputs[6].b_value == 1 AND manual_dress.e_value == 0) OR manual_dress.e_value == 3 THEN
+BEGIN
+   IF position == "SECT" THEN
+      isolated_ocb_bus(ocb_foreground)
+   ELSE
+      isolated_ocb_fdr(ocb_foreground)
+   SET ADD main_menu = "Dress to Off/Tripped"
+   IF position == "SECT" THEN
+      SET ADD main_menu = "Dress to Bus Section Earth"
+   ELSE
+      SET ADD main_menu = "Dress to Feeder Earth"  
+END
+! NO INPUTS !
+ELSE 
+BEGIN
+   IF position == "SECT" THEN
+      isolated_ocb_bus(ocb_foreground)
+   ELSE
+      isolated_ocb_fdr(ocb_foreground)
+   SET ADD main_menu = "Dress to Off/Tripped"
+   IF position == "SECT" THEN
+      SET ADD main_menu = "Dress to Bus Section Earth"
+   ELSE
+      SET ADD main_menu = "Dress to Feeder Earth"  
+END
+
+! Add the option to undress if the breaker is in a dressed state!
+IF manual_dress.e_value > 0 THEN
+    SET ADD main_menu = "Undress"
+
+!-----------------------------------------------------------------------------!
+! MENU CONTROL !
+
+! MAIN MENU SELECTION !
+IF VALID main_menu THEN
+BEGIN
+
+  CASE main_menu OF
+
+  "Alter Tag Message"
+  BEGIN
+    SET TITLE tag_message_panel 		= "Modify Tag Message"	
+    SET LABEL tag_message_panel.str	= "Tag Message :"
+    SET UNPINNED tag_message_panel
+    REQUEST tag_message_panel
+  END
+
+  "Clear Tag Message"
+    set_c_value(db_address("c" + c_offset),src,"")
+
+  "Alter Permit To Work"
+  BEGIN
+    IF ocb_inputs[1].b_value THEN
+    set_b_value(db_address("b" + b_offset),src,off)
+  ELSE
+    set_b_value(db_address("b" + b_offset),src,on)
+  END	
+
+  "Undress"
+     set_e_value(db_address("e" + e_offset),src, 0)
+
+  "Dress to On"
+     set_e_value(db_address("e" + e_offset),src, 1)
+
+  "Dress to Off/Tripped"
+     set_e_value(db_address("e" + e_offset),src, 2)
+
+  "Dress to Isolated"
+     set_e_value(db_address("e" + e_offset),src, 3)
+
+  "Dress to Feeder Earth"
+     set_e_value(db_address("e" + e_offset),src, 4)
+
+  "Dress to Bus Section Earth"
+     set_e_value(db_address(int(e1) + e_offset - 1),src, 5)
+
+  "Switch to On"
+  BEGIN
+  IF control_code.e_value == 0 THEN
+  BEGIN
+    close_ocb_control = yes
+    set_e_value(db_address("e" + ctrl_offset),src, close_code)
+  END
+  ELSE 
+    in_progress = yes
+  END
+
+  "Switch to Off"
+  BEGIN
+  IF control_code.e_value == 0 THEN
+  BEGIN
+    open_ocb_control = yes
+    set_e_value(db_address("e" + ctrl_offset),src, open_code)
+  END
+  ELSE
+    in_progress = yes
+  END
+
+  "Control Cancel"
+    set_e_value(db_address("e" + ctrl_offset),src, 9999)
+
+  DEFAULT
+  BEGIN
+  END
+
+  SET INVALID main_menu
+END
+
+
+! CONTROL IN PROGRESS !
+IF in_progress == YES THEN
+BEGIN
+  set title local_control_in_progress = " "
+  set unpinned local_control_in_progress
+  request local_control_in_progress(ident,"CONTROL IN PROGRESS")
+  in_progress = no
+END
+
+IF open_ocb_control THEN
+  control_text = ident+" Open"
+ELSE IF close_ocb_control THEN
+  control_text = ident+" Close"
+ELSE
+  control_text = " "
+
+! CONTROL CONFIRM / CANCEL !
+IF INVALID popup_box AND control_code.e_value > 0 AND execute_code.e_value == 0
+AND control_code.e_value == checkback_code.e_value THEN
+BEGIN  
+  IF control_code.e_value == open_code OR control_code.e_value == close_code    
+  THEN
+  BEGIN
+    IF execute_code.e_value == 0  THEN
+    BEGIN
+      set title popup_box = " "
+      set unpinned popup_box
+      request popup_box(ident)
+    END
+  END
+END
+
+IF popup_box == yes AND confirm == no THEN
+BEGIN
+  IF control_code.e_value == checkback_code.e_value THEN
+  BEGIN
+    IF control_code.e_value == open_code OR control_code.e_value == close_code 
+    THEN 
+    BEGIN
+      IF open_ocb_control == yes THEN
+      BEGIN
+        set_e_value(db_address("e" + (ctrl_offset+2)),src, open_code)
+        open_ocb_control = no
+        confirm = yes
+      END
+      ELSE IF close_ocb_control == yes THEN
+      BEGIN
+        set_e_value(db_address("e" + (ctrl_offset+2)),src, close_code)
+        close_ocb_control = no
+        confirm = yes
+      END
+    ELSE
+      close_ocb_control = no
+      confirm = yes
+    END
+  END
+END
+
+IF popup_box == no AND confirm == no THEN
+BEGIN
+  IF open_ocb_control == yes THEN
+  BEGIN
+    set_e_value(db_address("e" + ctrl_offset),src, 9999)  
+    close_ocb_control = no
+    open_ocb_control = no
+    confirm = yes
+  END
+  ELSE IF close_ocb_control == yes THEN
+  BEGIN
+    set_e_value(db_address("e" + ctrl_offset),src, 9999)  
+    close_ocb_control = no
+    open_ocb_control = no
+    confirm = yes
+  END
+END
+
+IF control_code.e_value == 0 THEN
+BEGIN
+  confirm = no
+  SET INVALID popup_box
+END
+
+! CANCEL CONTROL !
+IF (control_code.e_value == open_code OR control_code.e_value == close_code)
+AND control_code.e_value > 0
+THEN
+  SET ADD main_menu = "Control Cancel"
+
+! CONTROL FAIL !
+IF INVALID accept THEN
+  accept = no
+
+IF ocb_inputs[10].b_value == on THEN
+BEGIN
+  IF INVALID failure_box AND accept == no THEN
+  BEGIN
+    set title failure_box = " "
+    set unpinned failure_box
+    request failure_box(ident,"CONTROL FAILED")
+  END
+END
+ELSE
+BEGIN
+  SET INVALID failure_box
+  accept = no
+END
+
+IF failure_box == YES AND accept == no THEN
+BEGIN
+  set_b_value(db_address("b" + (b_offset+9)), src ,off)
+  accept = yes
+END
+
+! TAG MESSAGE PANEL !
+
+IF VALID tag_message_panel THEN
+  BEGIN
+    set_c_value(db_address("c" + c_offset),src,tag_message_panel.str)
+    set invalid tag_message_panel
+  END
+
+! ***Debug ***
+IF ident == 4 THEN
+BEGIN
+x += 150
+tfg = black
+y += 60 text(control_code.e_value)
+y += 15 text(checkback_code.e_value)
+y += 15 text(execute_code.e_value)
+y += 15 text( ocb_inputs[10].b_value)
+y += 15 text("OPEN "+open_code)
+y += 15 text("CLOSE "+close_code)
+y += 15 text(control_text)
+y += 15 text("open_ocb_control "+open_ocb_control)
+y += 15 text("close_ocb_control "+close_ocb_control)
+y += 15 text("confirm "+confirm)
+y += 15 text("accept "+accept)
+y += 15 text("ocb_input10 "+ocb_inputs[10].b_value)
+x += 100 
+
+END
+!
+! ***Debug ***
+IF open_ocb_control == yes THEN
+  text("OPEN CONTROL")
+ELSE
+  text("NO OPEN CONTROL")
+y -= 15
+IF close_ocb_control == yes THEN
+  text("CLOSE CONTROL")
+ELSE
+  text("NO CLOSE CONTROL")
+y -= 15
+IF confirm == yes THEN
+  text("Confirmed")
+ELSE IF confirm == no THEN
+  text("Unconfirmed")
+ELSE IF INVALID confirm THEN
+  text("CONFIRM INVALID")
+clear
+!
+
+IF position == "TOP" OR position == "BTM" THEN
+BEGIN
+  x = 50 y = 0 TEXT(TFG=black,CH=25,IDENT)
+END
+ELSE IF position == "SECT" THEN
+BEGIN
+  x = 0 y = 50 TEXT(TFG=black,CH=25,IDENT)
+END
+
+END
+
+
+OBJECT main_object (bg,fg,w,h,tbg,tfg)
+
+BEGIN
+
+clear
+!SCALE = 250!
+! SS105_BREAKER(plc_offset,b_offset,c_offset,e_offset,ctrl_offset,src,ident,position,code)!
+ss105_breaker(680,515,11,105,160,HEATHRO3,2,"btm",0)
+x +=100 SS105_BREAKER(680,545,13,115,160,HEATHRO3,4,"TOP",20)
+!x= 250 SS105_BREAKER(500,500,10,100,100,HEATHRO3,1,"SECT",10)!
+
+END
+
+MIMIC = main_object w=400,h=400,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

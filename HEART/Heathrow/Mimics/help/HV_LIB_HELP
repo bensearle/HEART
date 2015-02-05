@@ -1,0 +1,289 @@
+helptext OCB_MONITORED_lib_help =
+ "
+ **** CIRCUIT BREAKER MONITORED ONLY INDICATIONS ****
+ ------------------------------------------------- -------------------------------------------------
+
+This Object displays circuit breaker status. Indications are as follows:
+
+ Status Indication
+ -------------------
+	Foreground
+	Green			- Normal operating Signals from plant
+	Flash Red		- Alarm conditions -unnoted alarm
+	Red			- Alarm conditions -noted alarm
+	Magenta	 		- comms failed
+
+	Background
+	Yellow 			- Tagged Message on Object
+	Orange			- Permit to Work applied
+	Blue			- Object has been dressed
+
+	Blue Background/flash foreground	- Dressed object is displaying same signal as being received from PLC
+
+note: Please refer to keypages for further information (HV Area)
+ ------------------------------------------------------------------------
+
+ "
+
+helptext TRANSFORMER_lib_help =
+ "
+ **** TRANSFORMER ****
+ -------------------------------------------------
+
+This Object is only for display purposes only.
+
+No status information is displayed
+
+ ------------------------------------------------------------------------
+
+"
+
+helptext LV_GENERATOR_lib_help =
+ "
+ **** LV_GENERATOR DISPLAY INDICATIONS ****
+ -------------------------------------------------
+
+This Object displays Low Voltage Generator status. Indications are as follows:
+
+ Status Indication
+ -------------------
+	Foreground
+	Green			- Running
+	White			- Stopped
+	Flash Red		- Alarm conditions -unnoted alarm
+	Red			- Alarm conditions -noted alarm
+	Magenta	 		- comms failed
+
+	Background
+	Yellow 			- Tagged Message on Object
+	Orange			- Permit to Work applied
+	Blue			- Object has been dressed
+	LightBlue			- SCOPE operator control
+
+note: Please refer to keypages for further information (HV Area)
+ ------------------------------------------------------------------------
+
+"
+
+helptext  LV_CONTACTOR_lib_help =
+ "
+ **** LV_CONTACTOR DISPLAY INDICATIONS ****
+ -------------------------------------------------
+
+This Object displays Low Voltage Contactor status. Indications are as follows:
+
+ Status Indication
+ -------------------
+	Foreground
+	Green			- Mains On
+
+	Flash Red		- Alarm conditions -unnoted alarm
+	Red			- noted alarm / Standby On / Both Supplies Off
+	Magenta	 		- comms failed
+
+	Background
+	Yellow 			- Tagged Message on Object
+
+
+note: Please refer to keypages for further information (HV Area)
+ ------------------------------------------------------------------------
+
+"
+
+
+helptext HV_TRANSFORMER_METER_lib_help =
+ "
+ **** PANEL METER OBJECT INDICATIONS ****
+ -------------------------------------------------
+
+This Object displays Analogue value status. Indications are as follows:
+High and Low alarms may be configured (providing they have been created in alarm configuration).
+
+ Status Indication
+ -------------------
+	Bar Colour
+	Green			- Power Level
+	Blue			- Voltage Level
+	Yellow			- Current/Other Level
+	Flash Red		- Alarm conditions -unnoted alarm
+	Red			- noted alarm
+
+	Background
+	Yellow 			- Tagged Message on Object
+	Magenta	 		- comms failed
+	Red			- Analogue range alarm - Under/Over/Invalid
+
+
+ Menu Options
+ -------------------
+	Alter High Alarm Level	- Change the analogue high alarm level
+	Alter Low Alarm Level	- Change the analogue low alarm level
+	Alter Tag Message 	- Apply Tagged Message to Object
+	Clear Tag Message	- Clear Tagged Message on Object
+
+note: Please refer to keypages for further information (HV Area)
+ ------------------------------------------------------------------------
+
+"
+
+helptext bar_meter_lib_help =
+ "
+ **** PANEL METER OBJECT INDICATIONS ****
+ -------------------------------------------------
+
+This Object displays Analogue value status. Indications are as follows:
+High and Low alarms may be configured (providing they have been created in alarm configuration).
+
+This object is configured by entering desired meter range, bar colour and whether decimal points are required.
+
+ Status Indication
+ -------------------
+	Bar Colour
+	Green			- Power Level
+	Blue			- Voltage Level
+	Yellow			- Current/Other Level
+	Flash Red		- Alarm conditions -unnoted alarm
+	Red			- noted alarm
+
+	Background
+	Yellow 			- Tagged Message on Object
+	Magenta	 		- comms failed
+	Red			- Analogue range alarm - Under/Over/Invalid
+
+
+ Menu Options
+ -------------------
+	Alter High Alarm Level	- Change the analogue high alarm level
+	Alter Low Alarm Level	- Change the analogue low alarm level
+	Alter Tag Message 	- Apply Tagged Message to Object
+	Clear Tag Message	- Clear Tagged Message on Object
+
+note: Please refer to keypages for further information (HV Area)
+ ------------------------------------------------------------------------
+
+"
+
+helptext  PULSEBUTTON_lib_help =
+ "
+ **** PULSEBUTTONS OBJECT INDICATIONS ****
+ -------------------------------------------------
+
+This Object displays Last Half Hour Kilowatt hours and trends the last half hour pulses.
+Trend time base and Value may be adjusted on the graph.
+
+Indications are as follows:
+
+ Status Indication
+ -------------------
+
+	Background
+	Yellow 			- Tagged Message on Object
+	Magenta	 		- comms failed
+
+ ------------------------------------------------------------------------
+
+"
+
+
+helptext  CIRCUIT_BREAKERS_lib_help =
+ "
+ **** CIRCUIT BREAKER INDICATIONS ****
+ ------------------------------------------------- -------------------------------------------------
+
+This Object displays circuit breaker status. Indications are as follows:
+This circuit breaker may have been configured to monitor only or control & monitor.
+
+ Status Indication
+ -------------------
+	Foreground
+	Green			- Normal operating Signals from plant
+	Flash Red		- Alarm conditions -unnoted alarm
+	Red			- Alarm conditions -noted alarm
+	Magenta	 		- comms failed
+
+	Background
+	Yellow 			- Tagged Message on Object
+	Orange			- Permit to Work applied
+	Blue			- Object has been dressed
+
+	Blue Background/flash foreground	- Dressed object is displaying same signal as being received from PLC
+	Flasgreen Border			- Control Action in progress
+
+If Control has been set up the breaker may be opened or closed. If a control action is required then a popup will appear to
+offer the controller either to switch the breaker or cancel the operation.
+
+A control in progress popup will appear if a control is being carried out and the operator tries to perform another control on the same breaker.
+A control failed popup will appear if the control operation has failed.
+
+When a breaker is selected for a control action - time limits will apply.
+
+ Menu Options (dependant on type configured)
+ -------------------
+	Alter Tag Message 	- Apply Tagged Message to Object
+	Clear Tag Message	- Clear Tagged Message on Object
+	Alter Permit to Work	- apply/remove Permit to work
+	Switch to Off		- Control Action Request
+	Switch to On		- Control Action Request
+
+	Dress to Off		- Dress Condition... (type3/eclipse breakers)
+	Dress to On
+	Dress to Isolated
+	Dress to Feeder Earth Off
+	Dress to Feeder Earth On
+	Dress to Left Hand Section Earth
+	Dress to RightHand Section Earth
+
+	Dress to Busbar Earthed (Bus_Earth type Breaker)
+	Dress to Busbar Ready for Earth (Bus_Earth type Breaker)
+
+note: Please refer to keypages for further information (HV Area)
+ ------------------------------------------------------------------------
+
+"
+
+helptext TRANSFORMER_TYPES_lib_help =
+ "
+ **** TRANSFORMER INDICATIONS ****
+ -------------------------------------------------
+
+This Object displays transformer status. Indications are as follows:
+The transformer may be set up to Increment or Decrement the Tap Position or to just indicate
+status.
+
+ Status Indication
+ -------------------
+	Tap Position	-Shown as a number within the object
+
+	Foreground
+	Ring colours are pre-determined depending on the HV_Ring to which the transformer belongs.
+
+	Flash Red		- Alarm conditions -unnoted alarm
+	Red			- Alarm conditions -noted alarm
+	Magenta	 		- comms failed
+
+	Background
+	Yellow 			- Tagged Message on Object
+	Orange			- Permit to Work applied
+	Blue			- Object has been dressed
+
+	Flasgreen Border			- Control Action in progress
+
+If Control has been set up the transformer tap position may be incremented or decremented. If a control action is required then a popup will be displayed, to
+offer the controller either to increment/decrement or cancel the operation.
+
+A control in progress popup will appear if a control is being carried out and the operator tries to perform another control on the same transformer
+A control failed popup will appear if the control operation has failed.
+
+When a transformer is selected for a control action - time limits will apply.
+
+ Menu Options (dependant on type configured)
+ -------------------
+	Alter Tag 		- Apply Tagged Message to Object
+	Clear Tag 		- Clear Tagged Message on Object
+	Tap Increment		- Increment Tap Position
+	Tap Decrement		- Decrement Tap Position
+
+note: Please refer to keypages for further information (HV Area)
+ ------------------------------------------------------------------------
+"
+

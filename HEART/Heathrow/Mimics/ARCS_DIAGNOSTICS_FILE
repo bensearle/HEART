@@ -1,0 +1,1437 @@
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: ARCS_DIAGNOSTICS_FILE                    **!
+!** Modified By: Chris Fairless                          **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 21/09/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Chris Fairless                          **!
+!** Firstco Version: 1.0 (For ARCS Gateway FAT)          **!
+!** Date: 21/09/12                                       **!
+!** Changes made:                                        **!
+!**  - added Gateway A and B                             **!
+!**  - added DF1 Comms lines                             **!
+!**********************************************************!
+
+load mimic_libutil
+LOAD gadgets_libutil
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+TYPE b_bool_type 	= db_elements(b_value)
+TYPE e_db_row_type 	= db_elements(db_addr,e_value)
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  READ ENGINEERING VALUE                                                     !
+!-----------------------------------------------------------------------------!
+
+object set_e_value(db_addr=db_address,src=source,val=REAL)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  DIAGNOSTIC POPUP BOX                                                       !
+!-----------------------------------------------------------------------------!
+
+OBJECT diagnostic_popup(os_offset=INT,plc_offset=INT,e_offset=INT,intake=STRING(5),src=SOURCE)
+
+! VARIABLE DECLARATION !
+
+VAR os_comms = input b_bool_type[2]
+VAR status_inputs = input b_bool_type[20]
+VAR co_times = input e_db_row_type[10]
+VAR hardware_inputs = input b_bool_type[20]
+VAR gateway_status = input b_bool_type[8]
+VAR plc_comms = input b_bool_type[2]
+VAR helpstr = help string(30)
+
+VAR a_test = ONOFF		! PLC A IN TEST MODE !
+VAR b_test = ONOFF		! PLC B IN TEST MODE !
+VAR a_enabled = ONOFF		! PLC A ENABLED !
+VAR b_enabled = ONOFF		! PLC B ENABLED !
+VAR a_disabled = ONOFF		! PLC A DISABLED !
+VAR b_disabled = ONOFF		! PLC B DISABLED !
+VAR a_fault = ONOFF		! PLC A FAULT !
+VAR b_fault = ONOFF		! PLC B FAULT !
+VAR a_primary = ONOFF		! PLC A PRIMARY !
+VAR b_primary = ONOFF		! PLC B PRIMARY !
+VAR a_secondary = ONOFF		! PLC A SECONDARY !
+VAR b_secondary = ONOFF		! PLC B SECONDARY !
+VAR a_failed = ONOFF		! PLC A FAILED !
+VAR b_failed = ONOFF		! PLC B FAILED !
+VAR a_initiated = ONOFF		! PLC A CHANGEOVER INITIATED !
+VAR b_initiated = ONOFF		! PLC B CHANGEOVER INITIATED !
+VAR a_completed = ONOFF		! PLC A CHANGEOVER COMPLETED !
+VAR b_completed = ONOFF		! PLC B CHANGEOVER COMPLETED !
+VAR a_comms_fault = ONOFF	! 11KV OUTSTATION TO PLC A WATCHDOG FAILED !
+VAR b_comms_fault = ONOFF       ! 11KV OUTSTATION TO PLC B WATCHDOG FAILED !
+
+VAR a_watchdog_failed = ONOFF	! PLC A WATCHDOG FAILED !
+VAR b_watchdog_failed = ONOFF   ! PLC B WATCHDOG FAILED !	
+
+VAR a_gateway_comms = ONOFF		!ARCS Gateway A Communications status !
+VAR b_gateway_comms = ONOFF		!ARCS Gateway B Communications status !
+
+VAR a_gateway_run = ONOFF			!ARCS Gateway A Not in  Run Mode!
+VAR a_gateway_major = ONOFF			!ARCS Gateway A Major Fault!
+VAR a_gateway_battery = ONOFF		!ARCS Gateway A Battery Low!
+VAR b_gateway_run = ONOFF			!ARCS Gateway B Not in  Run Mode!
+VAR b_gateway_major = ONOFF			!ARCS Gateway B Major Fault!
+VAR b_gateway_battery = ONOFF		!ARCS Gateway B Battery Low!
+
+VAR psu1_failed = ONOFF
+VAR psu2_failed = ONOFF
+VAR fuse11_failed = ONOFF
+VAR fuse12_failed = ONOFF
+VAR fuse13_failed = ONOFF
+VAR fuse14_failed = ONOFF
+VAR fuse15_failed = ONOFF
+VAR fuse16_failed = ONOFF
+VAR fuse21_failed = ONOFF
+VAR fuse22_failed = ONOFF
+VAR psu3_failed = ONOFF
+VAR psu4_failed = ONOFF
+VAR itu_failed = ONOFF
+VAR undervoltage_1 = ONOFF
+VAR undervoltage_2 = ONOFF
+
+VAR a_co_time = REAL		! PLC A CHANGEOVER TIME !
+VAR b_co_time = REAL		! PLC B CHANGEOVER TIME !
+
+VAR a_mode_total = INT		! TOTAL OF MODE INPUTS ON FROM PLC A !
+VAR b_mode_total = INT          ! TOTAL OF MODE INPUTS ON FROM PLC B !
+
+VAR a_unknown = ONOFF           ! PLC A DH+ FAILED OR 11KV OUTSTATION FAILED !
+VAR b_unknown = ONOFF		! PLC B DH+ FAILED OR 11KV OUTSTATION FAILED !
+VAR unknown = ONOFF		! 11KV OUTSTATION FAILED !
+VAR intake_name = STRING(35)
+
+VAR enable_control = ONOFF
+VAR disable_control = ONOFF
+VAR test_control = ONOFF
+VAR reset_control = ONOFF
+VAR primary_control = ONOFF
+VAR secondary_control = ONOFF
+VAR manual_initiate = ONOFF
+
+VAR status_text = STRING(100)
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+   set source os_comms = src
+   set filter os_comms.db_addr = lim_ge
+   set limit os_comms.db_addr = db_address(int(b1) + os_offset - 1)
+   set priority os_comms.db_addr = 15
+   set persist os_comms
+   set mayexist os_comms
+   request os_comms
+
+   set source plc_comms = src
+   set filter plc_comms.db_addr = lim_ge
+   set limit plc_comms.db_addr = db_address(int(b1) + plc_offset + 69)
+   set priority plc_comms.db_addr = 15
+   set persist plc_comms
+   set mayexist plc_comms
+   request plc_comms
+
+   set source status_inputs = src
+   set filter status_inputs.db_addr = lim_ge
+   set limit status_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority status_inputs.db_addr = 15
+   set persist status_inputs
+   set mayexist status_inputs
+   request status_inputs
+
+   set source hardware_inputs = src
+   set filter hardware_inputs.db_addr = lim_ge
+   set limit hardware_inputs.db_addr = db_address(int(b1) + plc_offset + 79)
+   set priority hardware_inputs.db_addr = 15
+   set persist hardware_inputs
+   set mayexist hardware_inputs
+   request hardware_inputs
+
+   set source gateway_status = src
+   set filter gateway_status.db_addr = lim_ge
+   set limit gateway_status.db_addr = db_address(int(b1) + plc_offset + 39)
+   set priority gateway_status.db_addr = 8
+   set persist gateway_status
+   set mayexist gateway_status
+   request gateway_status
+   
+   set source co_times = src
+   set filter co_times.db_addr = lim_ge
+   set limit co_times.db_addr = db_address(int(e1) + e_offset - 1)
+   set priority co_times.db_addr = 15
+   set persist co_times
+   set mayexist co_times
+   request co_times
+
+   a_test = status_inputs[1].b_value
+   b_test = status_inputs[2].b_value
+   a_enabled = status_inputs[3].b_value
+   b_enabled = status_inputs[4].b_value
+   a_disabled = status_inputs[5].b_value
+   b_disabled = status_inputs[6].b_value
+   a_fault = status_inputs[7].b_value
+   b_fault = status_inputs[8].b_value
+   a_primary = status_inputs[9].b_value
+   b_primary = status_inputs[10].b_value
+   a_secondary = status_inputs[11].b_value
+   b_secondary = status_inputs[12].b_value
+   a_failed = status_inputs[13].b_value
+   b_failed = status_inputs[14].b_value
+   a_initiated = status_inputs[15].b_value
+   b_initiated = status_inputs[16].b_value
+   a_completed = status_inputs[17].b_value
+   b_completed = status_inputs[18].b_value
+
+   a_comms_fault = plc_comms[1].b_value
+   b_comms_fault = plc_comms[2].b_value
+
+   psu1_failed = hardware_inputs[1].b_value
+   psu2_failed = hardware_inputs[2].b_value
+   fuse11_failed = hardware_inputs[3].b_value
+   fuse12_failed = hardware_inputs[4].b_value
+   fuse13_failed = hardware_inputs[5].b_value
+   fuse14_failed = hardware_inputs[6].b_value
+   fuse15_failed = hardware_inputs[7].b_value
+   fuse16_failed = hardware_inputs[8].b_value
+   psu3_failed = hardware_inputs[9].b_value
+   psu4_failed = hardware_inputs[10].b_value
+   itu_failed = hardware_inputs[11].b_value
+   undervoltage_1 = hardware_inputs[12].b_value
+   undervoltage_2 = hardware_inputs[13].b_value
+   fuse21_failed = hardware_inputs[14].b_value
+   fuse22_failed = hardware_inputs[15].b_value
+
+   enable_control = status_inputs[21].b_value
+   disable_control = status_inputs[22].b_value
+   test_control = status_inputs[23].b_value
+   reset_control = status_inputs[24].b_value
+   primary_control = status_inputs[25].b_value
+   secondary_control = status_inputs[26].b_value
+   manual_initiate = status_inputs[27].b_value
+  
+   a_gateway_comms = gateway_status[1].b_value
+   a_gateway_run = gateway_status[2].b_value
+   a_gateway_major = gateway_status[3].b_value
+   a_gateway_battery = gateway_status[4].b_value
+   b_gateway_comms = gateway_status[5].b_value
+   b_gateway_run = gateway_status[6].b_value
+   b_gateway_major = gateway_status[7].b_value
+   b_gateway_battery = gateway_status[8].b_value
+  
+   a_co_time = co_times[1].e_value
+   b_co_time = co_times[2].e_value
+
+
+! ----------- DETERMINE NUMBER OF STATUS INDICATIONS FROM EACH PLC ---------- !
+
+a_mode_total = 0
+b_mode_total = 0
+
+IF a_test == ON THEN a_mode_total = a_mode_total + 1
+IF a_enabled == ON THEN a_mode_total = a_mode_total + 1
+IF a_disabled == ON THEN a_mode_total = a_mode_total + 1
+IF b_test == ON THEN b_mode_total = b_mode_total + 1
+IF b_enabled == ON THEN b_mode_total = b_mode_total + 1
+IF b_disabled == ON THEN b_mode_total = b_mode_total + 1
+
+!
+X=0 Y=100
+X-=150 Y-=120 TEXT(TFG=BLACK,CH=15,"PLC A TOTAL:")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,a_mode_total)
+X-=150 Y+=20 TEXT(TFG=BLACK,CH=15,"PLC B TOTAL:")
+X+=150 Y+=0 TEXT(TFG=BLACK,CH=15,b_mode_total)
+!
+
+! ----------------------- SET COMMS FAULT VARIABLES ------------------------- !
+
+IF os_comms[1].b_value AND os_comms[2].b_value THEN
+  unknown = ON
+ELSE 
+  unknown = OFF
+
+IF unknown == ON OR a_comms_fault THEN
+  a_unknown = ON
+ELSE 
+  a_unknown = OFF
+
+IF unknown == ON OR b_comms_fault THEN
+  b_unknown = ON
+ELSE 
+  b_unknown = OFF
+
+
+! ------------------------------- BACKGROUND -------------------------------- !
+
+W=760 H=670 RECT(FG=DECOROFF)
+
+
+! -------------------------------- TITLE ------------------------------------ !
+
+intake_name = "ARCS DIAGNOSTICS - " + intake + " INTAKE"
+X=380 Y=27 TEXT(TFG=BLACK,CH=20,JUST=CENTRECENTRE,intake_name)
+
+X=10 Y=50 ADD
+X+=740 ADD
+LINE(FG=WHITE) CLEAR
+X=10 Y=52 ADD
+X+=740 ADD
+LINE(FG=DECORON,LW=2) CLEAR
+
+
+! ---------------------------- DIAGNOSTICS BOXES ---------------------------- !
+
+! PLC A !
+
+X=20 Y=400 TEXT(TFG=BLACK,CH=20,"PLC A") 
+
+IF a_unknown THEN
+  TFG=MAGENTA
+ELSE IF a_test AND a_mode_total > 1 THEN
+  TFG=FLASHRED
+ELSE IF a_test AND a_mode_total < 2 THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=20 Y=430 
+TEXT(CH=14,"TEST MODE")
+X+=175
+IF a_test THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF a_unknown THEN
+  TFG=MAGENTA
+ELSE IF a_enabled and a_mode_total > 1 THEN
+  TFG=FLASHRED
+ELSE IF a_enabled and a_mode_total < 2 THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=20 Y+=17
+TEXT(CH=14,"ENABLED")
+X+=175
+IF a_enabled THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF a_unknown THEN
+  TFG=MAGENTA
+ELSE IF a_disabled AND a_mode_total > 1 THEN
+  TFG=FLASHRED
+ELSE IF a_disabled AND a_mode_total < 2 THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=20 Y+=17 
+TEXT(CH=14,"DISABLED")
+X+=175
+IF a_disabled THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF a_unknown THEN
+  TFG=MAGENTA
+ELSE IF a_failed AND a_mode_total > 1 THEN
+  TFG=FLASHRED
+ELSE IF a_failed AND a_mode_total < 2 THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=20 Y+=17
+TEXT(CH=14,"FAILED")
+X+=175
+IF a_failed THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF a_unknown THEN
+  TFG=MAGENTA
+ELSE IF a_initiated THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=20 Y+=17
+TEXT(CH=14,"C/O INITIATED")
+X+=175
+IF a_initiated THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF a_unknown THEN
+  TFG=MAGENTA
+ELSE IF a_completed THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=20 Y+=17
+TEXT(CH=14,"C/O COMPLETED")
+X+=175
+IF a_completed THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF a_unknown THEN
+  TFG=MAGENTA
+ELSE IF a_fault THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=20 Y+=17
+TEXT(CH=14,"FAULT")
+X+=175
+IF a_fault THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF a_unknown THEN
+  TFG=MAGENTA
+ELSE IF a_primary AND a_secondary == OFF THEN
+  TFG=YELLOW
+ELSE IF a_primary AND a_secondary THEN
+  TFG=FLASHRED
+ELSE
+  TFG=BLACK
+X=20 Y+=17
+TEXT(CH=14,"PRIMARY")
+X+=175
+IF a_primary THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF a_unknown THEN
+  TFG=MAGENTA
+ELSE IF a_secondary AND a_primary == OFF THEN
+  TFG=YELLOW
+ELSE IF a_secondary AND a_primary THEN
+  TFG=FLASHRED
+ELSE
+  TFG=BLACK
+X=20 Y+=17
+TEXT(CH=14,"SECONDARY")
+X+=175
+IF a_secondary THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF a_unknown THEN
+  TFG = MAGENTA
+ELSE
+  TFG = BLACK
+X=20 Y=600 
+TEXT(CH=14,"C/O TIME")
+X+=150
+TEXT(REALF=FIXED0,CH=14,a_co_time+" mS")
+
+
+! PLC B !
+
+X=270 Y=400 TEXT(TFG=BLACK,CH=20,"PLC B") 
+
+IF b_unknown THEN
+  TFG=MAGENTA
+ELSE IF b_test AND b_mode_total > 1 THEN
+  TFG=FLASHRED
+ELSE IF b_test AND b_mode_total < 2 THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=270 Y=430 
+TEXT(CH=14,"TEST MODE")
+X+=175
+IF b_comms_fault THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF b_unknown THEN
+  TFG=MAGENTA
+ELSE IF b_enabled AND b_mode_total > 1 THEN
+  TFG=FLASHRED
+ELSE IF b_enabled AND b_mode_total < 2 THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=270 Y+=17 
+TEXT(CH=14,"ENABLED")
+X+=175
+IF b_enabled THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF b_unknown THEN
+  TFG=MAGENTA
+ELSE IF b_disabled AND b_mode_total > 1 THEN
+  TFG=FLASHRED
+ELSE IF b_disabled AND b_mode_total < 2 THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=270 Y+=17
+TEXT(CH=14,"DISABLED")
+X+=175
+IF b_disabled THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF b_unknown THEN
+  TFG=MAGENTA
+ELSE IF b_failed AND b_mode_total > 1 THEN
+  TFG=FLASHRED
+ELSE IF b_failed AND b_mode_total < 2 THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=270 Y+=17 
+TEXT(CH=14,"FAILED")
+X+=175
+IF b_failed THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF b_unknown THEN
+  TFG=MAGENTA
+ELSE IF b_initiated THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=270 Y+=17 
+TEXT(CH=14,"C/O INITIATED")
+X+=175
+IF b_initiated THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF b_unknown THEN
+  TFG=MAGENTA
+ELSE IF b_completed THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=270 Y+=17 
+TEXT(CH=14,"C/O COMPLETED")
+X+=175
+IF b_completed THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF b_unknown THEN
+  TFG=MAGENTA
+ELSE IF b_fault THEN
+  TFG=YELLOW
+ELSE
+  TFG=BLACK
+X=270 Y+=17 
+TEXT(CH=14,"FAULT")
+X+=175
+IF b_fault THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF b_unknown THEN
+  TFG=MAGENTA
+ELSE IF b_primary AND b_secondary == OFF THEN
+  TFG=YELLOW
+ELSE IF b_primary AND b_secondary THEN
+  TFG=FLASHRED
+ELSE
+  TFG=BLACK
+X=270 Y+=17 
+TEXT(CH=14,"PRIMARY")
+X+=175
+IF b_primary THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF b_unknown THEN
+  TFG=MAGENTA
+ELSE IF b_secondary AND b_primary == OFF THEN
+  TFG=YELLOW
+ELSE IF b_secondary AND b_primary THEN
+  TFG=FLASHRED
+ELSE
+  TFG=BLACK
+X=270 Y+=17 
+TEXT(CH=14,"SECONDARY")
+X+=175
+IF b_secondary THEN
+  TEXT(CH=14,"ON")
+ELSE
+  TEXT(CH=14,"OFF")
+
+IF b_unknown THEN
+  TFG = MAGENTA
+ELSE
+  TFG = BLACK
+X=270 Y=600 
+TEXT(CH=14,"C/O TIME")
+X+=150
+TEXT(REALF=FIXED0,CH=14,b_co_time+" mS")
+
+
+! COMMON HARDWARE STATUS INDICATION !
+
+X=530 Y=70 TEXT(TFG=BLACK,CH=20,"HARDWARE")
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=100 TEXT(TFG=MAGENTA,CH=14,"24V PSU A")
+  X+=140
+  IF psu1_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF psu1_failed THEN
+BEGIN
+  X=530 Y=100 TEXT(TFG=RED,CH=14,"24V PSU B")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=100 TEXT(TFG=BLACK,CH=14,"24V PSU A")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=120 TEXT(TFG=MAGENTA,CH=14,"24V PSU B")
+  X+=140
+  IF psu2_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF psu2_failed THEN
+BEGIN
+  X=530 Y=120 TEXT(TFG=RED,CH=14,"24V PSU A")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=120 TEXT(TFG=BLACK,CH=14,"24V PSU B")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=140 TEXT(TFG=MAGENTA,CH=14,"48V PSU A")
+  X+=140
+  IF psu3_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF psu3_failed THEN
+BEGIN
+  X=530 Y=140 TEXT(TFG=RED,CH=14,"48V PSU A")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=140 TEXT(TFG=BLACK,CH=14,"48V PSU A")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=160 TEXT(TFG=MAGENTA,CH=14,"48V PSU B")
+  X+=140
+  IF psu4_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF psu4_failed THEN
+BEGIN
+  X=530 Y=160 TEXT(TFG=RED,CH=14,"48V PSU B")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=160 TEXT(TFG=BLACK,CH=14,"48V PSU B")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=200 TEXT(TFG=MAGENTA,CH=14,"24V FUSE 11")
+  X+=140
+  IF fuse11_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF fuse11_failed THEN
+BEGIN
+  X=530 Y=200 TEXT(TFG=RED,CH=14,"24V FUSE 11")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=200 TEXT(TFG=BLACK,CH=14,"24V FUSE 11")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=220 TEXT(TFG=MAGENTA,CH=14,"24V FUSE 12")
+  X+=140
+  IF fuse12_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF fuse12_failed THEN
+BEGIN
+  X=530 Y=220 TEXT(TFG=RED,CH=14,"24V FUSE 12")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=220 TEXT(TFG=BLACK,CH=14,"24V FUSE 12")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=240 TEXT(TFG=MAGENTA,CH=14,"24V FUSE 13")
+  X+=140
+  IF fuse13_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF fuse13_failed THEN
+BEGIN
+  X=530 Y=240 TEXT(TFG=RED,CH=14,"24V FUSE 13")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=240 TEXT(TFG=BLACK,CH=14,"24V FUSE 13")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=260 TEXT(TFG=MAGENTA,CH=14,"24V FUSE 14")
+  X+=140
+  IF fuse14_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF fuse14_failed THEN
+BEGIN
+  X=530 Y=260 TEXT(TFG=RED,CH=14,"24V FUSE 14")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=260 TEXT(TFG=BLACK,CH=14,"24V FUSE 14")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=280 TEXT(TFG=MAGENTA,CH=14,"24V FUSE 15")
+  X+=140
+  IF fuse15_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF fuse15_failed THEN
+BEGIN
+  X=530 Y=280 TEXT(TFG=RED,CH=14,"24V FUSE 15")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=280 TEXT(TFG=BLACK,CH=14,"24V FUSE 15")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=300 TEXT(TFG=MAGENTA,CH=14,"24V FUSE 16")
+  X+=140
+  IF fuse16_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF fuse16_failed THEN
+BEGIN
+  X=530 Y=300 TEXT(TFG=RED,CH=14,"24V FUSE 16")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=300 TEXT(TFG=BLACK,CH=14,"24V FUSE 16")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=340 TEXT(TFG=MAGENTA,CH=14,"48V FUSE 21")
+  X+=140
+  IF fuse21_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF fuse21_failed THEN
+BEGIN
+  X=530 Y=340 TEXT(TFG=RED,CH=14,"48V FUSE 21")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=340 TEXT(TFG=BLACK,CH=14,"48V FUSE 21")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=360 TEXT(TFG=MAGENTA,CH=14,"48V FUSE 22")
+  X+=140
+  IF fuse22_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF fuse22_failed THEN
+BEGIN
+  X=530 Y=360 TEXT(TFG=RED,CH=14,"48V FUSE 22")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=360 TEXT(TFG=BLACK,CH=14,"48V FUSE 22")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=420 TEXT(TFG=MAGENTA,CH=14,"INTERTRIP UNIT")
+  X+=140
+  IF itu_failed THEN
+    TEXT(TFG=MAGENTA,CH=14,"FAILED")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"HEALTHY")
+END
+ELSE IF itu_failed THEN
+BEGIN
+  X=530 Y=420 TEXT(TFG=RED,CH=14,"INTERTRIP UNIT")
+  X+=140
+  TEXT(TFG=RED,CH=14,"FAILED")
+END
+ELSE
+BEGIN
+  X=530 Y=420 TEXT(TFG=BLACK,CH=14,"INTERTRIP UNIT")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"HEALTHY")
+END
+
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=460 TEXT(TFG=MAGENTA,CH=14,"UNDERVOLTAGE 1")
+  X+=140
+  IF undervoltage_1 THEN
+    TEXT(TFG=MAGENTA,CH=14,"ON")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"OFF")
+END
+ELSE IF undervoltage_1 THEN
+BEGIN
+  X=530 Y=460 TEXT(TFG=RED,CH=14,"UNDERVOLTAGE 1")
+  X+=140
+  TEXT(TFG=RED,CH=14,"ON")
+END
+ELSE
+BEGIN
+  X=530 Y=460 TEXT(TFG=BLACK,CH=14,"UNDERVOLTAGE 1")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"OFF")
+END
+
+IF a_unknown AND b_unknown THEN
+BEGIN
+  X=530 Y=480 TEXT(TFG=MAGENTA,CH=14,"UNDERVOLTAGE 2")
+  X+=140
+  IF undervoltage_2 THEN
+    TEXT(TFG=MAGENTA,CH=14,"ON")
+  ELSE
+    TEXT(TFG=MAGENTA,CH=14,"OFF")
+END
+ELSE IF undervoltage_2 THEN
+BEGIN
+  X=530 Y=480 TEXT(TFG=RED,CH=14,"UNDERVOLTAGE 2")
+  X+=140
+  TEXT(TFG=RED,CH=14,"ON")
+END
+ELSE
+BEGIN
+  X=530 Y=480 TEXT(TFG=BLACK,CH=14,"UNDERVOLTAGE 2")
+  X+=140
+  TEXT(TFG=BLACK,CH=14,"OFF")
+END
+
+
+
+! DRAW DIAGNOSTICS BOXES !
+
+X=11 Y=391 ADD
+X+=230 ADD 
+Y+=235 ADD
+X-=230 ADD
+Y-=235 ADD
+LINE(FG=DECORLIGHT) CLEAR
+
+X=10 Y=390 ADD
+X+=230 ADD 
+Y+=235 ADD
+X-=230 ADD
+Y-=235 ADD
+LINE(FG=DECORON,LW=2) CLEAR
+
+X=261 Y=391 ADD
+X+=230 ADD 
+Y+=235 ADD
+X-=230 ADD
+Y-=235 ADD
+LINE(FG=DECORLIGHT) CLEAR
+
+X=260 Y=390 ADD
+X+=230 ADD 
+Y+=235 ADD
+X-=230 ADD
+Y-=235 ADD
+LINE(FG=DECORON,LW=2) CLEAR
+
+X=516 Y=61 ADD
+X+=230 ADD 
+Y+=600 ADD
+X-=230 ADD
+Y-=600 ADD
+LINE(FG=DECORLIGHT) CLEAR
+
+X=515 Y=60 ADD
+X+=230 ADD 
+Y+=600 ADD
+X-=230 ADD
+Y-=600 ADD
+LINE(FG=DECORON,LW=2) CLEAR
+
+! GATEWAYS BOX !
+X=105 Y=145 ADD
+X+=120 ADD
+Y+=180 ADD
+X-=120 ADD
+Y-=180 ADD
+LINE(FG=DECORON) CLEAR
+
+! GATEWAY A !
+X=115 Y=160 ADD
+X+=100 ADD
+Y+=70 ADD
+X-=100 ADD
+Y-=70 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF a_gateway_run or a_gateway_major or a_gateway_battery THEN
+  LINE(FG=FLASHRED,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=125 Y=185 TEXT(TFG=DECORON,CH=13,"GATEWAY A")
+
+! GATEWAY B !
+X=115 Y=240 ADD
+X+=100 ADD
+Y+=70 ADD
+X-=100 ADD
+Y-=70 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF b_gateway_run or b_gateway_major or b_gateway_battery THEN
+  LINE(FG=FLASHRED,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=125 Y=265 TEXT(TFG=DECORON,CH=13,"GATEWAY B")
+
+! GATEWAY A - PLC A DF1 COMMS LINE !
+
+X=280 Y=195 ADD
+X-=5 Y-=5 ADD
+X+=5 Y+=5 ADD
+X-=5 Y+=5 ADD
+X+=5 Y-=5 ADD
+X-=65 ADD
+X+=5 Y-=5 ADD
+X-=5 Y+=5 ADD
+X+=5 Y+=5 ADD
+
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF a_gateway_comms THEN
+  LINE(FG=FLASHRED,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=245 Y=175
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"DF1")
+ELSE IF a_gateway_comms THEN
+  TEXT(TFG=FLASHRED,CH=13,JUST=CENTRECENTRE,"DF1")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"DF1")
+
+! GATEWAY B - PLC B DF1 COMMS LINE !
+
+X=280 Y=275 ADD
+X-=5 Y-=5 ADD
+X+=5 Y+=5 ADD
+X-=5 Y+=5 ADD
+X+=5 Y-=5 ADD
+X-=65 ADD
+X+=5 Y-=5 ADD
+X-=5 Y+=5 ADD
+X+=5 Y+=5 ADD
+
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF b_gateway_comms THEN
+  LINE(FG=FLASHRED,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=245 Y=255
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"DF1")
+ELSE IF b_gateway_comms THEN
+  TEXT(TFG=FLASHRED,CH=13,JUST=CENTRECENTRE,"DF1")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"DF1")
+
+! OUTSTATION !
+X=265 Y=145 ADD
+X+=230 ADD
+Y+=180 ADD
+X-=230 ADD
+Y-=180 ADD
+LINE(FG=DECORON) CLEAR
+
+! PLC A !
+X=280 Y=160 ADD
+X+=200 ADD
+Y+=70 ADD
+X-=200 ADD
+Y-=70 ADD
+LINE(FG=DECORON) CLEAR
+
+X=350 Y=185 TEXT(TFG=DECORON,CH=20,"PLC A")
+
+! PLC B !
+
+X=280 Y=240 ADD
+X+=200 ADD
+Y+=70 ADD
+X-=200 ADD
+Y-=70 ADD
+LINE(FG=DECORON) CLEAR
+
+X=350 Y=265 TEXT(TFG=DECORON,CH=20,"PLC B")
+
+! ENABLE LINE !
+
+X=290 Y=90 ADD
+Y+=50 ADD 
+Y-=5 X-=5 ADD
+Y+=5 X+=5 ADD
+Y-=5 X+=5 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF enable_control THEN
+  LINE(FG=YELLOW,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=290 Y=82
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"ENA")
+ELSE IF enable_control THEN
+  TEXT(TFG=YELLOW,CH=13,JUST=CENTRECENTRE,"ENA")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"ENA")
+
+! DISABLE LINE !
+
+X=320 Y=90 ADD
+Y+=50 ADD 
+Y-=5 X-=5 ADD
+Y+=5 X+=5 ADD
+Y-=5 X+=5 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF disable_control THEN
+  LINE(FG=YELLOW,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=320 Y=82
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"DIS")
+ELSE IF disable_control THEN
+  TEXT(TFG=YELLOW,CH=13,JUST=CENTRECENTRE,"DIS")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"DIS")
+
+! TEST LINE !
+
+X=350 Y=90 ADD
+Y+=50 ADD 
+Y-=5 X-=5 ADD
+Y+=5 X+=5 ADD
+Y-=5 X+=5 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF test_control THEN
+  LINE(FG=YELLOW,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=350 Y=82
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"TST")
+ELSE IF test_control THEN
+  TEXT(TFG=YELLOW,CH=13,JUST=CENTRECENTRE,"TST")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"TST")
+
+! RESET LINE !
+
+X=380 Y=90 ADD
+Y+=50 ADD 
+Y-=5 X-=5 ADD
+Y+=5 X+=5 ADD
+Y-=5 X+=5 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF reset_control THEN
+  LINE(FG=YELLOW,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=380 Y=82
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"RST")
+ELSE IF reset_control THEN
+  TEXT(TFG=YELLOW,CH=13,JUST=CENTRECENTRE,"RST")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"RST")
+
+! MANUAL LINE !
+
+X=410 Y=90 ADD
+Y+=50 ADD 
+Y-=5 X-=5 ADD
+Y+=5 X+=5 ADD
+Y-=5 X+=5 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF manual_initiate THEN
+  LINE(FG=YELLOW,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=410 Y=82
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"MAN")
+ELSE IF manual_initiate THEN
+  TEXT(TFG=YELLOW,CH=13,JUST=CENTRECENTRE,"MAN")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"MAN")
+
+! PRIMARY LINE !
+
+X=440 Y=90 ADD
+Y+=50 ADD 
+Y-=5 X-=5 ADD
+Y+=5 X+=5 ADD
+Y-=5 X+=5 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF primary_control THEN
+  LINE(FG=YELLOW,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=440 Y=82
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"PRI")
+ELSE IF primary_control THEN
+  TEXT(TFG=YELLOW,CH=13,JUST=CENTRECENTRE,"PRI")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"PRI")
+
+! SECONDARY LINE !
+
+X=470 Y=90 ADD
+Y+=50 ADD 
+Y-=5 X-=5 ADD
+Y+=5 X+=5 ADD
+Y-=5 X+=5 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF secondary_control THEN
+  LINE(FG=YELLOW,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=470 Y=82
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"SEC")
+ELSE IF secondary_control THEN
+  TEXT(TFG=YELLOW,CH=13,JUST=CENTRECENTRE,"SEC")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"SEC")
+
+! PLC A DH+ COMMS !
+
+X=125 Y=380 ADD
+X+=5 Y+=5 ADD
+X+=5 Y-=5 ADD
+X-=5 Y+=5 ADD
+Y-=20 ADD 
+X-=75 ADD
+Y-=170 ADD
+X+=60 ADD
+X-=5 Y-=5 ADD
+X+=5 Y+=5 ADD
+X-=5 Y+=5 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF a_comms_fault THEN
+  LINE(FG=FLASHRED,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=30 Y=280
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"DH+")
+ELSE IF a_comms_fault THEN
+  TEXT(TFG=FLASHRED,CH=13,JUST=CENTRECENTRE,"DH+")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"DH+")
+
+! PLC B DH+ COMMS !
+
+X=375 Y=380 ADD
+X+=5 Y+=5 ADD
+X+=5 Y-=5 ADD
+X-=5 Y+=5 ADD
+Y-=40 ADD 
+X-=280 ADD
+Y-=70 ADD
+X+=15 ADD
+X-=5 Y-=5 ADD
+X+=5 Y+=5 ADD
+X-=5 Y+=5 ADD
+IF unknown THEN
+  LINE(FG=MAGENTA,LW=2)
+ELSE IF b_comms_fault THEN
+  LINE(FG=FLASHRED,LW=2)
+ELSE
+  LINE(FG=DECORON,LW=2)
+CLEAR
+
+X=80 Y=310
+IF unknown THEN
+  TEXT(TFG=MAGENTA,CH=13,JUST=CENTRECENTRE,"DH+")
+ELSE IF b_comms_fault THEN
+  TEXT(TFG=FLASHRED,CH=13,JUST=CENTRECENTRE,"DH+")
+ELSE
+  TEXT(TFG=DECORON,CH=13,JUST=CENTRECENTRE,"DH+")
+
+
+! ------------------------------ STATUS TEXT -------------------------------- !
+
+IF unknown THEN
+  status_text = "THE SCOPE TO OUTSTATION COMMS HAVE FAILED"
+ELSE IF a_gateway_comms AND b_gateway_comms THEN
+  status_text = "DF1 NETWORK FAILED"
+ELSE IF a_gateway_comms THEN
+  status_text = "DF1 NETWORK TO GATEWAY A FAILED"
+ELSE IF b_gateway_comms THEN
+  status_text = "DF1 NETWORK TO GATEWAY B FAILED"
+ELSE IF a_comms_fault AND b_comms_fault THEN
+  status_text = "DH+ NETWORK FAILED"
+ELSE IF a_comms_fault THEN
+  status_text = "DH+ NETWORK TO PLC A FAILED"
+ELSE IF b_comms_fault THEN
+  status_text = "DH+ NETWORK TO PLC B FAILED"
+ELSE IF a_mode_total > 1 AND b_mode_total > 1 THEN
+  status_text = "STATUS INDICATION CONFLICT"
+ELSE IF a_mode_total > 1 AND b_mode_total < 2 THEN
+  status_text = "STATUS INDICATION CONFLICT ON A"
+ELSE IF b_mode_total > 1 AND a_mode_total > 2 THEN
+  status_text = "STATUS INDICATION CONFLICT ON B"
+ELSE IF (a_primary AND a_secondary) AND (b_primary AND b_secondary) THEN
+  status_text = "PRIMARY/SECONDARY CONFLICT"
+ELSE IF a_primary AND a_secondary THEN
+  status_text = "PRIMARY/SECONDARY CONFLICT ON A"
+ELSE IF b_primary AND b_secondary THEN
+  status_text = "PRIMARY/SECONDARY CONFLICT ON B" 
+!ELSE IF a_watchdog_failed AND b_watchdog_failed == OFF THEN    DISABLED BY FIRSTCO AS NOT CALLED
+  status_text = "PLC A DH+ NETWORK OR PLC HARDWARE FAULT"
+ELSE IF b_watchdog_failed AND a_watchdog_failed == OFF THEN
+  status_text = "PLC B DH+ NETWORK OR PLC HARDWARE FAULT"
+ELSE IF a_watchdog_failed AND b_watchdog_failed THEN
+  status_text = "PLC A/B DH+ NETWORK OR PLC HARDWARE FAULT"!
+ELSE
+  status_text = ""
+
+X=120 Y=660 ADD
+Y-=25 ADD
+X+=370 ADD
+LINE(FG=DECORON) CLEAR
+ADD
+Y+=25 ADD
+X-=370 ADD
+LINE(FG=DECORLIGHT) CLEAR
+
+X=10 Y=640
+TEXT(TFG=BLACK,CH=14,"INFORMATION:  ")
+X+=115
+TEXT(TFG=RED3,CH=14,status_text)
+
+X=10 Y=60
+IF INVALID status_inputs OR INVALID co_times OR INVALID os_comms THEN
+  TEXT(CH=17,TFG=FLASHRED,"UPDATING...")
+
+CLEAR
+
+X=0 Y=0 W=760 H=670
+SET TEXT helpstr = "ARCS_DIAGNOSTICS_HELP"
+
+END
+
+MIMIC diagnostic_popup = diagnostic_popup W=760,H=670
+
+
+
+OBJECT MAIN_OBJECT(BG,FG,W,H,TFG,TBG)
+
+VAR diagnostic_window = popup	diagnostic_popup
+
+BEGIN
+!
+w=100 h=100 rect(fg=white)
+IF SELB THEN
+  REQUEST diagnostic_window(1,700,2300,"NORTH",HEATHROW)
+!
+X=-400 Y=-330 DIAGNOSTIC_POPUP(1,3700,2300,"WEST",HEATHROW)
+
+
+END
+
+MIMIC = MAIN_OBJECT 
+W=900,H=700,JUST=CENTRECENTRE,FG=WHITE,BG=AQUAMARINE3

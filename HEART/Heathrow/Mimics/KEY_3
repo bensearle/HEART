@@ -1,0 +1,295 @@
+! HEATHROW CMS - KEY 3
+
+loaded by: HIERARCHY
+!
+
+load mimic_libutil
+
+load main_hierarchy
+
+type fcb_state_type = enum(fcb_on="On",
+                           fcb_off="Off",
+                           fcb_feeder_earth_on="Feeder Earth On")
+
+
+!
+************************************************************
+* FCB DISPLAY ONLY OBJECT                                  *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object fcb_display(fcb_state=fcb_state_type)
+begin
+just = centrecentre
+rect (w=40,h=80,fg=decoroff)
+clear
+x -= 20 y += 40 add
+y -= 80 add
+x += 40 add line (fg=decorlight) clear 
+y += 1 add
+y += 79 add
+x -= 40 add line (fg=decorshadow) clear
+x += 20 y -= 40 clear
+
+case fcb_state of
+  fcb_on
+  begin
+  fg=green4
+  lw=2
+  y -= 40 add
+  y += 80 add line clear
+  y -= 26 x -= 13 add
+  y -= 26 x += 26 add line clear
+  y += 26 add
+  x -= 26 y -= 26 add line clear
+  x += 13 y += 13 add clear
+  end
+
+  fcb_off
+  begin
+  fg=green4
+  lw=2
+  y -= 40 add
+  y += 80 add line clear
+  y -= 30 x -= 10 add
+  y -= 20 x += 20 add line clear
+  y += 20 add
+  x -= 20 y -= 20 add line clear
+  x += 10 y += 10 add
+  circle(h=30,w=30) clear
+  end
+ 
+  fcb_feeder_earth_on
+  begin
+  fg=green4
+  lw=2
+  y -= 40 add
+  y += 8 add line clear
+  disk (w=8,h=8)
+  lw=4
+  y += 1 add
+  y += 20 add line clear
+  disk (w=8,h=8)
+  lw=2
+  y += 1 add
+  y += 8 add line 
+  x -= 11 add
+  x += 22 add line clear
+  x -= 4 y += 5 add
+  x -= 14 add line clear
+  x += 4 y += 5 add
+
+  x += 6 add line clear
+  y += 24 add
+  x -= 6 add line clear
+  x += 3 add
+  y += 8 add line clear
+  end
+  
+  default
+  begin
+  end
+
+clear
+end
+
+
+!
+************************************************************
+* MOT GEN DISPLAY ONLY OBJECT                              *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object mot_gen_display(running=yesno)
+
+var mot_gen_colour = loopback  colour
+begin
+if running then
+  mot_gen_colour=green4
+else
+  mot_gen_colour=white
+
+clear
+just = centrecentre
+rect (w=90,h=70,fg=decoroff)
+
+x -= 45 y += 35 add
+y -= 70 add
+x += 90 add line (fg=decorlight) clear 
+
+add
+y += 70 add
+x -= 90 add line (fg=decorshadow) clear
+
+ch=10
+x = 0 y = -10
+rect (w=60,h=20,fg=mot_gen_colour)
+text ("Motor")
+y+=20 add
+rect (w=60,h=20,fg=mot_gen_colour)
+text ("Generator")
+
+clear
+fg = white
+x-=30 y+=10  add 
+y-=40 add
+x+=60 add
+line
+clear
+fg=black
+y+=20 add
+x-=59 add
+line
+clear
+y+=20 add
+x+=60 add
+y-=40 add
+line
+clear
+
+end
+
+
+!
+************************************************************
+* CUBICLE DISPLAY ONLY OBJECT                              *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object cubicle_display(in_use=yesno)
+
+var cubicle_colour = loopback  colour
+begin
+just = centrecentre
+if in_use then
+  cubicle_colour=green4
+else
+  cubicle_colour=white
+
+rect (w=90,h=50,fg=decoroff) clear
+x -= 45 y += 25 add
+y -= 50 add
+x += 90 add line(fg=decorlight) clear
+y += 1 add
+y += 49 add
+x -= 89 add line(fg=decorshadow) clear
+x += 44 y -= 25 add
+
+rect (w=70,h=35,fg=cubicle_colour) clear
+text (ch=20,"cubicle")
+clear
+fg = black
+x+=35 y-=17 add
+y+=35 add
+x-=70 add 
+line
+clear
+fg=white
+add
+y-=35 add 
+x+=70 add line
+clear
+
+end
+
+
+
+! ******************** Place object on screen ***********************!
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+goto_menu
+x = 400
+y = 350
+command_button(271,heathrow)
+clear
+
+scale = 280
+ch = 11
+tfg = decoroff
+
+lw=2
+fg=green4
+
+x = -300 y = -280 add
+y += 70 add 
+line
+clear
+x -= 20 y += 5 text ("State 1")
+x += 20 y -= 5
+y -= 70
+fcb_display(fcb_on)
+
+x += 65 add
+y += 70 add
+line
+clear
+x -= 20 y += 5 text ("State 2")
+x += 20 y -= 5
+y -= 70
+fcb_display(fcb_off)
+
+x += 65 add
+y += 70 add 
+line
+clear
+x -= 20 y += 5 text ("State 3")
+x += 20 y -= 5
+y -= 70
+fcb_display(fcb_feeder_earth_on)
+
+x = -325 y = -210 add
+x += 175 add
+line (lw=4) 
+clear
+
+ch = 20 
+x = -300 y = -360 add text ("FEGP Feeder Circuit Breaker")
+
+ch = 14 
+y = -325 
+x = -50 text ("State 1 :-  "+fcb_on)
+y += 17 text ("State 2 :-  "+fcb_off)
+y += 17 text ("State 3 :-  "+fcb_feeder_earth_on)
+
+
+x = -275 y = -50
+mot_gen_display(no)
+x -= 20 y += 45 
+text ("State 1")
+x+=140 y=-50
+mot_gen_display(yes)
+x -= 20 y += 45 
+text("State 2")
+ch = 20 
+x = -300 y = -125 add text ("FEGP Motor/Generator Set")
+ch = 14 
+y = -90 
+x = -50 text ("State 1 :-  Stopped")
+y += 17 text ("State 2 :-  Running")
+
+
+
+
+x = -275 y = 150
+cubicle_display(no)
+x -=20 y += 35 
+text("State 1")
+x+=140 y=150
+cubicle_display(yes)
+x -= 20 y +=35
+text("State 2")
+ch = 20 
+x = -300 y = 85 add text ("FEGP Cubicle")
+ch = 14 
+y = 120 
+x = -50 text ("State 1 :-  Not In Use")
+y += 17 text ("State 2 :-  In Use")
+
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

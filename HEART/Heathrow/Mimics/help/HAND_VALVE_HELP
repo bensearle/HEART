@@ -1,0 +1,23 @@
+helptext HAND_VALVE_HELP = "HAND VALVE
+
+----------
+
+This object has two possible states it can display, either open or closed. This is represented by:
+
+
+Green Foreground - OPEN
+
+
+White Foregroud - CLOSED
+
+
+
+MENU OPTIONS
+
+------------
+
+If the valve is closed then the menu option is to dressed the valve open, whereas if the valve is open then the menu option is to dress the valve closed.
+
+
+NB, This object is purely for displaying the valve status and serves no control functions whatsoever.
+"

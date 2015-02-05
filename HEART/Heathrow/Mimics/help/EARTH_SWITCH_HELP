@@ -1,0 +1,27 @@
+helptext earth_switch_help = "Earth Switch Symbol
+
+__________________________________________
+
+
+Shows states & alarms of the earth switch for 
+Bus Section 1.
+
+
+Actual States Include:
+    Switch Closed
+    Switch Open
+
+
+Foreground Colour Indications:
+    Magenta 	- Loss of data
+    Flash Red	- Associated alarm waiting for note
+    Steady Red	- Associated alarm noted but still abnormal
+    Green		- No alarms
+
+
+Background Colour Indications:
+    Yellow		- Tagged message
+    Grey		- Normal
+
+__________________________________________
+"

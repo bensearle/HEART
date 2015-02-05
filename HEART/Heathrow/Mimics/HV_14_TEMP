@@ -1,0 +1,632 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!*********Hv Ring 14************!
+
+
+load mimic_libutil
+load ocb
+load hv_lib
+load hv_fuse_mon	
+load oil_switch_mon
+load hv_14_sub_stations
+load hv_14b_sub_stations
+load hv_14c_sub_stations
+load ocb_hand_dressed_2
+load hv_cable_ident
+Load BROWSER
+
+!*************** SUB 78 ***************!
+
+object sub_78
+
+begin
+
+sub_symbol_78
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25096,190,1348,heathrow,"c")
+x = 50 y = 0 oil_switch(25098,191,1349,heathrow,"c")
+
+scale = 256
+tfg = black ch=12
+just = centrecentre
+x = 15 y = 0 text("1")
+x = 65 y = 0 text("2")
+
+end
+
+
+!*************** SUB 79 ***************!
+
+object sub_79
+
+begin
+
+sub_symbol_79
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25090,187,1345,heathrow,"c")
+x = 50 y = 0 oil_switch(25092,188,1346,heathrow,"c")
+
+scale = 260
+tfg = black ch=12
+just = centrecentre
+x = 15 y = 0 text("1")
+x = 65 y = 0 text("2")
+
+end
+
+
+!*************** SUB 80 ***************!
+
+object sub_80
+
+begin
+
+sub_symbol_80
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25084,184,1342,heathrow,"c")
+x = 50 y = 0 oil_switch(25086,185,1343,heathrow,"c")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 15 y = 0 text("1")
+x = 65 y = 0 text("2")
+
+end
+
+
+!*************** SUB 81 ***************!
+
+object sub_81
+
+begin
+
+sub_symbol_81
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25076,148,1338,heathrow,"c")
+x = 50 y = 0 oil_switch(25078,149,1339,heathrow,"c")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 15 y = 0 text("1")
+x = 65 y = 0 text("3")
+
+end
+
+
+!*************** SUB 77 ***************!
+
+object sub_77
+
+begin
+
+sub_symbol_77
+
+lw=2
+x = -50 y = 25 add y -= 50 add line (fg=yellow) clear
+!x = 0 y = 50 add y += 50 add line (fg=yellow) clear!
+x = 85 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = -50 y = 0 oil_switch(25066,143,1333,heathrow,"c")
+x = 85 y = 0 oil_switch(25068,144,1334,heathrow,"c")
+!x = 50 y = 75 hv_fuse(25072,146,1336,heathrow,"c")!
+
+scale = 260
+tfg=black ch=12
+just=centrecentre
+x = -35 y = 0 text("1")
+!x = 65 y = 75 text("3")!
+x = 100 y = 0 text("6")
+end
+
+
+!*************** SUB 55 ***************!
+
+object sub_55
+
+begin
+
+sub_symbol_55
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+x = 50 y = 50 add y += 50 add line (fg=yellow) clear
+x = 100 y = 50 add y += 50 add line (fg=yellow) clear
+x = 150 y = 50 add y += 50 add line (fg=yellow) clear
+x = 200 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25062,141,1331,heathrow,"c")
+
+x = 50  y = 75 ocb_mont(4500,4670,178,357,heathro2,2,"btm")
+x = 100 y = 75 ocb_mont(4500,4690,180,359,heathro2,4,"btm")
+x = 150 y = 75 ocb_mont(4500,4700,181,360,heathro2,5,"btm")
+
+x = 200 y = 0 oil_switch(25064,142,1332,heathrow,"c")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 15 y = 0 text("1")
+x = 215 y = 0 text("6")
+
+end
+
+
+!*************** SUB 59 ***************!
+
+object sub_59
+
+begin
+
+!sub_symbol_59
+
+lw = 2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 hv_fuse_upsidedown(angle=180,25123,289,1401,heathrow,"c")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 15 y = 0 text("1")!
+
+end
+
+!*************** SUB 117 ***************!
+
+object sub_117
+
+begin
+
+sub_symbol_117
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(4000,4750,256,370,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(4000,4770,258,372,heathro2,2,"top")
+
+scale = 256
+tfg = black ch=12
+just = centrecentre
+end
+
+!*************** SUB 88 ***************!
+
+object sub_88
+
+begin
+
+sub_symbol_88
+
+lw = 2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 ocb_hand(25124,640,2009,heathrow,heathro2,1,"top")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+
+end
+
+
+!*************** SUB 64 ***************!
+
+object sub_64
+
+begin
+
+sub_symbol_64
+
+lw = 2
+x = 0 y = 25 add y -= 50 add line (fg=red) clear
+x = 50 y = 25 add y -= 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25034,94,1317,heathrow,"c")
+x = 50 y = 0 oil_switch(25036,95,1318,heathrow,"c")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 15 y = 0 text("1")
+x = 65 y = 0 text("5")
+
+end
+
+
+!*************** SUB 124 ***************!
+
+object sub_124
+
+begin
+
+sub_symbol_124
+
+lw = 2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+x = 50 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(26087,1032,4225,heathrow,"c")
+x = 50 y = 0 oil_switch(26089,1033,4226,heathrow,"c")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 15 y = 0 text("1")
+x = 65 y = 0 text("2")
+
+end
+
+
+!*************** SUB 75 ***************!
+
+object sub_75
+
+begin
+
+sub_symbol_75
+
+lw = 2
+x = 0 y = 25 add y -= 50 add line (fg=red) clear
+x = 50 y = 25 add y -= 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0 y = 0 oil_switch(25026,90,1313,heathrow,"c")
+x = 50 y = 0 oil_switch(26102,101,2047,heathrow,"c")
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 15 y = 0 text("1")
+x = 85 y = 0 text("2 RMU")
+
+
+end
+
+
+!*************** SUB 99 ***************!
+
+object sub_99
+
+begin
+
+sub_symbol_99
+
+lw = 2
+x = 0 y = 25 add y -= 50 add line (fg=red) clear
+x = 50 y = 25 add y -= 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 oil_switch_mon(1,300,1191,58,heathro2,1,"top")  
+x = 50 y = 0 oil_switch_mon(1,310,1192,59,heathro2,2,"top")
+
+
+
+end
+
+
+!************* SEB BATH ROAD **************!
+
+object sub_seb_bath_road
+
+begin
+
+sub_symbol_bath_road
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=yellow) clear
+x = 200 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = 0 ocb_barcis(8470,291,1403,heathrow,1,"top")
+x = 200 y = 0 ocb_barcis(8480,292,1404,heathrow,2,"top")
+
+end
+
+
+!*********** HV 14 NORTH INTAKE ************!
+
+object hv_14_north_intake
+
+var call_var = toplevel  string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "north_intake"
+
+W=150 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"North Intake",just=centrecentre) clear
+
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 100 y = 25 add y = -25 add line(fg=red) clear
+
+scale=120
+x = 0 y = 0 ocb(1,460,20,44,heathrow,4,"top")
+x = 100 y = 0 ocb(1,300,11,35,heathrow,14,"top")
+
+end
+
+!*************** SUB 110 ***************!
+ 
+object sub_110
+ 
+begin
+ 
+sub_symbol_110
+ 
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=red) clear
+x = 50 y = 25 add y -= 50 add line (fg=red) clear
+ 
+scale = 120
+X=0 Y=0 oil_switch_mon(1,250,1188,38,heathro2,2,"top")   ! Panel 2 !
+X=50 Y=0 oil_switch_mon(1,260,1189,39,heathro2,3,"top")   ! Panel 3 ! 
+
+ 
+end
+
+!*************** SUB 111 ***************!
+ 
+object sub_111
+begin
+	sub_symbol_111
+	just=topleft
+	lw=2
+	x = -150 y = 25 add y -= 50 add line (fg=yellow) clear
+	x = -100 y = 25 add y -= 50 add line (fg=yellow) clear
+	x = -25  y = 36 add x -= 50 add line (lw=4,fg=yellow) clear
+	x =125  y = 36 add x -= 50 add line (lw=4,fg=red) clear
+	x = 150 y = 25 add y -= 50 add line (fg=red) clear
+	x = 200 y = 25 add y -= 50 add line (fg=red) clear
+
+	scale = 310
+	x=-150 y=0  	hv_lib_breaker("eclipse",40000,40130,1350,5540,5574,HEATHROW,1,"TOP",10)
+	x=-100 y=0 	hv_lib_breaker("eclipse",40000,40150,1351,5541,5574,HEATHROW,2,"TOP",20)
+	x = -50  y = 36 	hv_lib_breaker("eclipse",40000,40170,1352,5542,5574,HEATHROW,3,"SECT",30)
+	x = 100  y = 36 	hv_lib_breaker("eclipse",40000,40290,1358,5548,5574,HEATHROW,8,"SECT",40)
+	x = 150  y = 0 	hv_lib_breaker("eclipse",40000,40330,1360,5550,5574,HEATHROW,9,"TOP",50)
+	x = 200  y = 0 	hv_lib_breaker("eclipse",40000,40350,1361,5551,5574,HEATHROW,10,"TOP",60)
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+clear
+
+x = 250 y = -300 sub_seb_bath_road
+x = 0 y = -300 hv_14_north_intake
+
+x = -475 y = 160 sub_99
+x = -250 y = 160 sub_81
+x = -25 y = 160 sub_80
+x = 200 y = 160 sub_79
+x = 425 y = 160 sub_78
+
+x = 250 y = -150 sub_55
+x = -450 y = -150 sub_77
+x = -135 y = -150 sub_64
+x = -270 y = -150 sub_124
+x = 0 y = -150 sub_75
+x = 400 y = 30 sub_117
+x = 200 y =30 sub_88
+x = -400 y =30 sub_59
+X=72 Y=30 sub_110
+X=-210 Y=30 sub_111
+clear
+scale = 256
+
+
+lw=2
+
+! BATH ROAD-1 TO SS55-1 !
+x = 250 y = -325 add
+y -= 15 add
+x -= 50 add
+y += 105 add
+x += 50 add
+y += 60 add
+line(fg=yellow) clear
+!x = 225 y = -235 cable_ident("yellow","maggot","8.0") clear!
+
+! BATH ROAD-2 TO SS55-6 !
+x = 450 y = -325 add
+y -= 15 add
+x += 50 add
+y += 105 add
+x -= 50 add
+y += 60 add
+line(fg=yellow) clear
+!x = 475 y = -235 cable_ident("yellow","maggot","8.0") clear!
+
+! SS75-0 TO SS64-1 !
+x =50 y = -175 add
+y -= 15 add
+x -= 185 add
+y += 18 add
+line(fg=red) clear
+!x = -80 y = -190 cable_ident("yellow","maggot","4.1") clear!
+
+! SS75-1 TO NI-4 !
+x = 0 y = -175 add
+y -= 30 add
+x -= 50 add
+y -= 135 add
+x += 50 add
+y += 18 add
+line(fg=red) clear
+x = -26 y = -205 cable_ident("red","maggot","5.0") clear
+
+! SS64-5 TO SS111-10 !
+x = -85 y = -175 add
+y -= 0 add
+x += 45 add
+y += 130 add
+x += 30 add
+y += 55 add
+line(fg=red) clear
+
+! SS124-2 TO SS111-2 !
+x = -220 y = -175 add
+y -= 15 add
+x -= 90 add
+y += 200 add
+line(fg=yellow) clear
+
+! SS124-1 TO SS77-5 !
+x = -270 y = -175 add
+y -= 30 add
+x -= 95 add
+y += 30 add
+line(fg=yellow) clear
+
+! SS55-5 TO SS117-1 ! 
+x = 400 y = -50 add
+y += 55 add
+line(fg=blue) clear
+x = 400 y = -40 add y += 10 add line(fg=yellow) clear
+y = -20 add y += 10 add line(fg=yellow) clear
+x = 400 y = -20 add x += 70 add line(fg=yellow) clear
+x = 410 add x += 10 add line(fg=blue) clear
+x = 430 add x += 10 add line(fg=blue) clear
+x = 450 add x += 10 add line(fg=blue) clear
+x = 480 y = -45 text(just=centreleft,ch=12,tfg=black,"Emergency") clear
+y += 15 text(just=centreleft,ch=12,tfg=black,"Feeder") clear
+y += 15 text(just=centreleft,ch=12,tfg=black,"Fuel Farm") clear
+y += 15 text(just=centreleft,ch=12,tfg=black,"(See HV 1)") clear
+
+! SS55-4 TO SS77-1 !
+x = 350 y = -50 add
+y += 30 add
+x -= 190 add
+y -=200 add
+x -= 660 add
+y += 45 add
+line(fg=yellow) clear  
+
+! SS55-2 TO SS78-3 !
+x = 300 y = -50 add
+y += 155 add
+x += 175 add
+y += 30 add
+line(fg=yellow) clear
+
+! SS77-3 TO SS59-1 !
+!x = -400 y =-50 add
+y+= 55 add
+line(fg=yellow) clear!
+
+! SS78-1 TO SS79-3 !
+x = 425 y = 135 add
+y -= 15 add
+x -= 175 add
+y += 15 add
+line(fg=yellow) clear
+
+! SS79-1 TO SS80-3 !
+x = 200 y = 135 add
+y -= 15 add
+x -= 175 add
+y += 15 add
+line(fg=yellow) clear
+
+! SS80-1 TO SS81-3 !
+x = -25 y = 135 add
+y -= 15 add
+x -= 175 add
+y += 15 add
+line(fg=yellow) clear
+
+! SS81-1 TO SS99-2 !
+x = -250 y = 135 add
+y -= 15 add
+x -= 150 add
+y -= 140 add
+x += 40 add
+y += 30 add
+line(fg=yellow) clear
+
+! SS99-1 TO SS110-2 !
+x = -475 y = 135 add
+y -= 30 add
+x += 508 add
+y -= 110 add
+x += 39 add
+y += 15 add
+line(fg=red) clear
+
+! SS110-3 TO SS111-9 !
+x =-60 y =10 add
+y -= 30 add
+x += 182 add
+y += 30 add
+line(fg=red) clear
+ 
+! SS111-1 TO NI-14 !
+x = -425 y =135 add
+y -= 210 add
+x += 567 add
+y -= 265 add
+x -= 42 add
+y += 23 add
+line(fg=red) clear
+
+!SS88-1 TO SS117-3!
+x = 200 y = 10 add
+y -= 15 add
+x += 250 add
+y += 15 add
+line (fg=yellow) clear
+
+x = -570 y = 310 browser(1074,heathrow,1140)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+

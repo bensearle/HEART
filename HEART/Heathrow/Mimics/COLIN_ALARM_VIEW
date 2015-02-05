@@ -1,0 +1,1075 @@
+load cust_objs
+load wrkstn_libutil
+load alarm_printing_libutil
+load alarm_libutil
+load select_printer_libutil
+
+type alarm_use_type = enum(dg1,dg2,dg3,dg4,dg5,dg6)
+
+type i_login_type =   workstations (wrkstn_is_me,
+		                         wrkstn_number,
+		                         user_default_areas,
+		                         user_authorised_areas)
+
+
+! THIS FUNCTION GETS THE WORDS TO DISPLAY ON BUTTONS !
+object trunc_string_by_words(numb_of_letts=int,ip_button_string=string_30)=string_30
+var button_string = string_30
+var no_of_letters = int
+
+begin
+no_of_letters = numb_of_letts
+if invalid ip_button_string then
+  button_string = ""
+if ip_button_string == "" then
+   button_string = ip_button_string
+else
+  begin
+  button_string = getwords(1,no_of_letters,ip_button_string)
+  end
+
+if nchars(button_string) > no_of_letters then
+  begin
+  button_string = getchars(1,no_of_letters+5,button_string)
+  end
+
+trunc_string_by_words = button_string
+end
+
+object shrink_text_to_fit(max_text=int,length_to_fit=int,string_to_fit=string)=int
+var string_hieght = int
+begin
+if invalid max_text then
+  begin
+  ch=20
+  string_hieght = ch
+  end
+else
+  begin
+  ch=max_text
+  string_hieght = ch
+  end
+while length(string_to_fit) >length_to_fit AND ch <> 0 do
+  begin
+  ch --
+  string_hieght = ch
+  end
+shrink_text_to_fit = string_hieght
+end
+
+
+object av_icon(ips = string,
+	       ipa = string_40,
+	       ipaf = string,
+	       ipw = string_40,
+	       ipg = string_40,
+	       ipos = string !select_panel_type!,
+	       iposp = string !alarm_set!) 
+begin
+   utility_icon("Alarm View")
+end
+
+object colin_alarm_view(ip_select_filter = string,
+                  ip_area_mode = string_40,
+		  ip_area_filter = string,
+		  ip_wrkstn_filter = string_40,
+		  ip_group_filter = string_40,
+		  ip_old_select_panel = string !select_panel_type!,
+		  ip_old_selector =string !alarm_set! )
+
+var ok_to_change = byte
+var error_text = string_80
+var print_status = string_80
+var rv = alarm_list_return_type
+var av = area
+
+var ws_info_1 = loopback  ws_info_row
+var ws_info_2 = loopback  ws_info_row
+var ws_info_3 = loopback  ws_info_row
+var ws_info_4 = loopback  ws_info_row
+var ws_info_5 = loopback  ws_info_row
+var ws_info_6 = loopback  ws_info_row
+
+var group_mode = loopback  alarm_mode_type
+var use_alarm = loopback  alarm_list_type
+
+var alarm_view_mode = loopback  alarm_mode_type
+var old_avm = loopback  alarm_mode_type
+var note_b_state = loopback  onoff
+var action_b_state = loopback  onoff
+var normal_accept_b_state = loopback  onoff
+var re_direct_b_state = loopback  onoff
+var disable_b_state = loopback  onoff
+var free_b_state = loopback  onoff
+var start_b_state = loopback  onoff
+var gm_b_state = loopback  onoff
+var gm_b_string = loopback  string_30
+
+var initialisation_complete = loopback  byte
+var area_set = loopback  set(area)
+
+var select = panel  selection_type
+
+var select_panel = panel select_panel_type
+var old_selector = loopback select_panel_type
+var old_selection = loopback selection_type
+var old_select_panel = loopback alarm_set
+var alarm_select = panel alarm_set
+
+var group_filter = panel  alarm_group
+var group_mode_group = panel  alarm_group
+var wrkstn_filter = panel  wrkstn_filter_type
+
+var old_group_filter = loopback  alarm_group
+var old_group_mode_group = loopback  alarm_group
+var old_select = loopback  selection_type
+var old_area_info = loopback  area_info_type
+var old_wrkstn_filter = loopback  wrkstn_filter_type
+var wrkstn_num = loopback  wrkstn_number
+var local_src = loopback  source
+var ws_info = loopback  ws_info_row
+
+var as = popup  area_selection
+var change_pr = popup  select_printer_libutil
+
+var i_login = input  i_login_type
+var select_code = loopback  logical_names
+var area_code = loopback  logical_names
+var group_code = loopback  logical_names
+var button_code = loopback  logical_names
+
+!******* VARIABLES ADDED DUE TO OBSERVATION 2402 ******!
+var alarm_button_1 = loopback string_30
+var alarm_button_2 = loopback string_30
+var alarm_button_3 = loopback string_30
+
+var al_string = loopback string
+var al_string_1 = loopback string
+var al_string_2 = loopback string
+var al_string_3 = loopback string
+var al_string_4 = loopback string
+var page_operation = onoff
+var cnt = int
+
+begin
+   error_text = ""
+   group_mode = free
+
+   if invalid alarm_button_1 then
+      alarm_button_1 = trunc_string_by_words(19,alarm_button_1_const)
+   if invalid alarm_button_2 then
+      alarm_button_2 = trunc_string_by_words(19,alarm_button_2_const)
+   if invalid alarm_button_3 then
+      alarm_button_3 = trunc_string_by_words(19,alarm_button_3_const)
+
+   if  alarm_button_1 =="" then
+      alarm_button_1 = "Note"
+   if  alarm_button_2 =="" then
+      alarm_button_2 = "Action"
+   if  alarm_button_3 =="" then
+      alarm_button_3 = "Normal Accept"
+
+   local_src = source(0)
+
+
+   ws_info_1 = get_ws_info(source(0))
+   ws_info_2 = get_ws_info(source(1))
+   ws_info_3 = get_ws_info(source(2))
+   ws_info_4 = get_ws_info(source(3))
+   ws_info_5 = get_ws_info(source(4))
+   ws_info_6 = get_ws_info(source(5))
+
+   if ws_info_1.user_name <> "" then
+      begin
+      select_code = get_alarm_view_select_code(source(0))
+      area_code = get_alarm_view_area_code(source(0))
+      group_code = get_alarm_view_group_code(source(0))
+      button_code = get_alarm_view_button_code(source(0))
+      end
+
+   set default ws_info
+
+   if invalid ok_to_change then
+      ok_to_change = 1
+
+   if invalid i_login then
+      begin
+      set source i_login = local_src
+      set persist i_login
+      set mayexist i_login
+      set priority i_login.wrkstn_is_me = 9
+      set mustexist i_login.wrkstn_number
+      set filter i_login.wrkstn_is_me = lim_eq
+      set limit i_login.wrkstn_is_me = yes
+      request i_login
+      end
+
+  ! Add window decorations !
+
+   fg = decoroff
+   x = 0 y = 0
+   rect(w = 910,h = 80)
+   rect(w = 20,h = 540)
+   x = 910
+   rect(w = 30,h = 540)
+   x = 0
+   y = 440
+   rect(w = 940,h = 170)
+
+   x=20
+   y=80
+   w=890
+   h=360
+   box(fg = black)
+
+   ! Do intialisation !
+  
+
+   if valid ip_select_filter and invalid old_select then
+      old_select = selection_type(ip_select_filter)
+
+   if invalid old_select and valid select_code then
+      begin
+
+      case select_code.translation of
+	 "2" begin
+	     old_select = SET(w_nte,w_actn,w_acnn)    ! to be accepted!
+	     old_selector = in_alarm
+	     old_select_panel = SET(w_nte_sub,w_actn_sub,w_acnn_sub)
+	     end
+
+	 "3" begin
+	     old_select = SET(w_nte,w_actn)    ! to note action !
+	     old_selector = in_alarm
+	     old_select_panel = SET(w_nte_sub,w_actn_sub)
+	     end
+
+	 "4" begin
+	     old_select = SET(w_nte)           ! to be noted !
+	     old_selector = in_alarm
+	     old_select_panel = SET(w_nte_sub)
+	     end
+
+	 "5" begin
+	     old_select = SET(w_actn)          ! to be actioned !
+	     old_selector = in_alarm
+	     old_select_panel = SET(w_actn_sub)
+	     end
+
+ 	 "6" begin
+	     old_select = SET(w_clear)         ! clear pending !
+	     old_selector = in_alarm
+	     old_select_panel = SET(w_clear_sub)
+	     end
+
+	 "7" begin
+	     old_select = SET(w_acnn)          ! to normal accept !
+	     old_selector = in_alarm
+	     old_select_panel = SET(w_acnn_sub)
+   	     end
+
+	 "8" begin
+	     old_select = SET(disabled_alarms) ! disabled alarms !
+	     old_selector = disabled_sub
+	     old_select_panel = SET(alarm_select_subset)
+	     end
+
+	 "9" begin
+	     old_select = SET(w_dann)          ! pending !
+	     old_selector = w_dann_sub
+	     old_select_panel = SET(alarm_select_subset)
+	     end
+
+	 "10" begin
+	      old_select = SET(w_nte,w_actn,w_acnn)         ! to be accepted !
+	      old_selector = in_alarm
+	      old_select_panel = SET(w_nte_sub,w_actn_sub,w_acnn_sub)
+	      end
+
+       default
+	  begin
+	  old_select  = SET(w_nte,w_actn,w_clear,w_acnn)
+	  old_selector = in_alarm
+	  old_select_panel = SET(w_nte_sub,w_actn_sub,w_clear_sub,w_acnn_sub)
+	  end
+
+      end
+
+
+   if valid ip_old_selector and invalid old_selector then
+      begin
+      old_selector = select_panel_type(ip_old_selector)
+      end
+
+
+   if valid ip_old_select_panel and invalid old_select_panel then
+      begin
+      old_select_panel = alarm_set(ip_old_select_panel)
+      end
+
+
+   if valid ip_area_mode and invalid old_area_info then
+      begin
+      set default old_area_info
+      old_area_info.area_mode = area_mode_type(ip_area_mode)
+      for av from min area to max area do
+	 begin
+	 if getchar(int(av) + 1,ip_area_filter) == "1" then
+	    old_area_info.area_set += av
+	 end
+      end
+   else if invalid old_area_info and valid area_code then
+      begin
+      set default old_area_info 
+      case  area_code.translation of
+	 "A" 
+	    begin
+	    old_area_info.area_mode = all
+            old_area_info.area_set = not(SET(area))
+	    end
+	 "W"
+	    begin
+	    old_area_info.area_mode = all
+            old_area_info.area_set = not(SET(area))
+	    end
+	 "D"
+	    begin
+	    old_area_info.area_mode = areas_default
+	    end
+	 "O"
+	    begin
+	    old_area_info.area_mode = areas_default
+	    end
+       default
+	  begin
+	  old_area_info.area_mode = selectable
+          old_area_info.area_set = SET(area)
+          old_area_info.area_set += area(area_code.translation)
+	  end
+      end
+
+   if valid ip_wrkstn_filter and invalid old_wrkstn_filter then
+      old_wrkstn_filter = wrkstn_filter_type(ip_wrkstn_filter)
+   else if invalid old_wrkstn_filter and valid area_code then
+      begin
+      set default old_wrkstn_filter
+      case area_code.translation of
+	 "W" old_wrkstn_filter = own_wrkstns
+	 "O" old_wrkstn_filter = own_wrkstns
+      default
+	 begin
+	 old_wrkstn_filter = all_wrkstns
+	 end
+      end
+
+   if valid ip_group_filter and invalid old_group_filter then
+      old_group_filter = alarm_group(ip_group_filter)
+   else if invalid old_group_filter and valid group_code then
+      old_group_filter = alarm_group(int(group_code.translation))
+
+   if invalid initialisation_complete then
+      begin
+      initialisation_complete = 1
+      gm_b_state = off
+      note_b_state = off
+      action_b_state = off
+      normal_accept_b_state = off
+      re_direct_b_state = off
+      disable_b_state = off
+      free_b_state = off
+      use_alarm = current
+      end
+
+   ! Add Buttons !
+   
+
+
+
+   x = 10
+   y = 450
+   if xv_thin_exc_button(fg = decoroff,start_b_state,"Start",100) then
+      begin
+      if ok_to_change then
+	 begin
+	 if start_b_state == off then
+	    start_b_state = on
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing page"
+      end
+
+
+
+   x = 112
+   if xv_thin_button(fg = decoroff,"Next",100) then
+      begin
+      if ok_to_change then
+	 begin
+	 use_alarm = next
+	 if start_b_state == on then
+	    start_b_state = off
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing page"
+      end
+
+   x = 214
+   if xv_thin_button(fg = decoroff,"Previous",100) then
+      begin
+      if ok_to_change then
+	 begin
+         use_alarm = previous
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing page"
+      end
+
+   print_status = print_alarm_list(ws_info_1,
+				   ws_info_2,
+				   ws_info_3,
+				   ws_info_4,
+				   ws_info_5,
+				   ws_info_6,
+				   change_pr,
+				   old_area_info.area_mode,
+		                   old_area_info.area_set,
+		                   old_group_filter,
+		                   old_select,
+		                   old_wrkstn_filter)
+
+   if valid change_pr then
+      set invalid change_pr
+
+   x = 324
+   y = 450
+   if xv_thin_button(fg = decoroff,"Print",100) then
+      begin
+      if print_status  == "" then
+	 begin
+	 set x change_pr = 250
+	 set y change_pr = 60
+	 set unpinned change_pr
+	 set title change_pr = "Available Printers"
+         request change_pr(local_src)
+	 end
+      else
+	 error_text = "Please wait - current print not completed"
+      end
+
+   if error_text == "" and print_status <> " " then
+      error_text = print_status
+
+   if group_mode <> free then
+      begin
+      if get busy group_filter then
+	 gm_b_state = on
+      else
+	 gm_b_state = off
+      end
+! ==== SETTING UP OF GROUP BUTTON STRING ====!
+   if group_or_page == "group" then
+      begin
+      if valid alarm_view_mode then
+	 gm_b_string = trunc_string_by_words(19,alarm_view_mode)
+      else
+	 gm_b_string = ""
+      end
+   else
+      begin
+      if valid alarm_view_mode then
+	 begin
+	 if alarm_view_mode == redirect or alarm_view_mode == disable then
+	    begin
+	    gm_b_string = ""
+	    end
+         else
+	    begin
+	    gm_b_string = trunc_string_by_words(19,alarm_view_mode)
+	    end
+         end
+      else
+	 gm_b_string = ""
+      end
+
+
+   if xv_thin_exc_button(fg = decoroff,x = 437,
+       gm_b_state,gm_b_string,170) then
+      begin
+      if group_or_page == "group" then
+	 begin
+	 if alarm_view_mode <> free then
+	    begin
+	    group_mode = alarm_view_mode
+	    set x group_mode_group = 250
+	    set y group_mode_group = 60
+	    set title group_mode_group = "Groups for " + tolower(alarm_view_mode)
+	    set value group_mode_group = old_group_mode_group
+	    request group_mode_group
+            page_operation = OFF
+	    end
+	 end
+      else
+	 begin
+	 if alarm_view_mode <> free and (alarm_view_mode == note or 
+	    alarm_view_mode == action or alarm_view_mode == normal_accept) then
+	    begin
+	    page_operation =on
+	    end
+         else
+	    begin
+	    page_operation = off
+	    end
+	 end
+      end
+
+   if valid group_mode_group then
+      begin
+      old_group_mode_group = group_mode_group
+      group_mode = alarm_view_mode
+      end
+
+   y = 450
+   if xv_thin_button(fg = decoroff,x = 618,"Select",150) then
+      begin
+      if ok_to_change then
+	 begin
+	 select_panel = old_selector
+	 set value select_panel = old_selector
+	 set title select_panel = "Select"
+	 set x select_panel = 250 
+	 set y select_panel = 60
+         request select_panel
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing filters"
+      end
+
+   if valid select_panel then
+     begin
+     start_b_state = on
+     if select_panel == in_alarm then
+       begin
+       alarm_select = old_select_panel
+       set VALUE alarm_select = old_select_panel
+       set TITLE alarm_select= " Alarm Search types"
+       set x alarm_select =250
+       set y alarm_select =60
+       set APPLY alarm_select
+       request alarm_select
+       end
+     else
+       begin
+       if select_panel == disabled_sub then
+         begin
+         old_select = SET(disabled_alarms)
+         end
+       if select_panel == w_dann_sub then
+	  begin
+	  old_select = set(w_dann)
+	  end
+       if select_panel == last_alarms then
+	  begin
+	  old_select = SET(sel_type)
+          if w_nte_sub IN old_select_panel then
+             old_select = old_select+SET(w_nte)
+	  if w_actn_sub IN old_select_panel then
+	     old_select = old_select+SET(w_actn)
+          if w_acnn_sub IN old_select_panel then
+       	     old_select = old_select+SET(w_acnn)
+	  if w_clear_sub IN old_select_panel then
+	     old_select = old_select+SET(w_clear)
+	  end
+       end
+     old_select_panel = old_select_panel
+     old_selector = select_panel
+     set invalid select_panel
+     end
+
+     if valid alarm_select then
+       begin
+       old_select = SET(sel_type)
+       if w_nte_sub IN alarm_select then
+	 begin
+	 old_select = old_select + SET(w_nte)
+	 end
+       if w_actn_sub IN alarm_select then
+	 begin
+	 old_select = old_select + SET(w_actn)
+	 end
+       if w_acnn_sub IN alarm_select then
+	 begin
+	 old_select = old_select + SET(w_acnn)
+	 end
+       if w_clear_sub IN alarm_select then
+	 begin
+	 old_select = old_select + SET(w_clear)
+	 end
+       old_selector = old_selector
+       old_select_panel = alarm_select
+       set invalid alarm_select
+       end
+
+   if xv_thin_button(fg = decoroff,x = 618,y = 470,"Workstations",150) then
+      begin
+      if ok_to_change then
+	 begin
+	 set value wrkstn_filter = old_wrkstn_filter
+	 set x wrkstn_filter = 250
+	 set y wrkstn_filter = 60
+	 set title wrkstn_filter = "Workstations"
+         request wrkstn_filter
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing filters"
+      end
+
+   if valid wrkstn_filter then
+      begin
+      if old_wrkstn_filter <> wrkstn_filter then
+	 start_b_state = on
+      old_wrkstn_filter = wrkstn_filter
+      set invalid wrkstn_filter
+      end
+
+   if xv_thin_button(fg = decoroff,x = 770,"FORs",150) then
+      begin
+      if ok_to_change then
+	 begin
+	 set title as = "Select FOR"
+	 set x as = 250
+	 set y as = 60
+	 set unpinned as
+	 request as(ws_info_1,
+		    ws_info_2,
+		    ws_info_3,
+		    ws_info_4,
+		    ws_info_5,
+		    ws_info_6,
+		    old_area_info,
+		    i_login.user_default_areas)
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing filters"
+      end
+
+   if valid as then
+      begin
+      if old_area_info.area_mode <> as.area_mode and 
+	  old_area_info.area_set <> as.area_set then
+         start_b_state = on
+      old_area_info = as
+      end
+
+   if xv_thin_button(fg = decoroff,x = 770,y = 470,"Groups",150) then
+      begin
+      if ok_to_change then
+	 begin
+	 set title group_filter = "Select Group"
+	 set value group_filter = old_group_filter
+	 set x group_filter = 250
+	 set y group_filter = 60
+	 request group_filter
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing filters"
+      end
+
+   if valid group_filter then
+      begin
+      if old_group_filter <> group_filter then
+	 start_b_state = on
+      old_group_filter = group_filter
+      set invalid group_filter
+      end
+
+   ! Set up initial button settings !
+
+   if invalid alarm_view_mode and valid button_code then
+      begin
+      case button_code.translation of
+	 "show"
+	    begin
+	    alarm_view_mode = free
+	    free_b_state = on
+	    end
+	 "note"
+	    begin
+	    alarm_view_mode = note
+	    note_b_state = on
+	    end
+	 "action"
+	    begin
+	    alarm_view_mode = action
+	    action_b_state = on
+	    end
+	 "normal_accept"
+	    begin
+	    alarm_view_mode = normal_accept
+	    normal_accept_b_state = on
+	    end
+	 "redirect"
+	    begin
+	    alarm_view_mode = redirect
+	    re_direct_b_state = on
+	    end
+	 "disable"
+	    begin
+	    alarm_view_mode = disable
+	    disable_b_state = on
+	    end
+      default
+	 begin
+         alarm_view_mode = free
+	 free_b_state = on
+	 end
+      end
+
+   if customer == "HEATHROW" then
+      begin
+      ! Volume button !
+      if xv_thin_button(fg = decoroff,x = 10,y = 475,"Alarm Volume",150) then
+	 begin
+	 volume_control
+	 end
+      end
+
+   y = 500
+if alarm_button_1 == "no_function" then
+begin
+end
+else
+begin
+   if xv_thin_exc_button(fg = decoroff,x = 10,note_b_state,alarm_button_1,150) then
+      begin
+      if ok_to_change then
+	 begin
+	 alarm_view_mode = note
+	 note_b_state = on
+	 action_b_state = off
+	 normal_accept_b_state = off
+	 re_direct_b_state = off
+	 disable_b_state = off
+	 free_b_state = off
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing mode"
+      end
+end
+
+if alarm_button_2 == "no_function" then
+begin
+end
+else
+begin
+   if xv_thin_exc_button(fg = decoroff,x = 162,action_b_state,alarm_button_2,150) then
+      begin
+      if ok_to_change then
+	 begin
+	 alarm_view_mode = action
+	 action_b_state = on
+	 note_b_state = off
+	 normal_accept_b_state = off
+	 re_direct_b_state = off
+	 disable_b_state = off
+	 free_b_state = off
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing mode"
+      end
+end
+
+if alarm_button_3 == "no_function" then
+begin
+end
+else
+begin
+   if xv_thin_exc_button(fg = decoroff,x = 314,normal_accept_b_state,alarm_button_3,150) then
+   begin
+     if ok_to_change then
+     begin
+       alarm_view_mode = normal_accept
+       normal_accept_b_state = on
+       note_b_state = off
+       action_b_state = off
+       re_direct_b_state = off
+       disable_b_state = off
+       free_b_state = off
+      end
+    else
+      error_text = "Dismiss panels and popups before changing mode"
+    end
+end
+   if xv_thin_exc_button(fg = decoroff,x = 466,re_direct_b_state,
+       "Redirect",150) then
+      begin
+      if ok_to_change then
+	 begin
+	 alarm_view_mode = redirect
+	 re_direct_b_state = on
+	 note_b_state = off
+	 action_b_state = off
+	 normal_accept_b_state = off
+	 disable_b_state = off
+         free_b_state = off
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing mode"
+      end
+
+   if xv_thin_exc_button(fg = decoroff,x = 618,disable_b_state,
+			 "Disable",150) then
+      begin
+      if ok_to_change then
+	 begin
+	 alarm_view_mode = disable
+	 disable_b_state = on
+	 note_b_state = off
+	 action_b_state = off
+	 normal_accept_b_state = off
+	 re_direct_b_state = off
+	 free_b_state = off
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing mode"
+      end
+
+   if xv_thin_exc_button(fg = decoroff,x = 770,free_b_state,"Show",150) then
+      begin
+      if ok_to_change then
+	 begin
+	 alarm_view_mode = free
+	 free_b_state = on
+	 note_b_state = off
+	 action_b_state = off
+	 normal_accept_b_state = off
+	 re_direct_b_state = off
+	 disable_b_state = off
+	 page_operation = off
+	 end
+      else
+	 error_text = "Dismiss panels and popups before changing mode"
+      end
+
+   if xv_thin_button(fg = decoroff,x = 770,y=530,"Exit",150) then
+      exit
+
+   if get busy group_mode_group and 
+       alarm_view_mode <> old_avm and alarm_view_mode <> free then
+      begin
+      set title group_mode_group = getword(1,alarm_group_1_const)+" for " + tolower(alarm_view_mode)
+      request group_mode_group
+      end
+
+   ! Set up labels !
+
+   y = 25
+   text(x = 25,ch = 16,"Select :  ")
+   if valid old_select then
+     begin
+
+     if w_dann in old_select then
+       text(just=centreleft,y=34,x = 90,tfg = blue,ch = 16,w_dann)
+
+     if w_nte in old_select AND alarm_button_1_const <> "no_function" then
+       begin
+       al_string_1 = w_nte !trunc_string_by_words(40,w_nte)!
+       end
+     else
+       begin
+       set invalid al_String_1
+       end
+
+     if W_actn in old_select AND alarm_button_2_const <> "no_function" then
+       begin
+       al_string_2 = w_actn !trunc_string_by_words(40,w_actn)!
+       end
+     else
+       begin
+       set invalid al_String_2
+       end
+
+     if w_clear in old_select then
+       begin
+       al_string_3 = w_clear !trunc_string_by_words(40,w_clear)!
+       end
+     else
+       begin
+       set invalid al_String_3
+       end
+
+     if w_acnn in old_select AND alarm_button_3_const <> "no_function" then
+       begin
+       al_string_4 = w_acnn+". "!trunc_string_by_words(40,w_acnn)+". "!
+       end
+     else
+       begin
+       set invalid al_String_4
+       end
+
+     if invalid al_string_1 then
+	al_string_1 = ""
+     if invalid al_string_2 then
+	al_string_2 = ""
+     if invalid al_string_3 then
+	al_string_3 = ""
+     if invalid al_string_4 then
+	al_string_4 = ""
+
+     if (al_string_2=="") AND (al_string_3=="") AND (al_string_4=="") then
+	begin
+	if al_string_1 == "" then
+	  begin
+	  al_string_1 = ""
+	  end
+        else
+	  begin
+	  al_string_1 = al_string_1+". "
+	  end
+	end
+     else
+	begin
+	if al_string_1 == "" then
+	  begin
+	  al_string_1 = ""
+	  end
+        else
+	  begin
+	  al_string_1 = al_string_1+", "
+	  end
+	end
+
+     if (al_string_3=="") AND (al_string_4=="") then
+	begin
+	if al_string_2 == "" then
+	  begin
+	  al_string_2 = ""
+	  end
+        else
+	  begin
+	  al_string_2 = al_string_2+". "
+	  end
+	end
+     else
+	begin
+	if al_string_2 == "" then
+	  begin
+	  al_string_2 = ""
+	  end
+        else
+	  begin
+	  al_string_2 = al_string_2+", "
+	  end
+	end
+
+     if (al_string_4=="") then
+	begin
+	if al_string_3 == "" then
+	  begin
+	  al_string_3 = ""
+	  end
+        else
+	  begin
+	  al_string_3 = al_string_3+". "
+	  end
+	end
+     else
+	begin
+	if al_string_3 == "" then
+	  begin
+	  al_string_3 = ""
+	  end
+        else
+	  begin
+	  al_string_3 = al_string_3+", "
+	  end
+	end
+
+     al_string= al_string_1+al_string_2+al_string_3+al_string_4
+     text(just=centreleft,y=34,x=90,ch=shrink_text_to_fit(20,700,al_string),tfg=blue,al_string)
+     end
+  y=4
+   text(x = 25,ch = 16,"FORs :  ")
+   if valid old_area_info then
+      begin
+      if old_area_info.area_mode == selectable then
+	 text(x = 90,tfg = blue,old_area_info.area_set)
+      else
+	 text(x = 90,tfg = blue,ch = 16,old_area_info.area_mode)
+      end
+
+   text(x = 370,ch = 16,"Workstations :  ")
+   if valid old_wrkstn_filter then
+      begin
+      if old_wrkstn_filter == own_wrkstns then
+	 text(x = 490,ch = 16,tfg = blue,"Own")
+      else
+	 text(x = 490,ch = 16,tfg = blue,"All")
+      end
+
+   text(x = 780,ch = 16,"Group :  ")
+   if valid old_group_filter then
+      text(x = 860,tfg = blue,ch = 16,old_group_filter)
+      
+   y = 50
+   text(x = 25,ch = 16,"Time")
+   text(x = 215,ch = 16,"Text")
+   text(x = 760,ch = 16,"Value")
+   text(x = 860,ch = 16,"Level")
+
+   if group_mode_group == ag0 then
+      begin
+      case alarm_view_mode of 
+	 note error_text = "Cannot group "+alarm_group_1_const+" on all groups"
+	 action error_text = "Cannot group "+alarm_group_2_const+" on all groups"
+	 normal_accept error_text = "Cannot group "+alarm_group_3_const+" on all groups"
+	 redirect  error_text = "Cannot "+alarm_group_4_const+" on all groups"
+	 disable  error_text = "Cannot group "+alarm_group_disable_const+" on all groups"
+      default
+	 begin
+	 end
+      group_mode = free
+      set invalid group_mode_group
+
+      end
+
+   if initialisation_complete then
+      begin
+      rv = set_up_alarm_list(x = 25,y = 100,local_src, 
+			   start_b_state,
+		           use_alarm,
+		           old_area_info.area_mode,
+		           old_area_info.area_set,
+		           ws_info_1,
+		           ws_info_2,
+		           ws_info_3,
+		           ws_info_4,
+		           ws_info_5,
+		           ws_info_6,
+		           old_group_filter,
+		           old_select,
+		           old_wrkstn_filter,
+			   group_mode,
+			   group_mode_group,
+			   alarm_view_mode,
+			   old_select_panel,
+			   old_selector,
+			   page_operation)
+      page_operation = off
+      start_b_state = rv.start
+      if rv.error_text <> "" then
+	 error_text = rv.error_text
+      end
+
+   set invalid group_mode_group
+   old_avm = alarm_view_mode
+
+   if error_text <> "" then
+      xv_message(x = 465,y = 200,ch = 22,just = centrecentre,
+		 "Warning",error_text)
+
+   use_alarm = current
+    
+end
+
+mimic colin_alarm_view = colin_alarm_view w = 930,h = 560,resizable,icon_w = 64,icon_h = 64,
+icon = av_icon

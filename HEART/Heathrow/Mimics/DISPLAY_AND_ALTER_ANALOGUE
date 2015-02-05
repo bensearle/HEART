@@ -1,0 +1,180 @@
+! HEATHROW CMS - DISPLAY AND ALTER ANALOGUE
+
+loaded by: CARGO_TUNNEL, MAIN_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+!
+*************************************************************
+* DISPLAY AND ALTER ANALOGUE OBJECT                         *
+* this object is called by the Top Level variable (mimic)   *
+*************************************************************
+!
+object display_and_alter_analogue(just,scale,plc_offset=int,ident=string,
+                                             e_plc_offset=int,src=source)
+
+var co_level_ip = input  e_db_row_type
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+var control_menu = menu  string(80)
+var setpoint_panel = panel  int
+var box_text = loopback  string(80)
+var box_width = loopback  int
+var menu_added = loopback  int
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source co_level_ip then 
+
+   begin
+ 
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source  co_level_ip = src
+   set filter  co_level_ip.db_addr = lim_eq
+   set limit   co_level_ip.db_addr = db_address(int(e1) + e_plc_offset - 1)
+   set persist co_level_ip 
+   request     co_level_ip
+
+   end
+
+
+! CONTROL MENU !
+
+if valid control_menu and control_menu=="Alter Setpoint" then
+  begin
+  request setpoint_panel
+  set invalid control_menu
+  end
+
+
+! DRAW BOX !
+box_text=ident+" Setpoint: "+int(co_level_ip.e_value)
+box_width=length(box_text)+10
+
+x = 0 y = 0
+rect(fg=decoroff,h=20,w=box_width) 
+text (tfg=black,ch=15,box_text)
+x -= box_width/2
+y +=10     add 
+y -=20     add 
+x += box_width add 
+line(lw=1,fg=decorlight) clear
+add y +=20 add 
+x -= box_width add 
+line(lw=1,fg=decorshadow) clear
+
+
+! CONFIGURE MENU !
+
+if invalid menu_added then
+   begin
+   set title setpoint_panel  = "Alter Setpoint"
+   set title control_menu    = "Setpoint Menu"
+   set add control_menu      = "Alter Setpoint"
+   menu_added = 1
+   end
+
+
+! WRITE TO SERVER !
+
+if valid setpoint_panel then
+  begin
+  set_e_value(db_address(int(e1)+e_plc_offset - 1),src,setpoint_panel)
+  set invalid setpoint_panel
+  end
+
+
+! CONTROL MENU !
+
+x=0 y=0
+
+if plc_inputs[1].b_value==0 or
+   plc_inputs[2].b_value==0 then
+   begin
+   h=20 w=box_width
+   end
+else
+   begin
+   h=0 w=0
+   end
+
+set rect control_menu
+
+end
+
+object main_object (just,bg,fg,w,h,tbg,tfg)
+begin
+just=centrecentre
+y = 20 display_and_alter_analogue(15000,"Vis",1057,heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=white,resizable

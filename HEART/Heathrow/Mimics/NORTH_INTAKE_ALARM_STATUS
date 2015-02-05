@@ -1,0 +1,45 @@
+load mimic_libutil
+load ocb_alarm_test
+
+
+!************* NORTH INTAKE ALARM STATUS ***************!
+
+object north_intake_alarm_status = int
+
+begin
+
+if sub_alarm(1,100,heathrow) > 0
+or sub_alarm(1,120,heathrow) > 0
+or sub_alarm(1,160,heathrow) > 0
+or sub_alarm(1,180,heathrow) > 0
+or sub_alarm(1,200,heathrow) > 0
+or sub_alarm(1,220,heathrow) > 0
+or sub_alarm(1,260,heathrow) > 0
+or sub_alarm(1,280,heathrow) > 0
+or sub_alarm(1,300,heathrow) > 0
+or sub_alarm(1,320,heathrow) > 0
+or sub_alarm(1,340,heathrow) > 0
+or sub_alarm(1,380,heathrow) > 0
+or sub_alarm(1,400,heathrow) > 0
+or sub_alarm(1,420,heathrow) > 0
+or sub_alarm(1,440,heathrow) > 0
+or sub_alarm(1,450,heathrow) > 0
+or sub_alarm(1,460,heathrow) > 0
+or sub_alarm(1,470,heathrow) > 0
+or sub_alarm(1,140,heathrow) > 0
+or sub_alarm(1,240,heathrow) > 0
+or sub_alarm(1,360,heathrow) > 0 
+then
+  north_intake_alarm_status = 1
+else
+  north_intake_alarm_status = 0
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

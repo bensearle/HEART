@@ -1,0 +1,162 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!*******Hv SUB STN 32***********!
+
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ammeter
+Load BROWSER
+
+object busbar_32
+
+begin
+
+scale=256
+
+tfg = black x = -85 y = -130 add text ("SUB STATION 32",ch = 18) clear
+
+fg=red
+lw=4
+x = 30 y = 0 add x += 520 add line clear
+
+lw=3
+y = 0  x =  75 add y -= 75 add line clear
+y = 0  x = 100  add y += 60 add line clear
+y = 0  x = 150  add y -= 75 add line clear
+y = 0  x = 200  add y += 70 add line clear
+y = 0  x = 250  add y += 70 add line clear
+y = 0  x = 300  add y += 70 add line clear
+y = 0  x = 325 add y -= 75 add line clear
+y = 0  x = 375 add y -= 75 add line clear
+y = 0  x = 425 add y -= 75 add line clear
+y = 0  x = 475 add y -= 75 add line clear
+y = 0  x = 500  add y += 50 add line clear
+
+
+fg=green4
+x = -550 y = 0 add x += 520 add line(lw=4) clear
+
+y = -75  x =  -101 add x += 176 add y += 50 add line clear
+y = 0  x =  -75 add y += 50 add line clear
+y = 0  x =  -100 add y -= 75 add line clear
+y = 0  x =  -125 add y += 60 add line clear
+y = 0  x =  -175 add y += 70 add line clear
+y = 0  x =  -225 add y += 70 add line clear
+y = 0  x =  -275 add y += 50 add line clear
+y = 0  x =  -325 add y += 50 add line clear
+y = 0  x =  -350 add y -= 75 add line clear
+y = 0  x =  -400 add y -= 75 add line clear
+y = 0  x =  -450 add y -= 75 add line clear
+y = 0  x =  -500 add y -= 75 add line clear
+
+scale = 120
+x = 500   y = 25   ocb_mont(5000,5410,1042,474,heathrow,22,"btm")
+x = 475   y = -25  ocb(5000,5260,1041,491,heathrow,21,"top")
+x = 425   y = -25  ocb(5000,5240,1040,490,heathrow,20,"top")
+x = 375   y = -25  ocb(5000,5220,268,489,heathrow,19,"top")
+x = 325   y = -25  ocb(5000,5200,267,484,heathrow,18,"top")
+x = 300   y = 25   ocb_mont(5000,5340,266,487,heathrow,17,"btm")
+x = 250   y = 25   ocb_mont(5000,5360,265,492,heathrow,16,"btm")
+x = 200   y = 25   ocb_mont(5000,5370,264,493,heathrow,15,"btm")
+x = 150   y = -25   ocb_mont(5000,5350,263,488,heathrow,14,"top")
+x = 100    y = 25   ocb_mont(5000,5390,262,473,heathrow,13,"btm")
+x = 75      y = -25  ocb_mont(5000,5330,261,486,heathrow,12,"top")
+
+x =  -75   y = 25   ocb_mont(5000,5320,260,485,heathrow,11,"btm")
+x =  -100   y = -25  ocb(5000,5180,259,483,heathrow,10,"top")
+x =  -125   y = 25   ocb_mont(5000,5380,258,472,heathrow,9,"btm")
+x =  -175   y = 25   ocb_mont(5000,5280,257,478,heathrow,8,"btm")
+x =  -225   y = 25   ocb_mont(5000,5310,256,481,heathrow,7,"btm")
+x =  -275   y = 25   ocb_mont(5000,5300,255,480,heathrow,6,"btm")
+x =  -325   y = 25   ocb_mont(5000,5290,254,479,heathrow,5,"btm")
+x =  -350   y = -25  ocb(5000,5160,253,482,heathrow,4,"top")
+x =  -400   y = -25  ocb(5000,5140,252,477,heathrow,3,"top")
+x =  -450   y = -25  ocb(5000,5120,251,476,heathrow,2,"top")
+x =  -500   y = -25  ocb(5000,5100,250,475,heathrow,1,"top")
+
+scale=100
+
+y = 80
+x = 300  transformer("T 1","TERM 1")
+x = 250  transformer("T 1","TERM 1")
+x = 200  transformer("T 2","TERM 1")
+
+x =  -225  transformer("T 3","TERM 1")
+x =  -175  transformer("T 4","TERM 1")
+x =  -125  transformer("T 2","TERM 1")
+
+scale = 260
+tfg=black ch=12
+just=centrecentre
+x = -325 y = 60 text("Spare")
+x = -275 y = 60 text("Term")
+x = -275 y = 75 text("2")
+x = -275 y = 90 text("Sub KK")
+x = -225 y = 110 text("Term")
+x = -225 y = 125 text("1")
+x = -225 y = 140 text("Tx3")
+x = -175 y = 110 text("Term")
+x = -175 y = 125 text("1")
+x = -175 y = 140 text("Tx4")
+x = -125 y = 110 text("Term")
+x = -125 y = 125 text("1")
+x = -125 y = 140 text("BSMNT")
+x = -125 y = 155 text("Tx2")
+x = -75 y = 55 text("Bus Bar")
+x = -75 y = 70 text("Earth")
+
+x = 100 y = 70 text("Spare")
+x = 200 Y = 110 TEXT("Term")
+x = 200 Y = 125 TEXT("1")
+x = 250 Y = 110 TEXT("Term")
+x = 250 Y = 125 TEXT("1")
+x = 300 Y = 110 TEXT("Term")
+x = 300 Y = 125 TEXT("1")
+x = 300 Y = 140 TEXT("BSMNT")
+x = 300 Y = 155 TEXT("(MV32)")
+x = 500 y = 55 text("Bus Bar")
+x = 500 y = 70 text("Earth")
+
+tfg=black ch=13
+y = -110 x =-500  TEXT("S.Intake")
+y = -95 x =-500  TEXT("P9")
+y = -95 x = 150  TEXT("Sub 146")
+y = -95 x = 322  TEXT("Sub 148")
+
+
+end
+
+
+object busbar_32_mimic
+begin
+
+x = 0 y = 0 busbar_32
+
+scale = 200
+!y = -160 x =-500 ammeter(455,heathrow,"0-400A","Sub 23")!
+y = -160 x =-450 ammeter(450,heathrow,"0-400A","Sub 58")
+y = -160 x =-400 ammeter(456,heathrow,"0-400A","Sub 89")
+y = -160 x =-350 ammeter(451,heathrow,"0-400A","Sub148")
+!y = -160 x = 325 ammeter(457,heathrow,"0-400A","Sub148")!
+y = -160 x = 375 ammeter(452,heathrow,"0-400A","Sub 57")
+y = -160 x = 425 ammeter(453,heathrow,"0-400A","Sub 36")
+y = -160 x = 475 ammeter(454,heathrow,"0-400A","Sub 143")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+clear
+
+x = 0 y = 0 busbar_32_mimic
+x = -570 y = 310 browser(1077,heathrow,1140)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

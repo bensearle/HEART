@@ -1,0 +1,7 @@
+load hv_overview_north_meters
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=250,h=200,just=centrecentre,fg=white,bg=black,resizable

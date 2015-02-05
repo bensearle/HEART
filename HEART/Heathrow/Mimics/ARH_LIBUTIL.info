@@ -1,0 +1,103 @@
+
+:NEXT
+        NEXT
+
+
+Displays the items immediately following the last
+displayed items.
+#
+
+
+:PREV
+        PREV
+
+
+Displays the items immediately preceding the first
+item displayed.
+#
+
+
+:DISPLAY
+     DISPLAY
+
+
+If there is a selection then redisplays the items
+starting with the one selected.
+
+If there is no selection then creates a form for
+which you enter the name or number of the items
+that the display should start with.
+
+If you select an item while this form is displayed
+then the form will be updated with the selected
+data.
+#
+
+
+:EXIT
+   	 EXIT
+
+
+Destroys the window.
+#
+
+
+:MODIFY
+	 MODIFY
+
+
+Creates a form for you to alter the selected item.
+#
+
+
+:DELETE
+      DELETE
+
+
+
+Removes the selected item.
+#
+
+
+:ADD
+         ADD
+
+
+
+Creates a form for entering new items.
+#
+
+
+:EDIT
+       EDIT
+
+
+
+Opens a file to be changed if a file has been
+selected, else creates a form for entering the
+filename and source.
+#
+
+
+:VIEW
+       VIEW
+
+
+
+
+Opens a file that is read only if a file has been
+selected, else creates a form for entering the
+filename and source.
+#
+
+
+:SOURCE
+     SOURCE
+
+
+
+
+Opens a selection window for selecting a different
+server.
+#
+

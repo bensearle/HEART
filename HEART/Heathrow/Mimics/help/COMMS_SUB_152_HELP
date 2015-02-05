@@ -1,0 +1,49 @@
+helptext comms_sub_152_help =
+ "
+ **** SUB STATION 152 MODBUS COMMS POPUP MIMIC ****
+ ------------------------------------------------- -------------------------------------------------
+Substation 152 Modbus Communications
+ ------------------------------------------------- -------------------------------------------------
+
+Modbus Mimic
+This Mimic displays the Modbus Communications information.
+The status of the Modbus Network is shown by the following objects:
+PLC Module	-shows the network status - 
+		Magenta indicated outstation comms failed
+		Green rectangle indicates duty PLC
+		Yellow rectangle indicates standby PLC
+		Brown rectangle indicates not configured/awaiting information from database
+		Red rectangle indicates MCM Timeout Failure
+		Yellow border indicates tag message applied
+
+		Port indications are used to indicate which network has failed -
+		(failed -shown in red)
+
+
+		MCM Timeout Failure - A PLC Reset button will appear if an MCM
+		Failure has occurred. Left - click on this button to reset the PLC (reset 			may be achieved from the object menu)
+
+Data Switch	-shows the data switch status - whether PLC A or B is selected
+		-Magenta foreground indicates outstation comms failed
+		-Green foreground indicates -normal state is displayed (connected to either 			PLC A or B)
+		-Red foreground indicates -fault state (switch feedback error)	
+		-Yellow border indicates tag message applied
+
+Node		-shows the nodes used by each circuit breaker/transformer
+		-Magenta foreground indicates outstation comms failed
+		-Green foreground indicates -normal state is displayed (node healthy)
+		-Red foreground indicates -fault state (node failure)	
+		-Yellow border indicates tag message applied
+
+All above objects may have a tagged message applied via the object menu (right
+click over object)
+
+References: ------------------ 
+Operation and Maintenance Manual - 
+Keypages from the Mimic Menu Object -  for information on mimic objects used (Misc Area)
+ ------------------
+
+ "
+
+
+

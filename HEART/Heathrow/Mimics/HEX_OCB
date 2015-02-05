@@ -1,0 +1,826 @@
+! HEATHROW CMS - HEX_OCB (controllable)
+
+loaded by: SUB_STN_114, SUB_STN_115, SUB_STN_116
+!
+
+load gadgets_libutil
+   ! xv_thin_button used in execute panel!
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type execute_states = enum(execute = "Execute",
+                           cancel = "Cancel")
+
+type panel_item_row = table (str = string(40))
+
+
+!
+************************************************************
+* EXECUTE POPUP OBJECT                                     *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object execute_popup(bg,exit_yn=yesno,ident=int) = execute_states
+
+var poll = input b_db_row_type
+
+begin
+
+   set source poll = heathro4
+   set filter poll.db_addr = lim_eq
+   set limit poll.db_addr = db_address(B500)
+   set persist poll
+   set mayexist poll
+   request poll
+
+just = centrecentre
+if exit_yn == no then
+   begin
+   if xv_thin_button(x = 60,y = 20,"Execute",70,fg = decoroff) then
+      begin
+      execute_popup = execute
+      exit
+      end
+   if xv_thin_button(x = 60,y = 60,"Cancel",70,fg = decoroff) then
+      begin
+      execute_popup = cancel
+      exit
+      end
+   end
+else if exit_yn == yes then
+   exit
+end
+
+mimic execute_mimic = execute_popup w = 200,h = 100,top=3,bg = decoroff
+ 
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=400,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+!
+*******************************************************
+* BREAKER SYMBOLS                                     *
+* These objects display the breker in various states  *
+*******************************************************
+!
+
+object earth_symbol (fg,angle,lw,-just topcentre)
+begin
+move
+y += 5 add line
+h = lw
+w = 30 rotrect
+w = 20 y += 8 rotrect
+w = 8 y += 8 rotrect
+end
+
+object ocb_closed_shape (fg,angle,-just centrecentre)
+begin
+lw=4 h = 80 w = 66
+!vertical line!
+rotrect(w=lw-1)
+!cross!
+h = w  w = lw
+rotrect (angle=45)
+rotrect (angle=-45)
+end
+
+object ocb_trip_shape (fg,angle, -just centrecentre)
+begin
+lw=4 h = 80 w = 66
+!vertical line!
+rotrect(y=40, h=13, w=lw,just=bottomcentre)
+rotrect(y=-40, h=13, w=lw,just=topcentre)
+!cross!
+h = 60  w = lw
+rotrect (angle=45)
+rotrect (angle=-45)
+!circle!
+circle(lw=6,h=56,w=h,just=centrecentre)
+end
+
+!also referred to as "racked down"!
+object ocb_isolated_shape (fg,angle)
+begin
+lw=4
+!top "T"!
+rotrect(y=-40, h=20, w=lw,just=topcentre)
+rotrect(y=-20, h=lw, w=16,just=centrecentre)
+
+!bottom "T"!
+rotrect(y=40, h=20, w=lw,just=bottomcentre)
+rotrect(y=20, h=lw, w=16,just=centrecentre)
+end
+
+!also referred to as "circuit earth"!
+object ocb_feeder_earth_off_shape (fg,angle, -just topcentre) 
+begin
+lw = 4
+!open switch!
+y = -40
+rotrect(h=12, w=lw,just=topcentre)
+y = -24
+lw = 2 w=12 h=w just=centrecentre
+circle
+y += 20
+circle
+y+=6
+earth_symbol
+end
+
+!also referred to as "circuit earth"!
+object ocb_feeder_earth_on_shape (fg,angle, -just topleft) 
+begin
+lw = 4
+!closed switch!
+y = -40
+rotrect(h=36, w=lw,just=topcentre)
+y = -24
+lw = 2 w=12 h=w just=centrecentre
+disk
+y += 20
+disk
+y+=6
+earth_symbol
+end
+
+object ocb_busbar_earth_off_shape (fg,angle)
+begin
+ocb_feeder_earth_off_shape (angle=180)
+end
+
+object ocb_busbar_earth_on_shape (fg,angle)
+begin
+ocb_feeder_earth_on_shape (angle=180)
+end
+
+helptext ocb_hex_object_help = "\t\tHEX OCB - GENERIC HELP\n
+There is no help for this particular breaker.\nThis is the generic help for a VCB on the Heathrow Express substations (sub 114, 115 and 116).\n
+The object uses 30 contiguous boolean database points, which must be arranged in the following order:\n
+Offset	Description
+ 0  Permit to Work (set by operator)
+ 1  Closed field input
+ 2  Tripped field input
+ 3  Isolated field input
+ 4  Circuit Earth field input
+ 5  Busbar Earth field input
+ 6  Protection Circuit alarm field input
+ 7  Trip Circuit Operated alarm field input
+ 8  Voltage Transformer alarm field input (or spare)
+ 9  Failed to Close alarm (PLC generated)
+10  Failed to Trip alarm (PLC generated)
+11  Select Execute command (set by operator)
+12  Select Close command (set by operator)
+13  Select Trip command (set by operator)
+14  Close command selected relay input
+15  Trip command selected relay input
+16  Closed input discrepancy alarm
+17  Tripped input discrepancy alarm
+18  Isolated input discrepancy alarm
+19  Circuit Earth input discrepancy alarm
+20  Busbar Earth input discrepancy alarm
+21  Protection Circuit input discrepancy alarm
+22  Trip Circuit Operated input discrepancy alarm
+23  Voltage Transformer input discrepancy alarm
+24  Select Relay confirmation input discrepancy alarm
+25  Select Relay output discrepancy alarm
+26  Spare 1
+27  Spare 2
+28  Spare 3
+29  Spare 4
+"
+!
+************************************************************
+* OCB CIRCUIT BREAKER                                      *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object hex_ocb (plc_comms_address=int, ocb_address=int, ocb_common_address=int, tag_address=int, manual_dress_address=int, src=source, ident = int, top_btm_left_right=string(5), helpname=string(30), angle)
+
+!PLC INPUTS !
+var plc_comms_inputs = input db_elements(b_value)[2]
+var plc_comms_fail = int(0,1)
+
+var any_ocb_selected = input db_elements(b_value)
+
+!PLANT INPUTS!
+var ocb_inputs = input db_elements(b_value)[16]
+!var ocb_selects = input db_elements(b_value)[2]!
+
+var permit_to_work_ip = int(0,1)	!input row 1!
+var closed_ip = int(0,1)		!input row 2!
+var trip_ip = int(0,1)			!input row 3!
+var in_service_ip = int(0,1)		!input row 4!
+var circuit_earth_ip = int(0,1)		!input row 5!
+var bus_earth_ip = int(0,1)		!input row 6!
+var close_requested_ip = int(0,1)	!input row 15!
+var trip_requested_ip = int(0,1)	!input row 16!
+
+!ALARMS!
+var alarm_inputs = input db_elements(alarm_status)
+
+!REAL INPUTS!
+var manually_dress_ip = input db_elements(e_value)
+
+!CHARACTER INPUTS!
+var tag_message_ip = input db_elements(c_value)
+
+!LOOPBACKS AND INTERNAL!
+var breaker_state = int
+var ocb_bg =  colour
+var ocb_fg =  colour
+var ocb_selected_for_operation = loopback onoff
+var old_sel_in_progress = loopback  onoff
+var apop_invoked = loopback  yesno
+
+!PANELS AND MENUS!
+var main_menu = menu  string(30)
+var tag_message_panel = panel  panel_item_row
+var apop = popup execute_mimic
+var dismiss_apop = string(20)
+
+!HELP!
+var ocb_help = help string(30)
+
+begin
+! INITIALISATION !
+
+if invalid apop_invoked then
+   apop_invoked = no
+
+! REQUEST INPUTS FROM SCOPE !
+if invalid get source plc_comms_inputs then 
+   begin
+
+!PLC TYPE REQUESTS!
+
+   set source plc_comms_inputs = src
+   set filter plc_comms_inputs.db_addr = lim_ge
+   set limit plc_comms_inputs.db_addr = db_address("B"+plc_comms_address)
+   set priority plc_comms_inputs.db_addr = 15
+   set persist plc_comms_inputs 
+   set mayexist plc_comms_inputs
+   request plc_comms_inputs
+
+   set source any_ocb_selected = src
+   set filter any_ocb_selected.db_addr = lim_eq
+   set limit any_ocb_selected.db_addr = db_address("B"+(ocb_common_address))
+   set persist any_ocb_selected
+   set mayexist any_ocb_selected
+   request any_ocb_selected
+
+
+!OCB REQUESTS!
+
+!STATUS OF INPUTS!
+   set source ocb_inputs = src
+   set filter ocb_inputs.db_addr = lim_ge
+   set limit ocb_inputs.db_addr =  db_address("B"+ocb_address)
+   set priority ocb_inputs.db_addr = 15
+   set mayexist ocb_inputs
+   set persist ocb_inputs 
+   request ocb_inputs
+
+!CURRENT STATUS OF SELECT OUTPUTS!
+! these are currently requested as part if the ocb_inputs table. If they are not updating fast enough then re-enable this request and update close_requested_ip and trip_requested_ip from the ocb_selects variable. The ocb_input variable can then be reduced to 6 rows.!
+   !set source ocb_selects = src
+   set priority ocb_selects.db_addr = 15
+   set filter ocb_selects.db_addr = lim_ge
+   set limit ocb_selects.db_addr = db_address("B"+(ocb_address+14))
+   set mayexist ocb_selects
+   set persist ocb_selects 
+   request ocb_selects
+!
+!STATUS OF ALARMS!
+!Look for any point which is in alarm condition w_note or higher!
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge_le2
+   set limit alarm_inputs.db_addr = db_address("B"+ocb_address)
+   set limit2 alarm_inputs.db_addr = db_address("B"+(ocb_address+29) )
+
+   set priority alarm_inputs.alarm_status = 15
+   set filter alarm_inputs.alarm_status = lim_ge
+  ! set dir_dec so that w_note (unacknowledged) will be found first!
+   set dir_dec alarm_inputs.alarm_status
+   set limit alarm_inputs.alarm_status = w_note
+
+   set mayexist alarm_inputs
+   set persist alarm_inputs 
+   request alarm_inputs
+
+!REQUEST TAG MESSAGE FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address("C"+tag_address)
+   set persist tag_message_ip
+   request tag_message_ip
+
+!REQUEST MANUAL DRESS STATUS!  
+
+   set source manually_dress_ip = src
+   set filter manually_dress_ip.db_addr = lim_eq
+   set limit manually_dress_ip.db_addr = db_address("E"+manual_dress_address)
+   set persist manually_dress_ip 
+   request manually_dress_ip
+
+   end ! of requesting input data !
+
+! Copy rows from input variables to individual variables for ease of reading later on!
+permit_to_work_ip = int(ocb_inputs[1].b_value)
+closed_ip = int(ocb_inputs[2].b_value)
+trip_ip = int(ocb_inputs[3].b_value)
+! in_service_ip: on = in service, off = isolated !
+in_service_ip = int(ocb_inputs[4].b_value)
+circuit_earth_ip = int(ocb_inputs[5].b_value)
+bus_earth_ip = int(ocb_inputs[6].b_value)
+close_requested_ip = int(ocb_inputs[15].b_value)
+trip_requested_ip = int(ocb_inputs[16].b_value)
+
+plc_comms_fail = plc_comms_inputs[1].b_value and plc_comms_inputs[2].b_value
+
+!text (y=-100, ch=16, "ocb_selects "+ocb_selects[1].b_value)!
+!text (y=-80, ch=16, "ocb_inputs "+ocb_inputs[15].b_value)!
+if valid ocb_inputs then
+   begin
+   if bus_earth_ip then
+      breaker_state = 7 !BUSBAR EARTH ON!
+   else if circuit_earth_ip then
+      breaker_state = 5 !CIRCUIT (FEEDER) EARTH ON!
+   else if not in_service_ip or (not trip_ip and not closed_ip) then
+      breaker_state = 3 !ISOLATED!
+   else if trip_ip then
+      breaker_state = 2 !TRIPPED!
+   else if closed_ip then
+      breaker_state = 1  !CLOSED!
+   end ! of determining for plant input states !
+else  ! default when inputs are invalid !
+   breaker_state = 3 !ISOLATED!
+
+
+!SELECT OCB BG COLOUR!
+! Colours are defined in order from lowest priority to highest !
+! I.E. Conditions lower down overwrite the higher ones !
+
+ocb_bg = decoroff				! Normal condition !
+
+if tag_message_ip.c_value <> "" then		! Tag message !
+   ocb_bg = yellow
+
+!blue if Manually Dressed; flashing if dressed state matches actual inputs!
+if manually_dress_ip.e_value >= 1 and 
+   manually_dress_ip.e_value <= 7 then
+   begin
+   if breaker_state == manually_dress_ip.e_value then
+      ocb_bg = flashblue
+   else
+      ocb_bg = blue
+   end
+
+if permit_to_work_ip then			! Permit to work !
+   ocb_bg = orange
+
+!SET OCB FG COLOUR!
+! Colours are defined in order from lowest priority to highest !
+! I.E. Conditions lower down overwrite the higher ones !
+
+ocb_fg = green4					! Normal condition !
+if int(manually_dress_ip.e_value) >= 1 and	! Manually dressed !
+   int(manually_dress_ip.e_value) <= 7 then
+   ocb_fg = white
+if alarm_inputs.alarm_status == w_clr then	! Acknowledged alarm !
+   ocb_fg = red
+if alarm_inputs.alarm_status == w_note then	! Unacknowledged alarm !
+   ocb_fg = flashred
+if plc_comms_fail then				! PLC comms failed !
+   ocb_fg = magenta
+
+!MAIN MENU CONTROL!
+
+if valid main_menu then
+   begin
+   case main_menu of
+
+      "Alter Tag Message"
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set value tag_message_panel.str = tag_message_ip.c_value
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tag Message"
+         begin
+         set_c_value(db_address("C"+tag_address), src, "")
+         end
+
+      "Set Permit To Work"
+         set_b_value(db_address("B"+ocb_address), src, on)
+ 
+      "Clear Permit To Work"
+         set_b_value(db_address("B"+ocb_address), src, off)
+         
+      "Switch to Off"
+         begin        
+         if any_ocb_selected.b_value == off then
+            begin
+            set_b_value(db_address("B"+(ocb_address+13)),src, on)
+            set_b_value(db_address("B"+(ocb_common_address)),src, on)
+            ocb_selected_for_operation = on
+            end
+         end
+
+      "Switch to On"
+         begin
+         if any_ocb_selected.b_value == off then
+            begin
+            set_b_value(db_address("B"+(ocb_address+12)),src, on)
+            set_b_value(db_address("B"+(ocb_common_address)),src, on)
+            ocb_selected_for_operation = on
+            end
+         end
+                  
+      "Undress OCB"
+         set_e_value(db_address("E"+manual_dress_address),src, 0)
+
+      "Dress to On"
+         set_e_value(db_address("E"+manual_dress_address),src, 1)
+
+      "Dress to Off"
+         set_e_value(db_address("E"+manual_dress_address),src, 2)
+
+      "Dress to Isolated"
+         set_e_value(db_address("E"+manual_dress_address),src, 3)
+
+      "Dress to Feeder Earth Off"
+         set_e_value(db_address("E"+manual_dress_address),src, 4)
+
+      "Dress to Feeder Earth On"
+         set_e_value(db_address("E"+manual_dress_address),src, 5)
+
+      "Dress to Bus-Bar Earth Off"
+         set_e_value(db_address("E"+manual_dress_address),src, 6)
+
+      "Dress to Bus-Bar Earth On"
+         set_e_value(db_address("E"+manual_dress_address),src, 7)
+
+      default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+
+! BREAKER OPERATION CONTROL !
+if ocb_selected_for_operation then
+   begin
+
+   ! DISPLAY EXECUTE POPUP if the confirm input is received !
+   if ( close_requested_ip or trip_requested_ip) and apop_invoked  == no then
+      begin
+      set unpinned apop
+      set top apop
+      if close_requested_ip then
+         set title apop = "Close VCB "+ident
+      else
+         set title apop = "Open VCB "+ident
+      if not get busy apop then
+         request apop(no,ident)
+      apop_invoked = yes
+      end
+
+   ! Respond to EXECUTE POPUP selection by operator !
+
+   if valid apop then
+      begin  
+      case apop of
+      execute
+         set_b_value(db_address("B"+(ocb_address+11)) ,src, on)
+      cancel 
+         set_b_value(db_address("B"+(ocb_common_address+1)),src, on)
+      default
+         begin
+         end  
+      set_b_value(db_address("B"+(ocb_common_address)),src, off)
+      set invalid apop
+      set reset apop
+      apop_invoked = no
+      ocb_selected_for_operation = off
+      end
+ 
+   ! If operation times out the PLC clears the confirm inputs. Remove the execute popup and clear states !
+   if apop_invoked and not close_requested_ip and not trip_requested_ip then      begin
+      set_b_value(db_address("B"+(ocb_common_address)),src, off)
+      set reset apop
+      apop_invoked = no
+      ocb_selected_for_operation = off
+      end
+ 
+   ! If the operator pulls the pin on the popup it will not go valid. Treat
+as for cancel !
+   if apop_invoked and not get busy apop then
+      begin
+      set_b_value(db_address("B"+(ocb_common_address+1)),src, on)
+      set_b_value(db_address("B"+(ocb_common_address)),src, off)
+      set reset apop
+      apop_invoked = no
+      ocb_selected_for_operation = off
+      end
+ 
+end
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address("C"+tag_address),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+!MAIN MENU!
+
+just = centrecentre
+w = 70 h = 80
+x=0 y=0
+set rect main_menu 
+if top_btm_left_right == "left" or top_btm_left_right == "right" then
+   set title main_menu = "Bus Section Breaker "+ident
+else
+   set title main_menu = "Controllable OCB  "+ident
+set empty main_menu
+set add main_menu = "Alter Tag Message"
+set add main_menu = "Clear Tag Message"
+if permit_to_work_ip then
+   set add main_menu = "Clear Permit To Work"
+else
+   set add main_menu = "Set Permit to Work"
+if not plc_comms_fail and manually_dress_ip.e_value < 1 then
+   begin
+   set add main_menu = "Switch to On"
+   set add main_menu = "Switch to Off"
+   end
+
+! TAG MESSAGE BOX !
+if selb and tag_message_ip.c_value <> "" then
+   message_text_box(tag_message_ip.c_value)
+
+! HELP !
+if helpname <> "" then
+   set text ocb_help = helpname
+else
+   set text ocb_help = "ocb_hex_object_help"
+
+
+!********************************************************!
+!                  DRAW MAIN SYMBOL                      !
+!********************************************************!
+w = 66 h = 80 
+
+! BORDERS !
+! Colours are defined in order from lowest priority to highest !
+! I.E. Conditions lower down overwrite the higher ones !
+
+!Tag message border!
+lw=12
+if tag_message_ip.c_value <> "" and ocb_bg <> yellow then
+   begin
+   rotbox (fg=white)
+   rotbox (fg=yellow3, x=x+1, y=y+1, w=w-1, h=h-1)
+   rotbox (fg=yellow, h=h-2, w=w-2)
+   end
+
+!Breaker selected for operation border!
+if close_requested_ip or trip_requested_ip then
+   rotbox (fg=flashgreen)
+
+
+!BACKGROUND!
+lw =1
+rotrect (fg=ocb_bg)
+! raised border!
+x -= 33 y += 40 move
+y -= 80 add
+x += 66 add line (fg=decorlight)
+y += 1 move
+y += 79 add
+x -= 66 add line (fg=decorshadow)
+
+! BREAKER IDENT NUMBER !
+ch = 28 tfg = black y = 0
+text (x=52, ident)
+
+! BREAKER SHAPE FOREGROUND - AND ALLOWABLE DRESSING OPTIONS!
+fg = ocb_fg
+x = 0 y = 0
+
+! MANUALLY DRESSED STATE TAKES PRECEDENCE OVER FIELD INPUTS !
+if int(manually_dress_ip.e_value) >= 1 and int(manually_dress_ip.e_value) <= 7 then
+   breaker_state = int(manually_dress_ip.e_value)
+
+case breaker_state of
+
+   1  !CLOSED!
+      begin
+      ocb_closed_shape
+      set add main_menu = "Dress to Off"
+      end
+
+   2  !OPEN!
+      begin
+      ocb_trip_shape
+      set add main_menu = "Dress to On"
+      set add main_menu = "Dress to Isolated"
+      end
+
+   3  !ISOLATED!
+      begin
+      ocb_isolated_shape
+      set add main_menu = "Dress to Off"
+
+      if top_btm_left_right == "top" or top_btm_left_right == "btm" then
+	 set add main_menu = "Dress to Feeder Earth Off"
+      set add main_menu = "Dress to Bus-Bar Earth Off"
+      end
+
+   4 !FEEDER EARTH OFF!
+      begin
+      if top_btm_left_right == "top" then
+	 ocb_feeder_earth_off_shape
+      if top_btm_left_right == "btm" then
+	 ocb_feeder_earth_off_shape (angle=180)
+      set add main_menu = "Dress to Isolated"
+      if top_btm_left_right == "top" or top_btm_left_right == "btm" then
+         set add main_menu = "Dress to Feeder Earth On"
+      end            
+
+   5  !FEEDER EARTH ON!
+      begin
+      if top_btm_left_right == "top" then
+	 ocb_feeder_earth_on_shape
+      if top_btm_left_right == "btm" then
+	 ocb_feeder_earth_on_shape (angle=180)
+      set add main_menu = "Dress to Feeder Earth Off"
+      end
+
+   6  !BUSBAR EARTH OFF! 
+      begin
+      if top_btm_left_right == "top" then
+	 ocb_busbar_earth_off_shape
+      if top_btm_left_right == "btm" then
+	 ocb_busbar_earth_off_shape (angle=180)
+      if top_btm_left_right == "left" then
+	 ocb_busbar_earth_off_shape
+      if top_btm_left_right == "right" then
+	 ocb_busbar_earth_off_shape (angle=180)
+      set add main_menu = "Dress to Isolated"
+      set add main_menu = "Dress to Bus-Bar Earth On"
+      end
+
+   7 !BUSBAR EARTH ON!
+      begin
+      if top_btm_left_right == "top" then
+	 ocb_busbar_earth_on_shape
+      if top_btm_left_right == "btm" then
+	 ocb_busbar_earth_on_shape (angle=180)
+      if top_btm_left_right == "left" then
+	 ocb_busbar_earth_on_shape
+      if top_btm_left_right == "right" then
+	 ocb_busbar_earth_on_shape (angle=180)
+      set add main_menu = "Dress to Bus-Bar Earth Off"
+      end
+
+   default
+      ocb_isolated_shape
+   
+if int(manually_dress_ip.e_value) >= 1 and int(manually_dress_ip.e_value) <= 7 then
+   set add main_menu = "Undress OCB"
+
+! Do not allow breaker to be controlled if any breaker has already been selected.!
+if any_ocb_selected.b_value then
+   begin
+   set remove main_menu = "Switch to Off"
+   set remove main_menu = "Switch to On"
+   end
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+scale = 180
+font = font_bold just=centrecentre
+
+X=-60 Y=0 hex_ocb(31005,31270,31035,512,2421,heathrow,1,"btm","")
+text("Bottom section",y=80)
+
+scale = 120
+X=60 Y=0 hex_ocb(31005,31300,31035,513,2422,heathrow,2,"top","vcb_2")
+text("Top section",y=80)
+
+angle = 90 scale = 256
+X= 200 Y=0 hex_ocb(31005,31390,31035,516,2425,heathrow,5,"left","vcb_5")
+text("Centre section",y=80)
+
+
+end
+
+mimic = main_object w=600,h=240,just=centrecentre,bg=aquamarine3,resizable

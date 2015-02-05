@@ -1,0 +1,64 @@
+helptext ss105_breaker_help = "Breaker Symbol
+
+__________________________________________
+
+
+Shows states & alarms of breaker.
+
+
+Actual States Include:
+    Breaker On	( Cross )
+    Breaker Off	( Circle with cross )
+    Breaker Tripped	( Circle with cross )
+    Breaker Isolated ( Open ended buses )
+    Breaker Earthed ( Earth symbol connected
+		   to earthed section )
+
+
+Dressed Breaker:
+    A breaker can be sequentially dressed 
+    into any one of the following states:
+        Breaker On
+        Breaker Off / Tripped
+        Breaker Isolated
+        Breaker Earthed
+    The symbol indication will be the same as 
+    above.
+    The background will indicate blue when
+    dressed to a state other than the actual
+    state. 
+    The background will indicate flashing blue 
+    when dressed to the same state as the actual
+    state. 
+
+
+Foreground Colour Indications:
+    Magenta 	- Loss of data
+    Flash Red	- Associated alarm waiting for note
+    Steady Red	- Associated alarm noted but still abnormal
+    White		- In a dressed state
+    Green		- No alarms
+
+
+Background Colour Indications:
+    Orange 	- Permit to Work
+    Blue		- Dressed to different state
+    Flashing Blue	- Dressed to same state
+    Yellow		- Tagged message
+    Grey		- Normal
+
+
+User control:
+    If this breaker can be controlled then
+    there will be options on its popup menu 
+    to switch it 'On' or 'Off'.
+
+    After selecting the desired action, the user
+    will be prompted to confirm or cancel.
+
+    If there has been a problem with breaker 
+    control or selection then a warning panel 
+    will be displayed with an associated alarm.
+
+__________________________________________
+"

@@ -1,0 +1,41 @@
+load mimic_libutil
+load ocb_hand_dressed_2
+load transformer
+
+
+!*********** BUSBAR 88 *************!
+
+object busbar_88
+
+begin
+
+lw = 2
+x = 0 y = 30 add y -= 85 add line (fg=yellow) clear
+
+scale = 120
+x = 0 y = -25 ocb_hand(25124,640,2009,heathrow,heathro2,1,"top")
+
+scale = 100
+X = 0 Y = 25 add transformer("LT 1","LOCAL")
+
+scale = 260
+tfg = black ch=12
+just=centrecentre
+x = 0 y = 55 text("THAMES")
+x = 0 y = 70 text("WATER")
+x = 0 y = -75text("FED FROM")
+x = 0 y = -60 text("S/S 117 P2")
+ch=25 x = 50 y = 0 text("88")
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = -12 busbar_88
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=aquamarine3,resizable

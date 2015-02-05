@@ -1,0 +1,46 @@
+load mimic_libutil
+load ocb_alarm_test
+
+object hv_11_alarm_status = int
+begin
+if sub_alarm(7000,7610,heathrow) > 0 
+or sub_alarm(7000,7620,heathrow) > 0
+or sub_alarm(7000,7630,heathrow) > 0
+or sub_alarm(7000,7190,heathrow) > 0 
+or sub_alarm(7000,7200,heathrow) > 0
+or sub_alarm(7000,7210,heathrow) > 0
+or sub_alarm(7000,7220,heathrow) > 0
+or sub_alarm(7000,7230,heathrow) > 0
+or sub_alarm(7000,7240,heathrow) > 0
+or sub_alarm(7000,7250,heathrow) > 0
+or sub_alarm(7000,7260,heathrow) > 0
+or sub_alarm(7000,7270,heathrow) > 0
+or sub_alarm(7000,7280,heathrow) > 0
+or sub_alarm(7000,7290,heathrow) > 0
+or sub_alarm(7000,7720,heathrow) > 0 
+or sub_alarm(7000,7730,heathrow) > 0
+or sub_alarm(7000,7740,heathrow) > 0
+or sub_alarm(7000,7750,heathrow) > 0
+or sub_alarm(7000,7760,heathrow) > 0
+or sub_alarm(7000,7770,heathrow) > 0
+or sub_alarm(7000,7780,heathrow) > 0
+or sub_alarm(7000,7790,heathrow) > 0
+or sub_alarm(7000,7560,heathrow) > 0 
+or sub_alarm(7000,7570,heathrow) > 0
+or sub_alarm(7000,7580,heathrow) > 0
+or sub_alarm(7000,7590,heathrow) > 0
+or sub_alarm(7000,7600,heathrow) > 0
+or sub_alarm(7000,8178,heathrow) > 0
+then
+  hv_11_alarm_status = 1
+else
+  hv_11_alarm_Status = 0
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

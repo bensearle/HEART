@@ -1,0 +1,619 @@
+load mimic_libutil
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+
+TYPE b_bool_type 	= db_elements(b_value)
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+OBJECT os_object(plc_offset=INT,src=SOURCE,plc=STRING(1)) = yesno
+
+VAR plc_a_duty_status		= input		b_bool_type
+VAR plc_b_duty_status		= input		b_bool_type
+VAR plc_a_unavailable		= input		b_bool_type
+VAR plc_b_unavailable		= input		b_bool_type
+VAR plc_a_hardware		= input		b_bool_type
+VAR plc_b_hardware		= input		b_bool_type
+VAR plc_a_scope_comms		= input		b_bool_type
+VAR plc_b_scope_comms		= input		b_bool_type
+VAR scope_plc_a_comms		= input		b_bool_type
+VAR scope_plc_b_comms		= input		b_bool_type
+VAR scope_plc_a_wdog		= input		b_bool_type
+VAR scope_plc_b_wdog		= input		b_bool_type
+VAR a_dh485_comms		= input		b_bool_type
+VAR b_dh485_comms		= input		b_bool_type
+VAR a_plc_plc_wdog		= input		b_bool_type
+VAR b_plc_plc_wdog		= input		b_bool_type
+VAR a_plc_plc_wdog_hw		= input		b_bool_type
+VAR b_plc_plc_wdog_hw		= input		b_bool_type
+VAR a_plc_plc_duty_valid	= input		b_bool_type
+VAR b_plc_plc_duty_valid	= input		b_bool_type
+VAR plc_a_battery		= input		b_bool_type
+VAR plc_b_battery		= input		b_bool_type
+VAR plc_a_forces		= input		b_bool_type
+VAR plc_b_forces		= input		b_bool_type
+VAR psu_1			= input		b_bool_type
+VAR psu_2			= input		b_bool_type
+
+VAR a_foreground		= loopback	colour
+VAR b_foreground		= loopback	colour
+VAR a_text_foreground		= loopback	colour
+VAR b_text_foreground		= loopback	colour
+
+VAR a_status_text		= string(15)
+VAR b_status_text		= string(15)
+
+VAR comms_fail			= yesno
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+SET SOURCE plc_a_duty_status = src
+SET FILTER plc_a_duty_status.db_addr = lim_eq
+SET LIMIT plc_a_duty_status.db_addr = db_address(int(b1) + plc_offset + 3 )
+SET PERSIST plc_a_duty_status
+REQUEST plc_a_duty_status
+
+SET SOURCE plc_b_duty_status = src
+SET FILTER plc_b_duty_status.db_addr = lim_eq
+SET LIMIT plc_b_duty_status.db_addr = db_address(int(b1) + plc_offset + 4 )
+SET PERSIST plc_b_duty_status
+REQUEST plc_b_duty_status
+
+SET SOURCE plc_a_unavailable = src
+SET FILTER plc_a_unavailable.db_addr = lim_eq
+SET LIMIT plc_a_unavailable.db_addr = db_address(int(b1) + plc_offset + 19 )
+SET PERSIST plc_a_unavailable
+REQUEST plc_a_unavailable
+
+SET SOURCE plc_b_unavailable = src
+SET FILTER plc_b_unavailable.db_addr = lim_eq
+SET LIMIT plc_b_unavailable.db_addr = db_address(int(b1) + plc_offset + 20 )
+SET PERSIST plc_b_unavailable
+REQUEST plc_b_unavailable
+
+SET SOURCE plc_a_hardware = src
+SET FILTER plc_a_hardware.db_addr = lim_eq
+SET LIMIT plc_a_hardware.db_addr = db_address(int(b1) + plc_offset + 21 )
+SET PERSIST plc_a_hardware
+REQUEST plc_a_hardware
+
+SET SOURCE plc_b_hardware = src
+SET FILTER plc_b_hardware.db_addr = lim_eq
+SET LIMIT plc_b_hardware.db_addr = db_address(int(b1) + plc_offset + 22 )
+SET PERSIST plc_b_hardware
+REQUEST plc_b_hardware
+
+SET SOURCE plc_a_scope_comms = src
+SET FILTER plc_a_scope_comms.db_addr = lim_eq
+SET LIMIT plc_a_scope_comms.db_addr = db_address(int(b1) + plc_offset + 23 )
+SET PERSIST plc_a_scope_comms
+REQUEST plc_a_scope_comms
+
+SET SOURCE plc_b_scope_comms = src
+SET FILTER plc_b_scope_comms.db_addr = lim_eq
+SET LIMIT plc_b_scope_comms.db_addr = db_address(int(b1) + plc_offset + 24 )
+SET PERSIST plc_b_scope_comms
+REQUEST plc_b_scope_comms
+
+SET SOURCE scope_plc_a_comms = src
+SET FILTER scope_plc_a_comms.db_addr = lim_eq
+SET LIMIT scope_plc_a_comms.db_addr = db_address(int(b1) + plc_offset + 9 )
+SET PERSIST scope_plc_a_comms
+REQUEST scope_plc_a_comms
+
+SET SOURCE scope_plc_b_comms = src
+SET FILTER scope_plc_b_comms.db_addr = lim_eq
+SET LIMIT scope_plc_b_comms.db_addr = db_address(int(b1) + plc_offset + 10 )
+SET PERSIST scope_plc_b_comms
+REQUEST scope_plc_b_comms
+
+SET SOURCE a_dh485_comms = src
+SET FILTER a_dh485_comms.db_addr = lim_eq
+SET LIMIT a_dh485_comms.db_addr = db_address(int(b1) + plc_offset + 14 )
+SET PERSIST a_dh485_comms
+REQUEST a_dh485_comms
+
+SET SOURCE b_dh485_comms = src
+SET FILTER b_dh485_comms.db_addr = lim_eq
+SET LIMIT b_dh485_comms.db_addr = db_address(int(b1) + plc_offset + 25 )
+SET PERSIST b_dh485_comms
+REQUEST b_dh485_comms
+
+SET SOURCE scope_plc_a_wdog = src
+SET FILTER scope_plc_a_wdog.db_addr = lim_eq
+SET LIMIT scope_plc_a_wdog.db_addr = db_address(int(b1) + plc_offset - 1 )
+SET PERSIST scope_plc_a_wdog
+REQUEST scope_plc_a_wdog
+
+SET SOURCE scope_plc_b_wdog = src
+SET FILTER scope_plc_b_wdog.db_addr = lim_eq
+SET LIMIT scope_plc_b_wdog.db_addr = db_address(int(b1) + plc_offset )
+SET PERSIST scope_plc_b_wdog
+REQUEST scope_plc_b_wdog
+
+SET SOURCE a_plc_plc_wdog = src
+SET FILTER a_plc_plc_wdog.db_addr = lim_eq
+SET LIMIT a_plc_plc_wdog.db_addr = db_address(int(b1) + plc_offset + 15 )
+SET PERSIST a_plc_plc_wdog
+REQUEST a_plc_plc_wdog
+
+SET SOURCE b_plc_plc_wdog = src
+SET FILTER b_plc_plc_wdog.db_addr = lim_eq
+SET LIMIT b_plc_plc_wdog.db_addr = db_address(int(b1) + plc_offset + 26 )
+SET PERSIST b_plc_plc_wdog
+REQUEST b_plc_plc_wdog
+
+SET SOURCE a_plc_plc_wdog_hw = src
+SET FILTER a_plc_plc_wdog_hw.db_addr = lim_eq
+SET LIMIT a_plc_plc_wdog_hw.db_addr = db_address(int(b1) + plc_offset + 17 )
+SET PERSIST a_plc_plc_wdog_hw
+REQUEST a_plc_plc_wdog_hw
+
+SET SOURCE b_plc_plc_wdog_hw = src
+SET FILTER b_plc_plc_wdog_hw.db_addr = lim_eq
+SET LIMIT b_plc_plc_wdog_hw.db_addr = db_address(int(b1) + plc_offset + 18 )
+SET PERSIST b_plc_plc_wdog_hw
+REQUEST b_plc_plc_wdog_hw
+
+SET SOURCE a_plc_plc_duty_valid = src
+SET FILTER a_plc_plc_duty_valid.db_addr = lim_eq
+SET LIMIT a_plc_plc_duty_valid.db_addr = db_address(int(b1) + plc_offset + 16 )
+SET PERSIST a_plc_plc_duty_valid
+REQUEST a_plc_plc_duty_valid
+
+SET SOURCE b_plc_plc_duty_valid = src
+SET FILTER b_plc_plc_duty_valid.db_addr = lim_eq
+SET LIMIT b_plc_plc_duty_valid.db_addr = db_address(int(b1) + plc_offset + 27 )
+SET PERSIST b_plc_plc_duty_valid
+REQUEST b_plc_plc_duty_valid
+
+SET SOURCE plc_a_battery = src
+SET FILTER plc_a_battery.db_addr = lim_eq
+SET LIMIT plc_a_battery.db_addr = db_address(int(b1) + plc_offset + 5 )
+SET PERSIST plc_a_battery
+REQUEST plc_a_battery
+
+SET SOURCE plc_b_battery = src
+SET FILTER plc_b_battery.db_addr = lim_eq
+SET LIMIT plc_b_battery.db_addr = db_address(int(b1) + plc_offset + 6 )
+SET PERSIST plc_b_battery
+REQUEST plc_b_battery
+
+SET SOURCE plc_a_forces = src
+SET FILTER plc_a_forces.db_addr = lim_eq
+SET LIMIT plc_a_forces.db_addr = db_address(int(b1) + plc_offset + 7 )
+SET PERSIST plc_a_forces
+REQUEST plc_a_forces
+
+SET SOURCE plc_b_forces = src
+SET FILTER plc_b_forces.db_addr = lim_eq
+SET LIMIT plc_b_forces.db_addr = db_address(int(b1) + plc_offset + 8 )
+SET PERSIST plc_b_forces
+REQUEST plc_b_forces
+
+SET SOURCE psu_1 = src
+SET FILTER psu_1.db_addr = lim_eq
+SET LIMIT psu_1.db_addr = db_address(int(b1) + plc_offset + 11 )
+SET PERSIST psu_1
+REQUEST psu_1
+
+SET SOURCE psu_2 = src
+SET FILTER psu_2.db_addr = lim_eq
+SET LIMIT psu_2.db_addr = db_address(int(b1) + plc_offset + 12 )
+SET PERSIST psu_2
+REQUEST psu_2
+
+
+!-----------------------------------------------------------------------------!
+!  DRAW MAIN A SYMBOL                                                         !
+!-----------------------------------------------------------------------------!
+
+
+LW=1
+x = 0 y = 0 RECT(W=280,H=370,FG=DECOROFF)
+
+X = 15 Y = 30 ADD
+X += 250 ADD
+LINE(FG=WHITE) CLEAR
+
+X = 15 Y = 31 ADD
+X += 250 ADD
+LINE(FG=grey40) CLEAR
+
+x = 135 y = 17 TEXT(TFG=BLACK,CH=20,just=centrecentre,"PLC "+PLC)
+
+IF scope_plc_a_comms.b_value == 1 AND scope_plc_b_comms.b_value THEN
+  comms_fail = yes  
+ELSE
+  comms_fail = no
+
+IF plc == "a" THEN
+BEGIN
+
+! PLC STATUS !
+
+x = 15 y = 40
+TEXT(TFG=BLACK,"STATUS")
+x += 180
+IF scope_plc_a_comms.b_value == 1 THEN
+  TEXT(TFG=FLASHRED,"FAILED")
+ELSE IF plc_a_duty_status.b_value == 1 THEN
+  TEXT(TFG=BLACK,"DUTY")
+ELSE IF plc_a_duty_status.b_value == 0 THEN
+  TEXT(TFG=BLACK,"STANDBY")
+
+
+! PLC MODE !
+x = 15 y += 20
+TEXT(TFG=BLACK,"PLC MODE")
+x += 180
+IF scope_plc_b_comms.b_value == 1 OR b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_unavailable.b_value == 1 THEN
+  TEXT(TFG=RED,"PROGRAM")
+ELSE 
+  TEXT(TFG=BLACK,"RUN")
+
+! HARDWARE STATUS !
+x = 15 y += 20
+TEXT(TFG=BLACK,"HARDWARE")
+X += 180
+IF scope_plc_b_comms.b_value == 1 OR b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_hardware.b_value == 1 THEN
+  TEXT(TFG=RED,"FAULT")
+ELSE
+  TEXT(TFG=BLACK,"HEALTHY")
+
+
+! SCOPE TO PLC COMMS !
+x = 15 y += 20
+TEXT(TFG=BLACK,"SCOPE-PLC COMMS")
+X += 180
+IF scope_plc_a_comms.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF scope_plc_a_comms.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! SCOPE TO PLC WATCHDOG !
+x = 15 y += 20
+TEXT(TFG=BLACK,"SCOPE-PLC WATCHDOG")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_duty_status.b_value == 0 AND b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF scope_plc_a_wdog.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF scope_plc_a_wdog.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! PLC TO PLC COMMS !
+x = 15 y += 20
+TEXT(TFG=BLACK,"PLC-PLC COMMS")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_duty_status.b_value == 0 AND b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF a_dh485_comms.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! PLC TO PLC WATCHDOG !
+x = 15 y += 20
+TEXT(TFG=BLACK,"PLC-PLC WATCHDOG")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_duty_status.b_value == 0 AND b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF a_plc_plc_wdog.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF a_plc_plc_wdog.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+  
+! WATCHDOG HADRDWARE !
+x = 15 y += 20
+TEXT(TFG=BLACK,"WATCHDOG HARDWARE")
+x += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_duty_status.b_value == 0 AND b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF a_plc_plc_wdog_hw.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF a_plc_plc_wdog_hw.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! DUTY VALIDATION !
+x = 15 y += 20
+TEXT(TFG=BLACK,"DUTY VALIDATION")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_duty_status.b_value == 0 AND b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF a_plc_plc_duty_valid.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF a_plc_plc_duty_valid.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! BATTERY !
+x = 15 y += 20
+TEXT(TFG=BLACK,"BATTERY")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_duty_status.b_value == 0 AND b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_battery.b_value == 0 THEN
+  TEXT(TFG=BLACK,"NORMAL")
+ELSE IF plc_a_battery.b_value == 1 THEN
+  TEXT(TFG=RED,"LOW")
+
+
+! FORCES !
+x = 15 y += 20
+TEXT(TFG=BLACK,"I/O FORCES")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_duty_status.b_value == 0 AND b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_a_forces.b_value == 0 THEN
+  TEXT(TFG=BLACK,"DISABLED")
+ELSE IF plc_a_forces.b_value == 1 THEN
+  TEXT(TFG=RED,"ENABLED")
+
+
+! POWER SUPPLY 1 !
+x = 15 y += 20
+TEXT(TFG=BLACK,"O/S POWER SUPPLY 1")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF psu_1.b_value == 1 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF psu_1.b_value == 0 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! POWER SUPPLY 2 !
+x = 15 y += 20
+TEXT(TFG=BLACK,"O/S POWER SUPPLY 2")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF psu_2.b_value == 1 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF psu_2.b_value == 0 THEN
+  TEXT(TFG=RED,"FAILED")
+
+END
+
+
+IF plc == "b" THEN
+BEGIN
+
+
+! PLC STATUS !
+x = 15 y = 40
+TEXT(TFG=BLACK,"STATUS")
+x += 180
+IF scope_plc_b_comms.b_value == 1 THEN
+  TEXT(TFG=FLASHRED,"FAILED")
+ELSE IF plc_b_duty_status.b_value == 1 THEN
+  TEXT(TFG=BLACK,"DUTY")
+ELSE IF plc_b_duty_status.b_value == 0 THEN
+  TEXT(TFG=BLACK,"STANDBY")
+
+
+! PLC MODE !
+x = 15 y += 20
+TEXT(TFG=BLACK,"PLC MODE")
+x += 180
+IF scope_plc_a_comms.b_value == 1 OR a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_unavailable.b_value == 1 THEN
+  TEXT(TFG=RED,"PROGRAM")
+ELSE 
+  TEXT(TFG=BLACK,"RUN")
+
+
+! HARDWARE STATUS !
+x = 15 y += 20
+TEXT(TFG=BLACK,"HARDWARE")
+X += 180
+IF scope_plc_a_comms.b_value == 1 OR a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_hardware.b_value == 1 THEN
+  TEXT(TFG=RED,"FAULT")
+ELSE
+  TEXT(TFG=BLACK,"HEALTHY")
+
+
+! SCOPE TO PLC COMMS !
+x = 15 y += 20
+TEXT(TFG=BLACK,"SCOPE-PLC COMMS")
+X += 180
+IF scope_plc_b_comms.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF scope_plc_b_comms.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! SCOPE TO PLC WATCHDOG !
+x = 15 y += 20
+TEXT(TFG=BLACK,"SCOPE-PLC WATCHDOG")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_duty_status.b_value == 0 AND a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF scope_plc_b_wdog.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF scope_plc_b_wdog.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! PLC TO PLC COMMS !
+x = 15 y += 20
+TEXT(TFG=BLACK,"PLC-PLC COMMS")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_duty_status.b_value == 0 AND a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF b_dh485_comms.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF b_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! PLC TO PLC WATCHDOG !
+x = 15 y += 20
+TEXT(TFG=BLACK,"PLC-PLC WATCHDOG")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_duty_status.b_value == 0 AND a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF b_plc_plc_wdog.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF b_plc_plc_wdog.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+  
+! WATCHDOG HADRDWARE !
+x = 15 y += 20
+TEXT(TFG=BLACK,"WATCHDOG HARDWARE")
+x += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_duty_status.b_value == 0 AND a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF b_plc_plc_wdog_hw.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF b_plc_plc_wdog_hw.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! DUTY VALIDATION !
+x = 15 y += 20
+TEXT(TFG=BLACK,"DUTY VALIDATION")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_duty_status.b_value == 0 AND a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF b_plc_plc_duty_valid.b_value == 0 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF b_plc_plc_duty_valid.b_value == 1 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! BATTERY !
+x = 15 y += 20
+TEXT(TFG=BLACK,"BATTERY")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_duty_status.b_value == 0 AND a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_battery.b_value == 0 THEN
+  TEXT(TFG=BLACK,"NORMAL")
+ELSE IF plc_b_battery.b_value == 1 THEN
+  TEXT(TFG=RED,"LOW")
+
+
+! FORCES !
+x = 15 y += 20
+TEXT(TFG=BLACK,"I/O FORCES")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_duty_status.b_value == 0 AND a_dh485_comms.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF plc_b_forces.b_value == 0 THEN
+  TEXT(TFG=BLACK,"DISABLED")
+ELSE IF plc_b_forces.b_value == 1 THEN
+  TEXT(TFG=RED,"ENABLED")
+
+
+! POWER SUPPLY 1 !
+x = 15 y += 20
+TEXT(TFG=BLACK,"POWER SUPPLY 1")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF psu_1.b_value == 1 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF psu_1.b_value == 0 THEN
+  TEXT(TFG=RED,"FAILED")
+
+
+! POWER SUPPLY 2 !
+x = 15 y += 20
+TEXT(TFG=BLACK,"POWER SUPPLY 2")
+X += 180
+IF comms_fail == yes THEN
+  TEXT(TFG=MAGENTA,"UNKNOWN")
+ELSE IF psu_2.b_value == 1 THEN
+  TEXT(TFG=BLACK,"HEALTHY")
+ELSE IF psu_2.b_value == 0 THEN
+  TEXT(TFG=RED,"FAILED")
+
+END
+
+
+END
+
+mimic os_object = os_object w = 280,h = 370
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+VAR confirm = yesno
+VAR plc_popup	= popup		os_object
+
+begin
+
+X = -55 Y = 0
+H = 60 W = 100
+RECT(FG=BLUE)
+IF SELB THEN 
+BEGIN
+  set title plc_popup = " "
+  request plc_popup(20000,heathro2,"B")
+END
+
+END
+mimic = main_object w=300,h=300,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,131 @@
+load mimic_libutil
+
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(alarm_status)
+
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!
+************************************************************
+* SPRING FIRED TEST OBJECT                                 *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object spring_fired_test(plc_offset=int,b_offset=int,src=source)=int
+
+! PLC TYPE INPUTS !  
+var plc_a_comms_fail_ip = input b_db_row_type
+var plc_b_comms_fail_ip = input b_db_row_type
+
+! ALARM TYPE INPUTS !
+var spring_fired_alarm  = input alarm_row_type
+
+! TEST VARIABLE !
+var spring_status = int
+
+begin
+
+! INITIALISATION !
+
+if invalid get source plc_a_comms_fail_ip then 
+   begin
+
+   set source plc_a_comms_fail_ip = src
+   set filter plc_a_comms_fail_ip.db_addr = lim_eq
+   set limit plc_a_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset-1 )
+   set persist plc_a_comms_fail_ip 
+   request plc_a_comms_fail_ip
+
+   set source plc_b_comms_fail_ip = src
+   set filter plc_b_comms_fail_ip.db_addr = lim_eq
+   set limit plc_b_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset )
+   set persist plc_b_comms_fail_ip 
+   request plc_b_comms_fail_ip
+
+   set source spring_fired_alarm = src
+   set filter spring_fired_alarm.db_addr = lim_eq
+   set limit spring_fired_alarm.db_addr = db_address(int(b1) + b_offset -1)
+   set persist spring_fired_alarm
+   request spring_fired_alarm
+ 
+   end
+
+! SPRING FIRED ALARM CHECKS !
+
+if plc_a_comms_fail_ip.b_value and plc_b_comms_fail_ip.b_value then
+   spring_status = 1
+
+else if spring_fired_alarm.alarm_status == w_note then
+   spring_status = 2
+
+else if spring_fired_alarm.alarm_status == w_clr then
+   spring_status = 3
+
+else
+   spring_status = 0
+
+
+spring_fired_test = spring_status
+ 
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+
+end
+
+mimic = main_object w=150,h=150,just=centrecentre,fg=white,bg=black,resizable

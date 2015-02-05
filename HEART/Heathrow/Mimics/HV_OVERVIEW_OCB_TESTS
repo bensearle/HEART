@@ -1,0 +1,9 @@
+load hv_overview_line_1_test
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+hv_line_1_button
+end
+
+mimic = main_object w=100,h=100,just=centrecentre,fg=white,bg=black,resizable

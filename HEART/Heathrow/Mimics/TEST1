@@ -1,0 +1,100 @@
+
+type db_element_type =  db_elements(db_addr,
+					 db_name,
+                                         text_code,
+					 area_number,
+					 rtl_number,
+					 protection,
+					 journalling)
+
+type db_element_table_type =  db_element_type[3]
+
+
+type alarm_test_row =  db_alarm_config(db_addr,
+					   config_number,
+					   text_id,
+					   wrkstn_set,
+					   printer_set,
+                                           alarm_group_set,
+					   rtl_number,
+			                   text,
+					   command_text,
+					   print_on_accept,
+					   print_on_return,
+					   accept_level,
+					   accept_delay_specifier,
+			                   annunciation_delay,
+			                   test_db_addr,
+					   alarm_level,
+			                   banner_note_required,
+			                   action_required,
+                                           normal_accept_required,
+					   inhibit_retrigger,
+					   b_test,
+					   db_addr_2,
+					   r_test_2,
+					   b_test_2,
+					   test_value_2,
+					   test_deadband_2,
+					   test_db_addr_2)
+
+type alarm_test_table =  alarm_test_row[6]
+
+type db_offset = int(1,19984)
+type ocb_name = string(40)
+type ocb_info_type = table (bool_offset = db_offset,
+			    real_offset = db_offset,
+			    char_offset = db_offset,
+			    name = ocb_name)
+
+object o
+var boffset = panel  ocb_info_type
+var b_op = output  db_element_table_type
+var e_op = output  db_element_type
+var c_op = output  db_element_type
+var alarm_tests = output  alarm_test_table
+begin
+if selb (w = 500,h = 500) then
+   request boffset
+
+if valid boffset and not get busy b_op and not get busy c_op and not get busy e_op then
+  begin
+  set default b_op[3]
+  set source b_op = source(0)
+  set value b_op[1].db_addr = db_address(int(b1) + boffset.bool_offset - 1)
+  set value b_op[2].db_addr = db_address(int(b1) + boffset.bool_offset)
+  set value b_op[3].db_addr = db_address(int(b1) + boffset.bool_offset + 1)
+  set value b_op[1].db_name = boffset.name + " point 1"
+  set value b_op[2].db_name = boffset.name + " point 2"
+  set value b_op[3].db_name = boffset.name + " point 3"
+  request b_op
+
+  set default alarm_tests[2]
+  set source alarm_tests = source(0)
+  set value alarm_tests[1].db_addr = db_address(int(b1) + boffset.bool_offset - 1)
+  set value alarm_tests[1].config_number = 1
+  set value alarm_tests[1].b_test = b_change
+  set value alarm_tests[2].db_addr = db_address(int(b1) + boffset.bool_offset - 1)
+  set value alarm_tests[2].config_number = 2
+  set value alarm_tests[2].b_test = t_none
+  set value alarm_tests[2].alarm_level = 7
+  request alarm_tests
+
+  set default e_op
+  set source e_op = source(0)
+  set value e_op.db_addr = db_address(int(e1) + boffset.real_offset - 1)
+  set value e_op.db_name = boffset.name + " real point"
+  request e_op
+ 
+  set default c_op
+  set source c_op = source(0)
+  set value c_op.db_addr = db_address(int(c1) + boffset.char_offset - 1)
+  set value c_op.db_name = boffset.name + " char point"
+  request c_op
+
+  set invalid boffset
+  end
+
+end
+
+mimic test1 = o w = 500,h = 500

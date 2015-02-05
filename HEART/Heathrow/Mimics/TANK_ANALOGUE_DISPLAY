@@ -1,0 +1,275 @@
+! HEATHROW CMS - TANK ANALOGUE DISPLAY
+
+loaded by: POTABLE_WATER
+!
+
+load tank_analogue_display_help
+
+load mimic_libutil
+
+type b_alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+
+!
+*************************************************************
+* TANK ANALOGUE DISPLAY OBJECT                              *
+* this object is called by the Top Level variable (mimic)   *
+*************************************************************
+!
+
+object tank_analogue_display(just,scale,alm_offset=int,sp_offset=int,e_offset=int,display_type=string,src=source)
+
+var items_added = loopback  int
+
+!ALARM INPUTS
+alarm_inputs[1] = high_sp_alarm
+alarm_inputs[2] = low_sp_alarm
+!
+var alarm_inputs = input b_alarm_row_type[2]
+
+!E INPUTS
+e_inputs[1] = high_sp_ip
+e_inputs[2] = low_sp_ip
+!
+var e_inputs = input e_db_row_type[2]
+
+var tank_value_ip = input  e_db_row_type
+
+var high_sp_op = output  e_db_row_type
+var low_sp_op = output  e_db_row_type
+
+var sensor_bg = loopback  colour
+var htfg = loopback  colour
+var ltfg = loopback  colour
+var tank_sps = loopback  string
+
+var tank_menu = menu  string
+var high_setpoint_panel = panel  int
+var low_setpoint_panel = panel  int
+
+var helpstr = help string(30)
+
+begin
+
+! INITIALISATION !
+REALF = GENERAL3
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source e_inputs then 
+   begin
+
+   set source tank_value_ip = src
+   set filter tank_value_ip.db_addr = lim_eq
+   set limit tank_value_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist tank_value_ip 
+   request tank_value_ip
+
+   set source e_inputs = src
+   set filter e_inputs.db_addr = lim_ge
+   set limit e_inputs.db_addr = db_address(int(e1) + sp_offset-1)
+   set priority e_inputs.db_addr = 15
+   set persist e_inputs
+   set mayexist e_inputs
+   request e_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + alm_offset)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   set invalid tank_value_ip
+   end
+
+
+! SELECT BG COLOUR !
+
+if alarm_inputs[1].alarm_status  == w_note or
+   alarm_inputs[2].alarm_status  == w_note then
+   begin
+   sensor_bg = flashred
+   htfg = white
+   ltfg = white
+   end
+
+else if alarm_inputs[1].alarm_status  == w_clr or
+        alarm_inputs[2].alarm_status  == w_clr then
+   begin    
+   sensor_bg = red
+   htfg = white
+   ltfg = white
+   end
+
+else 
+   begin
+   sensor_bg = decoroff
+   htfg = blue
+   ltfg = blue
+   end
+
+
+! CASE MENU OPTIONS !
+
+if valid tank_menu then
+   begin
+	if display_type == "mv4andmv5" then
+	begin
+   case tank_menu of
+        "Alter close valve level"
+            begin
+            set title high_setpoint_panel = "Alter close valve level"
+            set unpinned high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter open valve level"
+            begin
+            set title low_setpoint_panel = "Alter open valve level"
+            set unpinned low_setpoint_panel
+            request low_setpoint_panel
+            end
+
+        default
+            begin
+            end
+
+        set invalid tank_menu
+end
+if display_type == "transferpumps" then
+begin
+   case tank_menu of
+        "Alter stop point level"
+            begin
+            set title high_setpoint_panel = "Alter stop point level"
+            set unpinned high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter start point level"
+            begin
+            set title low_setpoint_panel = "Alter start point level"
+            set unpinned low_setpoint_panel
+            request low_setpoint_panel
+            end
+
+        default
+            begin
+            end
+
+        set invalid tank_menu
+   end
+ end
+
+! DRAW SYMBOL !
+if display_type == "mv4andmv5" then
+begin
+y = -10 rect(fg=sensor_bg,h=70,w=130) 
+x = -65 y += 35 add y -= 70 add x += 130 add line(lw=1,fg=decorlight) clear
+x = 65 y = -35 add y += 60 add x -= 130 add line(lw=1,fg=decorshadow) clear
+x = 0 y = -30 text (tfg=htfg, ch=17, "MV4 and MV5")
+x = 0 y = -10 text (tfg=htfg,ch=17,"Close valve "+e_inputs[1].e_value+"%")
+y=10 text(tfg=ltfg,ch=17,"Open valve "+e_inputs[2].e_value+"%")
+x=-167 y=0 text(tfg=white,ch=29,tank_value_ip.e_value+"%")
+end
+else
+begin
+y = -10 rect(fg=sensor_bg,h=70,w=130) 
+x = -65 y += 35 add y -= 70 add x += 130 add line(lw=1,fg=decorlight) clear
+x = 65 y = -35 add y += 60 add x -= 130 add line(lw=1,fg=decorshadow) clear
+x = 0 y = -30 text (tfg=htfg, ch=17, "Transfer Pumps")
+x = 0 y = -10 text (tfg=htfg,ch=17,"Stop "+e_inputs[1].e_value+"%")
+y=10 text(tfg=ltfg,ch=17,"Start "+e_inputs[2].e_value+"%")
+x=-167 y=0 text(tfg=white,ch=29,tank_value_ip.e_value+"%")
+end
+
+! CONFIGURE MENU !
+
+if valid e_inputs[1] and valid e_inputs[2] then
+if display_type == "mv4andmv5" then
+begin
+tank_sps = "Close = "+ e_inputs[1].e_value +"  Open = " +e_inputs[2].e_value+"  "
+end
+if display_type == "transferpumps" then
+begin
+tank_sps = "Stop = "+ e_inputs[1].e_value +"  Start = " +e_inputs[2].e_value+"  "
+end
+
+
+w=130 h=70
+x=0 y=-10
+set rect tank_menu
+set title tank_menu = tank_sps
+
+if invalid items_added then
+   begin
+   if display_type == "mv4andmv5" then
+   begin
+      set add tank_menu   = "Alter close valve level"
+      set add tank_menu   = "Alter open valve level"
+      items_added = 1
+   end
+   if display_type == "transferpumps" then
+   begin
+      set add tank_menu   = "Alter stop point level"
+      set add tank_menu   = "Alter start point level" 
+      items_added = 1
+   end
+end
+
+
+! WRITE DATA TO SERVER !
+! if valid input, send to server !
+if (high_setpoint_panel > e_inputs[2].e_value) and
+   valid high_setpoint_panel and
+   high_setpoint_panel < 101 and
+   high_setpoint_panel > -1 then
+   begin
+   set source high_sp_op = src
+   set old_value high_sp_op = e_inputs[1]
+   set value high_sp_op = e_inputs[1]
+   set value high_sp_op.e_value = high_setpoint_panel
+   request high_sp_op
+   set invalid high_setpoint_panel
+   end
+
+else
+   set invalid high_setpoint_panel
+
+if (low_setpoint_panel < e_inputs[1].e_value) and
+   valid low_setpoint_panel and
+   low_setpoint_panel < 101 and
+   low_setpoint_panel > -1 then 
+   begin
+   set source low_sp_op = src
+   set old_value low_sp_op = e_inputs[2]
+   set value low_sp_op = e_inputs[2]
+   set value low_sp_op.e_value = low_setpoint_panel
+   request low_sp_op
+   set invalid low_setpoint_panel
+   end
+else
+   set invalid low_setpoint_panel
+
+just = centrecentre
+x = 0 y = -10
+w = 130 h = 70
+set text helpstr = "TANK_ANALOGUE_DISPLAY"
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg,just)
+begin
+scale=250
+just=centrecentre
+x = 200 y = 100
+tank_analogue_display(12016,902,900,"transferpumps",heathrow)
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,420 @@
+! HEATHROW CMS - TIME ZONES DISPLAY 
+
+loaded by: CARGO_TUNNEL, MAIN_TUNNEL
+!
+
+load mimic_libutil
+
+type alarm_row_type       =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type        =  db_elements(db_addr,e_value)
+
+type zone_table_type      =  e_db_row_type[6]
+
+type time_zone_panel_type = table (Hour=int,Minutes=int)
+
+type small_of_int       = table (val=int)
+
+type table_of_int =  small_of_int[6]
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+
+! Find character in  a string and return index !
+object getnumb(target_char=string(1),source_string=string(80))=int
+var temp = loopback  int
+var string_length = loopback int
+var i = int
+
+begin
+string_length=nchars(source_string)
+for i from 1 to string_length do
+  begin
+  if getchar(i,source_string)==target_char then
+    begin
+    temp=i
+    i=string_length
+    end
+  end
+if invalid temp then
+  temp=0
+getnumb=temp
+end
+
+
+! Convert number of minutes past midnight into a time string !
+object mins_to_string(minutes_past_midnight=int)=string
+var hours = loopback  int
+var mins = loopback  int
+begin
+hours = minutes_past_midnight / 60
+mins = minutes_past_midnight % 60
+if mins >9 then
+   mins_to_string = (hours+":"+mins)
+else
+   mins_to_string = (hours+":0"+mins)
+end
+
+
+! Convert hours and minutes to number of minutes past midnight !
+object time_to_int(hours=int,minutes=int)=int
+begin
+time_to_int = (hours*60)+minutes
+end
+
+
+! 
+******************************************************************
+* TIME ZONES DISPLAY OBJECT                                      *
+* this object is called by the Top Level variable (mimic)        *
+******************************************************************
+!
+ 
+object time_zones_display(just,scale,b_offset=int,e_offset=int,numb_zones=int,ident=string,zone_order=string,src=source)
+
+var i = int
+var box_width = loopback  int
+var lowest_mins = loopback  int
+var lowest_mins_index = loopback  int
+var temp = loopback  int
+var altered_zone_time = loopback  int
+var items_added = loopback  int
+var loop = loopback  int
+var current_zone_int = loopback  int
+var current_zone_numb = loopback  int
+var object_bg = loopback  colour
+var object_fg = loopback  colour
+var valid_zones = loopback  yesno
+var  mins_past_tabl    = table_of_int
+
+var current_zone_ip = input  e_db_row_type
+var time_zone_table_in = input  zone_table_type
+var time_zone_alarm = input  alarm_row_type
+var time_zone_table_out = output  zone_table_type
+
+var time_zone_menu = menu  string
+var time_zone_panel = panel  time_zone_panel_type
+
+begin
+
+! INITIALISATION !
+
+valid_zones=yes
+set apply time_zone_panel
+set unpinned time_zone_panel
+REALF = GENERAL9
+TIMEF = LOCAL_HM
+
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source time_zone_alarm then 
+   begin
+
+   set source  time_zone_alarm = src
+   set filter  time_zone_alarm.db_addr = lim_eq
+   set limit   time_zone_alarm.db_addr = db_address(int(b1) + b_offset - 1)
+   set persist time_zone_alarm
+   request     time_zone_alarm
+
+   set source  time_zone_table_in = src
+   set filter  time_zone_table_in.db_addr = lim_ge
+   set limit   time_zone_table_in.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist time_zone_table_in
+   set max_rows time_zone_table_in = numb_zones
+   request     time_zone_table_in
+
+   set source  current_zone_ip = src
+   set filter  current_zone_ip.db_addr = lim_eq
+   set limit   current_zone_ip.db_addr =db_address(int(e1)+e_offset-1+numb_zones)
+   set persist current_zone_ip
+   request     current_zone_ip
+
+   set invalid time_zone_alarm
+
+   end
+
+
+! SELECT FG AND BG COLOUR !
+
+if time_zone_alarm.alarm_status == w_note then
+   begin
+   object_bg = flashred
+   object_fg = white
+   end
+
+else if time_zone_alarm.alarm_status == w_clr then
+   begin
+   object_bg = red
+   object_fg = white
+   end
+
+else
+   begin
+   object_bg = decoroff
+   object_fg = red
+   end
+
+
+! CASE MENU OPTIONS !
+
+if valid time_zone_menu then
+   begin
+
+   case time_zone_menu of
+        "Alter Time Zone 1"
+           begin
+           set title time_zone_panel = "Alter Time Zone 1"
+           altered_zone_time=getnumb("1",zone_order)
+           request time_zone_panel
+           end
+
+        "Alter Time Zone 2"
+           begin
+           set title time_zone_panel = "Alter Time Zone 2"
+           altered_zone_time=getnumb("2",zone_order)
+           request time_zone_panel
+           end
+
+        "Alter Time Zone 3"
+           begin
+           set title time_zone_panel = "Alter Time Zone 3"
+           altered_zone_time=getnumb("3",zone_order) 
+          request time_zone_panel
+           end
+
+        "Alter Time Zone 4"
+           begin
+           set title time_zone_panel = "Alter Time Zone 4"
+           altered_zone_time = getnumb("4",zone_order)
+           request time_zone_panel
+           end
+
+        "Alter Time Zone 5"
+           begin
+           set title time_zone_panel = "Alter Time Zone 5"
+           altered_zone_time = getnumb("5",zone_order)
+           request time_zone_panel
+           end
+
+        "Alter Time Zone 6"
+           begin
+           set title time_zone_panel = "Alter Time Zone 6"
+           altered_zone_time = getnumb("6",zone_order)
+           request time_zone_panel
+           end
+
+        default
+           begin
+           end
+
+   set invalid time_zone_menu
+   end         
+
+
+
+! DRAW SYMBOL !
+
+just=centrecentre
+box_width=(numb_zones*80+20)
+x=0 y=0
+rect(w=box_width,h=60,fg=object_bg)
+clear
+x=-box_width/2
+y= 30 add
+y-=60 add
+x+=box_width add
+line(lw=2,fg=decorlight)
+clear
+add
+y+=60 add
+x-=box_width add
+line(lw=2,fg=decorshadow)
+clear
+
+just=centreleft
+
+x=-box_width/2+5
+y=-21
+text(ch=16,tfg=black,ident)
+
+x=-box_width/2
+lw=3
+y=5
+x+=10 add
+y-=5 add               ! left vertical line !
+y+=10 add
+y-=5 add
+x+=(numb_zones*80) add ! horizontal line !
+y-=5 add               ! right vertical line !
+y+=10 add
+y-=5 add
+line(fg=object_fg)
+
+!********************** Add times and zone numbers *********************!
+x=-box_width/2+10
+loop=1
+while (loop<=numb_zones) do
+   begin
+   clear
+   y-=5 add ! vertical line !
+   y+=10 add
+   y-=5 add
+   line(fg=object_fg)
+   y-=12
+   if current_zone_ip.e_value==int(getchar(loop,zone_order)) then
+     tfg=blue
+   else
+     tfg=red
+
+   text(just=centrecentre,getchar(loop,zone_order))
+   y+=12
+   y+=13
+   temp=int(getchar(loop,zone_order))
+   current_zone_numb = int(getchar(loop,zone_order))
+   text(ch=15,mins_to_string(int(time_zone_table_in[loop].e_value)))
+   y-=13
+   x+=80
+   loop+=1
+   end
+
+
+
+
+
+! CONFIGURE MENU !
+
+just=centrecentre
+x=0 y=0
+w=box_width
+h=60
+set rect time_zone_menu
+set title time_zone_menu = ident
+
+if invalid items_added then
+   begin
+   if numb_zones>0 then
+   set add time_zone_menu = "Alter Time Zone "+getchar(1,zone_order)
+   if numb_zones>1 then
+   set add time_zone_menu = "Alter Time Zone "+getchar(2,zone_order)
+   if numb_zones>2 then
+   set add time_zone_menu = "Alter Time Zone "+getchar(3,zone_order)
+   if numb_zones>3 then
+   set add time_zone_menu = "Alter Time Zone "+getchar(4,zone_order)
+   if numb_zones>4 then
+   set add time_zone_menu = "Alter Time Zone "+getchar(5,zone_order)
+   if numb_zones>5 then
+   set add time_zone_menu = "Alter Time Zone "+getchar(6,zone_order)
+
+   items_added = 1
+   end
+
+
+! WRITE DATA TO SERVER !
+if (valid time_zone_panel) and (time_zone_panel.Hour<24) 
+                           and (time_zone_panel.Minutes<60) then
+  begin
+   
+  !**** Read original mins past midnight into temp array ****!
+  for i from 1 to numb_zones do
+    begin
+    mins_past_tabl[i].val=int(time_zone_table_in[i].e_value)
+    end
+
+
+  !**** Input into temp array - new mins past midnight ****!
+  mins_past_tabl[altered_zone_time].val=
+        time_to_int(time_zone_panel.Hour,time_zone_panel.Minutes)
+
+
+  !**** Calculate lowest number of mins past midnight ****!
+  lowest_mins=int(time_zone_table_in[1].e_value)
+  lowest_mins_index=1
+  for i from 1 to numb_zones do
+   begin
+    if mins_past_tabl[i].val < lowest_mins then
+      begin
+      lowest_mins=mins_past_tabl[i].val
+      lowest_mins_index=i
+      end  
+    end
+
+
+  !**** Check order of zone times ****!
+  !**** Check from lowest to end ****!
+  for i from lowest_mins_index to numb_zones do
+    begin
+    if i==numb_zones and lowest_mins_index<>1 then
+      begin
+      if mins_past_tabl[i].val >= mins_past_tabl[1].val then
+        valid_zones=no
+      end
+    else
+      if mins_past_tabl[i].val >= mins_past_tabl[i+1].val then
+        valid_zones=no
+    end
+
+  !**** Check from first to lowest - 1 ****!
+  for i from 1 to lowest_mins_index-1 do
+    begin
+    if i==lowest_mins_index-1 then
+      begin end
+    else
+      if mins_past_tabl[i].val >= mins_past_tabl[i+1].val then
+        valid_zones=no
+    end
+
+  ! **** If only two zones then must be valid ****!
+  if numb_zones==2 then valid_zones=yes
+
+
+  ! **** If valid zone time then write it to server ****!
+  if valid_zones then
+    begin
+    set source time_zone_table_out = src
+    set old_value time_zone_table_out = time_zone_table_in
+    set value time_zone_table_out = time_zone_table_in
+    set value time_zone_table_out[altered_zone_time].e_value =         time_to_int(time_zone_panel.Hour,time_zone_panel.Minutes)
+
+    request time_zone_table_out
+    end
+
+  set invalid time_zone_panel
+   
+  end
+
+end
+
+object main_object (bg,fg,scale,just)
+ begin
+
+just=centrecentre
+scale=260
+x=0 y=0 
+time_zones_display(10018,810,3,"Lighting Zone Times","132",heathrow)
+
+end
+
+mimic = main_object w=400,h=240,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,59 @@
+load mimic_libutil
+load ocb_monitored
+load chp_meter
+load lv_generator
+load transformer
+
+
+!************* BUSBAR 73 ****************!
+
+object busbar_73
+begin
+
+tfg = black x =  95 y = -55 add text ("73",ch = 25) clear
+
+x = -125 y = -25 add x = 125 add line(lw=4,fg=blue) clear
+
+lw = 2
+
+x = -100 y = -25 add y -= 80 add line (fg=blue) clear
+x = -50  y = -25 add y += 50 add line (fg=blue) clear
+x = 0    y = -25 add y += 30 add line (fg=blue) clear
+x = 50   y = -25 add y -= 50 add line (fg=blue) clear
+x = 100  y = -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+x = -100 y = -50 ocb_mont(3000,3560,172,301,heathrow,1,"top")
+x =  -50 y = 0   ocb_mont(3000,3520,173,297,heathrow,2,"btm")
+x =    0 y = 0   ocb_mont(3000,3530,174,298,heathrow,3,"btm")
+x =   50 y = -50 ocb_mont(3000,3540,175,299,heathrow,4,"top")
+x =  100 y = 0   ocb_mont(3000,3550,176,300,heathrow,5,"btm")
+
+scale = 100
+
+X = -50  Y = 45 add transformer("T 1","")
+X =  100 Y = 45 add transformer("LT","") 
+
+scale=260
+x = -78 y = 70 text(tfg=black,ch=12,"11/3.3KV")
+x = -17 y = 25 text(tfg=black,ch=12,"Spare")
+x = -78 y = 85 text(tfg=black,ch=12,"Comp Tx")
+
+x = 0 y = 0 clear
+
+x=-100 y=-190 chp_meter(271,heathrow,"9.5-12.5KV","CHP",scale=200)
+x=-60 y=-260 text ("Generator",tfg=black,ch=20)
+x=-60 y=-238 text ("15 MVA Capacity",tfg=black,ch=20)
+x = 50 y = -85 text("WI-NEW P16",just=centrecentre,ch=12)
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y = 100 busbar_73
+
+end
+
+mimic = main_object w=400,h=450,just=centrecentre,fg=white,bg=aquamarine3,resizable

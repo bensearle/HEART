@@ -1,0 +1,408 @@
+LOAD mimic_libutil
+
+LOAD gadgets_libutil
+
+LOAD nse_tap_confirm
+
+TYPE e_db_row_type 	= db_elements(db_addr,e_value)
+
+TYPE b_db_row_type 	= db_elements(db_addr,b_value)
+
+TYPE c_db_row_type 	= db_elements(db_addr,c_value)
+
+TYPE b_bool_type 	= db_elements(b_value)
+
+TYPE alarm_row_type 	= db_elements(alarm_status)
+
+TYPE main_menu_row 	= table (main_menu_items= string(27))
+
+TYPE panel_item_row 	= table (str = string(40))
+
+TYPE confirm_state 	= enum(execute = "Execute",
+                               cancel = "Cancel")
+
+
+!-----------------------------------------------------------------------------!
+!  READ BOOLEAN VALUE                                                         !
+!-----------------------------------------------------------------------------!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  READ CHARACTER ARRAY                                                       !
+!-----------------------------------------------------------------------------!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  READ ENGINEERING VALUE                                                     !
+!-----------------------------------------------------------------------------!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+!-----------------------------------------------------------------------------!
+!  TAG MESSAGE WINDOW                                                         !
+!-----------------------------------------------------------------------------!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!-----------------------------------------------------------------------------!
+! TRANSFORMER OBJECT                                                          !
+!-----------------------------------------------------------------------------!
+
+OBJECT tap_change(plc_offset=INT,e_number=INT,c_offset=INT,e_offset=INT,src=SOURCE,btm_text=STRING(8),top_text=STRING(8),ident=INT,cont_code=INT)
+
+! PLC STATUS !
+VAR plc_a_comms_status 		= input		b_bool_type
+VAR plc_b_comms_status 		= input		b_bool_type
+
+! DIGITALS !
+VAR tap_position_status		= input		b_bool_type
+VAR tap_increment		= input		b_bool_type
+VAR current_value		= input		e_db_row_type
+VAR tag_message_ip		= input 	c_db_row_type
+VAR control_code		= input		e_db_row_type
+
+! MENUS !
+VAR main_menu			= MENU		STRING(40)
+VAR tag_message_panel		= PANEL		panel_item_row
+VAR popup_box			= popup		confirm_popup
+VAR failure_box			= popup		control_status
+VAR control_in_progress 	= popup		control_status
+
+! GENERAL !
+VAR tap_position		= INT
+VAR transformer_foreground	= COLOUR
+VAR increment			= YESNO
+VAR decrement			= YESNO
+VAR in_progress			= YESNO
+VAR inc_code			= INT
+VAR dec_code			= INT
+
+BEGIN
+
+! DATA RETRIEVAL !
+
+! GET CURRENT VALUE !
+set source current_value = src
+set filter current_value.db_addr = lim_eq
+set limit current_value.db_addr = db_address(int(e1) + e_number - 1)
+set persist current_value 
+request current_value
+
+! GET CONTROL CODE !
+set source control_code = src
+set filter control_code.db_addr = lim_eq
+set limit control_code.db_addr = db_address(int(e1) + e_offset - 1)
+set persist control_code 
+request control_code
+
+! GET PLC A STATUS !
+set source plc_a_comms_status = src
+set filter plc_a_comms_status.db_addr = lim_eq
+set limit plc_a_comms_status.db_addr = db_address(int(b1) + plc_offset +9 )
+set persist plc_a_comms_status
+request plc_a_comms_status
+
+! GET PLC B STATUS !
+set source plc_b_comms_status = src
+set filter plc_b_comms_status.db_addr = lim_eq
+set limit plc_b_comms_status.db_addr = db_address(int(b1) + plc_offset +10 )
+set persist plc_b_comms_status 
+request plc_b_comms_status
+
+! GET TAG MESSAGE !
+set source tag_message_ip = src
+set filter tag_message_ip.db_addr = lim_eq
+set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+set persist tag_message_ip
+request tag_message_ip
+
+inc_code = cont_code
+dec_code = cont_code + 1
+
+
+!-----------------------------------------------------------------------------!
+!  MAIN SYMBOL                                                                !
+!-----------------------------------------------------------------------------!
+
+IF control_code.e_value == inc_code OR control_code.e_value == dec_code THEN
+BEGIN
+  y = -14
+  RECT(W=122,H=232,FG=flashgreen,just=centrecentre)
+END
+
+IF tag_message_ip.c_value <> "" THEN
+BEGIN
+  y = -14
+  RECT(W=112,H=222,FG=yellow,just=centrecentre)
+END
+ELSE
+  transformer_foreground = BLACK
+
+
+JUST=CENTRECENTRE
+
+X = 0 Y = -15
+
+W = 100 H = 210 SET RECT main_menu
+
+
+RECT(W=100,H=210,FG=DECOROFF)
+Y += 30
+CIRCLE(LW=8,W=50,H=50,FG=GREEN)
+Y += 30
+CIRCLE(LW=8,W=50,H=50,FG=GREEN)
+CLEAR
+
+X = 50 Y = -120 ADD
+X -= 100 ADD
+Y += 210 ADD
+LINE(FG=WHITE) CLEAR
+
+X += 0 ADD
+X += 100 ADD
+Y -= 210 ADD
+LINE(FG=DECORON) CLEAR
+
+X = -50 Y = -32 ADD
+X += 100 ADD
+LINE(FG=WHITE,LW=2) CLEAR
+
+X = -50 Y = -34 ADD
+X += 100 ADD
+LINE(FG=DECORON,LW=2) CLEAR
+
+X = -50 Y = -34 ADD
+X += 100 ADD
+LINE(FG=BLACK,LW=2) CLEAR
+
+X = -40 Y = -40 ADD
+Y -= 30 ADD
+X += 80 ADD
+LINE(FG=DECORON,LW=2) CLEAR
+ADD
+Y += 28 ADD
+X -= 80 ADD
+LINE(FG=WHITE,LW=2) CLEAR
+
+X = 0 Y = -30 ADD
+Y += 20 ADD
+LINE(LW=7,FG=GREEN) CLEAR
+X = 0 Y = 70 ADD
+Y += 20 ADD
+LINE(LW=7,FG=GREEN) CLEAR
+
+FONT = FONT_BOLD
+X = 0 Y = -105
+TEXT(CH=17,top_text)
+Y += 18
+TEXT(CH=17,btm_text)
+FONT = FONT_NORMAL
+Y += 30 X += 30
+
+tap_position = INT(current_value.e_value)
+
+IF tap_position_status.b_value == 1 THEN 
+  TEXT(CH=21,TFG=MAGENTA,JUST=CENTRERIGHT,"##")  
+ELSE IF plc_a_comms_status.b_value == 1 AND plc_b_comms_status.b_value == 1 THEN
+  TEXT(TFG=MAGENTA,CH=21,JUST=CENTRERIGHT,tap_position)
+ELSE
+  TEXT(TFG=BLACK,CH=21,JUST=CENTRERIGHT,tap_position)
+CLEAR
+
+x = 65 y = 0 ADD TEXT(TFG=white,CH=22,ident)
+
+!-----------------------------------------------------------------------------!
+!  MAIN MENU                                                                  !
+!-----------------------------------------------------------------------------!
+
+! TAG MESSAGE BOX !
+x = 0 y = 0
+w=120 h=201
+IF SELB AND tag_message_ip.c_value <> "" THEN
+BEGIN
+  MESSAGE_TEXT_BOX(tag_message_ip.c_value)
+END
+IF VALID tag_message_panel THEN
+BEGIN
+  set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+  set invalid tag_message_panel
+END
+
+SET TITLE main_menu = "Transformer "+ident
+SET EMPTY main_menu
+SET ADD main_menu = "Alter Tag Message"
+SET ADD main_menu = "Clear Tag Message"
+SET ADD main_menu = "Tap Increment"
+SET ADD main_menu = "Tap Decrement"
+IF control_code.e_value == inc_code OR control_code.e_value == dec_code THEN
+  SET ADD main_menu = "Control Cancel"
+IF VALID main_menu THEN
+BEGIN
+
+  CASE main_menu OF
+
+  "Alter Tag Message"
+  BEGIN
+    SET TITLE tag_message_panel 	= "Modify Tag Message"	
+    SET LABEL tag_message_panel.str	= "Tag Message :"
+    SET UNPINNED tag_message_panel
+    REQUEST tag_message_panel
+  END
+
+  "Clear Tag Message"
+    set_c_value(db_address(int(c1) + c_offset - 1),src,"")
+
+  "Tap Increment"
+  BEGIN      
+    IF control_code.e_value == 0 THEN
+    BEGIN
+      SET TITLE popup_box = " "
+      SET UNPINNED popup_box
+      REQUEST popup_box(ident,"Increment")
+      increment = YES
+    END
+    ELSE
+      in_progress = yes
+  END
+
+
+  "Tap Decrement"
+  BEGIN      
+    IF control_code.e_value == 0 THEN
+    BEGIN
+      SET TITLE popup_box = " "
+      SET UNPINNED popup_box
+      REQUEST popup_box(ident,"Decrement")
+      decrement = YES
+    END
+    ELSE
+      in_progress = yes
+    END
+
+  DEFAULT
+  BEGIN
+  END
+
+  SET INVALID main_menu
+
+END
+
+
+! INCREMENT / DECREMENT CONTROLS !
+
+IF VALID popup_box AND popup_box == yes THEN
+  IF popup_box == yes THEN 
+  BEGIN
+    IF increment == YES THEN
+    BEGIN
+      SET INVALID popup_box
+      set_e_value(db_address(int(e1) + e_offset-1),src, inc_code)
+      set_e_value(db_address(int(e1) + e_offset+1),src, inc_code)
+      increment = NO
+    END
+    IF decrement == YES THEN
+    BEGIN
+      SET INVALID popup_box
+      set_e_value(db_address(int(e1) + e_offset-1),src, dec_code)
+      set_e_value(db_address(int(e1) + e_offset+1),src, dec_code)
+      decrement = NO
+    END
+  END
+clear
+
+IF VALID popup_box AND popup_box == no THEN
+BEGIN
+  increment = NO
+  decrement = NO
+END
+
+
+! CONTROL IN PROGRESS !
+
+IF in_progress == YES THEN
+BEGIN
+  set title control_in_progress = " "
+  set unpinned control_in_progress
+  request control_in_progress(ident,"CONTROL IN PROGRESS","Change")
+  in_progress = no
+END
+
+END
+
+
+OBJECT main_object (bg,fg,w,h,tbg,tfg)
+BEGIN
+CLEAR
+x = 50 y = -100 ADD
+y += 200 ADD
+LINE(fg=red)
+
+SCALE = 160
+x = -50 y = 0 tap_change(21000,1758,550,1700,HEATHRO2,"33/11KV","24MVA",1,150)
+x = 50 y = 0 tap_change(21000,1760,551,1700,HEATHRO2,"33/11KV","24MVA",2,152)
+
+
+END
+
+mimic = main_object w=500,h=300,just=centrecentre,fg=white,bg=black,resizable

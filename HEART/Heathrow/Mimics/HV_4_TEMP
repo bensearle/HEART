@@ -1,0 +1,774 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!**********Hv Ring 4************!
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load hv_4_sub_stations
+load hv_cable_ident
+Load BROWSER
+
+
+object main_sub_call(box_bg=colour,width=int,height=int,txt_top=string,txt_btm=string,txt_col=colour,txt_size=int,popup_mimic=yesno,mimic_title=string,src=source,res3=int,res2=string,res1=int,fg)
+var mm = toplevel  string_50
+var btn_bg = colour
+begin
+	if fg==magenta then btn_bg=magenta
+	else if fg==flashred then btn_bg=flashred
+	else if fg==red then btn_bg=red
+	else if fg==aquamarine3 then btn_bg=aquamarine3
+	else btn_bg=decoroff
+
+	X=0 Y=0 W=width H=height ANGLE=0 JUST=centrecentre FS=FILLSOLID ROTRECT(fg=btn_bg)
+	if anyb then
+	  begin
+		if popup_mimic==yes then
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+			set existing mm
+      	  		request mm
+		end
+		else
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+      	 	 	set selfreplace mm
+      	  		request mm
+		end
+	  end
+
+	Clear
+	X=-(width/2) Y=(height/2) Add
+	Y=-(height/2) Add
+	X=(width/2) Y=-(height/2) Add
+	FG=white LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-(width/2) Y=(height/2) Add	
+	X=(width/2) Add
+	Y=-(height/2) Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	CH=txt_size FONT=FONT_NORMAL FONTNAME="Arial" TFG=txt_col JUST=centrecentre
+
+	if txt_btm=="" or txt_btm==string then
+	begin
+		X=0 Y=0  TEXT(txt_top)
+	end
+	else
+	begin
+		X=0 Y=-10 TEXT(txt_top)
+		X=0 Y=10 TEXT(txt_btm)
+	end
+end
+
+
+object multiple_alarm_test(plc_offset=int,b_offset=int,num_alarms=int,src=source) = colour
+var plc_inputs = input b_bool_type[2]		! * comms inputs * !
+var equip_alarms = input alarm_row_type[1000]
+var alarm_box=yesno
+var n = int
+var alarm_clear_count = int
+begin
+         		if invalid get source plc_inputs then 	! * get database values * !
+         		begin
+	   		set source plc_inputs = src
+	   		set filter plc_inputs.db_addr = lim_ge
+	   		set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   		set priority plc_inputs.db_addr = 15
+	   		set persist plc_inputs
+	   		set mayexist plc_inputs
+	   		request plc_inputs
+		end
+
+		if plc_inputs[1].b_value==1 and plc_inputs[2].b_value==1 then
+		   begin
+			 multiple_alarm_test = magenta
+		   end
+		else if invalid num_alarms or num_alarms==int then 
+		   begin
+			multiple_alarm_test = grey80
+		   end
+		else 
+		   begin
+		      if invalid get source equip_alarms then
+		         begin
+		   	set source equip_alarms = src
+		   	set max_rows equip_alarms  = num_alarms 
+		   	set filter equip_alarms.db_addr = lim_ge	
+		   	set limit equip_alarms.db_addr = db_address(int(b1) + b_offset-1)
+		   	set priority equip_alarms.db_addr = 15
+		   	set persist equip_alarms 
+		   	set mayexist equip_alarms
+		   	request equip_alarms
+		         end
+
+			if invalid equip_alarms[1].alarm_status then
+			begin
+				multiple_alarm_test = grey80
+			end
+			else
+			begin
+				alarm_clear_count = 0
+				n=1
+				while n <= num_alarms DO
+				begin
+					if equip_alarms[n].alarm_status==w_note or equip_alarms[n].alarm_status==w_clr then
+					   begin
+						n=num_alarms+1
+					   end	
+					else
+					   begin
+						alarm_clear_count = alarm_clear_count + 1
+						n++
+					   end
+				end
+
+				if alarm_clear_count <> num_alarms then
+				   multiple_alarm_test = red
+				else
+				   multiple_alarm_test = grey80
+			end
+		   end
+
+			! * debug to display the number of dbase points found before (if any) either w_note or w_clr * !
+			!	text(ch=40,alarm_clear_count )	!
+end
+
+
+
+!************* SUB 9 ****************!
+
+object sub_9
+
+begin
+
+sub_symbol_9
+
+lw=2
+
+x = 0 y = 25 add y -= 50 add line (fg=red) clear
+x = 50 y = 25 add y -= 50 add line (fg=red) clear
+x = 100 y = 25 add y -= 50 add line (fg=red) clear
+
+
+scale = 120
+
+x = 0 y = 0 ocb_mont(3000,3100,109,225,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(3000,3110,110,226,heathro2,2,"top")
+x = 100 y = 0 ocb_mont(3000,3090,255,263,heathro2,4,"top")
+
+end
+
+
+
+!************* SUB 20 ****************!
+
+object sub_20
+
+begin
+
+sub_symbol_20
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0 y = 0 ocb_mont(5000,5100,185,400,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(5000,5110,186,401,heathro2,2,"top")
+
+
+end
+
+
+!************* SUB 10 NEW  ****************!
+
+object sub_10
+begin
+	clear
+	sub_symbol_10
+
+	lw = 2
+	x = 0 y = 25 add y -= 50 add line (fg=red) clear
+	x = 50 y = 25 add y -= 50 add line (fg=red) clear
+
+	scale = 320
+	x =     0 y = 0 hv_lib_breaker("eclipse",39500,39630,1241,5501,int,HEATHROW,2,"TOP",int)
+	x =    50 y = 0 hv_lib_breaker("eclipse",39500,39670,1243,5503,int,HEATHROW,4,"TOP",int)
+	clear
+end
+
+
+!************* SUB 11A **************** NEW AGL SUB 11A TO REPLACE OLD SUB 11 - ULTRA 04/06/2007 !
+
+object sub_11A
+var alarm_col= colour
+begin
+	
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 320
+	x =     0 y = 0 hv_lib_breaker("eclipse",12350,12410,2225,2760,int,HEATHRO2,1,"TOP",int)
+	x =    50 y = 0 hv_lib_breaker("eclipse",12350,12450,2227,2762,int,HEATHRO2,3,"TOP",int)
+	clear
+
+scale = 256
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	alarm_col=multiple_alarm_test(12350,12394,125,heathro2)
+
+!object main_sub_call(box_bg=colour,width=int,height=int,txt_top=string,txt_btm=string,txt_col=colour,txt_size=int,popup_mimic=yesno,mimic_title=string,src=source,res3=int,res2=string,res1=int,fg)!
+
+	X=25 Y=38	main_sub_call(grey80,120,26,"Sub 11A","",white,24,yes,"sub_stn_11A",heathro2,int,"string",int,fg=alarm_col)
+
+end
+
+
+!************* SUB 26 ****************!
+
+object sub_26
+var alarm_col= colour
+begin
+	
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 320
+	x =     0 y = 0 hv_lib_breaker("eclipse",27000,27120,1304,2104,int,HEATHRO2,4,"TOP",int)
+	x =    50 y = 0 hv_lib_breaker("eclipse",27000,27140,1305,2105,int,HEATHRO2,5,"TOP",int)
+	clear
+
+scale = 256
+
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	alarm_col=multiple_alarm_test(27000,27070,90,heathro2)
+
+!object main_sub_call(box_bg=colour,width=int,height=int,txt_top=string,txt_btm=string,txt_col=colour,txt_size=int,popup_mimic=yesno,mimic_title=string,src=source,res3=int,res2=string,res1=int,fg)!
+
+	X=25 Y=38	main_sub_call(grey80,120,26,"Sub 26","",white,24,yes,"sub_stn_26A",heathro2,int,"string",int,fg=alarm_col)
+
+end
+
+
+!************* SUB 14 ****************!
+
+object sub_14
+
+begin
+
+sub_symbol_14
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0 y = 0 ocb_mont(4500,4600,171,350,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(4500,4610,172,351,heathro2,2,"top")
+
+
+end
+
+
+!************* SUB M1/10 ****************!
+
+object sub_m1_10
+
+begin
+
+sub_symbol_m1_10
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(2000,2220,68,137,heathro2,2,"top")
+x = 50 y = 0 ocb_mont(2000,2230,69,138,heathro2,3,"top")
+
+
+end
+
+
+!************* SUB M1/14 ****************!
+
+object sub_m1_14
+
+begin
+
+sub_symbol_m1_14
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+!x = 100 y = -25 add y += 50 add line (fg=red) clear!
+
+scale = 120
+
+x = 0 y = 0 ocb_mont(15000,15655,790,1077,heathrow,4,"top")
+x = 50 y = 0 ocb_mont(15000,15675,792,1079,heathrow,6,"top")
+!x = 100 y = 0 ocb_mont(15000,15705,795,1082,heathrow,9,"top")!
+
+end
+
+
+!************* SUB 4 ****************!
+
+object sub_4
+
+begin
+
+sub_symbol_4
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(500,600,13,25,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(500,610,14,26,heathro2,2,"top")
+
+
+end
+
+
+!************* SUB 5 ****************!
+
+object sub_5
+
+begin
+
+sub_symbol_5
+
+lw = 2
+x = 0    y = -25 add y += 50 add line (fg=red) clear
+x = 50   y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0   y = 0 ocb_mont(1000,1100,27,50,heathro2,1,"top")
+x = 50  y = 0 ocb_mont(1000,1110,28,51,heathro2,2,"top")
+
+
+end
+
+
+!************* SUB 3 ****************!
+
+object sub_3
+
+begin
+
+sub_symbol_3
+
+lw = 2
+x = 0    y = -25 add y += 50 add line (fg=red) clear
+x = 50   y = -25 add y += 50 add line (fg=red) clear
+
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(1,110,2,2,heathro2,2,"top")
+x = 50 y = 0 ocb_mont(1,120,3,3,heathro2,3,"top")
+
+end
+
+
+!************* SUB 7 ****************!
+
+object sub_7
+
+begin
+
+sub_symbol_7
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(2000,2100,56,125,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(2000,2110,57,126,heathro2,2,"top")
+
+
+end
+
+
+!************* SUB 6 ****************!
+
+object sub_6
+
+begin
+
+sub_symbol_6
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(1000,1100,50,50,heathrow,1,"top")
+x = 50 y = 0 ocb_mont(1000,1110,51,51,heathrow,2,"top")
+
+end
+
+
+!************* SUB 8 ****************!
+
+object sub_8
+
+begin
+
+sub_symbol_8
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(2500,2600,82,175,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(2500,2610,83,176,heathro2,2,"top")
+
+
+end
+
+
+!************* SUB 45 ****************!
+ 
+object sub_45
+
+begin
+
+sub_symbol_45
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(2500,2640,88,179,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(2500,2650,89,180,heathro2,2,"top")
+
+end
+
+
+!************* SUB 65 ****************!
+ 
+object sub_65
+
+begin
+
+sub_symbol_65
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 hv_fuse(25102,43,1351,heathrow,"c")
+
+end
+
+
+
+!*********** HV 4 NORTH INTAKE ************!
+
+object hv_4_north_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "north_intake"
+
+
+W=150 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"North Intake",just=centrecentre) clear
+
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 25 y = 25 add y = -25 add line(fg=red) clear
+x = 75 y = 25 add y = -25 add line(fg=red) clear
+
+scale=120
+x = 25 y = 0 ocb(1,480,18,42,heathrow,5,"top")
+x = 75 y = 0 ocb(1,320,12,36,heathrow,16,"top")
+
+end
+
+
+!************** WEST INTAKE **************!
+
+object hv_4_west_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "west_intake"
+
+
+W=200 H=25 X=-50 Y=25 RECT(fg=grey80)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"West Intake",just=centrecentre) clear
+
+x = 150 y = 25 add x -= 200 add y += 25 add line (fg=white) clear
+x = 150 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear
+
+lw=2
+x = 50 y = 25 add y = 0 add line(fg=blue) clear
+x = 50 y = 0 add y = -25 add line(fg=red) clear
+
+scale = 120
+x = 50 y = 0 ocb(3000,3120,151,276,heathrow,1,"top")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+clear
+
+y = -350
+x = -50 hv_4_north_intake
+
+y = -300
+x = -475 sub_14
+x = -250 sub_3
+x = 200 sub_5
+x = 425 sub_4
+
+y = -150
+
+x = -250 sub_26	!*** New Sub 26 ***!
+x = -475 sub_11A	!*** New Sub 11A - ULTRA 04/06/2007 ***!
+x = 175 sub_m1_14
+!x = 425 sub_65!
+
+y = 0
+x = -490 sub_10
+
+x = -250 sub_20
+x = 200 sub_m1_10
+x = 425 sub_7
+
+y = 150
+x = -450 sub_9
+x = -175 sub_45
+x = 125 sub_8
+x = 375 sub_6
+
+y = 250
+x = -50 hv_4_west_intake
+
+lw=2
+
+!NI-16 TO SS5-1!
+x = 25 y = -375 add
+y -= 15 add
+x += 175 add
+y += 65 add
+line(fg=red) clear
+x = 115 y =-390 cable_ident("red","maggot","4.1") clear
+
+!SS5-2 TO SS4-2!
+x = 250 y = -325 add
+y -= 30 add
+x += 225 add
+y += 30 add
+line(fg=red) clear
+x = 350 y =-355 cable_ident("red","maggot","4.1") clear
+
+!SS4-1 TO M1/14-6!
+x = 425 y = -325 add
+y -= 15 add
+x -= 60 add
+y += 135 add
+x -= 140 add
+y += 30 add
+line(fg=red) clear
+x = 290 y =-205cable_ident("red","maggot","4.1") clear
+
+!M1/14-9 TO SS65!
+!x = 275 y = -175 add
+y -= 15 add
+x += 150 add
+y += 15 add
+line(fg=red) clear
+x = 350 y =-190 cable_ident("red","maggot","4.1") clear!
+
+!M1/14-4 TO M1/10-2!
+x = 175 y = -175 add
+y -= 15 add
+x -= 75 add
+y += 135 add
+x += 100 add
+y += 30 add
+line(fg=red) clear
+x = 150 y =-55 cable_ident("red","maggot","4.1") clear
+
+!M1/10-3 TO SS7-2!
+x = 250 y = -25 add
+y -= 30 add
+x += 225 add
+y += 30 add
+line(fg=red) clear
+x = 350 y =-55 cable_ident("red","maggot","4.1") clear
+
+!SS7-1 TO SS6-2!
+x = 425 y = -25 add
+y -= 15 add
+x -= 100 add
+y += 135 add
+x += 100 add
+y += 30 add
+line(fg=red) clear
+x = 375 y =95 cable_ident("red","maggot","4.0") clear
+
+!SS6-1 TO SS8-2!
+x = 375 y = 125 add
+y -= 15 add
+x -= 200 add
+y += 15 add
+line(fg=red) clear
+x = 270 y =110 cable_ident("red","maggot","4.1") clear
+
+!SS8-1 TO SS45-1!
+x = 125 y = 125 add
+y -= 15 add
+x -= 300 add
+y += 15 add
+line(fg=red) clear
+x =-20 y =110 cable_ident("red","maggot","4.1") clear
+
+!SS45-2 TO SS9-4!
+x = -125 y = 125 add
+y -= 30 add
+x -= 225 add
+y += 30 add
+line(fg=red) clear
+x =-245 y =95 cable_ident("red","maggot","4.1") clear
+
+!SS9-1 TO WI-2!
+x = -450 y = 125 add
+y -= 15 add
+x -= 50 add
+y += 110 add
+x += 500 add
+y += 5 add
+line(fg=red) clear
+x =- 245 y =220 cable_ident("red","maggot","4.1") clear
+
+!NI-5 TO SS3-3!
+x = -25 y = -375 add
+y -= 15 add
+x -= 175 add
+y += 65 add
+line(fg=red) clear
+x = -115 y =-390 cable_ident("red","maggot","4.1") clear
+
+!SS3-2 TO SS14-1!
+x = -250 y = -325 add
+y -= 30 add
+x -= 225 add
+y += 30 add
+line(fg=red) clear
+x = -350 y =-355 cable_ident("red","maggot","4.1") clear
+
+!SS26-4 TO SS11-3!
+x = -425 y = -175 add
+y -= 10 add
+x += 175 add
+y += 10 add
+line(fg=red) clear
+x =-340 y =-185 cable_ident("red","maggot","4.1") clear
+
+! SS14-2 TO SS26-5 	MODIFIED BY ULTRA 18/10/07!
+x = -425 y = -325 add
+y -= 10 add
+x += 60 add
+y += 130 add
+x += 165 add
+y += 30 add
+line(fg=red) clear
+x =-280 y =-205 cable_ident("red","maggot","4.1") clear
+
+!SS11-1 TO SS20-2!
+x = -475 y = -175 add
+y -= 10 add
+x -= 50 add
+y += 130 add
+x += 325 add
+y += 30 add
+line(fg=red) clear
+x =-390 y =-55 cable_ident("red","maggot","4.1") clear
+
+!SS10-4 TO SS20-1!
+clear
+x = -440 y = -25 add
+y -= 10 add
+x += 190 add
+y += 10 add
+line(fg=red) clear
+x =-345 y =-35 cable_ident("red","maggot","4.1") clear
+
+!** SS10-2 TO SS9-2 **!
+clear
+x = -490 y = -25 add
+y -= 10 add
+x -= 50 add
+y += 130 add
+x += 140 add
+y += 30 add
+line(fg=red) clear
+x =-470 y =95 cable_ident("red","maggot","4.1") clear
+
+just=centrecentre
+x = 0 y = 25 rect(w=200,h=50,fg=decoroff) clear
+x = 100 y = 0 add x -= 200 add y += 50 add line(lw=1,fg=decorlight) clear
+x = 100 y = 0 add y += 50 add x -= 200 add line(lw=1,fg=decorshadow) clear
+
+x = 3 y = 28 text(ch=25,tfg=grey60,font=font_bold,"Airfield Ring")
+x = -1 y = 24 text(ch=25,tfg=white,font=font_bold,"Airfield Ring")
+x = 0 y = 25 text(ch=25,tfg=blue,font=font_bold,"Airfield Ring")
+
+x = -570 y = 310 browser(1064,heathrow,1140)
+Clear
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,bg=aquamarine3,resizable

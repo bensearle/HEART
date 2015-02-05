@@ -1,0 +1,126 @@
+Load SUB_STN_138_HELP
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+
+load transformer
+Load circuit_breakers
+load generic_bar_meter
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object earth_symbol(fg)
+begin
+	just=topleft
+	lw=2
+	x = 0 y = 0 add x +=30 add line clear
+	x-= 25 y += 5 add x +=20 add line clear
+	x-= 15 y += 5 add x +=10 add line clear
+end
+
+object busbar_138
+var helpstr = help string(30)
+var y_default=int
+var x_default=int
+var line_col=colour
+begin
+   	scale=256
+   	just=centrecentre
+   	x=20 y=20  w=600 h=500
+   	set text helpstr = "sub_stn_138_help"
+
+	line_col=blue
+	just=centrecentre
+	lw=2
+	X=200 Y=20 add text (tfg=black,"138",ch = 30) clear
+	x = -210 y = 0 add x += 430 add line(lw=4,fg=line_col) clear
+
+
+	x =-160 y = -55 add y += 55 add line (fg=line_col) clear
+	x =-110 y = 0 add y += 55 add line (fg=line_col) clear
+	x =-60  y = 0 add y += 160 add line (fg=line_col) clear
+
+	x = 60 y = 0 add y += 160 add line (fg=line_col) clear
+	x = 110 y = -55 add y += 55 add line (fg=line_col) clear
+	x = 160 y = -55 add y += 55 add line (fg=line_col) clear
+
+
+! *** Circuit Breaker objects *** !
+
+	scale=130
+	x =-160 y = -30	breaker("eclipse",29000,29100,1841,6151,	int,HEATHRO2,1,"TOP",int)
+	x =-110 y = 30 	breaker("eclipse",29000,29120,1842,6152,	int,HEATHRO2,2,"BTM",int)
+	x =-60 y = 30 	breaker("eclipse",29000,29140,1843,6153,	int,HEATHRO2,3,"BTM",int)
+	x =0 y = 0 	breaker("eclipse",29000,29160,1844,6154,	int,HEATHRO2,4,"SECT",int)
+	x = 60 y = 30 	breaker("eclipse",29000,29180,1845,6155,	int,HEATHRO2,6,"BTM",int)
+	x = 110 y = -30	breaker("eclipse",29000,29200,1846,6156,	int,HEATHRO2,7,"TOP",int)
+	x = 160 y = -30	breaker("eclipse",29000,29220,1847,6157,	int,HEATHRO2,8,"TOP",int)
+
+! *** Scaling for objects *** !
+	scale=120
+! *** Transformer objects *** !
+
+	x = -60  Y=180  transformer("TX1","")
+	x = 60 Y=180 transformer("TX2","")
+
+! ****** ANALOGUE METERING INFORMATION ******* !
+	scale=150
+						! METER					(plc_comms,c_offset,e_offset,b_over/modbus node,b_under,src,units,metname,range_lo,range_hi,dec_places,bar_colour,range_dec_places,	 res_int1,res_str1)!
+
+	! *** PANEL 1 *** ! 		x =-160 y = -102 	generic_bar_meter_obj(29000,1848,6160,29038,29039,heathro2,"A","SS 51",0,400,0,yellow,0,int,"")
+	! *** PANEL 1 *** ! 		x =-208 y = -102 	generic_bar_meter_obj(29000,1849,6161,29040,29041,heathro2,"kV","SS 51",8.7,13.2,1,blue,1,int,"")
+
+
+	! *** PANEL 2 *** ! 		x =-110 y = 102 	generic_bar_meter_obj(29000,1850,6162,29042,29043,heathro2,"A","FUTURE",0,200,0,yellow,0,int,"")
+	! *** PANEL 3 *** ! 		x =-60 y =  102 	generic_bar_meter_obj(29000,1851,6163,29044,29045,heathro2,"A","HATCT TX1",0,200,0,yellow,0,int,"")
+	! *** PANEL 4 *** ! 		x =0 y = -102 	generic_bar_meter_obj(29000,1852,6164,29046,29047,heathro2,"A","BUS SECT",0,800,0,yellow,0,int,"")
+
+	! *** PANEL 6 *** ! 		x = 60 y = 102 	generic_bar_meter_obj(29000,1853,6165,29048,29049,heathro2,"A","HATCT TX2",0,200,0,yellow,0,int,"")
+	! *** PANEL 7 *** ! 		x =110 y = -102 	generic_bar_meter_obj(29000,1854,6166,29050,29051,heathro2,"A","SS 82",0,400,0,yellow,0,int,"")
+
+	! *** PANEL 8 *** ! 		x = 160 y = -102 	generic_bar_meter_obj(29000,1855,6167,29052,29053,heathro2,"A","NEW WI",0,400,0,yellow,0,int,"")
+	! *** PANEL 8 *** ! 		x = 208 y = -102 	generic_bar_meter_obj(29000,1856,6168,29054,29055,heathro2,"kV","NEW WI",8.7,13.2,1,blue,1,int,"")
+
+! *** Labels *** !
+	scale=256
+	tfg=black ch=12
+
+	!**panel 1**!
+	!x = -160 y = -187 text("Feeder")!
+	x = -185 y = -163 text("SS51 P6")
+
+
+	!**panel 2**!
+	x =-110 y = 163 text("Spare")
+
+
+	!**panel 3**!
+	x = -60 y = 215 text("HATCT")
+	y = 227 text("TX1")
+
+	!**panel 4 / 5 **!
+	x = 0 
+	y = -40 text("Bus")
+	y = -28 text("Section")
+
+	x = 10 Y=25 text(" /5")
+
+	!**panel 6**!
+	x =60 y = 205 y = 215 text("HATCT")
+	y = 227 text("TX2")
+
+	!**panel 7**!
+	!x = 110 y = -187 text("FEEDER")!
+	x = 110 y = -163 text("SS82 P0")
+
+	!**panel 8**!
+	!x = 160 y = -187 text("Feeder")!
+	x = 185 y = -163 text("NEW WI P25")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=-10 Y=-30 busbar_138
+end
+mimic = main_object w=500,h=450,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+

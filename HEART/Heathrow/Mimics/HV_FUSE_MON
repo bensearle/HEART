@@ -1,0 +1,882 @@
+!*********HV FUSE MON OBJECT *********!
+!********Please Note This Object Doesn't look to good as a "sect" or 90 deg ********!
+
+load mimic_libutil
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type b_bool_type =  db_elements(b_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type main_menu_row = table (main_menu_items= string(20))
+
+type panel_item_row = table (str = string(40))
+
+
+ 
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+************************************************************
+* MONITORED HV FUSE OBJECT                         *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object hv_fuse_mon(plc_offset=int,b_offset=int,c_offset=int,e_offset=int,
+                src=source,ident = int,top_btm_sect=string(4),angle)
+
+
+!PLC TYPE INPUTS   
+plc_inputs[1] = plca_comms_fail
+plc_inputs[2] = plcb_comms_fail
+!
+var plc_comms_fail_ips = input    b_bool_type[2]
+ 
+!Oil Switch TYPE INPUTS
+hv_fuse_inputs[1] = hv_fuse_permit_to_work_ip
+hv_fuse_inputs[3] = hv_fuse_closed_ip 
+hv_fuse_inputs[4] = hv_fuse_tripped_ip
+!
+var hv_fuse_inputs = input  b_bool_type[4]
+
+!ALARMS
+hv_fuse_alarms[1] = hv_fuse_closed_alarm
+hv_fuse_alarms[2] = obc_tripped_alarm
+hv_fuse_alarms[3] = hv_fuse_clsoe_in_discr
+hv_fuse_alarms[4] = hv_fuse_trip_in_discr
+!
+var hv_fuse_alarms = input alarm_row_type[4]
+
+!REAL INPUTS!
+
+var manually_dress_ip = input  e_db_row_type
+
+!CHARACTER INPUTS!
+
+var tag_message_ip = input  c_db_row_type
+
+!LOOPBACKS!
+
+var hv_fuse_bg = loopback  colour
+var hv_fuse_fg = loopback  colour
+
+!PANELS AND MENUS!
+var main_menu = menu  string(30)
+var tag_message_panel = panel  panel_item_row
+
+
+begin
+! INITIALISATION !
+
+if invalid get source plc_comms_fail_ips then
+   begin
+
+!PLC TYPE REQUESTS!
+
+   set source plc_comms_fail_ips = src
+   set filter plc_comms_fail_ips.db_addr = lim_ge
+   set limit plc_comms_fail_ips.db_addr = db_address(int(b1) + plc_offset-1 )
+   set priority plc_comms_fail_ips.db_addr = 15 
+   set persist plc_comms_fail_ips 
+   set mayexist plc_comms_fail_ips 
+   request plc_comms_fail_ips
+
+!OCB REQUESTS!
+
+   set source hv_fuse_inputs = src
+   set filter hv_fuse_inputs.db_addr = lim_ge
+   set limit hv_fuse_inputs.db_addr = db_address(int(b1) + b_offset -1)
+   set priority hv_fuse_inputs.db_addr = 15 
+   set persist hv_fuse_inputs 
+   set mayexist hv_fuse_inputs 
+   request hv_fuse_inputs
+
+   set source hv_fuse_alarms = src
+   set filter hv_fuse_alarms.db_addr = lim_ge
+   set limit hv_fuse_alarms.db_addr = db_address(int(b1) + b_offset +1)
+   set priority hv_fuse_alarms.db_addr = 15 
+   set persist hv_fuse_alarms 
+   set mayexist hv_fuse_alarms 
+   request hv_fuse_alarms
+
+!REQUEST TEXT FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+!REQUEST REAL FROM SCOPE!  
+
+   set source manually_dress_ip = src
+   set filter manually_dress_ip.db_addr = lim_eq
+   set limit manually_dress_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist manually_dress_ip 
+   request manually_dress_ip
+
+end
+
+!SELECT OCB BG COLOUR!
+
+
+if hv_fuse_inputs[1].b_value then
+   hv_fuse_bg = orange
+
+else if int(manually_dress_ip.e_value) >= 1 and 
+        int(manually_dress_ip.e_value) <= 7 then
+   begin
+   case int(manually_dress_ip.e_value) of
+      1 
+      
+      if hv_fuse_inputs[3].b_value and hv_fuse_inputs[4].b_value == off then
+         hv_fuse_bg = flashblue
+      else
+         hv_fuse_bg = blue
+      
+       
+      2
+      
+      if hv_fuse_inputs[3].b_value == off and hv_fuse_inputs[4].b_value then
+         hv_fuse_bg = flashblue
+      else
+         hv_fuse_bg = blue
+      
+
+      3
+      
+      if hv_fuse_inputs[3].b_value == off and hv_fuse_inputs[4].b_value == off then
+         hv_fuse_bg = flashblue
+      else
+         hv_fuse_bg = blue
+      
+    
+      4
+      hv_fuse_bg = blue
+
+      5
+      hv_fuse_bg = blue
+      
+      6 
+      hv_fuse_bg = blue
+
+      7
+      hv_fuse_bg = blue
+
+      default
+      begin
+      end
+   end
+   
+
+else if tag_message_ip.c_value <> "" then
+   hv_fuse_bg = yellow
+else
+   hv_fuse_bg = decoroff
+
+
+
+
+
+
+!SET Oil Switch  FG COLOUR!
+
+if plc_comms_fail_ips[1].b_value and plc_comms_fail_ips[2].b_value then
+  hv_fuse_fg = magenta
+
+else if hv_fuse_alarms[1].alarm_status == w_note or
+        hv_fuse_alarms[2].alarm_status == w_note or
+        hv_fuse_alarms[3].alarm_status == w_note or
+        hv_fuse_alarms[4].alarm_status == w_note then
+
+         hv_fuse_fg = flashred
+
+else if hv_fuse_alarms[1].alarm_status == w_clr or
+        hv_fuse_alarms[2].alarm_status == w_clr or
+        hv_fuse_alarms[3].alarm_status == w_clr or
+        hv_fuse_alarms[4].alarm_status == w_clr then         
+         hv_fuse_fg = red
+
+
+else if int(manually_dress_ip.e_value) >= 1 and 
+        int(manually_dress_ip.e_value) <= 7 then
+   begin
+   case int(manually_dress_ip.e_value) of 
+      1
+      hv_fuse_fg = white
+      2
+      hv_fuse_fg = white     
+      3
+      hv_fuse_fg = white 
+      5
+      hv_fuse_fg = white 
+      6
+      hv_fuse_fg = white 
+      7
+      hv_fuse_fg = white 
+      4
+      begin
+      if hv_fuse_inputs[4].b_value and hv_fuse_inputs[3].b_value then
+         hv_fuse_fg = black
+      else
+         hv_fuse_fg = white
+      end
+
+    default
+       begin
+       end
+   end       
+else
+    hv_fuse_fg = green4
+
+
+!MAIN MENU CONTROL!
+
+if valid main_menu then
+   begin
+ 
+   case main_menu of
+      "Alter Tag Message"
+         begin
+         set title tag_message_panel = "Modify Alter Tag Message"
+         set label tag_message_panel.str = "Alter Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tag Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Permit To Work"
+         begin
+         if hv_fuse_inputs[1].b_value then
+            begin
+            set_b_value(db_address(int(b1) + b_offset -1), src, off)
+            end
+         else
+            set_b_value(db_address(int(b1) + b_offset -1), src, on)
+         end
+         
+                  
+      "Undress HV Fuse"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+
+      "Dress to On"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+
+      "Dress to Off"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+
+    !  "Dress to Racked Down"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+!
+      "Dress to Feeder Earth Off"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 4)
+
+      "Dress to Feeder Earth On"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 5)
+
+      "Dress to Bus-Bar Earth Off"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 6)
+
+      "Dress to Bus-Bar Earth On"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 7)
+
+      default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+!EXECUTE PANEL!
+
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+!MAIN MENU!
+
+just = centrecentre
+w = 70 h = 80
+x=0 y=0
+set rect main_menu 
+if top_btm_sect == "sect" then
+   set title main_menu = "Bus Section Breaker"
+else
+   set title main_menu = "Monitored  HV Fuse  "+ident
+
+set remove main_menu = "Alter Tag Message"
+set remove main_menu = "Clear Tag Message"
+set remove main_menu = "Alter Permit To Work"
+set remove main_menu = "Dress to On"
+set remove main_menu = "Dress to Off"
+set remove main_menu = "Dress to Racked Down"
+set remove main_menu = "Dress to Feeder Earth Off"
+set remove main_menu = "Dress to Feeder Earth On"
+set remove main_menu = "Dress to Bus-Bar Earth Off"
+set remove main_menu = "Dress to Bus-Bar Earth On"
+set remove main_menu = "Undress HV Fuse"
+set add main_menu = "Alter Tag Message"
+set add main_menu = "Clear Tag Message"
+set add main_menu = "Alter Permit To Work"
+
+! TAG MESSAGE BOX !
+
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+
+
+
+
+!********************************************************!
+!                  DRAW MAIN SYMBOL                  !
+!********************************************************!
+
+x = 0 y = 0
+just = centrecentre
+rotrect (w=40,h=80,fg=hv_fuse_bg)
+clear
+x -=20 y =40 add
+y -= 80 add
+x +=40 add line (fg=decorlight) clear 
+y += 1 add
+y += 79 add
+x -= 40 add line (fg=decorshadow) clear
+x += 33 y -= 40 clear
+fg = hv_fuse_fg
+ch = 18
+if manually_dress_ip.e_value > 0 and tag_message_ip.c_value <> "" then
+  begin
+   lw=6
+  clear
+  x = 0
+  y = 0
+  x -= 20 y += 40 add
+  y -= 80 add
+  x += 40 add
+  y +=80 add
+  x -= 42 add line (fg=yellow)
+  end
+
+if top_btm_sect == "top" then
+  begin
+    x = 30 y = 0 add text(ch=28,tfg=black,just=centreleft,ident)
+  end
+else if top_btm_sect == "btm" then
+  begin
+    x = 30 y = 0 add text(ch=28,tfg=black,just=centreleft,ident)
+  end
+else
+  begin
+    x = 30 y = 0 add text (ch=28,tfg=black,just=centrecentre, ident)
+  end
+
+x = 0 y = 0 clear
+tfg = black
+
+if int(manually_dress_ip.e_value) >= 1 then
+   case int(manually_dress_ip.e_value) of
+     
+      !  HV Fuse Dressed Closed Indications!
+      1
+         begin
+      lw=6
+         y = 75
+         x = 0 y = 24 add
+         x = 0 y = 40 add line clear
+         x = 0 y = -24 add
+         x = 0 y = -40 add line clear
+         x += 25 y += 25 add clear
+         lw = 10					
+         x = 0 y = -20 disk(h=15,w=25)
+         x = 0 y = 20 disk(h=15,w=25)
+         x = 0 y = -20 disk(h=7,w=12,fg=blue3)
+         x = 0 y = 20 disk(h=7,w=12,fg=blue3)
+         lw =6
+         x = -12 y =18 add
+         x =11 y =-18 add line clear
+         x = -11 y =-18 add
+         x = 11 y =18 add line clear
+         set add main_menu = "Dress to Off"
+         set add main_menu = "Undress HV Fuse"
+         end
+
+
+
+      !  HV Fuse Dressed Open !
+       2
+         begin
+          lw=6
+         y = 75
+         x = 0 y = 24 add
+         x = 0 y = 40 add line clear
+         x = 0 y = -24 add
+         x = 0 y = -40 add line clear
+         x += 25 y += 25 add clear
+         lw = 6					
+         x = 14 y = 0 disk(h=25,w=14)
+         x = -14 y = 0 disk(h=25,w=14)
+         x = 14 y = 0 disk(h=12,w=7,fg=blue3)
+         x = -14 y = 0 disk(h=12,w=7,fg=blue3)
+         lw =6
+         x = -11 y =10 add
+         x =11 y =-10 add line clear
+         x = -11 y =-10 add
+         x = 11 y =10 add line clear
+         x =-7 y =-22 add
+         x =7 y =-22 add line clear
+         x =-7 y =22 add
+         x =7 y =22 add line clear
+       
+        
+         set add main_menu = "Dress to On"
+         set add main_menu = "Dress to Feeder Earth Off"
+         set add main_menu = "Dress to Bus-Bar Earth Off"
+         set add main_menu = "Undress HV Fuse"
+         end
+
+
+      3
+         begin
+         !Question Mark, No inputs back !
+         lw=6
+         y = -40 add
+         y += 20 add
+         x -= 7 add
+         x += 14 add line clear
+         y += 60 x -= 7 add
+         y -= 20 add
+         x -= 7 add
+         x += 14 add line clear
+         set add main_menu = "Dress to Off"
+
+         if top_btm_sect <> "sect" then
+            begin
+            set add main_menu = "Dress to Feeder Earth Off"
+            set add main_menu = "Dress to Bus-Bar Earth Off"
+            end
+         set add main_menu = "Undress HV Fuse"
+         end
+
+      4
+      begin
+         !FEEDER EARTH OFF!
+         if top_btm_sect == "top" then
+            begin
+            lw=2
+            y -= 40 add
+            y += 5 add line clear
+            y += 4 add
+            circle (w=10,h=10) clear
+            y += 20 
+            circle (w=10,h=10)
+            lw=2
+            y += 3 add
+            y += 6 add line 
+            x -= 15 add
+            x += 30 add line clear
+            x -= 5 y += 10 add
+            x -= 20 add line clear
+            x += 6 y += 9 add
+            x += 8 add line clear
+            end
+         else! if top_btm_sect == "btm" then!
+            begin
+            lw=2     
+            y += 40 add
+            y -= 5 add line clear
+            y -= 3 add
+            circle (w=10,h=10) clear
+            y -= 20 
+            circle (w=10,h=10)
+            lw=2
+            y -= 3 add
+            y -= 7 add line 
+            x += 15 add
+            x -= 30 add line clear
+            x += 5 y -= 10 add
+            x += 20 add line clear
+            x -= 6 y -= 9 add
+            x -= 8 add line clear
+            end
+
+            set add main_menu = "Dress to Off"      
+            set add main_menu = "Dress to Feeder Earth On"
+            set add main_menu = "Undress HV Fuse"
+
+         end           
+       
+
+      5
+         begin
+         if top_btm_sect == "top" then
+         begin
+         lw=2
+         y -= 40 add
+         y += 8 add line clear
+         disk (w=10,h=10)
+         lw=6
+         x += 2
+         y += 1 add
+         y += 20 add line clear
+         x -= 2
+         disk (w=10,h=10)
+         lw=2
+         y += 3 add
+         y += 6 add line 
+         x -= 15 add
+         x += 30 add line clear
+         x -= 5 y += 10 add
+         x -= 20 add line clear
+         x += 6 y += 9 add
+         x += 8 add line clear
+         end
+         else
+         begin
+         lw=2
+         y += 40 add
+         y -= 8 add line clear
+         disk (w=10,h=10)
+         lw=6
+         X += 2
+         y -= 1 add
+         y -= 20 add line clear
+         disk (w=10,h=10)
+         x -= 2
+         lw=2
+         y -= 3 add
+         y -= 6 add line 
+         x += 15 add
+         x -= 30 add line clear
+         x += 5 y -= 10 add
+         x += 20 add line clear
+         x -= 6 y -= 9 add
+         x -= 8 add line clear
+         end
+
+         set add main_menu = "Dress to Feeder Earth Off"
+         set add main_menu = "Undress HV Fuse"
+         end
+
+
+      6
+         begin
+         !BUSBAR EARTH OFF! 
+         if top_btm_sect == "top" then
+         begin
+         lw=2     
+         y += 40 add
+         y -= 5 add line clear
+         y -= 3 add
+         circle (w=10,h=10) clear
+         y -= 20 
+         circle (w=10,h=10)
+         lw=2
+         y -= 3 add
+         y -= 7 add line 
+         x += 15 add
+         x -= 30 add line clear
+         x += 5 y -= 10 add
+         x += 20 add line clear
+         x -= 6 y -= 9 add
+         x -= 8 add line clear
+         end
+         else
+         begin
+            lw=2
+            y -= 40 add
+            y += 5 add line clear
+            y += 4 add
+            circle (w=10,h=10) clear
+            y += 20 
+            circle (w=10,h=10)
+            lw=2
+            y += 3 add
+            y += 6 add line 
+            x -= 15 add
+            x += 30 add line clear
+            x -= 5 y += 10 add
+            x -= 20 add line clear
+            x += 6 y += 9 add
+            x += 8 add line clear
+            
+         end
+         set add main_menu = "Dress to Off"      
+         set add main_menu = "Dress to Bus-Bar Earth On"
+         set add main_menu = "Undress HV Fuse"
+         end
+
+      7
+         !BUSBAR EARTH ON!
+         begin
+         if top_btm_sect == "top" then
+         begin
+         lw=2
+         y += 40 add
+         y -= 8 add line clear
+         disk (w=10,h=10)
+         lw=6
+         X += 2
+         y -= 1 add
+         y -= 20 add line clear
+         disk (w=10,h=10)
+         x -= 2
+         lw=2
+         y -= 3 add
+         y -= 6 add line 
+         x += 15 add
+         x -= 30 add line clear
+         x += 5 y -= 10 add
+         x += 20 add line clear
+         x -= 6 y -= 9 add
+         x -= 8 add line clear
+       
+         end
+         else
+	 begin
+         lw=2
+         y -= 40 add
+         y += 8 add line clear
+         disk (w=10,h=10)
+         lw=6
+         x += 2
+         y += 1 add
+         y += 20 add line clear
+         x -= 2
+         disk (w=10,h=10)
+         lw=2
+         y += 3 add
+         y += 6 add line 
+         x -= 15 add
+         x += 30 add line clear
+         x -= 5 y += 10 add
+         x -= 20 add line clear
+         x += 6 y += 9 add
+         x += 8 add line clear
+                
+	 end
+         set add main_menu = "Dress to Bus-Bar Earth Off"
+         set add main_menu = "Undress HV Fuse"
+         end
+
+      default
+      begin
+      end
+   
+
+  !  HV Fuse Open Ind !
+else if hv_fuse_inputs[4].b_value then
+   begin
+     lw=6
+         y = 75
+         x = 0 y = 24 add
+         x = 0 y = 40 add line clear
+         x = 0 y = -24 add
+         x = 0 y = -40 add line clear
+         x += 25 y += 25 add clear
+         lw = 6					
+         x = 14 y = 0 disk(h=25,w=14)
+         x = -14 y = 0 disk(h=25,w=14)
+         x = 14 y = 0 disk(h=12,w=7,fg=decoroff)
+         x = -14 y = 0 disk(h=12,w=7,fg=decoroff)
+         lw =6
+         x = -11 y =10 add
+         x =11 y =-10 add line clear
+         x = -11 y =-10 add
+         x = 11 y =10 add line clear
+         x =-7 y =-22 add
+         x =7 y =-22 add line clear
+         x =-7 y =22 add
+         x =7 y =22 add line clear
+       
+        
+   set add main_menu = "Dress to On"
+   set add main_menu = "Dress to Feeder Earth Off"
+   set add main_menu = "Dress to Bus-Bar Earth Off"
+   end
+
+
+  !  HV Fuse Closed Indications !
+else if hv_fuse_inputs[3].b_value then
+   begin
+    lw=6
+         y = 75
+         x = 0 y = 24 add
+         x = 0 y = 40 add line clear
+         x = 0 y = -24 add
+         x = 0 y = -40 add line clear
+         x += 25 y += 25 add clear
+         lw = 10					
+         x = 0 y = -20 disk(h=15,w=25)
+         x = 0 y = 20 disk(h=15,w=25)
+         x = 0 y = -20 disk(h=7,w=12,fg=decoroff)
+         x = 0 y = 20 disk(h=7,w=12,fg=decoroff)
+         lw =6
+          x = -12 y =18 add
+         x =11 y =-18 add line clear
+         x = -11 y =-18 add
+         x = 11 y =18 add line clear
+   set add main_menu = "Dress to Off"
+   end
+
+
+
+else
+      begin
+         !Question Mark, As the indication back should be either Open or Closed!
+              x = 0 y = 2 text(ch=300,just=centrecentre,font=font_bold,tfg=red,"?")
+            set add main_menu = "Dress to Off"
+      set add main_menu = "Dress to On"        
+         if top_btm_sect <> "sect" then
+            begin
+           ! set add main_menu = "Dress to Feeder Earth Off"
+            set add main_menu = "Dress to Bus-Bar Earth Off"!
+            end
+
+
+      end
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+scale = 420
+angle = 0
+
+X=-300 Y=0 hv_fuse_mon(1,239,1187,37,heathro2,9,"top")
+X=-100 Y=0 hv_fuse_mon(1,240,1187,37,heathro2,88,"btm")
+
+angle = 90
+X=100 Y=0 hv_fuse_mon(1,240,1187,37,heathro2,8,"sect")
+X= 300 Y=0 hv_fuse_mon(1,240,1187,37,heathro2,1,"sect")
+
+scale = 120
+angle = 0
+lw=2 just = centrecentre
+
+x = -300 y = 260 add y -= 120 add line(fg=orange) clear
+X=-300 Y=200 hv_fuse_mon(1,239,1187,37,heathro2,9,"top")
+x = -100 y = 260 add y -= 120 add line(fg=orange) clear
+X=-100 Y=200 hv_fuse_mon(1,239,1187,37,heathro2,88,"btm")
+
+angle = 90
+X=100 Y=200 hv_fuse_mon(1,240,1187,37,heathro2,9,"sect")
+angle = 270
+X= 300 Y=200 hv_fuse_mon(1,240,1187,37,heathro2,21,"sect")
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,bg=green3,resizable

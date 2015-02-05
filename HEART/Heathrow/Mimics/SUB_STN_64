@@ -1,0 +1,58 @@
+load mimic_libutil
+load oil_switch
+load fuse_sw
+load transformer
+
+
+!************* BUSBAR 64 *************!
+
+object busbar_64
+begin
+tfg = black x = 85 y = -5 add text ("64",ch = 25) clear
+x = -25 y = 25 add x = 225 add line(lw=4,fg=yellow) clear
+
+lw=2
+x =   0 y = -25 add y += 50 add line (fg=yellow) clear
+x =  50  y = 25 add y += 50 add line (fg=yellow) clear
+x =  100 y = 25 add y += 60 add line (fg=yellow) clear
+x =  150 y = 25 add y += 50 add line (fg=yellow) clear
+x =  200 y = -25 add y += 50 add line (fg=yellow) clear
+x =95 y =85 disk(fg=red,w=10,h=10) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25034,94,1317,heathrow,"c")
+x = 50 y = 50 hv_fuse(25038,96,1319,heathrow,"c")
+x = 100 y = 50 hv_fuse(25040,97,1320,heathrow,"c")
+x = 150 y = 50 hv_fuse(25107,497,1380,heathrow,"c")
+x = 200 y = 0 oil_switch(25036,95,1318,heathrow,"c")
+
+scale = 100
+X =  50  Y = 95 add transformer("J J","LOCAL")
+
+
+scale=260
+tfg=black ch=12
+just=centrecentre
+x = 15  y = 0 text("1")
+x = 65  y = 50 text("2")
+x = 115 y = 50 text("3")
+x = 165 y = 50 text("4")
+x = 215 y = 0 text("5")
+x = 50  y = 125 text("Remote")
+x = 0 y = -35 text("SS75 P0")
+x = 200 y = -35 text("SS111 P10")
+x =100 y = 100 text(just=centrecentre,tfg=black,ch=12,"Pot") clear
+x =100 y = 115 text(just=centrecentre,tfg=black,ch=12,"Ended") clear
+x =150 y = 90 text(just=centrecentre,tfg=black,ch=12,"Spare") clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -100 y = -50 busbar_64
+
+end
+
+mimic = main_object w=350,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

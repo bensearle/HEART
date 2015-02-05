@@ -1,0 +1,461 @@
+! This mimic modifies outstation mapping on one outstation
+  swapping over plc references on ocb trip and close points
+!
+load mimic_libutil
+load libutil 
+load gadgets_libutil
+
+type request_type = enum(none,
+			 req_mapping,reqout_mapping,swap_config,req_write_mapping,out_mapping,
+			 failed,done)
+
+type os_info_type =  db_elements(os_number,os_addr,os_name)
+
+type os_mapping_table_type =  outstation_mapping(os_number,
+                                                      db_addr,
+                                                      db_name,
+						      reference,
+                                                      data_type,
+						      read_flag,
+                                                      write_flag,
+						      db_scan_number,
+                                                      scale_type,
+						      scale_factor,
+						      scale_factor_db,
+                                                      offset,
+						      offset_db,
+                                                      max_limit,
+                                                      min_limit,
+                                                      scaling_algorithm,
+ 	                                              breakpoint_number,
+						      confirm_db,
+                                                      confirm_type,
+						      confirm_read_delay,
+						      confirm_deadband,
+                                                      confirm_state,
+                                                      confirm_value,
+						      confirm_value_db)
+
+
+type os_mapping_table_array_type =  os_mapping_table_type[500]
+
+type copy_type = table(from_os=string_30,
+		       to_src=source)
+
+
+object copy_os_mapping(w, h, bg, src = source)
+
+var mapping_copy = panel  copy_type
+var local_src = loopback  source
+var copy_src = loopback  source
+var push = loopback  int
+var get_os_name_in = input  os_info_type
+var get_os_addr_in = input  os_info_type
+var get_os_name_out = input  os_info_type
+var get_os_addr_out = input  os_info_type
+var os_name_in = loopback  string_30
+var os_name_out = loopback  string_30
+var os_addr_in = loopback  string_30
+var os_addr_out = loopback  string_30
+var os_number_in = loopback  int
+var os_number_out = loopback  int
+var req_flag = loopback  request_type
+var checking_osname = loopback  yesno
+var closed_ref = loopback  string(10)
+var tripped_addr = loopback  db_address
+var temp_record = loopback  os_mapping_table_type
+var loop_in = loopback  int
+
+var os_mapping_table_in = input  os_mapping_table_array_type
+var os_mapping_table_out = output  os_mapping_table_array_type
+
+var copy_mapping_ok = yesno
+var copy_mapping_fail = yesno
+var load_mapping_ok = yesno
+var load_mapping_fail = yesno
+var done_ok = yesno
+var done_fail = yesno
+var error_str = string_80
+var loop = int
+var wh = int
+var ww =int
+
+var mod_rec  = int
+var base_rec = int
+
+begin
+
+if invalid req_flag then
+  begin
+  req_flag = none
+  end
+
+
+if req_flag == none then  
+  begin
+  os_number_in = 0
+  os_number_out = 0
+  loop_in = 1
+  set invalid os_mapping_table_in
+  copy_mapping_ok = no
+  copy_mapping_fail = no
+  load_mapping_ok = no
+  load_mapping_fail = no
+  done_ok = no
+  done_fail = no
+  end
+
+wh=h
+ww=w
+h=ch+2
+error_str = ""
+if invalid src then
+   local_src = source(0)
+else
+   local_src = src
+
+y=wh-10-ch
+x=ww-12
+
+push = right_button("Exit")
+x -= abs push + 6
+if push > 0 then
+   exit
+
+push = right_nopress_button(w=90,tfg=decorshadow,local_src)
+ 
+    !  REQUEST OUTSTATION NAMES / ADDRESSES    !
+
+if valid mapping_copy then
+   begin
+   set source get_os_name_in = local_src
+   set filter get_os_name_in.os_name = lim_eq
+   set limit get_os_name_in.os_name = mapping_copy.from_os
+   request get_os_name_in
+
+   set source get_os_addr_in = local_src
+   set filter get_os_addr_in.os_addr = lim_eq
+   set limit get_os_addr_in.os_addr = mapping_copy.from_os
+   request get_os_addr_in
+
+   set source get_os_name_out = mapping_copy.to_src
+   set filter get_os_name_out.os_name = lim_eq
+   set limit get_os_name_out.os_name = mapping_copy.from_os
+   request get_os_name_out
+
+   set source get_os_addr_out = mapping_copy.to_src
+   set filter get_os_addr_out.os_addr = lim_eq
+   set limit get_os_addr_out.os_addr = mapping_copy.from_os
+   request get_os_addr_out
+
+   copy_src = mapping_copy.to_src
+   checking_osname = yes
+   set invalid mapping_copy
+   end
+
+  !  CHECK FOR VALID OUTSTATIONS  !
+
+if checking_osname == yes then
+   begin
+   if not get busy get_os_name_in and not get busy get_os_addr_in
+      and not get busy get_os_name_out and not get busy get_os_addr_out then
+
+      begin
+      if valid get_os_name_in then
+	 begin
+	 os_addr_in = get_os_name_in.os_addr
+	 os_name_in = get_os_name_in.os_name
+	 os_number_in = get_os_name_in.os_number
+	 end
+      else if valid get_os_addr_in then
+	 begin
+	 os_addr_in = get_os_addr_in.os_addr
+	 os_name_in = get_os_addr_in.os_name
+	 os_number_in = get_os_addr_in.os_number
+	 end
+      else
+	 begin
+	 os_name_in = "Invalid"
+	 os_addr_in = "Invalid"
+	 os_number_in = 0
+	 end
+
+      if valid get_os_name_out then
+	 begin
+	 os_addr_out = get_os_name_out.os_addr
+	 os_name_out = get_os_name_out.os_name
+	 os_number_out = get_os_name_out.os_number
+	 end
+      else if valid get_os_addr_out then
+	 begin
+	 os_addr_out = get_os_addr_out.os_addr
+	 os_name_out = get_os_addr_out.os_name
+	 os_number_out = get_os_addr_out.os_number
+	 end
+      else
+	 begin
+	 os_name_out = "Invalid"
+	 os_addr_out = "Invalid"
+	 os_number_out = 0 
+	 end
+     
+      checking_osname = no
+      end
+   else
+      error_str = "Waiting for server response"
+   end
+
+if req_flag == none and os_number_in <> 0 and os_number_out <> 0 then
+   req_flag = req_mapping
+
+   !  REQUEST OUTSTATION MAPPING CONFIGURATION  !
+
+if req_flag == req_mapping then
+   begin
+   if invalid os_mapping_table_in then
+      begin
+      set source os_mapping_table_in = local_src
+      set filter os_mapping_table_in.os_number = lim_eq
+      set limit os_mapping_table_in.os_number = os_number_in
+      set mayexist os_mapping_table_in
+      set mustexist os_mapping_table_in.db_addr
+      set mustexist os_mapping_table_in.os_number
+      set mustexist os_mapping_table_in.reference
+      end
+   request os_mapping_table_in
+
+   if valid os_mapping_table_in then
+      begin
+      req_flag = reqout_mapping
+      load_mapping_ok = yes
+      end
+   else
+      if not get busy os_mapping_table_in and invalid os_mapping_table_in then
+	 begin
+	 error_str = "Server Failure"
+	 req_flag = failed
+	 load_mapping_fail = yes
+	 end
+
+   if get noaccessible os_mapping_table_in then
+      error_str = "Access Denied"
+   
+   if get busy os_mapping_table_in then
+      error_str = "Loading Outstation Mapping"
+   
+   end
+
+
+      ! DELETE OLD OUTSTATION CONFIG !
+
+if req_flag == reqout_mapping then
+   begin
+   set reset os_mapping_table_out 
+   set old_value os_mapping_table_out = os_mapping_table_in
+   set source os_mapping_table_out = local_src
+   x=10 y=100 text(tfg=red,ch=18,"deleting old config")
+   request os_mapping_table_out
+   req_flag = swap_config
+   error_str = "Deleting Old Config"
+   end
+  
+   ! SWAP REFERENCES !
+if req_flag == swap_config and not get busy os_mapping_table_out then 
+   begin
+   set reset os_mapping_table_out
+   set source os_mapping_table_out = local_src
+   set value os_mapping_table_out = os_mapping_table_in
+   set old_off os_mapping_table_out.db_name
+   set off os_mapping_table_out.db_name
+
+   !
+   for base_rec from 1 to lastrow os_mapping_table_in do
+      begin
+      if getword(4,os_mapping_table_in[base_rec].db_name) == "CLOSED" then
+         begin
+         closed_ref = os_mapping_table_in[base_rec].reference
+       tripped_addr = db_address(int(os_mapping_table_in[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow os_mapping_table_in do
+            begin
+            if os_mapping_table_in[mod_rec].db_addr == tripped_addr then
+               begin
+               set value os_mapping_table_out[base_rec].reference = os_mapping_table_in[mod_rec].reference
+               set value os_mapping_table_out[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow os_mapping_table_in do
+      begin
+      if getword(4,os_mapping_table_in[base_rec].db_name) == "FAILED" and
+         getword(6,os_mapping_table_in[base_rec].db_name) == "CLOSE" then
+         begin
+         closed_ref = os_mapping_table_in[base_rec].reference
+       tripped_addr = db_address(int(os_mapping_table_in[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow os_mapping_table_in do
+            begin
+            if os_mapping_table_in[mod_rec].db_addr == tripped_addr then
+               begin
+               set value os_mapping_table_out[base_rec].reference = os_mapping_table_in[mod_rec].reference
+               set value os_mapping_table_out[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow os_mapping_table_in do
+      begin
+      if getword(4,os_mapping_table_in[base_rec].db_name) == "CLOSE" and
+         getword(5,os_mapping_table_in[base_rec].db_name) == "IN" then
+         begin
+         closed_ref = os_mapping_table_in[base_rec].reference
+       tripped_addr = db_address(int(os_mapping_table_in[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow os_mapping_table_in do
+            begin
+            if os_mapping_table_in[mod_rec].db_addr == tripped_addr then
+               begin
+               set value os_mapping_table_out[base_rec].reference = os_mapping_table_in[mod_rec].reference
+               set value os_mapping_table_out[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow os_mapping_table_in do
+      begin
+      if getword(4,os_mapping_table_in[base_rec].db_name) == "CLOSE" and
+         getword(5,os_mapping_table_in[base_rec].db_name) == "OUT" then
+         begin
+         closed_ref = os_mapping_table_in[base_rec].reference
+       tripped_addr = db_address(int(os_mapping_table_in[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow os_mapping_table_in do
+            begin
+            if os_mapping_table_in[mod_rec].db_addr == tripped_addr then
+               begin
+               set value os_mapping_table_out[base_rec].reference = os_mapping_table_in[mod_rec].reference
+               set value os_mapping_table_out[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow os_mapping_table_in do
+      begin
+      if getword(4,os_mapping_table_in[base_rec].db_name) == "SELECT" and
+         getword(5,os_mapping_table_in[base_rec].db_name) == "CLOSE" then
+         begin
+         closed_ref = os_mapping_table_in[base_rec].reference
+       tripped_addr = db_address(int(os_mapping_table_in[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow os_mapping_table_in do
+            begin
+            if os_mapping_table_in[mod_rec].db_addr == tripped_addr then
+               begin
+               set value os_mapping_table_out[base_rec].reference = os_mapping_table_in[mod_rec].reference
+               set value os_mapping_table_out[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   for base_rec from 1 to lastrow os_mapping_table_in do
+      begin
+      if getword(4,os_mapping_table_in[base_rec].db_name) == "CLOSE" and
+         getword(5,os_mapping_table_in[base_rec].db_name) == "SELECTED" then
+         begin
+         closed_ref = os_mapping_table_in[base_rec].reference
+       tripped_addr = db_address(int(os_mapping_table_in[base_rec].db_addr)+1)
+         for mod_rec from 1 to lastrow os_mapping_table_in do
+            begin
+            if os_mapping_table_in[mod_rec].db_addr == tripped_addr then
+               begin
+               set value os_mapping_table_out[base_rec].reference = os_mapping_table_in[mod_rec].reference
+               set value os_mapping_table_out[mod_rec].reference = closed_ref
+               end
+            end
+         end   
+      end
+
+   !
+   x=10 y=110 text(tfg=red,ch=18,"swapping references")
+   error_str = "Swapping References"
+   req_flag = req_write_mapping
+   end
+
+   !  OUTPUT OUTSTATION MAPPING  !
+if req_flag==req_write_mapping then
+   begin
+   x=10 y=120 text(tfg=red,ch=18,"writing os config")
+   y=135 text(tfg=blue,ch=18,os_mapping_table_out[2].reference+" "+os_mapping_table_out[2].db_name)
+   
+   !set source os_mapping_table_out = local_src!
+   req_flag = out_mapping
+   request os_mapping_table_out
+   end   
+
+if get busy os_mapping_table_out then
+   error_str = "Copying Outstation Mapping"
+
+     !CHECK FOR VALID COPY OF OUTSTATION MAPPING!  
+
+if req_flag == out_mapping then
+   begin
+   if not get busy os_mapping_table_out then
+      begin
+      if get status os_mapping_table_out <> "" then
+         begin
+         req_flag = failed
+	 copy_mapping_fail = yes
+         end
+      else
+         begin
+         req_flag = none
+	 copy_mapping_ok = yes
+         done_ok = yes
+         end
+      end
+   end
+
+x=30 y=335 
+push = grey_button(w=50,"Copy",req_flag==none,0)
+
+if push > 0 then
+   begin
+   set title mapping_copy = "Copy Outstation Mapping"
+   set unpinned mapping_copy
+   request mapping_copy
+   end
+
+   !  OUTPUT  MESSAGES  !
+
+text(font=font_bold,x=20,y=20,"Copy From:-  "
+     + os_name_in + "  (" + local_src + ":" + os_addr_in + ")" )
+text(font=font_bold,x=20,y=40,"Copy to:-    "
+     + os_name_out + "  (" + copy_src + ":" + os_addr_out + ")" )
+
+if load_mapping_ok == yes then
+   text(x=20,y=150,"Outstation Mapping Successfully Loaded")
+if load_mapping_fail == yes then
+   text(x=20,y=150,"Load of Outstation Mapping Failed")
+if copy_mapping_ok == yes then
+   text(x=20,y=170,"Outstation Mapping Successfully Copied")
+if copy_mapping_fail == yes then
+   text(x=20,y=170,"Complete Copy of Outstation Mapping Failed")
+
+if done_ok == yes then
+   text(font=font_bold,ch=16,x=20,y=250,"Copy Completed")
+if done_fail == yes then
+   text(font=font_bold,ch=16,x=20,y=250,"Copy Aborted")
+
+if error_str <> "" then
+   xv_message (just=centrecentre,ch=16,x=w/2,y=100,"Warning",error_str)
+
+end
+
+object main_object(w,h,fg,bg,tfg,tbg)
+begin
+ copy_os_mapping(heathrow)
+end
+
+mimic = main_object w=600,h=350,bg=decoroff,resizable
+

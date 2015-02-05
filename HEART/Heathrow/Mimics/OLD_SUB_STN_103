@@ -1,0 +1,60 @@
+load mimic_libutil
+load transformer
+load ocb_hand_dressed
+
+
+!******************* BUSBAR 103 ******************!
+
+object busbar_103
+begin
+
+scale = 260
+tfg = black x = -50 y = -27 add text ("103",ch = 25) clear
+
+x = -50 y = 0 add x = 250 add line(fg=blue,lw=4) clear
+lw=2
+x = -25 y = 0 add y += 50 add line (fg=blue) clear
+x = 25 y = 0 add y -= 50 add line (fg=blue) clear
+x = 75 y = 0 add y += 70 add line (fg=blue) clear
+x = 175 y = 0 add y -= 50 add line (fg=blue) clear
+x = 225 y = 0 add y += 50 add line (fg=blue) clear
+
+! Earth Symbol!
+x = 60 y = 70 add x = 90 add line (fg=blue) clear
+x = 65 y = 75 add x = 85 add line (fg=blue) clear
+x = 70 y = 80 add x = 80 add line (fg=blue) clear
+x = 73 y = 85 add x = 77 add line (fg=blue) clear
+
+scale = 120
+x = -25 y = 25 ocb_hand(4360,316,heathro2,1,"btm")
+x = 25 y = -25 ocb_hand(4361,317,heathro2,2,"top")
+x = 75 y = 25 ocb_hand(4362,318,heathro2,3,"btm")
+angle=90
+x = 125 y = 0 ocb_hand(4363,319,heathro2,4,"sect")
+angle=0
+x = 175 y = -25 ocb_hand(4364,320,heathro2,5,"top")
+x = 225 y = 25 ocb_hand(4365,321,heathro2,6,"btm")
+
+scale =100
+x = -25 y = 70 add transformer("T 1","")
+x = 225 y = 70 add transformer("T 2","")
+
+
+scale = 260
+just = centrecentre
+tfg=black
+ch=12
+x = 25 y = -60 text ("WI P3")
+x = 175 y = -60 text ("SS54 P5")
+
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -100 y = -25 busbar_103
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

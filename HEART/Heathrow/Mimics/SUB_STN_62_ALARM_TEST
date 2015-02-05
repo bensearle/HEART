@@ -1,0 +1,45 @@
+load mimic_libutil
+load ocb_alarm_test
+
+object sub_stn_62_alarm_status = int
+
+begin
+
+if sub_alarm(6000,6360,heathrow) > 0
+or sub_alarm(6000,6340,heathrow) > 0
+or sub_alarm(6000,6470,heathrow) > 0
+or sub_alarm(6000,6460,heathrow) > 0
+or sub_alarm(6000,6450,heathrow) > 0
+or sub_alarm(6000,6440,heathrow) > 0
+or sub_alarm(6000,6430,heathrow) > 0
+or sub_alarm(6000,6320,heathrow) > 0
+or sub_alarm(6000,6300,heathrow) > 0
+or sub_alarm(6000,6280,heathrow) > 0
+or sub_alarm(6000,6260,heathrow) > 0
+or sub_alarm(6000,6240,heathrow) > 0
+or sub_alarm(6000,6420,heathrow) > 0
+or sub_alarm(6000,6410,heathrow) > 0
+or sub_alarm(6000,6400,heathrow) > 0
+or sub_alarm(6000,6390,heathrow) > 0
+or sub_alarm(6000,6380,heathrow) > 0
+or sub_alarm(6000,6220,heathrow) > 0
+or sub_alarm(6000,6200,heathrow) > 0
+or sub_alarm(6000,6180,heathrow) > 0
+or sub_alarm(6000,6160,heathrow) > 0
+or sub_alarm(6000,6140,heathrow) > 0
+or sub_alarm(6000,6120,heathrow) > 0
+or sub_alarm(6000,6100,heathrow) > 0
+then
+  sub_stn_62_alarm_status = 1
+else
+  sub_stn_62_alarm_status = 0
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

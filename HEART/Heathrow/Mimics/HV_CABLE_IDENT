@@ -1,0 +1,83 @@
+load mimic_libutil
+
+object cable_ident(label_colour=string,w_value=string,ident=string)
+
+var line_colour = colour
+var point_a = int
+var point_b = int
+
+begin
+
+if label_colour == "purple" then
+ line_colour = magenta3
+
+if label_colour == "red" then
+ line_colour = red
+
+if label_colour == "green" then
+ line_colour = green4
+
+if label_colour == "blue" then
+ line_colour = blue
+
+if label_colour == "orange" then
+ line_colour = orange2
+
+if label_colour == "black" then
+ line_colour = black
+
+if label_colour == "gold" then
+ line_colour = gold4
+
+
+
+if w_value == "maggot" then
+ begin
+ point_a = 24
+ point_b = 12
+ end
+
+if w_value == "short" then
+ begin
+ point_a = 50
+ point_b = 25
+ end
+
+if w_value == "long" then
+ begin
+ point_a = 70
+ point_b = 35
+ end
+
+if w_value == "big_mumma" then
+ begin
+ point_a = 90
+ point_b = 45
+ end
+
+just=centrecentre
+x = -25 add x += 50 add line(lw=2,fg=line_colour) clear
+
+x = -point_b pie(fg=decorlight,w=16,h=14,sa=90,aa=180)
+x = point_b pie(fg=decorlight,w=16,h=14,sa=270,aa=180)
+x = 0 rect(w=point_a,h=14,fg=decorlight)
+x = -point_b arc(fg=line_colour,w=16,h=14,sa=90,aa=180)
+x = point_b arc(fg=line_colour,w=16,h=14,sa=270,aa=180)
+x = -point_b y = -7 add x += point_a add line(lw=1,fg=line_colour) clear
+x = -point_b y = 7 add x += point_a add line(lw=1,fg=line_colour) clear
+
+x = 0 y = 0 add text(just=centrecentre,ch=10,tfg=black,ident)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+y = -60 cable_ident("purple","maggot","A119") clear
+y = -30 cable_ident("gold","short","A119 95mm") clear
+y = 0 cable_ident("red","short","A119 95mm") clear
+y = 30 cable_ident("black","long","A234 0.5/3c I/C") clear
+y = 60 cable_ident("blue","big_mumma","A234 150mm .25/3c") clear
+y = 90 cable_ident("purple","big_mumma","QPR 3 CHELSEA 1") clear
+end
+
+mimic = main_object w=300,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable

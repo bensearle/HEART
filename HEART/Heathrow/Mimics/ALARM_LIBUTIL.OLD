@@ -1,0 +1,4082 @@
+load wrkstn_libutil
+load alarm_types_libutil
+load gadgets_libutil
+load alarm_popups_libutil
+
+type group_enable_disable_row = table alarm_groups (alarm_group,
+					            enable)
+
+
+object get_alarm_colour(al = extended_alarm_type,
+			ws_info = ws_info_row) = colour
+begin
+
+   if al.alarm_status <> w_acn and al.alarm_status <> w_dan then
+      begin
+      if ws_info.wrkstn_number in al.alarm_accept_wrkstn_set and
+	  al.area_number in ws_info.user_authorised_areas and 
+	  al.alarm_acceptance_level in  ws_info.current_access_level then
+         begin
+	 if al.area_number in ws_info.current_mastered_areas then
+	    get_alarm_colour = red
+         else
+	    get_alarm_colour = magenta
+	 end
+      else
+	 get_alarm_colour = black
+      end
+   else
+      begin
+      if ws_info.wrkstn_number in al.alarm_accept_wrkstn_set and
+	  al.area_number in ws_info.user_authorised_areas and 
+	  al.alarm_acceptance_level in  ws_info.current_access_level then
+         begin
+	 if al.area_number in ws_info.current_mastered_areas then
+	    get_alarm_colour = green4
+         else
+	    get_alarm_colour = green
+	 end
+      else
+	 get_alarm_colour = grey
+      end
+
+end
+
+object ok_to_modify(al = extended_alarm_type,
+	            ws_info = ws_info_row,
+		    db_addr = db_address,
+		    is_level_7_user = int,
+		    av_mod = alarm_mode_type,
+		    loopback error_text = string_80) = int
+
+var required_mod = string_40
+
+begin
+
+   ok_to_modify = 1
+
+   required_mod = enumstring(av_mod)
+
+   if not(ws_info.wrkstn_number in al.alarm_accept_wrkstn_set or
+       is_level_7_user) then
+      begin
+      ok_to_modify = 0
+      error_text = "Only " + required_mod + " alarms for this workstation"
+      end
+   else if not(al.area_number in ws_info.current_mastered_areas) then
+      begin
+      ok_to_modify = 0
+      error_text = "Matsership of FOR " + 
+	  al.area_number  + " required to " + 
+	  required_mod + " this alarm"
+      end
+   else if not(al.alarm_acceptance_level in ws_info.current_access_level) then
+      begin
+      ok_to_modify = 0
+      error_text = "Access level " + 
+	  al.alarm_acceptance_level  + " required to " + 
+	  required_mod + " this alarm"
+      end
+   else if db_addr <> db_invalid then
+      begin
+      ok_to_modify = 0
+      error_text = "Modification in progress - please wait"
+      end
+end
+
+object ok_to_redirect(ws_num = wrkstn_number,
+		      al = extended_alarm_type,
+		      av_mod = alarm_mode_type,
+		      loopback error_text = string_80) = int
+
+var required_mod = string_40
+
+begin
+   
+   ok_to_redirect = 1
+
+   required_mod = enumstring(av_mod)
+
+   if ws_num in al.alarm_accept_wrkstn_set then
+      begin
+      ok_to_redirect = 0
+      error_text = "Alarm already directed to workstation " + ws_num
+      end
+
+end
+
+object convert_extended_alarm_to_alarm(extn = extended_alarm_type) = alarm_type
+var loopback new_alarm = alarm_type
+begin
+
+   set default new_alarm
+
+   new_alarm.db_addr = extn.db_addr
+   new_alarm.area_number = extn.area_number
+   new_alarm.alarm_status = extn.alarm_status
+   new_alarm.alarm_level = extn.alarm_level
+   new_alarm.alarm_time = extn.alarm_time
+   new_alarm.alarm_text = extn.alarm_text
+   new_alarm.alarm_accept_wrkstn_set = extn.alarm_accept_wrkstn_set
+   new_alarm.alarm_acceptance_level = extn.alarm_acceptance_level
+   new_alarm.alarm_value = extn.alarm_value
+   new_alarm.alarm_command_text = extn.alarm_command_text
+   new_alarm.alarm_referals = extn.alarm_referals
+
+   convert_extended_alarm_to_alarm = new_alarm
+   
+end
+
+object convert_alarm_to_extended_alarm(alarm = alarm_type,
+				       src = source) = extended_alarm_type
+var loopback new_alarm = extended_alarm_type
+begin
+
+   set default new_alarm
+
+   new_alarm.db_addr = alarm.db_addr
+   new_alarm.area_number = alarm.area_number
+   new_alarm.alarm_status = alarm.alarm_status
+   new_alarm.alarm_level = alarm.alarm_level
+   new_alarm.alarm_time = alarm.alarm_time
+   new_alarm.alarm_text = alarm.alarm_text
+   new_alarm.alarm_accept_wrkstn_set = alarm.alarm_accept_wrkstn_set
+   new_alarm.alarm_acceptance_level = alarm.alarm_acceptance_level
+   new_alarm.alarm_value = alarm.alarm_value
+   new_alarm.data_gatherer = src
+   new_alarm.alarm_command_text = alarm.alarm_command_text
+   new_alarm.alarm_referals = alarm.alarm_referals
+   
+
+   convert_alarm_to_extended_alarm = new_alarm
+   
+end
+
+object note_alarm(al = extended_alarm_type) = int
+var output op = alarm_acceptance_type
+var output op_1 = alarm_acceptance_type
+var output op_2 = alarm_acceptance_type
+var output op_3 = alarm_acceptance_type
+var output op_4 = alarm_acceptance_type
+begin
+
+   if al.alarm_status <> w_note then
+      note_alarm = 0
+   else if get busy op and get busy op_1 and 
+       get busy op_3 and get busy op_4 then
+      note_alarm = 1
+   else if not get busy op then
+      begin
+      set source op = al.data_gatherer
+      set old_off op.alarm_accept
+      set default op 
+      set old_default op
+      set value op.db_addr = al.db_addr
+      set old_value op.db_addr = al.db_addr
+      set value op.alarm_accept = al_note
+      request op
+      note_alarm = 2
+      end
+   else if not get busy op_1 then
+      begin
+      set source op_1 = al.data_gatherer
+      set old_off op_1.alarm_accept
+      set default op_1 
+      set old_default op_1
+      set value op_1.db_addr = al.db_addr
+      set old_value op_1.db_addr = al.db_addr
+      set value op_1.alarm_accept = al_note
+      request op_1
+      note_alarm = 2
+      end
+   else if not get busy op_2 then
+      begin
+      set source op_2 = al.data_gatherer
+      set old_off op_2.alarm_accept
+      set default op_2 
+      set old_default op_2
+      set value op_2.db_addr = al.db_addr
+      set old_value op_2.db_addr = al.db_addr
+      set value op_2.alarm_accept = al_note
+      request op_2
+      note_alarm = 2
+      end
+   else if not get busy op_3 then
+      begin
+      set source op_3 = al.data_gatherer
+      set old_off op_3.alarm_accept
+      set default op_3 
+      set old_default op_3
+      set value op_3.db_addr = al.db_addr
+      set old_value op_3.db_addr = al.db_addr
+      set value op_3.alarm_accept = al_note
+      request op_3
+      note_alarm = 2
+      end
+   else if not get busy op_4 then
+      begin
+      set source op_4 = al.data_gatherer
+      set old_off op_4.alarm_accept
+      set default op_4 
+      set old_default op_4
+      set value op_4.db_addr = al.db_addr
+      set old_value op_4.db_addr = al.db_addr
+      set value op_4.alarm_accept = al_note
+      request op_4
+      note_alarm = 2
+      end
+end
+
+object group_note_alarm(al_group = alarm_group,
+			ws_num_1 = wrkstn_number,
+			ws_num_2 = wrkstn_number,
+			ws_num_3 = wrkstn_number,
+			ws_num_4 = wrkstn_number) 
+var output op_1 = group_acceptance_type
+var output op_2 = group_acceptance_type
+var output op_3 = group_acceptance_type
+var output op_4 = group_acceptance_type
+begin
+
+   if valid ws_num_1 then
+      begin
+      set source op_1 = source(0)
+      set filter op_1.db_addr = lim_none
+      set filter op_1.wrkstn_number = lim_eq
+      set limit op_1.wrkstn_number = ws_num_1
+      set filter op_1.alarm_status = lim_eq
+      set limit op_1.alarm_status = w_note
+      set old_off op_1.alarm_accept
+      set off op_1.alarm_group
+      set old_default op_1
+      set default op_1
+      set old_value op_1.alarm_group = alarm_group_number(int(al_group) - 1)
+      set value op_1.alarm_accept = al_note
+
+      request op_1
+      end
+
+   if valid ws_num_2 then
+      begin
+      set source op_2 = source(1)
+      set filter op_2.db_addr = lim_none
+      set filter op_2.wrkstn_number = lim_eq
+      set limit op_2.wrkstn_number = ws_num_2
+      set filter op_2.alarm_status = lim_eq
+      set limit op_2.alarm_status = w_note
+      set old_off op_2.alarm_accept
+      set off op_2.alarm_group
+      set old_default op_2
+      set default op_2
+      set old_value op_2.alarm_group = alarm_group_number(int(al_group) - 1)
+      set value op_2.alarm_accept = al_note
+
+      request op_2
+      end
+
+   if valid ws_num_3 then
+     begin
+     set source op_3 = source(2)
+     set filter op_3.db_addr = lim_none
+     set filter op_3.wrkstn_number = lim_eq
+     set limit op_3.wrkstn_number = ws_num_3
+     set filter op_3.alarm_status = lim_eq
+     set limit op_3.alarm_status = w_note
+     set old_off op_3.alarm_accept
+     set off op_3.alarm_group
+     set old_default op_3
+     set default op_3
+     set old_value op_3.alarm_group = alarm_group_number(int(al_group) - 1)
+     set value op_3.alarm_accept = al_note
+
+     request op_3
+     end
+
+   if valid ws_num_4 then
+      begin
+      set source op_4 = source(3)
+      set filter op_4.db_addr = lim_none
+      set filter op_4.wrkstn_number = lim_eq
+      set limit op_4.wrkstn_number = ws_num_4
+      set filter op_4.alarm_status = lim_eq
+      set limit op_4.alarm_status = w_note
+      set old_off op_4.alarm_accept
+      set off op_4.alarm_group
+      set old_default op_4
+      set default op_4
+      set old_value op_4.alarm_group = alarm_group_number(int(al_group) - 1)
+      set value op_4.alarm_accept = al_note
+
+      request op_4
+      end
+
+end
+
+object action_alarm(al = extended_alarm_type,
+		    action_info = alarm_action_panel) = int
+
+var loopback default_alarm = action_alarm_type
+var output op = action_alarm_type
+var output op_1 = action_alarm_type
+var output op_2 = action_alarm_type
+var output op_3 = action_alarm_type
+var output op_4 = action_alarm_type
+begin
+
+   if al.alarm_status <> w_act then
+      action_alarm = 0
+   else if get busy op and get busy op_1 and 
+       get busy op_2 and get busy op_3 and get busy op_4 then
+      action_alarm = 1
+   else if not get busy op then
+      begin
+      set source op = al.data_gatherer
+      set old_off op.alarm_accept
+      set old_off op.action_code
+      set old_off op.action_text
+      set default default_alarm
+      set value op = default_alarm
+      set old_value op = default_alarm
+      set value op.db_addr = al.db_addr
+      set old_value op.db_addr = al.db_addr
+      set value op.alarm_accept = al_action
+      set value op.action_code = action_info.action_code
+      set value op.action_text = action_info.action_text
+      request op
+      action_alarm = 2
+      end
+   else if not get busy op_1 then
+      begin
+      set source op_1 = al.data_gatherer
+      set old_off op_1.alarm_accept
+      set old_off op_1.action_code
+      set old_off op_1.action_text
+      set default default_alarm
+      set value op_1 = default_alarm
+      set old_value op_1 = default_alarm
+      set value op_1.db_addr = al.db_addr
+      set old_value op_1.db_addr = al.db_addr
+      set value op_1.alarm_accept = al_action
+      set value op_1.action_code = action_info.action_code
+      set value op_1.action_text = action_info.action_text
+      request op_1
+      action_alarm = 2
+      end
+   else if not get busy op_2 then
+      begin
+      set source op_2 = al.data_gatherer
+      set old_off op_2.alarm_accept
+      set old_off op_2.action_code
+      set old_off op_2.action_text
+      set default default_alarm
+      set value op_2 = default_alarm
+      set old_value op_2 = default_alarm
+      set value op_2.db_addr = al.db_addr
+      set old_value op_2.db_addr = al.db_addr
+      set value op_2.alarm_accept = al_action
+      set value op_2.action_code = action_info.action_code
+      set value op_2.action_text = action_info.action_text
+      request op_2
+      action_alarm = 2
+      end
+   else if not get busy op_3 then
+      begin
+      set source op_3 = al.data_gatherer
+      set old_off op_3.alarm_accept
+      set old_off op_3.action_code
+      set old_off op_3.action_text
+      set default default_alarm
+      set value op_3 = default_alarm
+      set old_value op_3 = default_alarm
+      set value op_3.db_addr = al.db_addr
+      set old_value op_3.db_addr = al.db_addr
+      set value op_3.alarm_accept = al_action
+      set value op_3.action_code = action_info.action_code
+      set value op_3.action_text = action_info.action_text
+      request op_3
+      action_alarm = 2
+      end
+   else if not get busy op_4 then
+      begin
+      set source op_4 = al.data_gatherer
+      set old_off op_4.alarm_accept
+      set old_off op_4.action_code
+      set old_off op_4.action_text
+      set default default_alarm
+      set value op_4 = default_alarm
+      set old_value op_4 = default_alarm
+      set value op_4.db_addr = al.db_addr
+      set old_value op_4.db_addr = al.db_addr
+      set value op_4.alarm_accept = al_action
+      set value op_4.action_code = action_info.action_code
+      set value op_4.action_text = action_info.action_text
+      request op_4
+      action_alarm = 2
+      end
+
+end
+
+object group_action_alarm(al_group = alarm_group,
+                          ws_num_1 = wrkstn_number,
+			  ws_num_2 = wrkstn_number,
+			  ws_num_3  = wrkstn_number,
+			  ws_num_4 = wrkstn_number,
+			  action_info = alarm_action_panel) 
+var wrkstn_set = set( wrkstn_number)
+var output op_1 = group_action_type
+var output op_2 = group_action_type
+var output op_3 = group_action_type
+var output op_4 = group_action_type
+begin
+
+
+   if valid ws_num_1 then
+      begin
+      set source op_1 = source(0)
+      set filter op_1.db_addr = lim_none
+      set filter op_1.wrkstn_number = lim_eq
+      set limit op_1.wrkstn_number = ws_num_1
+      set filter op_1.alarm_status = lim_eq
+      set limit op_1.alarm_status = w_act
+      set old_off op_1.alarm_accept
+      set old_off op_1.action_code
+      set old_off op_1.action_text
+      set off op_1.alarm_group
+      set old_default op_1
+      set default op_1
+      set old_value op_1.alarm_group = alarm_group_number(int(al_group) - 1)
+      set value op_1.alarm_accept = al_action
+      set value op_1.action_code = action_info.action_code
+      set value op_1.action_text = action_info.action_text
+
+      request op_1
+      end
+
+   if valid ws_num_2 then
+      begin
+      set source op_2 = source(1)
+      set filter op_2.db_addr = lim_none
+      set filter op_2.wrkstn_number = lim_eq
+      set limit op_2.wrkstn_number = ws_num_2
+      set filter op_2.alarm_status = lim_eq
+      set limit op_2.alarm_status = w_act
+      set old_off op_2.alarm_accept
+      set old_off op_2.action_code
+      set old_off op_2.action_text
+      set off op_2.alarm_group
+      set old_default op_2
+      set default op_2
+      set old_value op_2.alarm_group = alarm_group_number(int(al_group) - 1)
+      set value op_2.alarm_accept = al_action
+      set value op_2.action_code = action_info.action_code
+      set value op_2.action_text = action_info.action_text
+
+      request op_2
+      end
+
+   if valid ws_num_3 then
+      begin
+      set source op_3 = source(2)
+      set filter op_3.db_addr = lim_none
+      set filter op_3.wrkstn_number = lim_eq
+      set limit op_3.wrkstn_number = ws_num_3
+      set filter op_3.alarm_status = lim_eq
+      set limit op_3.alarm_status = w_act
+      set old_off op_3.alarm_accept
+      set old_off op_3.action_code
+      set old_off op_3.action_text
+      set off op_3.alarm_group
+      set old_default op_3
+      set default op_3
+      set old_value op_3.alarm_group = alarm_group_number(int(al_group) - 1)
+      set value op_3.alarm_accept = al_action
+      set value op_3.action_code = action_info.action_code
+      set value op_3.action_text = action_info.action_text
+
+      request op_3
+      end
+
+
+   if valid ws_num_4 then
+      begin
+      set source op_4 = source(3)
+      set filter op_4.db_addr = lim_none
+      set filter op_4.wrkstn_number = lim_eq
+      set limit op_4.wrkstn_number = ws_num_4
+      set filter op_4.alarm_status = lim_eq
+      set limit op_4.alarm_status = w_act
+      set old_off op_4.alarm_accept
+      set old_off op_4.action_code
+      set old_off op_4.action_text
+      set off op_4.alarm_group
+      set old_default op_4
+      set default op_4
+      set old_value op_4.alarm_group = alarm_group_number(int(al_group) - 1)
+      set value op_4.alarm_accept = al_action
+      set value op_4.action_code = action_info.action_code
+      set value op_4.action_text = action_info.action_text
+
+      request op_4
+      end
+
+end
+
+object normal_accept_alarm(al = extended_alarm_type) = byte
+var loopback default_alarm = alarm_acceptance_type
+var output op = alarm_acceptance_type
+var output op_1 = alarm_acceptance_type
+var output op_2 = alarm_acceptance_type
+var output op_3 = alarm_acceptance_type
+var output op_4 = alarm_acceptance_type
+begin
+
+   if al.alarm_status <> w_acn then
+      normal_accept_alarm = 0
+   else if get busy op and get busy op_1 and get busy op_2 and
+       get busy op_3 and get busy op_4 then
+      normal_accept_alarm = 1
+   else if not get busy op then
+      begin
+      set source op = al.data_gatherer
+      set old_off op.alarm_accept
+      set default default_alarm
+      set value op = default_alarm
+      set old_value op = default_alarm
+      set value op.db_addr = al.db_addr
+      set old_value op.db_addr = al.db_addr
+      set value op.alarm_accept = al_normal
+      request op
+      normal_accept_alarm = 2
+      end
+   else if not get busy op_1 then
+      begin
+      set source op_1 = al.data_gatherer
+      set old_off op_1.alarm_accept
+      set default default_alarm
+      set value op_1 = default_alarm
+      set old_value op_1 = default_alarm
+      set value op_1.db_addr = al.db_addr
+      set old_value op_1.db_addr = al.db_addr
+      set value op_1.alarm_accept = al_normal
+      request op_1
+      normal_accept_alarm = 2
+      end
+   else if not get busy op_2 then
+      begin
+      set source op_2 = al.data_gatherer
+      set old_off op_2.alarm_accept
+      set default default_alarm
+      set value op_2 = default_alarm
+      set old_value op_2 = default_alarm
+      set value op_2.db_addr = al.db_addr
+      set old_value op_2.db_addr = al.db_addr
+      set value op_2.alarm_accept = al_normal
+      request op_2
+      normal_accept_alarm = 2
+      end
+   else if not get busy op_3 then
+      begin
+      set source op_3 = al.data_gatherer
+      set old_off op_3.alarm_accept
+      set default default_alarm
+      set value op_3 = default_alarm
+      set old_value op_3 = default_alarm
+      set value op_3.db_addr = al.db_addr
+      set old_value op_3.db_addr = al.db_addr
+      set value op_3.alarm_accept = al_normal
+      request op_3
+      normal_accept_alarm = 2
+      end
+   else if not get busy op_4 then
+      begin
+      set source op_4 = al.data_gatherer
+      set old_off op_4.alarm_accept
+      set default default_alarm
+      set value op_4 = default_alarm
+      set old_value op_4 = default_alarm
+      set value op_4.db_addr = al.db_addr
+      set old_value op_4.db_addr = al.db_addr
+      set value op_4.alarm_accept = al_normal
+      request op_4
+      normal_accept_alarm = 2
+      end
+end
+
+object group_normal_accept_alarm(al_group = alarm_group,
+				 ws_num_1 = wrkstn_number,
+				 ws_num_2 = wrkstn_number,
+				 ws_num_3 = wrkstn_number,
+				 ws_num_4 = wrkstn_number)
+var output op_1 = group_acceptance_type
+var output op_2 = group_acceptance_type
+var output op_3 = group_acceptance_type
+var output op_4 = group_acceptance_type
+begin
+
+   set source op_1 = source(0)
+   set filter op_1.db_addr = lim_none
+   set filter op_1.wrkstn_number = lim_eq
+   set limit op_1.wrkstn_number = ws_num_1
+   set filter op_1.alarm_status = lim_eq
+   set limit op_1.alarm_status = w_acn
+   set old_off op_1.alarm_accept
+   set off op_1.alarm_group
+   set old_default op_1
+   set default op_1
+   set old_value op_1.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_1.alarm_accept = al_normal
+
+   request op_1
+
+   set source op_2 = source(1)
+   set filter op_2.db_addr = lim_none
+   set filter op_2.wrkstn_number = lim_eq
+   set limit op_2.wrkstn_number = ws_num_2
+   set filter op_2.alarm_status = lim_eq
+   set limit op_2.alarm_status = w_acn
+   set old_off op_2.alarm_accept
+   set off op_2.alarm_group
+   set old_default op_2
+   set default op_2
+   set old_value op_2.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_2.alarm_accept = al_normal
+
+   request op_2
+
+
+   set source op_3 = source(2)
+   set filter op_3.db_addr = lim_none
+   set filter op_3.wrkstn_number = lim_eq
+   set limit op_3.wrkstn_number = ws_num_3
+   set filter op_3.alarm_status = lim_eq
+   set limit op_3.alarm_status = w_acn
+   set old_off op_3.alarm_accept
+   set off op_3.alarm_group
+   set old_default op_3
+   set default op_3
+   set old_value op_3.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_3.alarm_accept = al_normal
+
+   request op_3
+
+   set source op_4 = source(3)
+   set filter op_4.db_addr = lim_none
+   set filter op_4.wrkstn_number = lim_eq
+   set limit op_4.wrkstn_number = ws_num_4
+   set filter op_4.alarm_status = lim_eq
+   set limit op_4.alarm_status = w_acn
+   set old_off op_4.alarm_accept
+   set off op_4.alarm_group
+   set old_default op_4
+   set default op_4
+   set old_value op_4.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_4.alarm_accept = al_normal
+
+   request op_4
+
+end
+
+object re_direct_alarm(w_num = wrkstn_number,
+			al = extended_alarm_type) 
+var loopback default_alarm = redirect_type
+var output op = redirect_type
+begin
+
+   set source op = al.data_gatherer
+   set old_default op
+   set old_value op.db_addr = al.db_addr
+   set old_off op.alarm_redirect
+   set default op
+   set value op.db_addr = al.db_addr
+   set value op.alarm_redirect = w_num
+   request op
+
+end
+
+object group_re_direct_alarm(al_group = alarm_group,
+			      ws_num_1 = wrkstn_number,
+			      ws_num_2 = wrkstn_number,
+			      ws_num_3 = wrkstn_number,
+			      ws_num_4 = wrkstn_number,
+			      w_num = wrkstn_number)
+var output op_1 = group_redirect_type
+var output op_2 = group_redirect_type
+var output op_3 = group_redirect_type
+var output op_4 = group_redirect_type
+begin
+   
+   if valid ws_num_1 then
+      begin
+      set source op_1 = source(0)
+      set filter op_1.wrkstn_number = lim_eq
+      set limit op_1.wrkstn_number = ws_num_1
+      set old_default op_1
+      set filter op_1.db_addr = lim_ge
+      set limit op_1.db_addr = b1
+      set filter op_1.alarm_level = lim_gt
+      set limit op_1.alarm_level = 0
+      set off op_1.alarm_group 
+      set old_value op_1.alarm_group = alarm_group_number(int(al_group) - 1)
+      set old_off op_1.alarm_redirect
+      set off op_1.alarm_group
+      set default op_1
+      set value op_1.alarm_redirect = w_num
+      request op_1
+      end
+
+   if valid ws_num_2 then
+      begin
+      set source op_2 = source(1)
+      set filter op_2.wrkstn_number = lim_eq
+      set limit op_2.wrkstn_number = ws_num_2
+      set old_default op_2
+      set filter op_2.db_addr = lim_ge
+      set limit op_2.db_addr = b1
+      set filter op_2.alarm_level = lim_gt
+      set limit op_2.alarm_level = 0
+      set off op_2.alarm_group
+      set old_value op_2.alarm_group = alarm_group_number(int(al_group) - 1)
+      set old_off op_2.alarm_redirect
+      set default op_2
+      set value op_2.alarm_redirect = w_num
+      request op_2
+      end
+
+   if valid ws_num_3 then
+      begin
+      set source op_3 = source(2)
+      set filter op_3.wrkstn_number = lim_eq
+      set limit op_3.wrkstn_number = ws_num_3
+      set old_default op_3
+      set filter op_3.db_addr = lim_ge
+      set limit op_3.db_addr = b1
+      set filter op_3.alarm_level = lim_gt
+      set limit op_3.alarm_level = 0
+      set off op_2.alarm_group
+      set old_value op_3.alarm_group = alarm_group_number(int(al_group) - 1)
+      set old_off op_3.alarm_redirect
+      set default op_3
+      set value op_3.alarm_redirect = w_num
+      request op_3
+      end
+
+   if valid ws_num_4 then
+      begin
+      set source op_4 = source(3)
+      set filter op_4.wrkstn_number = lim_eq
+      set limit op_4.wrkstn_number = ws_num_4
+      set old_default op_4
+      set filter op_4.db_addr = lim_ge
+      set limit op_4.db_addr = b1
+      set filter op_4.alarm_level = lim_gt
+      set limit op_4.alarm_level = 0
+      set off op_4.alarm_group
+      set old_value op_4.alarm_group = alarm_group_number(int(al_group) - 1)
+      set old_off op_4.alarm_redirect
+      set default op_4
+      set value op_4.alarm_redirect = w_num
+      request op_4
+      end
+
+end
+
+object disable_alarm(al = extended_alarm_type,src = source)
+var loopback default_alarm = alarm_acceptance_type
+var output op = alarm_acceptance_type
+begin
+
+   set source op = src
+   set old_off op.alarm_accept
+   set default default_alarm
+   set value op = default_alarm
+   set old_value op = default_alarm
+   set value op.db_addr = al.db_addr
+   set old_value op.db_addr = al.db_addr
+   set value op.alarm_accept = al_disable
+   request op
+
+end
+
+object group_disable_alarm(al_group = alarm_group)
+var output op_1 = group_enable_disable_row
+var output op_2 = group_enable_disable_row
+var output op_3 = group_enable_disable_row
+var output op_4 = group_enable_disable_row
+begin
+
+
+   set source op_1 = source(0)
+   set old_off op_1.enable
+   set old_default op_1
+   set default op_1
+   set value op_1.alarm_group = alarm_group_number(int(al_group) - 1)
+   set old_value op_1.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_1.enable = no
+   request op_1
+
+   set source op_2 = source(1)
+   set old_off op_2.enable
+   set old_default op_2
+   set default op_2
+   set value op_2.alarm_group = alarm_group_number(int(al_group) - 1)
+   set old_value op_2.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_2.enable = no
+   request op_2
+
+   set source op_3 = source(2)
+   set old_off op_3.enable
+   set old_default op_3
+   set default op_3
+   set value op_3.alarm_group = alarm_group_number(int(al_group) - 1)
+   set old_value op_3.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_3.enable = no
+   request op_3
+
+   set source op_4 = source(3)
+   set old_off op_4.enable
+   set old_default op_4
+   set default op_4
+   set value op_4.alarm_group = alarm_group_number(int(al_group) - 1)
+   set old_value op_4.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_4.enable = no
+   request op_4
+
+
+end
+
+object enable_alarm(al = extended_disabled_alarm_row)
+var loopback default_alarm = alarm_acceptance_type
+var output op = alarm_acceptance_type
+begin
+
+   set source op = al.data_gatherer
+   set old_off op.alarm_accept
+   set default default_alarm
+   set value op = default_alarm
+   set old_value op = default_alarm
+   set value op.db_addr = al.db_addr
+   set old_value op.db_addr = al.db_addr
+   set value op.alarm_accept = al_enable
+   request op
+
+end
+
+
+object group_enable_alarm(al_group = alarm_group)
+var output op_1 = group_enable_disable_row
+var output op_2 = group_enable_disable_row
+var output op_3 = group_enable_disable_row
+var output op_4 = group_enable_disable_row
+begin
+
+   set source op_1 = source(0)
+   set old_off op_1.enable
+   set old_default op_1
+   set default op_1
+   set value op_1.alarm_group = alarm_group_number(int(al_group) - 1)
+   set old_value op_1.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_1.enable = yes
+   request op_1
+
+   set source op_2 = source(1)
+   set old_off op_2.enable
+   set old_default op_2
+   set default op_2
+   set value op_2.alarm_group = alarm_group_number(int(al_group) - 1)
+   set old_value op_2.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_2.enable = yes
+   request op_2
+
+   set source op_3 = source(2)
+   set old_off op_3.enable
+   set old_default op_3
+   set default op_3
+   set value op_3.alarm_group = alarm_group_number(int(al_group) - 1)
+   set old_value op_3.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_3.enable = yes
+   request op_3
+
+   set source op_4 = source(3)
+   set old_off op_4.enable
+   set old_default op_4
+   set default op_4
+   set value op_4.alarm_group = alarm_group_number(int(al_group) - 1)
+   set old_value op_4.alarm_group = alarm_group_number(int(al_group) - 1)
+   set value op_4.enable = yes
+   request op_4
+
+end
+
+object get_high_priority_alarm_time(al1 = alarm_type,
+				    al2 = alarm_type,
+				    al3 = alarm_type,
+				    al4 = alarm_type) = alarm_use_type
+var current_alarm = alarm_use_type
+
+begin
+
+   if al1.alarm_time >= al2.alarm_time and
+       al1.alarm_time >= al3.alarm_time and
+       al1.alarm_time >= al4.alarm_time then
+      current_alarm = use_dg1
+   else if al2.alarm_time >= al1.alarm_time and
+       al2.alarm_time >= al3.alarm_time and
+       al2.alarm_time >= al4.alarm_time then
+      current_alarm = use_dg2
+   else if al3.alarm_time >= al1.alarm_time and
+       al3.alarm_time >= al2.alarm_time and
+       al3.alarm_time >= al4.alarm_time then
+      current_alarm = use_dg3
+   else if al4.alarm_time >= al1.alarm_time and
+       al4.alarm_time >= al2.alarm_time and
+       al4.alarm_time >= al3.alarm_time then
+      current_alarm = use_dg4
+
+   get_high_priority_alarm_time = current_alarm
+
+end
+
+object get_high_priority_alarm(al1 = alarm_type,
+			       al2 = alarm_type,
+			       al3 = alarm_type,
+			       al4 = alarm_type) = alarm_use_type
+var current_alarm = alarm_use_type
+var loopback al = small_alarm_table_type
+var tmp_al = alarm_type
+var i = int
+
+begin
+
+   set default al
+
+   al[1] = al1
+   al[2] = al2
+   al[3] = al3
+   al[4] = al4
+
+   for i from 1 to 3 do
+      begin
+      if al[1].alarm_level > al[2].alarm_level then
+	 begin
+	 tmp_al = al[2]
+	 al[2] = al[3]
+	 al[3] = al[4]
+	 al[4] = tmp_al
+	 end
+      else if al[1].alarm_level == al[2].alarm_level then
+	 begin
+	 if al[1].alarm_time >= al[2].alarm_time then
+	    begin
+	    tmp_al = al[2]
+	    al[2] = al[3]
+	    al[3] = al[4]
+	    al[4] = tmp_al
+	    end
+         else
+	    begin
+	    tmp_al = al[1]
+	    al[1] = al[2]
+	    al[2] = al[3]
+	    al[3] = al[4]
+	    al[4] = tmp_al
+	    end
+	 end
+      else
+	 begin
+	 tmp_al = al[1]
+	 al[1] = al[2]
+	 al[2] = al[3]
+	 al[3] = al[4]
+	 al[4] = tmp_al
+	 end
+      end
+
+   if al[1].alarm_level == al1.alarm_level and
+       al[1].alarm_time == al1.alarm_time and
+       al[1].db_addr == al1.db_addr and
+       al[1].area_number == al1.area_number then
+      current_alarm = use_dg1
+   else if al[1].alarm_level == al2.alarm_level and
+       al[1].alarm_time == al2.alarm_time and
+       al[1].db_addr == al2.db_addr and
+       al[1].area_number == al2.area_number then
+      current_alarm = use_dg2
+   else if al[1].alarm_level == al3.alarm_level and
+       al[1].alarm_time == al3.alarm_time and
+       al[1].db_addr == al3.db_addr and
+       al[1].area_number == al3.area_number then
+      current_alarm = use_dg3
+   else if al[1].alarm_level == al4.alarm_level and
+       al[1].alarm_time == al4.alarm_time and
+       al[1].db_addr == al4.db_addr and
+       al[1].area_number == al4.area_number then
+      current_alarm = use_dg4
+
+   get_high_priority_alarm = current_alarm
+
+end
+
+object get_low_priority_alarm(al1 = alarm_type,
+				    al2 = alarm_type,
+				    al3 = alarm_type,
+				    al4 = alarm_type) = alarm_use_type
+
+var current_alarm = alarm_use_type
+var loopback al = small_alarm_table_type
+var tmp_al = alarm_type
+var i = int
+
+begin
+
+   set default al
+
+   al[1] = al1
+   al[2] = al2
+   al[3] = al3
+   al[4] = al4
+
+   for i from 1 to 3 do
+      begin
+      if al[1].alarm_level < al[2].alarm_level then
+	 begin
+	 tmp_al = al[2]
+	 al[2] = al[3]
+	 al[3] = al[4]
+	 al[4] = tmp_al
+	 end
+      else if al[1].alarm_level == al[2].alarm_level then
+	 begin
+	 if al[1].alarm_time <= al[2].alarm_time then
+	    begin
+	    tmp_al = al[2]
+	    al[2] = al[3]
+	    al[3] = al[4]
+	    al[4] = tmp_al
+	    end
+         else
+	    begin
+	    tmp_al = al[1]
+	    al[1] = al[2]
+	    al[2] = al[3]
+	    al[3] = al[4]
+	    al[4] = tmp_al
+	    end
+	 end
+      else
+	 begin
+	 tmp_al = al[1]
+	 al[1] = al[2]
+	 al[2] = al[3]
+	 al[3] = al[4]
+	 al[4] = tmp_al
+	 end
+      end
+
+   if al[1].alarm_level == al1.alarm_level and
+       al[1].alarm_time == al1.alarm_time and
+       al[1].db_addr == al1.db_addr and
+       al[1].area_number == al1.area_number then
+      current_alarm = use_dg1
+   else if al[1].alarm_level == al2.alarm_level and
+       al[1].alarm_time == al2.alarm_time and
+       al[1].db_addr == al2.db_addr and
+       al[1].area_number == al2.area_number then
+      current_alarm = use_dg2
+   else if al[1].alarm_level == al3.alarm_level and
+       al[1].alarm_time == al3.alarm_time and
+       al[1].db_addr == al3.db_addr and
+       al[1].area_number == al3.area_number then
+      current_alarm = use_dg3
+   else if al[1].alarm_level == al4.alarm_level and
+       al[1].alarm_time == al4.alarm_time and
+       al[1].db_addr == al4.db_addr and
+       al[1].area_number == al4.area_number then
+      current_alarm = use_dg4
+
+   get_low_priority_alarm = current_alarm
+
+end
+
+object in_alarm_list(dg_alarm = alarm_type,
+		     list = extended_alarm_table_type) = byte
+var i = int
+var loopback in_list = byte
+begin
+
+   i = 1
+
+   in_list = 0
+
+   while (i <= lastrow list) do
+      begin
+      if dg_alarm.alarm_level == list[i].alarm_level and
+	  dg_alarm.db_addr == list[i].db_addr and
+	  dg_alarm.area_number == list[i].area_number and
+	   dg_alarm.alarm_time == list[i].alarm_time then
+	 begin
+	 in_list = 1
+	 i = lastrow list
+	 end
+      i ++
+      end
+
+   in_alarm_list = in_list
+
+end
+
+object find_current_table_index(dg = dg_alarm_table_type,
+			     flevel = big_access_level,
+			     ftime = ext_time,
+			     f_db_addr = db_address) = int
+var loopback al_no = int
+var loopback j = int
+begin
+
+
+   if valid dg then
+      begin
+      al_no = 1
+      j = 0
+
+      while (al_no <= lastrow dg) do
+	 begin
+	 if dg[al_no].db_addr == f_db_addr and
+	     dg[al_no].alarm_time == ftime then
+	    begin
+	    j = al_no
+	    al_no = lastrow dg
+	    end
+	 else if dg[al_no].alarm_level < flevel then
+	    begin
+	    j = al_no
+	    al_no = lastrow dg
+	    end
+	 else if dg[al_no].alarm_level == flevel then
+	    begin
+	    if dg[al_no].alarm_time < ftime then
+	       begin
+	       j = al_no
+	       al_no = lastrow dg
+	       end
+	    end
+	 al_no ++
+	 end
+      end
+   else
+      j = 0
+
+   find_current_table_index = j
+
+end
+
+object find_last_table_index(dg = dg_alarm_table_type,
+                             old_list = extended_alarm_table_type,
+			     flevel = big_access_level,
+			     ftime = ext_time) = int
+var loopback al_no = int
+var loopback j = int
+begin
+
+   if valid dg then
+      begin
+      al_no = lastrow dg
+      j = 0
+
+      while (al_no > 0) do
+	 begin
+	 if in_alarm_list(dg[al_no],old_list) then
+	    begin
+	    if dg[al_no].alarm_level < flevel then
+	       begin
+	       j = al_no
+	       al_no = 0
+	       end
+	    else if dg[al_no].alarm_level == flevel then
+	       begin
+	       if dg[al_no].alarm_time <= ftime then
+		  begin
+		  j = al_no
+		  al_no = 0
+		  end
+	       end
+	    end
+	 al_no --
+	 end
+      end
+   else
+      j = 0
+
+   find_last_table_index = j
+
+end
+
+object build_current_alarm_list(alarm_filters = alarm_type,
+			     dg1 = dg_alarm_table_type,
+			     dg2 = dg_alarm_table_type,
+			     dg3 = dg_alarm_table_type,
+			     dg4 = dg_alarm_table_type,
+			     old_list =extended_alarm_table_type) =
+				 extended_alarm_table_type
+var i = int
+var j = int
+var k = int
+var l = int
+var m = int
+
+var al_no = int
+var flevel = big_access_level
+var ftime = ext_time
+var f_db_addr = db_address
+
+var loopback alarm1 = alarm_type
+var loopback alarm2 = alarm_type
+var loopback alarm3 = alarm_type
+var loopback alarm4 = alarm_type
+
+var loopback alarm_list = extended_alarm_table_type
+var loopback use_alarm = alarm_use_type
+
+begin
+
+
+   if valid alarm_filters then
+      begin
+      flevel = alarm_filters.alarm_level
+      ftime = alarm_filters.alarm_time
+      f_db_addr = alarm_filters.db_addr
+      end
+   else
+      begin
+      flevel = 8
+      ftime = current_time + 1
+      f_db_addr = db_invalid
+      end
+
+   if invalid old_list then
+      begin
+      if valid dg1 then
+         j = 1
+      else
+	 j = 0
+      if valid dg2 then
+         k = 1
+      else
+	 k = 0
+      if valid dg3 then
+         l = 1
+      else
+	 l = 0
+      if valid dg4 then
+         m = 1
+      else
+	 m = 0
+      end
+   else
+      begin
+      j = find_current_table_index(dg1,flevel,ftime,f_db_addr)
+      k = find_current_table_index(dg2,flevel,ftime,f_db_addr)
+      l = find_current_table_index(dg3,flevel,ftime,f_db_addr)
+      m = find_current_table_index(dg4,flevel,ftime,f_db_addr)
+      end
+
+   if j == 0 and l == 0 and k == 0 and m == 0 then
+      begin
+      i = 16
+      set default alarm_list
+      end
+   else
+      begin
+      set default alarm_list
+      i = 1
+      end
+
+   while (i < 16) do
+      begin
+
+      alarm1 = dg1[j]
+      alarm2 = dg2[k]
+      alarm3 = dg3[l]
+      alarm4 = dg4[m]
+
+      if j == 0 or j > lastrow dg1 then
+	 begin
+	 set default alarm1
+	 alarm1.alarm_level = 0
+	 alarm1.alarm_time = min time
+	 j = 0 
+	 end
+
+      if k == 0 or k > lastrow dg2 then
+	 begin
+	 set default alarm2
+	 alarm2.alarm_level = 0
+	 alarm2.alarm_time = min time
+	 k = 0
+	 end
+
+      if l == 0 or l > lastrow dg3 then
+	 begin
+	 set default alarm3
+	 alarm3.alarm_level = 0
+	 alarm3.alarm_time = min time
+	 l = 0
+	 end
+
+      if m == 0 or m > lastrow dg4 then
+	 begin
+	 set default alarm4
+	 alarm4.alarm_level = 0
+	 alarm4.alarm_time = min time
+	 m = 0
+	 end
+
+      if j or k or l or m then
+	 begin
+
+	 use_alarm = get_high_priority_alarm(alarm1,
+					     alarm2,
+					     alarm3,
+					     alarm4)
+	 case use_alarm of
+	    all_invalid i = 16
+	    use_dg1
+	       begin
+	       alarm_list[i] = convert_alarm_to_extended_alarm(alarm1,source(0))
+	       j ++
+	       end
+	    use_dg2
+	       begin
+	       alarm_list[i] = convert_alarm_to_extended_alarm(alarm2,source(1))
+	       k ++
+	       end
+	    use_dg3
+	       begin
+	       alarm_list[i] = convert_alarm_to_extended_alarm(alarm3,source(2))
+	       l ++
+	       end
+	    use_dg4
+	       begin
+	       alarm_list[i] = convert_alarm_to_extended_alarm(alarm4,source(3))
+	       m ++
+	       end
+	 default
+	    begin
+	    end
+         end
+      else
+	 i = 16
+
+      i ++
+
+      end
+
+   build_current_alarm_list = alarm_list
+
+end
+
+
+object find_next_table_index(dg = dg_alarm_table_type,
+			     flevel = big_access_level,
+			     ftime = ext_time,
+			     f_db_addr = db_address,
+			     old_list = extended_alarm_table_type) = int
+var loopback al_no = int
+var loopback j = int
+begin
+
+   if valid dg and lastrow dg then
+      begin
+      al_no = 1
+      j = 0
+
+      while (al_no <= lastrow dg) do
+	 begin
+	 if not(in_alarm_list(dg[al_no],old_list)) then
+	    begin
+	    if dg[al_no].alarm_level < flevel then
+	       begin
+	       j = al_no
+	       al_no = lastrow dg
+	       end
+	    else if dg[al_no].alarm_level == flevel then
+	       begin
+	       if dg[al_no].alarm_time < ftime then
+		  begin
+		  j = al_no
+		  al_no = lastrow dg
+		  end
+               else if dg[al_no].alarm_time == ftime then
+		  begin
+		  if dg[al_no].db_addr > f_db_addr then
+		     begin
+		     j = al_no
+		     al_no = lastrow dg
+		     end
+		  end
+	       end
+	    end
+	 al_no ++
+	 end
+      end
+   else
+      j = 0
+
+   find_next_table_index = j
+
+end
+
+
+object build_next_alarm_list(dg1 = dg_alarm_table_type,
+			     dg2 = dg_alarm_table_type,
+			     dg3 = dg_alarm_table_type,
+			     dg4 = dg_alarm_table_type,
+			     old_list = extended_alarm_table_type) = alarm_type
+var i = int
+var j = int
+var k = int
+var l = int
+var m = int
+
+var loopback alarm1 = alarm_type
+var loopback alarm2 = alarm_type
+var loopback alarm3 = alarm_type
+var loopback alarm4 = alarm_type
+
+var loopback alarm_list = alarm_table_type
+var loopback default_alarm = alarm_type
+var flevel = big_access_level
+var ftime = ext_time
+var f_db_addr = db_address
+var al_no = int
+var loopback use_alarm = alarm_use_type
+
+begin
+
+   if valid old_list then
+      begin
+      f_db_addr = old_list[lastrow old_list].db_addr
+      flevel = old_list[lastrow old_list].alarm_level
+      ftime = old_list[lastrow old_list].alarm_time
+      end
+   else
+      begin
+      f_db_addr = db_invalid
+      flevel = 8
+      ftime = current_time + 1
+      end
+
+   if invalid default_alarm then
+      begin
+      set default default_alarm
+      default_alarm.alarm_level = 0
+      default_alarm.alarm_time = current_time + 10
+      end
+
+
+   if invalid old_list then
+      begin
+      if valid dg1 then
+         j = 1
+      else
+	 j = 0
+      if valid dg2 then
+         k = 1
+      else
+	 k = 0
+      if valid dg3 then
+         l = 1
+      else
+	 l = 0
+      if valid dg4 then
+         m = 1
+      else
+	 m = 0
+      end
+   else
+      begin
+      j = find_next_table_index(dg1,flevel,ftime,f_db_addr,old_list)
+      k = find_next_table_index(dg2,flevel,ftime,f_db_addr,old_list)
+      l = find_next_table_index(dg3,flevel,ftime,f_db_addr,old_list)
+      m = find_next_table_index(dg4,flevel,ftime,f_db_addr,old_list)
+      end
+   
+   if j == 0 and l == 0 and k == 0 and m == 0 then
+      i = 16
+   else
+      begin
+      set default alarm_list
+      i = 1
+      end
+
+   while (i < 16) do
+      begin
+
+      alarm1 = dg1[j]
+      alarm2 = dg2[k]
+      alarm3 = dg3[l]
+      alarm4 = dg4[m]
+
+      if j == 0 or j > lastrow dg1 then
+	 begin
+	 set default alarm1
+	 alarm1.alarm_level = 0
+	 alarm1.alarm_time = min time
+	 end
+
+      if k == 0 or k > lastrow dg2 then
+	 begin
+	 set default alarm2
+	 alarm2.alarm_level = 0
+	 alarm2.alarm_time = min time
+	 end
+
+      if l == 0 or l > lastrow dg3 then
+	 begin
+	 set default alarm3
+	 alarm3.alarm_level = 0
+	 alarm3.alarm_time = min time
+	 end
+
+      if m == 0 or m > lastrow dg4 then
+	 begin
+	 set default alarm4
+	 alarm4.alarm_level = 0
+	 alarm4.alarm_time = min time
+	 end
+
+      use_alarm = get_high_priority_alarm(alarm1,
+					  alarm2,
+					  alarm3,
+                                          alarm4)
+      case use_alarm of
+         use_dg1
+	    begin
+	    alarm_list[i] = alarm1
+	    j ++
+	    end
+	 use_dg2
+	    begin
+	    alarm_list[i] = alarm2
+	    k ++
+	    end
+	 use_dg3
+	    begin
+	    alarm_list[i] = alarm3
+	    l ++
+	    end
+	 use_dg4
+	    begin
+	    alarm_list[i] = alarm4
+	    m ++
+	    end
+      default
+	 begin
+	 end
+
+      i ++
+
+      if j >= lastrow dg1 and
+	  k >= lastrow dg2 and 
+	  l >= lastrow dg3 and 
+	  m >= lastrow dg4 then
+	 i = 16
+      end
+
+   build_next_alarm_list = alarm_list[1]
+
+end
+
+object find_prev_table_index(dg = dg_alarm_table_type,
+			     flevel = big_access_level,
+			     ftime = ext_time,
+			     f_db_addr = db_address,
+			     old_list = extended_alarm_table_type) = int
+var loopback al_no = int
+var loopback j = int
+
+begin
+   if valid dg then
+      begin
+      al_no = lastrow dg
+      j = 0
+
+      while (al_no > 0) do
+	 begin
+	 if not(in_alarm_list(dg[al_no],old_list)) then
+	    begin
+	    if dg[al_no].alarm_level > flevel then
+	       begin
+	       j = al_no
+	       al_no = 0
+	       end
+	    else if dg[al_no].alarm_level == flevel then
+	       begin
+	       if dg[al_no].alarm_time > ftime then
+		  begin
+		  j = al_no
+		  al_no = 0
+		  end
+	       else if dg[al_no].alarm_time == ftime then
+		  begin
+		  if f_db_addr < dg[al_no].db_addr then
+		     begin
+		     j = al_no
+		     al_no = 0
+		     end
+		  end
+	       end
+	    end
+	 al_no --
+	 end
+      end
+   else
+      j = 0
+
+   find_prev_table_index = j
+   
+end
+
+object build_previous_alarm_list(dg1 = dg_alarm_table_type,
+			         dg2 = dg_alarm_table_type,
+			         dg3 = dg_alarm_table_type,
+			         dg4 = dg_alarm_table_type,
+			         old_list = extended_alarm_table_type) 
+					   = alarm_type
+var i = int
+var j = int
+var k = int
+var l = int
+var m = int
+
+var al_no = int
+
+var loopback alarm1 = alarm_type
+var loopback alarm2 = alarm_type
+var loopback alarm3 = alarm_type
+var loopback alarm4 = alarm_type
+
+var loopback alarm_list = alarm_table_type
+var loopback default_alarm = alarm_type
+var loopback use_alarm = alarm_use_type
+var loopback flevel = access_level
+var loopback ftime = ext_time
+var loopback f_db_addr = db_address
+
+begin
+
+   if valid old_list then
+      begin
+      f_db_addr = old_list[1].db_addr
+      flevel = old_list[1].alarm_level
+      ftime = old_list[1].alarm_time
+      end
+   else
+      begin
+      f_db_addr = db_invalid
+      flevel = 0
+      ftime = min time
+      end
+
+
+   if valid old_list then
+      begin
+
+      set default alarm_list[15]
+
+      j = find_prev_table_index(dg1,flevel,ftime,f_db_addr,old_list)
+      k = find_prev_table_index(dg2,flevel,ftime,f_db_addr,old_list)
+      l = find_prev_table_index(dg3,flevel,ftime,f_db_addr,old_list)
+      m = find_prev_table_index(dg4,flevel,ftime,f_db_addr,old_list)
+
+      end
+
+   if j <= 1 and  k <= 1 and l <= 1  and m <= 1 then
+      i = 0
+   else
+      i = 15
+
+   while (i > 0) do
+      begin
+
+      alarm1 = dg1[j]
+      alarm2 = dg2[k]
+      alarm3 = dg3[l]
+      alarm4 = dg4[m]
+
+      if j == 0 then
+	 begin
+	 set default alarm1
+	 alarm1.alarm_level = 7
+	 alarm1.alarm_time = current_time + 10
+	 end
+
+      if k == 0 then
+	 begin
+	 set default alarm2
+	 alarm2.alarm_level = 7
+	 alarm2.alarm_time = current_time + 10
+         end
+
+      if l == 0 then
+	 begin
+	 set default alarm3
+	 alarm3.alarm_level = 7
+	 alarm3.alarm_time = current_time + 10
+         end
+
+      if m == 0 then
+	 begin
+	 set default alarm4
+	 alarm4.alarm_level = 7
+	 alarm4.alarm_time = current_time + 10
+         end
+
+
+      use_alarm = get_low_priority_alarm(alarm1,
+					alarm2,
+					alarm3,
+					alarm4)
+      case use_alarm of
+         use_dg1
+	    begin
+	    alarm_list[i] = alarm1
+	    j --
+	    end
+	 use_dg2
+	    begin
+	    alarm_list[i] = alarm2
+	    k --
+	    end
+	 use_dg3
+	    begin
+	    alarm_list[i] = alarm3
+	    l --
+	    end
+	 use_dg4
+	    begin
+	    alarm_list[i] = alarm4
+	    m --
+	    end
+      default
+	 begin
+	 end
+
+      i --
+
+      end
+
+   build_previous_alarm_list = alarm_list[1]
+
+end
+
+object filters_ge(filters = alarm_type,alarm = alarm_type) = byte
+begin
+
+   filters_ge = 0
+
+   if invalid alarm or invalid filters then
+      filters_ge = 1
+   else
+      begin
+      if filters.alarm_level > alarm.alarm_level then
+	 filters_ge = 1
+      if filters.alarm_level == alarm.alarm_level then
+	 begin
+	 if filters.alarm_time > alarm.alarm_time then
+	    filters_ge = 1
+	 else if filters.alarm_time == alarm.alarm_time then
+	    begin
+	    if filters.db_addr <= alarm.db_addr then
+	       filters_ge = 1
+	    end
+	 end
+      end
+end
+
+object rntf(al_filters = alarm_type,
+		      dg = dg_alarm_table_type) = byte
+var loopback j = int
+begin
+
+rntf = 0
+j = find_current_table_index(dg,al_filters.alarm_level,
+				al_filters.alarm_time,
+				al_filters.db_addr)
+if j > 15 then
+   rntf = j
+
+end
+
+object rptf(al_filters = alarm_type,
+	 dg = dg_alarm_table_type,
+	 fa = alarm_type) = byte
+var loopback i = int
+begin
+
+rptf = 0
+if valid dg then
+   begin
+   i = find_current_table_index(dg,al_filters.alarm_level,
+				   al_filters.alarm_time,
+				   al_filters.db_addr)
+   if not(fa.alarm_level == dg[1].alarm_level and 
+       fa.alarm_time == dg[1].alarm_time and 
+       fa.db_addr == dg[1].db_addr) then
+      begin
+      if (i <= 15 and i >= 1) then
+	 rptf = i
+      end
+   end
+
+end
+
+object first_alarm(src = source,
+		area_filter = set( area),
+		group_filter = alarm_group,
+		selection = set( alarm_status),
+		wrkstn_filter = wrkstn_filter_type) = alarm_type
+
+var input fa = alarm_type
+var ws_info = ws_info_row
+var wrkstn_set = set( wrkstn_number)
+begin
+
+
+ws_info = get_ws_info(src)
+
+set source fa = src
+set mayexist fa.db_addr
+set mayexist fa.alarm_command_text
+set mayexist fa.alarm_referals
+
+set filter fa.alarm_level = lim_le_ge2
+set limit fa.alarm_level = 7
+set limit2 fa.alarm_level = 1
+set priority fa.alarm_level = 15
+set priority fa.alarm_time = 14
+set dir_dec fa.alarm_level
+set dir_dec fa.alarm_time
+
+if valid area_filter then
+   begin
+   set filter fa.area_number = lim_inset
+      set limitset fa.area_number = area_filter
+      end
+
+   if valid wrkstn_filter then
+      begin
+      if wrkstn_filter == all_wrkstns then
+         set filter fa.alarm_accept_wrkstn_set = lim_none
+      else
+	 begin
+	 wrkstn_set = {wrkstn_number} + ws_info.wrkstn_number
+	 set filter fa.alarm_accept_wrkstn_set = lim_intset
+	 set limit fa.alarm_accept_wrkstn_set = wrkstn_set
+         end
+      end
+
+   if valid group_filter then
+      begin
+      if (group_filter == ag0) then
+	 set filter fa.alarm_group = lim_none
+      else
+	 begin
+	 set filter fa.alarm_group = lim_eq
+	 set limit fa.alarm_group = alarm_group_number(int(group_filter) - 1)
+	 end
+      end
+
+   if valid selection then
+      begin
+      set filter fa.alarm_status = lim_inset
+      set limitset fa.alarm_status = selection
+      end
+   set persist fa
+
+   request fa
+
+   first_alarm = fa
+
+end
+
+object get_dgs_ws_info(dg = source,
+		       ws_info_1 = ws_info_row,
+		       ws_info_2 = ws_info_row,
+		       ws_info_3 = ws_info_row,
+		       ws_info_4 = ws_info_row) = ws_info_row
+begin
+
+   if dg == source(0) then
+      get_dgs_ws_info = ws_info_1
+   else if dg == source(1) then
+      get_dgs_ws_info = ws_info_2
+   else if dg == source(2) then
+      get_dgs_ws_info = ws_info_3
+   else if dg == source(3) then
+      get_dgs_ws_info = ws_info_4
+
+end
+
+type set_access_level = set(access_level)
+
+object set_up_alarm_list(x,y,local_src = source,
+                         ip_start = onoff,
+			 ip_list_type = alarm_list_type,
+			 area_mode = area_mode_type,
+			 area_filter = set( area),
+			 ws_info_1 = ws_info_row,
+			 ws_info_2 = ws_info_row,
+			 ws_info_3 = ws_info_row,
+			 ws_info_4 = ws_info_row,
+			 group_filter = alarm_group,
+			 select_filter = selection_type,
+			 wrkstn_filter = wrkstn_filter_type,
+			 group_mode = alarm_mode_type,
+			 group_mode_group = alarm_group,
+			 alarm_view_mode = alarm_mode_type) = 
+			     alarm_list_return_type
+
+var i = int
+var logged_in = int
+var ttbl_ind = int
+var is_busy = byte
+var execute_cmd = int
+var loopback error_text = string_80
+var action_ind = int
+var re_direct_ind = int
+var af = set( area)
+var level_7_user = set( access_level)
+
+var selection = set( alarm_status)
+var loopback area_str = string
+var av = area
+var start = onoff
+var action_status = int
+
+var loopback ws_info = ws_info_row
+var loopback using_panel = byte
+var loopback old_group_filter = alarm_group
+var loopback old_group_mode_group = alarm_group
+
+
+var loopback alarm_list = extended_alarm_table_type
+var loopback lock_prev = byte
+var loopback lock_next = byte
+
+var loopback future_time = time
+
+var loopback first_dg1 = alarm_type
+var loopback first_dg2 = alarm_type
+var loopback first_dg3 = alarm_type
+var loopback first_dg4 = alarm_type
+
+var loopback use_alarm = alarm_use_type
+var loopback al_filters = alarm_type
+
+var loopback wrkstn_set = set( wrkstn_number)
+var loopback list_type = alarm_list_type
+var loopback wrkstn_info = ws_info_row
+
+var loopback old_select_filter = selection_type
+var loopback old_area_filter = set( area)
+var loopback old_wrkstn_filter = wrkstn_filter_type
+
+var loopback l_op = local_operation_table
+var loopback als = alarm_status
+var loopback default_l_op = local_operation_row
+
+var input dg1_alarm_list = dg_alarm_table_type
+var input dg2_alarm_list = dg_alarm_table_type
+var input dg3_alarm_list = dg_alarm_table_type
+var input dg4_alarm_list = dg_alarm_table_type
+
+var panel action_info = alarm_action_panel
+var panel wrkstn_num = wrkstn_number
+
+var popup alarm_details = al_info_type
+
+var toplevel op = string_80
+var toplevel top = string_80
+
+
+begin
+
+   start = ip_start
+
+   error_text = ""
+
+   if invalid l_op then
+      begin
+      set default l_op[15]
+      set default default_l_op
+      end
+
+   future_time = current_time  - (current_time % 86400)  + 86600 
+
+
+   if invalid old_select_filter then
+      begin
+      set default old_select_filter
+      selection = {w_note,w_act,w_clr,w_acn}
+      set filter dg1_alarm_list.alarm_status = lim_inset
+      set filter dg2_alarm_list.alarm_status = lim_inset
+      set filter dg3_alarm_list.alarm_status = lim_inset
+      set filter dg4_alarm_list.alarm_status = lim_inset
+
+      set limitset dg1_alarm_list.alarm_status = selection
+      set limitset dg2_alarm_list.alarm_status = selection
+      set limitset dg3_alarm_list.alarm_status = selection
+      set limitset dg4_alarm_list.alarm_status = selection
+      end
+
+   if invalid old_group_filter then
+      set default old_group_filter
+
+   if invalid old_area_filter then
+      set default old_area_filter
+
+   if invalid old_wrkstn_filter then
+      old_wrkstn_filter = wrkstn_filter
+
+
+   if valid group_filter and group_filter <> old_group_filter then
+      begin
+
+      if (group_filter == ag0) then
+	 begin
+         set mayexist dg1_alarm_list.alarm_group
+         set mayexist dg2_alarm_list.alarm_group
+         set mayexist dg3_alarm_list.alarm_group
+         set mayexist dg4_alarm_list.alarm_group
+	 set filter dg1_alarm_list.alarm_group = lim_none 
+	 set filter dg2_alarm_list.alarm_group = lim_none
+	 set filter dg3_alarm_list.alarm_group = lim_none
+	 set filter dg4_alarm_list.alarm_group = lim_none
+	 end
+      else
+	 begin
+	 set filter dg1_alarm_list.alarm_group = lim_eq
+	 set filter dg2_alarm_list.alarm_group = lim_eq
+	 set filter dg3_alarm_list.alarm_group = lim_eq
+	 set filter dg4_alarm_list.alarm_group = lim_eq
+	 set limit dg1_alarm_list.alarm_group = 
+	     alarm_group_number(int(group_filter) - 1)
+	 set limit dg2_alarm_list.alarm_group = 
+	     alarm_group_number(int(group_filter) - 1)
+	 set limit dg3_alarm_list.alarm_group =
+	     alarm_group_number(int(group_filter) - 1)
+	 set limit dg4_alarm_list.alarm_group =
+	     alarm_group_number(int(group_filter) - 1)
+	 end
+
+      set invalid dg1_alarm_list
+      set invalid dg2_alarm_list
+      set invalid dg3_alarm_list
+      set invalid dg4_alarm_list
+
+      set invalid alarm_list
+
+      old_group_filter = group_filter
+
+      end
+
+   if select_filter <> old_select_filter then
+      begin
+ 
+      case select_filter of 
+	 in_alarm selection = {w_note,w_act,w_clr,w_acn}
+	 to_be_accepted selection = {w_act,w_note,w_acn}
+	 to_note_action selection = {w_note,w_act}
+	 to_be_noted selection = {w_note}
+	 to_be_actioned selection = {w_act}
+	 clear_pending selection = {w_clr}
+	 to_normal_accept selection = {w_acn}
+	 disabled_alarms 
+	    begin
+	    set source op = source(0)
+	    set mimic op = "disabled_alarm_view"
+	    set selfreplace op
+	    set p1 op = select_filter
+	    set p2 op = area_mode
+	    set default area_str
+	    for av from min area to max area do 
+	       begin
+	       if av in old_area_filter then
+		  area_str += "1"
+	       else 
+		  area_str += "0"
+	       end
+	    set p3 op = area_str
+	    set p4 op = old_wrkstn_filter
+	    set p5 op = old_group_filter
+	    request op
+	    end
+	 pending selection = {w_dan}
+      default
+	 begin
+	 end
+
+
+      set filter dg1_alarm_list.alarm_status = lim_inset
+      set filter dg2_alarm_list.alarm_status = lim_inset
+      set filter dg3_alarm_list.alarm_status = lim_inset
+      set filter dg4_alarm_list.alarm_status = lim_inset
+
+      set limitset dg1_alarm_list.alarm_status = selection
+      set limitset dg2_alarm_list.alarm_status = selection
+      set limitset dg3_alarm_list.alarm_status = selection
+      set limitset dg4_alarm_list.alarm_status = selection
+
+      set invalid dg1_alarm_list
+      set invalid dg2_alarm_list
+      set invalid dg3_alarm_list
+      set invalid dg4_alarm_list
+
+      set invalid alarm_list
+      old_select_filter = select_filter
+
+      end
+
+   if valid area_filter and area_filter <> old_area_filter then
+      begin
+
+      set invalid dg1_alarm_list
+      set invalid dg2_alarm_list
+      set invalid dg3_alarm_list
+      set invalid dg4_alarm_list
+
+      set invalid alarm_list
+      old_area_filter = area_filter
+
+      end
+
+   set filter dg1_alarm_list.area_number = lim_inset
+   set filter dg2_alarm_list.area_number = lim_inset
+   set filter dg3_alarm_list.area_number = lim_inset
+   set filter dg4_alarm_list.area_number = lim_inset
+
+   if area_mode <> areas_default then
+      begin
+      set limitset dg1_alarm_list.area_number  = area_filter
+      set limitset dg2_alarm_list.area_number = area_filter
+      set limitset dg3_alarm_list.area_number = area_filter
+      set limitset dg4_alarm_list.area_number = area_filter 
+      end
+   else
+      begin
+      set limitset dg1_alarm_list.area_number  = ws_info_1.user_default_areas
+      set limitset dg2_alarm_list.area_number = ws_info_2.user_default_areas
+      set limitset dg3_alarm_list.area_number = ws_info_3.user_default_areas
+      set limitset dg4_alarm_list.area_number = ws_info_4.user_default_areas
+      end
+
+   if invalid wrkstn_filter then
+      old_wrkstn_filter = all_wrkstns
+
+   if valid wrkstn_filter and wrkstn_filter <> old_wrkstn_filter then
+      begin
+      set invalid dg1_alarm_list
+      set invalid dg2_alarm_list
+      set invalid dg3_alarm_list
+      set invalid dg4_alarm_list
+
+      set invalid alarm_list
+      old_wrkstn_filter = wrkstn_filter
+
+      end
+
+   if wrkstn_filter == all_wrkstns then
+      set filter dg1_alarm_list.alarm_accept_wrkstn_set = lim_none
+   else
+      begin
+      wrkstn_set = {wrkstn_number} + ws_info_1.wrkstn_number
+      set filter dg1_alarm_list.alarm_accept_wrkstn_set = lim_intset
+      set limit dg1_alarm_list.alarm_accept_wrkstn_set = wrkstn_set
+      end
+
+   if wrkstn_filter == all_wrkstns then
+      set filter dg2_alarm_list.alarm_accept_wrkstn_set = lim_none
+   else
+      begin
+      wrkstn_set = {wrkstn_number} + ws_info_2.wrkstn_number
+      set filter dg2_alarm_list.alarm_accept_wrkstn_set = lim_intset
+      set limit dg2_alarm_list.alarm_accept_wrkstn_set = wrkstn_set
+      end
+
+   if wrkstn_filter == all_wrkstns then
+      set filter dg3_alarm_list.alarm_accept_wrkstn_set = lim_none
+   else
+      begin
+      wrkstn_set = {wrkstn_number} + ws_info_3.wrkstn_number
+      set filter dg3_alarm_list.alarm_accept_wrkstn_set = lim_intset
+      set limit dg3_alarm_list.alarm_accept_wrkstn_set = wrkstn_set
+      end
+
+   if wrkstn_filter == all_wrkstns then
+      set filter dg4_alarm_list.alarm_accept_wrkstn_set = lim_none
+   else
+      begin
+      wrkstn_set = {wrkstn_number} + ws_info_4.wrkstn_number
+      set filter dg4_alarm_list.alarm_accept_wrkstn_set = lim_intset
+      set limit dg4_alarm_list.alarm_accept_wrkstn_set = wrkstn_set
+      end
+
+   if invalid dg1_alarm_list then
+      begin
+
+      set source dg1_alarm_list = source(0)
+      set mayexist dg1_alarm_list.db_addr
+      set mayexist dg1_alarm_list.alarm_command_text
+      set mayexist dg1_alarm_list.alarm_referals
+
+      set filter dg1_alarm_list.alarm_level = lim_le_ge2
+      set limit dg1_alarm_list.alarm_level = 7
+      set limit2 dg1_alarm_list.alarm_level = 1
+      set filter dg1_alarm_list.alarm_time = lim_flt
+      set limit dg1_alarm_list.alarm_time = future_time
+      set priority dg1_alarm_list.alarm_level = 15
+      set priority dg1_alarm_list.alarm_time = 14
+      set dir_dec dg1_alarm_list.alarm_level
+      set dir_dec dg1_alarm_list.alarm_time
+
+      set persist dg1_alarm_list
+
+      end
+
+   if invalid dg2_alarm_list then
+      begin
+      set source dg2_alarm_list = source(1)
+      set mayexist dg2_alarm_list.db_addr
+      set mayexist dg2_alarm_list.alarm_command_text
+      set mayexist dg2_alarm_list.alarm_referals
+
+      set filter dg2_alarm_list.alarm_level = lim_le_ge2
+      set limit dg2_alarm_list.alarm_level = 7
+      set limit2 dg2_alarm_list.alarm_level = 1
+      set filter dg2_alarm_list.alarm_time = lim_flt
+      set limit dg2_alarm_list.alarm_time = future_time
+      set priority dg2_alarm_list.alarm_level = 15
+      set priority dg2_alarm_list.alarm_time = 14
+      set dir_dec dg2_alarm_list.alarm_level
+      set dir_dec dg2_alarm_list.alarm_time
+      set persist dg2_alarm_list
+      end
+
+   if invalid dg3_alarm_list then
+      begin
+      set source dg3_alarm_list = source(2)
+      set mayexist dg3_alarm_list.db_addr
+      set mayexist dg3_alarm_list.alarm_command_text
+      set mayexist dg3_alarm_list.alarm_referals
+
+      set filter dg3_alarm_list.alarm_level = lim_le_ge2
+      set limit dg3_alarm_list.alarm_level = 7
+      set limit2 dg3_alarm_list.alarm_level = 1
+      set filter dg3_alarm_list.alarm_time = lim_flt
+      set limit dg3_alarm_list.alarm_time = future_time
+      set priority dg3_alarm_list.alarm_level = 15
+      set priority dg3_alarm_list.alarm_time = 14
+      set dir_dec dg3_alarm_list.alarm_level
+      set dir_dec dg3_alarm_list.alarm_time
+      set persist dg3_alarm_list
+      end
+
+   if invalid dg4_alarm_list then
+      begin
+      set source dg4_alarm_list = source(3)
+      set mayexist dg4_alarm_list.db_addr
+      set mayexist dg4_alarm_list.alarm_command_text
+      set mayexist dg4_alarm_list.alarm_referals
+
+      set filter dg4_alarm_list.alarm_level = lim_le_ge2
+      set limit dg4_alarm_list.alarm_level = 7
+      set limit2 dg4_alarm_list.alarm_level = 1
+      set filter dg4_alarm_list.alarm_time = lim_flt
+      set limit dg4_alarm_list.alarm_time = future_time
+      set priority dg4_alarm_list.alarm_level = 15
+      set priority dg4_alarm_list.alarm_time = 14
+      set dir_dec dg4_alarm_list.alarm_level
+      set dir_dec dg4_alarm_list.alarm_time
+      set persist dg4_alarm_list
+      end
+   
+   if area_mode == areas_default then
+      af = ws_info_1.user_default_areas
+   else
+      af = area_filter
+
+   first_dg1 = first_alarm(source(0),
+			   af,
+			   group_filter,
+			   selection,
+			   wrkstn_filter)
+   if area_mode == areas_default then
+      af = ws_info_2.user_default_areas
+   else
+      af = area_filter
+
+   first_dg2 = first_alarm(source(1),
+			   af,
+			   group_filter,
+			   selection,
+			   wrkstn_filter)
+		       
+		       
+   if area_mode == areas_default then
+      af = ws_info_3.user_default_areas
+   else
+      af = area_filter
+
+   first_dg3 = first_alarm(source(2),
+			   af,
+			   group_filter,
+			   selection,
+			   wrkstn_filter)
+		       
+   if area_mode == areas_default then
+      af = ws_info_4.user_default_areas
+   else
+      af = area_filter
+
+   first_dg4 = first_alarm(source(3),
+			   af,
+			   group_filter,
+			   selection,
+			   wrkstn_filter)
+
+   if valid dg1_alarm_list or
+       valid dg2_alarm_list or
+       valid dg3_alarm_list or
+       valid dg4_alarm_list then
+      begin
+
+      is_busy = (valid dg1_alarm_list and get busy dg1_alarm_list) or
+	         (valid dg2_alarm_list and get busy dg2_alarm_list) or
+	         (valid dg3_alarm_list and get busy dg3_alarm_list) or
+	         (valid dg4_alarm_list and get busy dg4_alarm_list)
+       
+      list_type = ip_list_type
+
+      if list_type == current then
+	 begin
+	 if lock_prev then
+	    list_type = previous
+         if lock_next then
+	    list_type = next
+	 end
+
+      case list_type of
+         next
+	    begin
+	    if not(is_busy) and lastrow alarm_list == 15 then
+	       begin
+               lock_next = 0
+	       ttbl_ind = rntf(al_filters,dg1_alarm_list)
+	       if ttbl_ind then
+		  begin
+		  lock_next = 1
+		  set filter dg1_alarm_list.alarm_level = lim_le
+		  set limit dg1_alarm_list.alarm_level =
+	             dg1_alarm_list[ttbl_ind].alarm_level
+		  set filter dg1_alarm_list.alarm_time = lim_flt
+		  set limit dg1_alarm_list.alarm_time = 
+	             dg1_alarm_list[ttbl_ind].alarm_time
+		  end
+
+	       ttbl_ind = rntf(al_filters,dg2_alarm_list)
+	       if ttbl_ind then
+		  begin
+		  lock_next = 1
+		  set filter dg2_alarm_list.alarm_level = lim_le
+		  set limit dg2_alarm_list.alarm_level =
+	             dg2_alarm_list[ttbl_ind].alarm_level
+		  set filter dg2_alarm_list.alarm_time = lim_flt
+		  set limit dg2_alarm_list.alarm_time = 
+		      dg2_alarm_list[ttbl_ind].alarm_time
+		  end
+
+	       ttbl_ind = rntf(al_filters,dg3_alarm_list)
+	       if ttbl_ind then
+		  begin
+		  lock_next = 1
+		  set filter dg3_alarm_list.alarm_level = lim_le
+		  set limit dg3_alarm_list.alarm_level =
+	             dg3_alarm_list[ttbl_ind].alarm_level
+		  set filter dg3_alarm_list.alarm_time = lim_flt
+		  set limit dg3_alarm_list.alarm_time = 
+		      dg3_alarm_list[ttbl_ind].alarm_time
+		  end
+
+	       ttbl_ind = rntf(al_filters,dg4_alarm_list)
+	       if ttbl_ind then
+		  begin
+		  lock_next = 1
+		  set filter dg4_alarm_list.alarm_level = lim_le
+		  set limit dg4_alarm_list.alarm_level =
+	             dg4_alarm_list[ttbl_ind].alarm_level
+		  set filter dg4_alarm_list.alarm_time = lim_flt
+		  set limit dg4_alarm_list.alarm_time = 
+		      dg4_alarm_list[ttbl_ind].alarm_time
+	          end
+	       
+               if not(lock_next) then
+		  al_filters = build_next_alarm_list(dg1_alarm_list,
+						     dg2_alarm_list,
+						     dg3_alarm_list,
+						     dg4_alarm_list,
+						     alarm_list)
+
+	       end
+	    end
+         previous
+	    begin
+
+	    if not(is_busy) then
+	       begin
+
+	       lock_prev = 0
+
+	       ttbl_ind = rptf(al_filters,
+			       dg1_alarm_list,
+			       first_dg1)
+	       
+	       if ttbl_ind then
+		  begin
+		  lock_prev = 1
+		  set filter dg1_alarm_list.alarm_level = lim_ge
+		  set limit dg1_alarm_list.alarm_level =
+		      dg1_alarm_list[ttbl_ind].alarm_level
+		  set filter dg1_alarm_list.alarm_time = lim_fgt
+		  set limit dg1_alarm_list.alarm_time =
+		     dg1_alarm_list[ttbl_ind].alarm_time
+		  end
+
+	       ttbl_ind = rptf(al_filters,
+			       dg2_alarm_list,
+			       first_dg2)
+
+	       if ttbl_ind then
+		  begin
+		  lock_prev = 1
+		  set filter dg2_alarm_list.alarm_level = lim_ge
+		  set limit dg2_alarm_list.alarm_level =
+		      dg2_alarm_list[ttbl_ind].alarm_level
+		  set filter dg2_alarm_list.alarm_time = lim_fgt
+		  set limit dg2_alarm_list.alarm_time =
+		     dg2_alarm_list[ttbl_ind].alarm_time
+		  end
+
+
+	       ttbl_ind = rptf(al_filters,
+			       dg3_alarm_list,
+			       first_dg3)
+
+	       if ttbl_ind then
+		  begin
+		  lock_prev = 1
+		  set filter dg3_alarm_list.alarm_level = lim_ge
+		  set limit dg3_alarm_list.alarm_level =
+		      dg3_alarm_list[ttbl_ind].alarm_level
+		  set filter dg3_alarm_list.alarm_time = lim_fgt
+		  set limit dg3_alarm_list.alarm_time =
+		     dg3_alarm_list[ttbl_ind].alarm_time
+		  end
+
+	       ttbl_ind = rptf(al_filters,
+			       dg4_alarm_list,
+			       first_dg4)
+
+	       if ttbl_ind then
+		  begin
+		  lock_prev = 1
+		  set filter dg4_alarm_list.alarm_level = lim_ge
+		  set limit dg4_alarm_list.alarm_level =
+		      dg4_alarm_list[ttbl_ind].alarm_level
+		  set filter dg4_alarm_list.alarm_time = lim_fgt
+		  set limit dg4_alarm_list.alarm_time =
+		     dg4_alarm_list[ttbl_ind].alarm_time
+		  end
+
+	       
+	       if not(lock_prev) then
+		  al_filters = build_previous_alarm_list(dg1_alarm_list,
+							 dg2_alarm_list,
+							 dg3_alarm_list,
+							 dg4_alarm_list,
+							 alarm_list)
+	       end
+	    end
+	 default
+	    begin
+	    end
+	 end 
+
+      if filters_ge(al_filters,first_dg1) and
+	  filters_ge(al_filters,first_dg2) and 
+	  filters_ge(al_filters,first_dg3) and 
+	  filters_ge(al_filters,first_dg4) then
+	 begin
+	 start = on
+	 set filter dg1_alarm_list.alarm_level = lim_le
+	 set filter dg2_alarm_list.alarm_level = lim_le
+	 set filter dg3_alarm_list.alarm_level = lim_le
+	 set filter dg4_alarm_list.alarm_level = lim_le
+	 set limit dg1_alarm_list.alarm_level = 7
+	 set limit dg2_alarm_list.alarm_level = 7
+	 set limit dg3_alarm_list.alarm_level = 7
+	 set limit dg4_alarm_list.alarm_level = 7
+	 set filter dg1_alarm_list.alarm_time = lim_flt
+	 set filter dg2_alarm_list.alarm_time = lim_flt
+	 set filter dg3_alarm_list.alarm_time = lim_flt
+	 set filter dg4_alarm_list.alarm_time = lim_flt
+	 set limit dg1_alarm_list.alarm_time = future_time
+	 set limit dg2_alarm_list.alarm_time = future_time
+	 set limit dg3_alarm_list.alarm_time = future_time
+	 set limit dg4_alarm_list.alarm_time = future_time
+	 end
+
+   if (start == on) then
+      set invalid al_filters
+
+   alarm_list = build_current_alarm_list(al_filters,
+					 dg1_alarm_list,
+					 dg2_alarm_list,
+					 dg3_alarm_list,
+					 dg4_alarm_list,
+					 alarm_list)
+
+   if select_filter <> disabled_alarms then
+      begin
+      if valid ws_info_1 then
+	 request dg1_alarm_list
+      if valid ws_info_2 then
+	 request dg2_alarm_list
+      if valid ws_info_3 then
+	 request dg3_alarm_list
+      if valid ws_info_4 then
+	 request dg4_alarm_list
+      end
+ 
+  
+   if is_busy then
+      begin
+      error_text = "Waiting for response from "
+      if get busy dg1_alarm_list and get accessible dg1_alarm_list then
+	 begin
+	 error_text += source(0) 
+	 end
+      if get busy dg2_alarm_list and get accessible dg2_alarm_list then
+	 begin
+	 if error_text == "Waiting for response from " then
+	    begin
+	    error_text += source(1) 
+	    end
+	 else
+	    begin
+	    error_text += " " + source(1) 
+	    end
+	 end
+      if get busy dg3_alarm_list and get accessible dg3_alarm_list then
+	 begin
+	 if error_text == "Waiting for response from " then
+	    begin
+	    error_text += source(2) 
+	    end
+	 else
+	    begin
+	    error_text += " " + source(2) 
+	    end
+	 end
+      if get busy dg4_alarm_list and get accessible dg4_alarm_list then
+	 begin
+	 if error_text == "Waiting for response from " then
+	    begin
+	    error_text += source(3) 
+	    end
+	 else
+	    begin
+	    error_text += " " + source(3) 
+	    end
+	 end
+      end
+   else
+      begin
+      if get busy dg1_alarm_list or get busy dg2_alarm_list or 
+	    get busy dg3_alarm_list or get busy dg4_alarm_list then
+         begin
+	 error_text = "Waiting for response from "
+	 if get busy dg1_alarm_list and get accessible dg1_alarm_list then
+	    begin
+	    error_text += source(0) 
+	    end
+	 if get busy dg2_alarm_list and get accessible dg2_alarm_list then
+	    begin
+	    if error_text == "Waiting for response from " then
+	       begin
+	       error_text += source(1) 
+	       end
+	    else
+	       begin
+	       error_text += " " + source(1) 
+	       end
+	    end
+	 if get busy dg3_alarm_list and get accessible dg3_alarm_list then
+	    begin
+	    if error_text == "Waiting for response from " then
+	       begin
+	       error_text += source(2) 
+	       end
+	    else
+	       begin
+	       error_text += " " + source(2) 
+	       end
+	    end
+	 if get busy dg4_alarm_list and get accessible dg4_alarm_list then
+	    begin
+	    if error_text == "Waiting for response from " then
+	       begin
+	       error_text += source(3) 
+	       end
+	    else
+	       begin
+	       error_text += " " + source(3) 
+	       end
+	    end
+	 end
+      end
+   if error_text == "Waiting for response from " then
+      begin
+      error_text = ""
+      end
+
+   if error_text == "" then
+      begin
+      logged_in = 0
+      if ws_info_1.user_name <> "" then
+	 logged_in = 1
+      if ws_info_2.user_name <> "" then
+	 logged_in = 1
+      if ws_info_3.user_name <> "" then
+	 logged_in = 1
+      if ws_info_4.user_name <> "" then
+	 logged_in = 1
+      if logged_in == 0 then
+	 begin
+	 error_text = "Not logged in"
+	 end
+      end
+
+   if valid alarm_list then
+      begin
+
+      if invalid level_7_user then
+	 begin
+	 level_7_user = set_access_level("1111111")
+	 end
+
+      font = font_bold
+
+      if invalid execute_cmd then
+	 execute_cmd = 0
+
+      if valid alarm_list then
+	 begin
+
+	 if valid action_info then
+	    begin
+	    if valid old_group_mode_group then
+	       begin
+	       group_action_alarm(old_group_mode_group,
+				  ws_info_1.wrkstn_number,
+				  ws_info_2.wrkstn_number,
+				  ws_info_3.wrkstn_number,
+				  ws_info_4.wrkstn_number,
+				  action_info)
+	       set invalid old_group_mode_group
+	       end
+	    else
+	       begin
+	       ws_info = get_dgs_ws_info(alarm_list[action_ind].data_gatherer,
+				         ws_info_1,
+				         ws_info_2,
+				         ws_info_3,
+					 ws_info_4)
+	       if ok_to_modify(alarm_list[action_ind],ws_info,l_op[i].db_addr,
+		   (ws_info.current_access_level & level_7_user) == 
+		   level_7_user,
+		   alarm_view_mode,error_text) then
+		  begin
+		  action_status = action_alarm(alarm_list[action_ind],
+					       action_info)
+		  case action_status of 
+		     0 error_text = 
+			 alarm_list[action_ind].data_gatherer + ":" +
+		  	 alarm_list[action_ind].db_addr + 
+			 " not waiting for action"
+		     1 error_text = "Action alarm busy - please wait"
+		  default
+		     begin
+		     l_op[action_ind].db_addr = 
+			 alarm_list[action_ind].db_addr
+		     l_op[action_ind].alarm_status = w_clr
+		     l_op[action_ind].alarm_time = 
+			 alarm_list[action_ind].alarm_time
+		     end
+		  end
+               action_ind = 0
+	       end
+	    set invalid action_info
+	    end
+
+	 if valid wrkstn_num then
+	    begin
+	    if valid old_group_mode_group then
+	       begin
+	       group_re_direct_alarm(old_group_mode_group,
+				      ws_info_1.wrkstn_number,
+				      ws_info_2.wrkstn_number,
+				      ws_info_3.wrkstn_number,
+				      ws_info_4.wrkstn_number,
+				      wrkstn_num)
+	       set invalid old_group_mode_group
+	       end
+	    else
+	       begin
+	       ws_info=get_dgs_ws_info(alarm_list[re_direct_ind].data_gatherer,
+				         ws_info_1,
+				         ws_info_2,
+				         ws_info_3,
+					 ws_info_4)
+	       if ok_to_modify(alarm_list[re_direct_ind],
+		   ws_info,l_op[i].db_addr,
+		   (ws_info.current_access_level & level_7_user) == 
+		   level_7_user,
+		   alarm_view_mode,error_text) then
+	          begin
+		  if ok_to_redirect(wrkstn_num,alarm_list[re_direct_ind],
+		      alarm_view_mode,error_text) then
+	             re_direct_alarm(wrkstn_num,alarm_list[re_direct_ind])
+	          end
+	       re_direct_ind = 0
+	       end
+	    set invalid wrkstn_num
+	    end
+
+	 for i from 1 to 15 do
+	    begin
+
+	    ws_info = get_dgs_ws_info(alarm_list[i].data_gatherer,
+				  ws_info_1,
+				  ws_info_2,
+				  ws_info_3,
+				  ws_info_4)
+
+	    tfg = get_alarm_colour(alarm_list[i],ws_info)
+
+	    if alarm_view_mode == free and i <= lastrow alarm_list then
+	       begin
+	       if selb(x = 0,w = 830,h = ch) then
+		  begin
+		  rect(fg = yellow,x = 0,w = 830,h = ch)
+		  box(fg = black,x = 0,w = 830,h = ch)
+		  set x alarm_details = 250
+		  set y alarm_details = 60
+
+		  set title alarm_details = 
+			       string(alarm_list[i].data_gatherer) + " : " + 
+			       alarm_list[i].db_addr
+
+		  request alarm_details(alarm_list[i].db_addr,
+					alarm_list[i].data_gatherer,tfg)
+		  end
+	       else if menb(x = 0,w = 830,h = ch) then
+		  begin
+		  rect(fg = lightblue,x = 0,w = 830,h = ch)
+		  box(fg = black,x = 0,w = 830,h = ch)
+		  execute_cmd = i
+		  end
+	       end
+	    else if group_mode == free and i <= lastrow alarm_list then
+	       begin
+	       if selb(x = 0,w = 830,h = ch) then
+		  begin
+		  rect(fg = yellow,x = 0,w = 830,h = ch)
+		  box(fg = black,x = 0,w = 830,h = ch)
+		  case alarm_view_mode of
+		     note
+			begin
+			if ok_to_modify(alarm_list[i],ws_info,l_op[i].db_addr,
+			    (ws_info.current_access_level & level_7_user) == 
+			    level_7_user,
+			    alarm_view_mode,error_text) then
+                           begin
+			   action_status = note_alarm(alarm_list[i])
+			   case action_status of
+			      0 error_text = alarm_list[i].db_addr + 
+				  " not waiting for note."
+			      1 error_text = "Alarm note busy - please wait"
+                           default
+			      begin
+			      if alarm_list[i].area_number in 
+				  ws_info.current_mastered_areas then
+                                 begin
+				 l_op[i].db_addr = alarm_list[i].db_addr
+				 l_op[i].alarm_status = w_act
+				 l_op[i].alarm_time = alarm_list[i].alarm_time
+				 end
+			      end
+			   end
+			end
+		     action
+			begin
+			if ok_to_modify(alarm_list[i],ws_info,l_op[i].db_addr,
+			    (ws_info.current_access_level & level_7_user) == 
+			    level_7_user,
+			    alarm_view_mode,error_text) then
+			   begin
+			   if alarm_list[i].alarm_status == w_act then
+			      begin
+			      error_text = ""
+			      action_ind = i
+			      set title action_info = "Action  " + 
+				alarm_list[i].data_gatherer + ":" +
+				alarm_list[i].db_addr
+			      set x action_info = 300
+			      set y action_info = 200
+			      set unpinned action_info
+			      request action_info
+			      using_panel = 1
+			      end
+			   else
+			      begin
+			      error_text = alarm_list[i].db_addr +
+				  " not waiting for action."
+			      end
+			   end
+			end
+		     normal_accept
+			begin
+			if ok_to_modify(alarm_list[i],ws_info,l_op[i].db_addr,
+			    (ws_info.current_access_level & level_7_user) == 
+			    level_7_user,
+			    alarm_view_mode,error_text) then
+			   begin
+			   action_status = normal_accept_alarm(alarm_list[i])
+			   case action_status of
+			      0 error_text = alarm_list[i].db_addr +
+				  " not waiting for normal_accept."
+			      1 error_text = 
+				  "Alarm normal accept busy - please wait"
+			   default
+			      begin
+			      if alarm_list[i].area_number in 
+				  ws_info.current_mastered_areas then
+				 begin
+				 l_op[i].db_addr = alarm_list[i].db_addr
+				 l_op[i].alarm_status = w_acn
+				 l_op[i].alarm_time = alarm_list[i].alarm_time
+				 end
+			      end
+			   end
+			else if error_text == "" then
+			   error_text = 
+			       "Only normal accept alarms for this workstation"
+			end
+		     redirect
+			begin
+			if ok_to_modify(alarm_list[i],ws_info,l_op[i].db_addr,
+			    (ws_info.current_access_level & level_7_user) == 
+			    level_7_user,
+			    alarm_view_mode,error_text) then
+			   begin
+			   re_direct_ind = i
+			   set title wrkstn_num = "Enter workstation"
+			   set x wrkstn_num = 350
+			   set y wrkstn_num = 150
+			   request wrkstn_num
+			   using_panel = 1
+			   end
+			end
+		     disable
+			if ok_to_modify(alarm_list[i],ws_info,l_op[i].db_addr,
+			    (ws_info.current_access_level & level_7_user) == 
+			    level_7_user,
+			    alarm_view_mode,error_text) then
+			   begin
+			   disable_alarm(alarm_list[i],
+					 alarm_list[i].data_gatherer)
+			   end
+		     default
+			begin
+			end
+		     end
+		  else if menb(x = 0,w = 830,h = ch) then
+		     begin
+		     rect(fg = lightblue,x = 0,w = 830,h = ch)
+		     box(fg = black,x = 0,w = 830,h = ch)
+		     execute_cmd = i
+		     end
+		  end
+
+	       if i <= lastrow alarm_list then
+		  begin
+		  if l_op[i].db_addr <> alarm_list[i].db_addr or 
+		      l_op[i].alarm_time <> alarm_list[i].alarm_time then
+		     l_op[i] = default_l_op
+		  case l_op[i].alarm_status of
+		     w_act 
+			begin
+			if alarm_list[i].alarm_status <> w_note then
+			   l_op[i] = default_l_op
+			end
+		     w_clr
+			begin
+			if alarm_list[i].alarm_status <> w_act then
+			   l_op[i] = default_l_op
+			end
+		     w_acn
+			begin
+			if alarm_list[i].alarm_status <> w_acn then
+			   l_op[i] = default_l_op
+			end
+		  default
+		     begin
+		     end
+		  end
+              else
+		 l_op[i] = default_l_op
+
+	       if not(alarm_list[i].db_addr == db_invalid) and
+                   not(l_op[i].db_addr and l_op[i].alarm_status == w_acn) then
+		  begin
+		  text(x = 0,alarm_list[i].alarm_time)
+		  text(x = 190,alarm_list[i].alarm_text)
+		  text(x = 820,just = topright,alarm_list[i].alarm_value)
+		  if l_op[i].db_addr <> db_invalid then
+		     als = l_op[i].alarm_status
+                  else 
+		     als = alarm_list[i].alarm_status
+		  case als of
+		     w_dan fg = flashblue
+		     w_note fg = flashred
+		     w_act fg = flashmagenta
+		     w_clr fg = magenta
+		     w_acn fg = red
+		default
+		   begin
+		   end
+
+		  rect(x = 838,w = 10,h = ch)
+		  box(fg = black,x = 838,w = 10,h = ch)
+		  text(intf=decimal,just=topcentre,x = 855,
+			 alarm_list[i].alarm_level)
+		  rect(x = 862,w = 10,h = ch)
+		  box(fg = black,x = 862,w = 10,h = ch)
+		  if alarm_list[i].alarm_referals  then
+		     text(just = topcentre,x = 867,tfg = white,"F")
+	          end
+ 	          y += ch + 8 
+	    end
+	 end
+
+      if valid group_mode_group and 
+	  group_mode <> free and
+	  valid alarm_list then
+	 begin
+	 case group_mode of
+	    note group_note_alarm(group_mode_group,
+				  ws_info_1.wrkstn_number,
+				  ws_info_2.wrkstn_number,
+				  ws_info_3.wrkstn_number,
+				  ws_info_4.wrkstn_number)
+	    action
+	       begin
+	       old_group_mode_group = group_mode_group
+	       set title action_info = "Group Action  " + group_filter
+	       set x action_info = 300
+	       set y action_info = 200
+	       set unpinned action_info
+	       request action_info
+	       using_panel = 1
+	       end
+	    normal_accept
+	       begin
+	       group_normal_accept_alarm(group_mode_group,
+					 ws_info_1.wrkstn_number,
+					 ws_info_2.wrkstn_number,
+					 ws_info_3.wrkstn_number,
+					 ws_info_4.wrkstn_number)
+	       end
+	    redirect
+	       begin
+	       old_group_mode_group = group_mode_group
+	       set title wrkstn_num = "Enter workstation"
+	       set x wrkstn_num = 350
+	       set y wrkstn_num = 150
+	       request wrkstn_num
+	       using_panel = 1
+	       end
+	    disable
+	       group_disable_alarm(group_mode_group)
+	 default
+	    begin
+	    end
+	 end
+
+      if execute_cmd then
+	 begin
+	 if alarm_list[execute_cmd].alarm_command_text <> "" then
+	    begin
+	    set mimic top = "ALARM_BANNER_UTIL"
+	    set p1 top = ""
+	    set p2 top = alarm_list[execute_cmd].alarm_command_text
+	    set existing top
+	    request top
+	    error_text = "Executing cmd : " + 
+	       alarm_list[execute_cmd].alarm_command_text
+	    end
+	 else
+	    error_text = "No command text to execute for " + 
+		alarm_list[execute_cmd].data_gatherer + ":" + 
+		alarm_list[execute_cmd].db_addr
+
+	 execute_cmd = 0
+	 end
+
+      end
+
+   set_up_alarm_list = {alarm_list_return_type}
+   set_up_alarm_list.start = start
+   set_up_alarm_list.error_text = error_text
+
+end
+
+object alarm_view_icon (bg ,sel = selection_type,
+			    area_filter = set( area))
+begin
+
+   rect(fg = yellow,x = 0,y = 0,w = 260,h = 130)
+   text(tfg = red,just = centrecentre,x = 125,y = 60,ch = 35,"Alarm View.")
+
+end
+
+! objects for disabled alarm lists !
+
+object convert_to_ext_disabled_alarm(dg = disabled_alarms_row,
+				      src = source)
+				      = extended_disabled_alarm_row
+var loopback new_alarm = extended_disabled_alarm_row
+begin
+
+   set default new_alarm
+   new_alarm.db_addr = dg.db_addr
+   new_alarm.db_name = dg.db_name
+   new_alarm.area_number = dg.area_number
+   new_alarm.c_value = dg.c_value
+   new_alarm.data_gatherer = src
+   convert_to_ext_disabled_alarm = new_alarm
+
+end
+
+type dis_filter_type = table(db_addr = db_address,
+			     src = source) 
+			     
+object find_current_disabled_alarm(dg = disabled_list_type,
+				   dis_filter = dis_filter_type,
+				   src = source) = int
+var al_no = int
+begin
+
+   find_current_disabled_alarm = 0
+
+   if valid dg then
+      begin
+      if lastrow dg then
+	 begin
+	 al_no = 1
+	 while (al_no <= lastrow dg) do
+	    begin
+	    if dg[al_no].db_addr == dis_filter.db_addr then
+	       begin
+	       find_current_disabled_alarm = al_no
+	       al_no = lastrow dg
+	       end
+	    else if dg[al_no].db_addr > dis_filter.db_addr then
+	       begin
+	       find_current_disabled_alarm = al_no
+	       al_no = lastrow dg
+	       end
+	    al_no ++
+	    end
+	 end
+      else
+         find_current_disabled_alarm = 0
+      end
+   else
+      find_current_disabled_alarm = 0
+   
+end
+
+object get_low_priority_disabled_alarm(ip_al1 = disabled_alarms_row,
+				       ip_al2 = disabled_alarms_row,
+				       ip_al3 = disabled_alarms_row,
+				       ip_al4 = disabled_alarms_row) 
+				       = alarm_use_type
+var al1 = disabled_alarms_row
+var al2 = disabled_alarms_row
+var al3 = disabled_alarms_row
+var al4 = disabled_alarms_row
+begin
+
+   al1 = ip_al1
+   al2 = ip_al2
+   al3 = ip_al3
+   al4 = ip_al4
+
+   if al1.db_addr == db_invalid and al2.db_addr == db_invalid and
+       al3.db_addr == db_invalid and al4.db_addr == db_invalid then
+      get_low_priority_disabled_alarm = all_invalid
+   else 
+      begin
+      if al1.db_addr == db_invalid then
+         al1.db_addr = max db_address
+      if al2.db_addr == db_invalid then
+         al2.db_addr = max db_address
+      if al3.db_addr == db_invalid then
+         al3.db_addr = max db_address
+      if al4.db_addr == db_invalid then
+         al4.db_addr = max db_address
+
+      if al1.db_addr <= al2.db_addr and
+	  al1.db_addr <= al3.db_addr and
+	  al1.db_addr <= al4.db_addr then
+	 get_low_priority_disabled_alarm = use_dg1
+      else if al2.db_addr <= al1.db_addr and
+	  al2.db_addr <= al3.db_addr and
+	  al2.db_addr <= al4.db_addr then
+	 get_low_priority_disabled_alarm = use_dg2
+      else if al3.db_addr <= al1.db_addr and
+	  al3.db_addr <= al2.db_addr and
+	  al3.db_addr <= al4.db_addr then
+	 get_low_priority_disabled_alarm = use_dg3
+      else if al4.db_addr <= al1.db_addr and
+	  al4.db_addr <= al2.db_addr and
+	  al4.db_addr <= al3.db_addr then
+	 get_low_priority_disabled_alarm = use_dg4
+      end
+
+end
+
+object next_disabled_filter(old_list = extended_disabled_list_type,
+			    dg1 = disabled_alarms_table,
+			    dg2 = disabled_alarms_table,
+			    dg3 = disabled_alarms_table,
+			    dg4 = disabled_alarms_table) = dis_filter_type
+
+var loopback new_filter = dis_filter_type
+
+begin
+   
+   set default new_filter 
+
+   if old_list[lastrow old_list].data_gatherer == source(3) then
+      begin
+      new_filter.src = source(0)
+      new_filter.db_addr = old_list[lastrow old_list].db_addr
+      end
+   else
+      begin
+      if old_list[lastrow old_list].data_gatherer == source(0) then
+	 begin
+	 if valid dg2 and lastrow dg2 then
+	    begin
+	    new_filter.src = source(1)	       
+	    new_filter.db_addr =
+	       db_address(int(old_list[lastrow old_list].db_addr) + 1)
+	    end
+	 else if valid dg3 and lastrow dg3 then
+	    begin
+	    new_filter.src = source(2)	       
+	    new_filter.db_addr = 
+	       db_address(int(old_list[lastrow old_list].db_addr) + 1)
+	    end
+	 else if valid dg4 and lastrow dg4 then
+	    begin
+	    new_filter.src = source(3)	       
+	    new_filter.db_addr =
+	       db_address(int(old_list[lastrow old_list].db_addr) + 1)
+	    end
+	 else
+	    begin
+	    new_filter.src = source(0)
+	    new_filter.db_addr =
+	       db_address(int(old_list[lastrow old_list].db_addr) + 1)
+	    end
+	 end
+      else if old_list[lastrow old_list].data_gatherer == source(1) then
+	 begin
+	 if valid dg3 and lastrow dg3 then
+	    begin
+	    new_filter.src = source(2)	       
+	    new_filter.db_addr = old_list[lastrow old_list].db_addr
+	    end
+	 else if valid dg4 and lastrow dg4 then
+	    begin
+	    new_filter.src = source(3)	       
+	    new_filter.db_addr = old_list[lastrow old_list].db_addr
+	    end
+	 else
+	    begin
+	    new_filter.src = source(0)
+	    new_filter.db_addr = old_list[lastrow old_list].db_addr
+	    end
+	 end
+      else if old_list[lastrow old_list].data_gatherer == source(2) then
+	 begin
+	 if valid dg4 and lastrow dg4 then
+	    begin
+	    new_filter.src = source(3)	       
+	    new_filter.db_addr = old_list[lastrow old_list].db_addr
+	    end
+	 else
+	    begin
+	    new_filter.src = source(0)
+	    new_filter.db_addr = old_list[lastrow old_list].db_addr
+	    end
+	 end
+      else if old_list[lastrow old_list].data_gatherer == source(3) then
+	 begin
+	 new_filter.src = source(0)
+	 new_filter.db_addr = old_list[lastrow old_list].db_addr
+	 end
+      end
+
+   next_disabled_filter = new_filter
+
+end
+
+object find_disabled_prev_index(new_filter = dis_filter_type,
+                                dg = disabled_alarms_table) = int
+var i = int
+begin
+
+   if valid dg and lastrow dg then
+      begin
+      i = lastrow dg
+      while (i > 0) do
+	 begin
+	 if dg[i].db_addr < new_filter.db_addr then
+	    begin
+	    find_disabled_prev_index = i
+	    i = 0
+	    end
+	 i --
+	 end
+      end
+
+   if invalid find_disabled_prev_index then
+      find_disabled_prev_index = 0
+
+end
+
+object get_high_priority_disabled_alarm(new_filter = dis_filter_type,
+			ip_al1 = disabled_alarms_row,
+                        ip_al2 = disabled_alarms_row,
+		        ip_al3 = disabled_alarms_row,
+		        ip_al4 = disabled_alarms_row) = alarm_use_type
+
+var loopback al1 = disabled_alarms_row
+var loopback al2 = disabled_alarms_row
+var loopback al3 = disabled_alarms_row
+var loopback al4 = disabled_alarms_row
+
+begin
+
+   if valid ip_al1 then
+      al1 = ip_al1
+   else
+      set default al1
+
+   if valid ip_al2 then
+      al2 = ip_al2
+   else
+      set default al2
+
+   if valid ip_al3 then
+      al3 = ip_al3
+   else
+      set default al3
+
+   if valid ip_al4 then
+      al4 = ip_al4
+   else
+      set default al4
+
+   if al1.db_addr >= al2.db_addr and 
+       al1.db_addr >= al3.db_addr and 
+       al1.db_addr >= al4.db_addr then
+      get_high_priority_disabled_alarm = use_dg1
+   else if al2.db_addr >= al1.db_addr and
+       al2.db_addr >= al3.db_addr and 
+       al2.db_addr >= al4.db_addr then
+      get_high_priority_disabled_alarm = use_dg2
+   else if al3.db_addr >= al1.db_addr and
+       al3.db_addr >= al2.db_addr and 
+       al3.db_addr >= al4.db_addr then
+      get_high_priority_disabled_alarm = use_dg3
+   else if al4.db_addr >= al1.db_addr and
+       al4.db_addr >= al2.db_addr and 
+       al4.db_addr >= al3.db_addr then
+      get_high_priority_disabled_alarm = use_dg4
+
+end
+
+object previous_disabled_filter(old_list = extended_disabled_list_type,
+			        dg1 = disabled_alarms_table,
+			        dg2 = disabled_alarms_table,
+			        dg3 = disabled_alarms_table,
+			        dg4 = disabled_alarms_table) = dis_filter_type
+
+var i = int
+
+var loopback j = int
+var loopback k = int
+var loopback l = int
+var loopback m = int
+
+var use_alarm = alarm_use_type
+var loopback tmp_list = extended_disabled_list_type
+var loopback new_filter = dis_filter_type
+
+begin
+
+   set default new_filter
+   new_filter.src = old_list[1].data_gatherer
+   new_filter.db_addr = old_list[1].db_addr
+
+   j = find_disabled_prev_index(new_filter,dg1)
+   k = find_disabled_prev_index(new_filter,dg2)
+   l = find_disabled_prev_index(new_filter,dg3)
+   m = find_disabled_prev_index(new_filter,dg4)
+
+   i = 1
+
+   set default tmp_list
+
+   while (i < 16) do
+      begin
+
+      use_alarm = get_high_priority_disabled_alarm(new_filter,
+						  dg1[j],
+						  dg2[k],
+						  dg3[l],
+						  dg4[m])
+      case use_alarm of
+	 use_dg1
+	   begin
+	   tmp_list[i] = convert_to_ext_disabled_alarm(dg1[j],source(0))
+	   j --
+	   end
+	 use_dg2
+	   begin
+	   tmp_list[i] = convert_to_ext_disabled_alarm(dg2[k],source(1))
+	   k --
+	   end
+	 use_dg3
+	   begin
+	   tmp_list[i] = convert_to_ext_disabled_alarm(dg3[l],source(2))
+	   l --
+	   end
+	 use_dg4
+	   begin
+	   tmp_list[i] = convert_to_ext_disabled_alarm(dg4[m],source(3))
+	   m --
+	   end
+      default
+	 begin
+	 end
+      i ++
+      end 
+
+   new_filter.src = tmp_list[lastrow tmp_list].data_gatherer
+   new_filter.db_addr = tmp_list[lastrow tmp_list].db_addr
+
+   previous_disabled_filter = new_filter
+
+end
+
+object dis_filter_ge(filters = dis_filter_type,
+		     alarm = disabled_alarms_row) = byte
+begin
+
+   dis_filter_ge = 0
+   
+   if invalid filters or invalid alarm then
+      dis_filter_ge = 1
+   else if filters.db_addr <= alarm.db_addr then
+      dis_filter_ge = 1
+
+end
+
+object rndtf(dis_filter = dis_filter_type,
+	     dg = disabled_alarms_table,
+	     src = source) = int
+var loopback j = int
+begin
+
+   rndtf = 0
+   if lastrow dg == 45 then
+      begin
+      j = find_current_disabled_alarm(dg,dis_filter,src)
+      if j > 30 then
+	 rndtf = j - 15
+      end
+
+end
+
+object rpdtf(dis_filter = dis_filter_type,
+	     dg = disabled_alarms_table,
+	     fa = disabled_alarms_row,
+	     src = source) = int
+var loopback i = int
+begin
+
+   rpdtf = 0
+
+   if valid dg then
+      begin
+      i = find_current_disabled_alarm(dg,dis_filter,src)
+      if (dg[1].db_addr <> fa.db_addr) then
+	 begin
+	 if (lastrow dg <= 45 and i <= 15 and i >= 1 and
+	     dg[1].db_addr > fa.db_addr) then
+	    rpdtf = i
+	 end
+      end
+   
+end
+
+object get_first_disabled_alarm(area_filter = set( area),
+				src = source) = disabled_alarms_row
+var input fa = disabled_alarms_row
+begin
+
+   set source fa = src
+   set mayexist fa.db_name
+   set filter fa.alarm_status = lim_eq
+   set limit fa.alarm_status = alarm_disabled
+   set persist fa
+
+   if valid area_filter and area_filter <> {area} then
+      begin
+      set filter fa.area_number = lim_inset
+      set limitset fa.area_number  = area_filter
+      end
+
+   request fa
+
+   get_first_disabled_alarm = fa
+
+end
+
+object set_up_disabled_alarm_list(x,y,
+		  ip_list_type = alarm_list_type,
+		  area_mode = area_mode_type,
+		  area_filter = set( area),
+		  ws_info_1 = ws_info_row,
+		  ws_info_2 = ws_info_row,
+		  ws_info_3 = ws_info_row,
+		  ws_info_4 = ws_info_row,
+		  select_filter = selection_type,
+		  wrkstn_filter = wrkstn_filter_type,
+		  gm_filter = alarm_group,
+		  group_filter = alarm_group,
+		  ip_start = onoff) = alarm_list_return_type
+var i = int
+var j = int
+var k = int
+var l = int
+var m = int
+
+var start = onoff
+var stop = int
+var use_alarm = alarm_use_type
+var is_busy = byte
+var lock_prev = byte
+var error_text = string_80
+
+var av = area
+var t_ind = int
+
+var loopback af = set( area) 
+
+var loopback list_type = alarm_list_type
+var loopback dis_filter = dis_filter_type
+
+var loopback alarm1 = disabled_alarms_row
+var loopback alarm2 = disabled_alarms_row
+var loopback alarm3 = disabled_alarms_row
+var loopback alarm4 = disabled_alarms_row
+
+var loopback first_dg1 = disabled_alarms_row
+var loopback first_dg2 = disabled_alarms_row
+var loopback first_dg3 = disabled_alarms_row
+var loopback first_dg4 = disabled_alarms_row
+
+var loopback old_area_filter = set( area)
+
+var input dg1 = disabled_alarms_table
+var input dg2 = disabled_alarms_table
+var input dg3 = disabled_alarms_table
+var input dg4 = disabled_alarms_table
+
+var toplevel op = string_80
+
+
+var loopback ws_info = ws_info_row
+var loopback area_str = string
+var loopback tmp_text = string
+var loopback disabled_alarm_list = extended_disabled_list_type
+
+begin
+
+   if invalid lock_prev then
+      lock_prev = 0
+   start = ip_start
+   error_text = ""
+
+   list_type = ip_list_type
+
+   if lock_prev and list_type == current then
+      list_type = previous
+
+   if invalid j then
+      begin
+      j = 1
+      k = 1
+      l = 1
+      m = 1
+      old_area_filter = area_filter
+      end
+
+   if select_filter <> disabled_alarms then
+      begin
+
+      set source op = source(0)
+      set mimic op = "alarm_view"
+      set p1 op = select_filter
+      set p2 op = area_mode
+      set default area_str
+      for av from min area to max area do 
+	 begin
+	 if valid area_filter then
+	    begin
+	    if av in area_filter then
+	       area_str += "1"
+	    else 
+	       area_str += "0"
+	    end
+	 else
+	    begin
+	    if av in old_area_filter then
+	       area_str += "1"
+	    else 
+	       area_str += "0"
+	    end
+	 end
+      set p3 op = area_str
+      set p4 op = wrkstn_filter
+      set p5 op = group_filter
+      set selfreplace op
+      request op
+      end
+
+   set source dg1 = source(0)
+   set source dg2 = source(1)
+   set source dg3 = source(2)
+   set source dg4 = source(3)
+
+   set mayexist dg1.db_name
+   set mayexist dg2.db_name
+   set mayexist dg3.db_name
+   set mayexist dg4.db_name
+
+   set filter dg1.alarm_status = lim_eq
+   set filter dg2.alarm_status = lim_eq
+   set filter dg3.alarm_status = lim_eq
+   set filter dg4.alarm_status = lim_eq
+
+   set limit dg1.alarm_status = alarm_disabled
+   set limit dg2.alarm_status = alarm_disabled
+   set limit dg3.alarm_status = alarm_disabled
+   set limit dg4.alarm_status = alarm_disabled
+
+   set persist dg1
+   set persist dg2
+   set persist dg3
+   set persist dg4
+
+   if valid area_filter and area_filter <> old_area_filter then
+      begin
+
+      set invalid dg1
+      set invalid dg2
+      set invalid dg3
+      set invalid dg4
+
+      set invalid disabled_alarm_list
+      old_area_filter = area_filter
+
+      end
+
+   set filter dg1.area_number = lim_inset
+   set filter dg2.area_number = lim_inset
+   set filter dg3.area_number = lim_inset
+   set filter dg4.area_number = lim_inset
+
+   if area_mode <> areas_default then
+      begin
+      set limitset dg1.area_number  = area_filter
+      set limitset dg2.area_number = area_filter
+      set limitset dg3.area_number = area_filter
+      set limitset dg4.area_number = area_filter 
+      end
+   else
+      begin
+      set limitset dg1.area_number = ws_info_1.user_default_areas
+      set limitset dg2.area_number = ws_info_2.user_default_areas
+      set limitset dg3.area_number = ws_info_3.user_default_areas
+      set limitset dg4.area_number = ws_info_4.user_default_areas
+      end
+
+
+   if area_mode == areas_default then
+      af = ws_info_1.user_default_areas
+   else 
+      af = area_filter	
+
+   first_dg1 = get_first_disabled_alarm(af,source(0))
+   
+   if area_mode == areas_default then
+      af = ws_info_2.user_default_areas
+   else 
+      af = area_filter	
+
+   first_dg2 = get_first_disabled_alarm(af,source(1))
+
+   if area_mode == areas_default then
+      af = ws_info_3.user_default_areas
+   else 
+      af = area_filter	
+
+   first_dg3 = get_first_disabled_alarm(af,source(2))
+
+   if area_mode == areas_default then
+      af = ws_info_4.user_default_areas
+   else 
+      af = area_filter	
+
+   first_dg4 = get_first_disabled_alarm(af,source(3))
+
+   if invalid dis_filter or start == on then
+      begin
+      set default dis_filter
+      dis_filter.db_addr = b1
+      dis_filter.src = source(0)
+      end
+
+   is_busy = (valid dg1 and get busy dg1) or
+              (valid dg2 and get busy dg2) or
+              (valid dg3 and get busy dg3) or
+              (valid dg4 and get busy dg4)
+       
+   case list_type of 
+      next 
+	 begin
+	 if not(is_busy) then
+	    begin
+	    if lastrow disabled_alarm_list == 15 then
+	       begin
+	       dis_filter = next_disabled_filter(disabled_alarm_list, 
+						 dg1,dg2,dg3,dg4)
+	       t_ind = rndtf(dis_filter,dg1,source(0))
+               if t_ind then
+		  begin
+		  set filter dg1.db_addr = lim_gt 
+		  set limit dg1.db_addr = dg1[t_ind].db_addr
+		  end
+   
+	       t_ind = rndtf(dis_filter,dg2,source(1))
+               if t_ind then
+		  begin
+		  set filter dg2.db_addr = lim_gt 
+		  set limit dg2.db_addr = dg2[t_ind].db_addr
+		  end
+   
+	       t_ind = rndtf(dis_filter,dg3,source(2))
+               if t_ind then
+		  begin
+		  set filter dg3.db_addr = lim_gt 
+		  set limit dg3.db_addr = dg3[t_ind].db_addr
+		  end
+   
+	       t_ind = rndtf(dis_filter,dg4,source(3))
+               if t_ind then
+		  begin
+		  set filter dg4.db_addr = lim_gt 
+		  set limit dg4.db_addr = dg4[t_ind].db_addr
+		  end
+   
+	       end
+	    end
+	 end
+      previous 
+	 begin
+	 if not(is_busy) then
+	    begin
+	    lock_prev = 0
+
+	    t_ind = rpdtf(dis_filter,
+			  dg1,
+			  first_dg1,
+			  source(0))
+            if t_ind then
+	       begin
+	       lock_prev = 1
+	       set filter dg1.db_addr = lim_prev
+	       set limit dg1.db_addr = dg1[t_ind].db_addr
+	       end
+
+	    t_ind = rpdtf(dis_filter,
+			  dg2,
+			  first_dg2,
+			  source(1))
+            if t_ind then
+	       begin
+	       lock_prev = 1
+	       set filter dg2.db_addr = lim_prev
+	       set limit dg2.db_addr = dg2[t_ind].db_addr
+	       end
+
+	    t_ind = rpdtf(dis_filter,
+			  dg3,
+			  first_dg3,
+			  source(2))
+            if t_ind then
+	       begin
+	       lock_prev = 1
+	       set filter dg3.db_addr = lim_prev
+	       set limit dg3.db_addr = dg3[t_ind].db_addr
+	       end
+
+	    t_ind = rpdtf(dis_filter,
+			  dg4,
+			  first_dg4,
+			  source(3))
+            if t_ind then
+	       begin
+	       lock_prev = 1
+	       set filter dg4.db_addr = lim_prev
+	       set limit dg4.db_addr = dg4[t_ind].db_addr
+	       end
+
+	    dis_filter = previous_disabled_filter(disabled_alarm_list,
+					       dg1,dg2,dg3,dg4)
+
+	    end
+	 end
+   default
+      begin
+      end
+
+   if not(is_busy) and not lock_prev then
+      begin
+
+      j = find_current_disabled_alarm(dg1,dis_filter,source(0))
+      k = find_current_disabled_alarm(dg2,dis_filter,source(1))
+      l = find_current_disabled_alarm(dg3,dis_filter,source(2))
+      m = find_current_disabled_alarm(dg4,dis_filter,source(3))
+
+      set default disabled_alarm_list
+
+      i = 1
+
+      while (i < 16) do
+	 begin
+
+	 if j == 0 or j > lastrow dg1 then
+	    set default alarm1
+	 else
+	    alarm1 = dg1[j]
+
+	 if k == 0 or k > lastrow dg2 then
+	    set default alarm2
+	 else
+	    alarm2 = dg2[k]
+
+	 if l == 0 or l > lastrow dg3 then
+	    set default alarm3
+	 else
+	    alarm3 = dg3[l]
+
+	 if m == 0 or m > lastrow dg4 then
+	    set default alarm4
+	 else
+	    alarm4 = dg4[m]
+
+
+	 use_alarm =
+	     get_low_priority_disabled_alarm(alarm1,alarm2,alarm3,alarm4)
+
+	 case use_alarm of 
+	    all_invalid i = 16
+	    use_dg1
+	       begin
+	       disabled_alarm_list[i] = 
+		  convert_to_ext_disabled_alarm(alarm1,source(0))
+	       j ++
+	       end
+	    use_dg2
+	       begin
+	       disabled_alarm_list[i] = 
+		   convert_to_ext_disabled_alarm(alarm2,source(1))
+	       k ++
+	       end
+	    use_dg3
+	       begin
+	       disabled_alarm_list[i] = 
+		   convert_to_ext_disabled_alarm(alarm3,source(2))
+	       l ++
+	       end
+	    use_dg4
+	       begin
+	       disabled_alarm_list[i] = 
+		   convert_to_ext_disabled_alarm(alarm4,source(3))
+	       m ++
+	       end
+	 default
+	    begin
+	    end
+
+	 i ++
+
+	 end
+      end
+
+   if valid ws_info_1 then
+      request dg1
+   if valid ws_info_2 then
+      request dg2
+   if valid ws_info_3 then
+      request dg3
+   if valid ws_info_4 then
+      request dg4
+
+   if dis_filter_ge(dis_filter,first_dg1) and
+       dis_filter_ge(dis_filter,first_dg2) and
+       dis_filter_ge(dis_filter,first_dg3) and
+       dis_filter_ge(dis_filter,first_dg4) then
+      start = on
+
+   if get busy dg1 then
+      begin
+      tmp_text = source(0)
+      if tmp_text <> "" then
+	 begin
+         error_text = "Waiting for response from " + tmp_text
+	 end
+      end
+   
+   if get busy dg2 then
+      begin
+      tmp_text = source(1)
+      if error_text == ""  then
+	 begin
+	 if tmp_text <> "" then
+            begin
+	    error_text = "Waiting for response from " + tmp_text
+	    end
+	 end
+      else
+	 begin
+	 if tmp_text <> "" then
+	    begin
+	    error_text = " " + tmp_text
+	    end
+	 end
+      end
+
+   if get busy dg3 then
+      begin
+      tmp_text = source(2)
+      if error_text == ""  then
+	 begin
+	 if tmp_text <> "" then
+            begin
+	    error_text = "Waiting for response from " + tmp_text
+	    end
+	 end
+      else
+	 begin
+	 if tmp_text <> "" then
+            begin
+	    error_text += " " + tmp_text
+	    end
+	 end
+      end
+
+   if get busy dg4 then
+      begin
+      tmp_text = source(3)
+      if error_text == ""  then
+	 begin
+	 if tmp_text <> "" then
+            begin
+	    error_text = "Waiting for response from " + tmp_text
+	    end
+	 end
+      else 
+	 begin
+	 if tmp_text <> "" then
+            begin
+	    error_text += " " + tmp_text
+	    end
+	 end
+      end
+
+   is_busy = not((valid ws_info_1 and not get busy dg1) or
+	     (valid ws_info_2 and not get busy dg2) or 
+	     (valid ws_info_3 and not get busy dg3) or 
+	     (valid ws_info_4 and not get busy dg4))
+
+   if error_text == "" then
+      begin
+      end
+   
+   if valid disabled_alarm_list then
+      begin
+      
+      if lastrow disabled_alarm_list < 15 then
+	 stop = lastrow disabled_alarm_list
+      else
+	 stop = 15
+
+      font = font_bold
+
+      for i from 1 to stop do
+	 begin
+
+	 if disabled_alarm_list[i].data_gatherer == source(0) then
+	    ws_info = ws_info_1
+	 else if disabled_alarm_list[i].data_gatherer == source(1) then
+	   ws_info = ws_info_2
+	 else if disabled_alarm_list[i].data_gatherer == source(2) then
+	    ws_info = ws_info_3
+	 else if disabled_alarm_list[i].data_gatherer == source(3) then
+	    ws_info = ws_info_4
+
+	    if disabled_alarm_list[i].area_number in 
+		ws_info.current_mastered_areas then
+	       tfg = red 
+	    else if disabled_alarm_list[i].area_number in 
+		ws_info.user_authorised_areas then
+	       tfg = magenta4
+	   else if disabled_alarm_list[i].area_number in 
+		not(ws_info.user_authorised_areas) then
+	       tfg = blue4
+	   else if disabled_alarm_list[i].area_number in 
+		ws_info.user_default_areas then
+	       tfg = black
+	    else 
+	       tfg = green4
+
+	 if selb(x = 30,w = 860,h = ch) and invalid gm_filter then
+	    begin
+	    rect(fg = yellow,x = 30,w = 860,h = ch)
+	    box(fg = black,x = 30,w = 860,h = ch)
+	    enable_alarm(disabled_alarm_list[i])
+	    end
+
+	 text(x = 30,disabled_alarm_list[i].data_gatherer + 
+		     ":" + disabled_alarm_list[i].db_addr)
+	 text(x = 250,disabled_alarm_list[i].db_name)
+	 text(x = 890,just = topright,disabled_alarm_list[i].c_value)
+	 y += ch + 8
+	 end
+
+      if valid gm_filter then
+	 group_enable_alarm(gm_filter)
+
+      end
+
+   set_up_disabled_alarm_list = {alarm_list_return_type}
+   set_up_disabled_alarm_list.start = start
+   set_up_disabled_alarm_list.error_text = error_text
+
+end
+
+object display_disabled_alarm_list(y,
+		   ws_info_1 = ws_info_row,
+		   ws_info_2 = ws_info_row,
+		   ws_info_3 = ws_info_row,
+		   ws_info_4 = ws_info_row,
+		   disabled_alarm_list = extended_disabled_list_type,
+		   gm_filter = alarm_group)
+var i = int
+var stop = int
+var loopback ws_info = ws_info_row
+begin
+
+   if lastrow disabled_alarm_list < 15 then
+      stop = lastrow disabled_alarm_list
+   else
+      stop = 15
+
+   font = font_bold
+
+   for i from 1 to stop do
+      begin
+
+      if disabled_alarm_list[i].data_gatherer == source(0) then
+	 ws_info = ws_info_1
+      else if disabled_alarm_list[i].data_gatherer == source(1) then
+	ws_info = ws_info_2
+      else if disabled_alarm_list[i].data_gatherer == source(2) then
+	 ws_info = ws_info_3
+      else if disabled_alarm_list[i].data_gatherer == source(3) then
+	 ws_info = ws_info_4
+
+	 if disabled_alarm_list[i].area_number in 
+	     ws_info.current_mastered_areas then
+	    tfg = red 
+         else if disabled_alarm_list[i].area_number in 
+	     ws_info.user_authorised_areas then
+            tfg = magenta4
+        else if disabled_alarm_list[i].area_number in 
+	     not(ws_info.user_authorised_areas) then
+            tfg = blue4
+        else if disabled_alarm_list[i].area_number in 
+	     ws_info.user_default_areas then
+            tfg = black
+	 else 
+	    tfg = green4
+
+      if selb(x = 30,w = 860,h = ch) and invalid gm_filter then
+         begin
+	 rect(fg = yellow,x = 30,w = 860,h = ch)
+	 box(fg = black,x = 30,w = 860,h = ch)
+	 enable_alarm(disabled_alarm_list[i])
+         end
+
+      text(x = 30,disabled_alarm_list[i].data_gatherer + 
+		  ":" + disabled_alarm_list[i].db_addr)
+      text(x = 250,disabled_alarm_list[i].db_name)
+      text(x = 890,just = topright,disabled_alarm_list[i].c_value)
+      y += ch + 8
+      end
+
+   if valid gm_filter then
+      group_enable_alarm(gm_filter)
+
+end
+

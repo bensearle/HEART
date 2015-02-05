@@ -1,0 +1,285 @@
+load mimic_libutil
+
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(alarm_status)
+
+type main_menu_row = table (main_menu_items= string(26))
+
+type panel_item_row = table (str = string(40))
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+!
+************************************************************
+* SPRING FIRED OBJECT                                      *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object spring_fired(plc_offset=int,b_offset=int,
+                    c_offset=int,src=source)
+
+! PLC TYPE INPUTS !  
+var plc_a_comms_fail_ip = input b_db_row_type
+var plc_b_comms_fail_ip = input b_db_row_type
+
+! DB TYPE INPUT!
+var spring_fired        = input b_db_row_type
+
+! ALARM TYPE INPUTS !
+var spring_fired_alarm  = input alarm_row_type
+
+! CHARACTER INPUTS !
+var tag_message_ip      = input c_db_row_type
+
+! LOOPBACKS !
+var spring_fired_fg     = loopback colour
+var spring_fired_bg     = loopback colour
+
+! PANELS AND MENUS !
+var main_menu           = menu string(30)
+var tag_message_panel   = panel panel_item_row
+
+begin
+
+! INITIALISATION !
+
+if invalid get source plc_a_comms_fail_ip then 
+   begin
+
+   set source plc_a_comms_fail_ip = src
+   set filter plc_a_comms_fail_ip.db_addr = lim_eq
+   set limit plc_a_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset-1 )
+   set persist plc_a_comms_fail_ip 
+   request plc_a_comms_fail_ip
+
+   set source plc_b_comms_fail_ip = src
+   set filter plc_b_comms_fail_ip.db_addr = lim_eq
+   set limit plc_b_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset )
+   set persist plc_b_comms_fail_ip 
+   request plc_b_comms_fail_ip
+
+   set source spring_fired = src
+   set filter spring_fired.db_addr = lim_eq
+   set limit spring_fired.db_addr = db_address(int(b1) + b_offset -1)
+   set persist spring_fired
+   request spring_fired
+
+   set source spring_fired_alarm = src
+   set filter spring_fired_alarm.db_addr = lim_eq
+   set limit spring_fired_alarm.db_addr = db_address(int(b1) + b_offset -1)
+   set persist spring_fired_alarm
+   request spring_fired_alarm
+ 
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   end
+ 
+! SELECT OBJECT BG COLOUR !
+
+if tag_message_ip.c_value <> "" then
+   spring_fired_bg = yellow
+else 
+   spring_fired_bg = decoroff
+
+! SELECT OBJECT FG COLOUR !
+
+if plc_a_comms_fail_ip.b_value and plc_b_comms_fail_ip.b_value then
+   spring_fired_fg = magenta
+
+else if spring_fired_alarm.alarm_status == w_note then
+begin
+   tfg=red ch=12
+   x=-22 y=22 add text ("Springs")
+   x=-14 y=37 add text ("Free")
+   spring_fired_fg = flashred
+   clear
+end
+   
+else if spring_fired.b_value then
+begin
+   tfg=red ch=12
+   x=-22 y=22 add text ("Springs")
+   x=-14 y=37 add text ("Free")
+   spring_fired_fg = red
+   clear
+end
+
+else
+begin
+   tfg=green4 ch=12
+   x=-22 y=22 add text ("Springs")
+   x=-26 y=37 add text ("Charged")
+   spring_fired_fg = green4
+   clear
+end
+
+! MAIN MENU CONTROL !
+
+if valid main_menu then
+   begin
+
+   case main_menu of
+
+      "Alter Tag Message"
+         begin
+         set title tag_message_panel = "Modify Alter Tag Message"
+         set label tag_message_panel.str = "Alter Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tag Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+    default
+       begin
+       end
+
+    set invalid main_menu
+    end
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w = 35 h = 35
+x=0 y=0
+set rect main_menu 
+set title main_menu = "Indicator"
+set remove main_menu = "Alter Tag Message"
+set remove main_menu = "Clear Tag Message"
+set add main_menu = "Alter Tag Message"
+set add main_menu = "Clear Tag Message"
+
+
+! TAG MESSAGE BOX !
+
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+! DRAW MAIN SYMBOL !
+
+
+just = centrecentre
+x = 0 y = 0
+rect (w=36,h=36,fg=decoroff)
+lw=2
+x = -16 y = 16 add y -= 32 add x += 32 add y += 32 add x -= 32 add line(fg=spring_fired_bg) clear
+lw=1
+x = -18 y = 18 add y -= 36 add x += 36 add line(fg=decorlight) clear
+x = -18 y = 18 add x += 36 add y -= 36 add line(fg=decorshadow) clear 
+
+
+x = 0 y = 0
+disk(h=25,w=25,fg=spring_fired_fg)
+circle(h=25,w=25,fg=black)
+
+lw=1
+x = 2 y = -9 add x -= 3 add line(fg=white) clear
+x = 0 y = -8 add x -= 3 add line(fg=white) clear
+x = -1 y = -7 add x -= 4 add line(fg=white) clear
+x = -2 y = -6 add x -= 4 add line(fg=white) clear
+x = -3 y = -5 add x -= 4 add line(fg=white) clear
+x = -3 y = -4 add x -= 5 add line(fg=white) clear
+x = -4 y = -3 add x -= 4 add line(fg=white) clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+spring_fired(2000,2700,812,heathrow)
+
+end
+
+mimic = main_object w=150,h=150,just=centrecentre,fg=white,bg=black,resizable

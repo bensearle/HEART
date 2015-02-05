@@ -1,0 +1,59 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!************* BUSBAR 92 ***************!
+
+object busbar_92
+begin
+
+just = centrecentre
+
+lw=2
+tfg = black x = -145 y = -20 add text ("92",ch =30) clear
+ch=12
+x = -50 y = -75 text("SS57")
+x = -50 y = -60 text("P6")
+x = 50 y = -75 text("SS296")
+x = 50 y = -60 text("P8")
+x = 100 y = -60 text("SS140")
+
+x = -175   y = 0 add x +=350 add line(lw=4,fg=red) clear
+!x =  -150  y = 0 add y += 50 add line (fg=red) clear!          !****Taken OFF not USED ****!
+x =  -100  y = 0 add y += 50 add line (fg=red) clear
+x =  -50   y = 0 add y -= 50 add line (fg=red) clear
+
+x = 50 y = 0     add y -= 50 add line (fg=red) clear
+x = 100 y = 0    add y -= 50 add line (fg=red) clear
+x = 150 y = 0    add y += 50 add line (fg=red) clear
+
+scale=120
+!x = -150  y = 25   ocb_mont(6000,6210,609,900,heathro2,1,"btm")!   !****Taken OFF not USED ****!
+x = -100  y = 25   ocb_mont(6000,6220,610,901,heathro2,2,"btm") 
+x = -50  y = -25   ocb_mont(6000,6230,611,902,heathro2,3,"top")
+angle = 90
+x = 0  y = 0       ocb_mont(6000,6240,612,903,heathro2,4,"sect")
+angle = 0
+x = 50   y = -25   ocb_mont(6000,6250,613,904,heathro2,5,"top") 
+x = 100  y = -25    ocb_mont(6000,6260,614,905,heathro2,6,"top")
+x = 150  y = 25    ocb_mont(6000,6270,615,906,heathro2,7,"btm")
+
+
+scale=100
+!x = -150  y = 70 transformer("LT 1","")!
+x = -100  y = 70 transformer("LT 4","")
+!x =  100  y = 70 transformer("LT 2","")!
+x =  150  y = 70 transformer("LT 3","")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+busbar_92
+
+end
+
+mimic = main_object w=500,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

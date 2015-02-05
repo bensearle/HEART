@@ -1,0 +1,1456 @@
+! M1/3 OCB's !
+
+load mimic_libutil
+load hv_overview_ocb_alarm_test
+
+
+!******** LINE 1 (M1/3) TEST *********!
+
+object hv_line_1_test = int
+   begin
+   hv_line_1_test = ocb_note_clr_alarm(630,heathro2) | 
+		    ocb_note_clr_alarm(640,heathro2)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_1_test == 3 then 
+      hv_line_1_test = 1
+   end 
+
+
+object hv_line_1_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_1_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 2 (M1/7) TEST *********!
+
+
+object hv_line_2_test = int
+begin
+
+hv_line_2_test = ocb_note_clr_alarm(2190,heathro2) | 
+		 ocb_note_clr_alarm(2200,heathro2)
+! return 1 takes precedemce over 2 ! 
+if hv_line_2_test == 3 then 
+   hv_line_2_test = 1
+ 
+end 
+
+
+object hv_line_2_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_2_test
+
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 3 (M1/2,M1/6) TEST *********!
+
+
+object hv_line_3_test = int
+begin
+
+hv_line_3_test = ocb_note_clr_alarm(1140,heathro2) | 
+		 ocb_note_clr_alarm(1150,heathro2) |
+		 ocb_note_clr_alarm(1160,heathro2) |
+		 ocb_note_clr_alarm(1170,heathro2)
+! return 1 takes precedemce over 2 ! 
+if hv_line_3_test == 3 then 
+   hv_line_3_test = 1
+ 
+end 
+
+
+object hv_line_3_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_3_test
+
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 4 (M1/13,M1/15) TEST *********!
+
+
+object hv_line_4_test = int
+begin
+
+hv_line_4_test = ocb_note_clr_alarm(7140,heathro2) | 
+		 ocb_note_clr_alarm(7150,heathro2) |
+		 ocb_note_clr_alarm(7160,heathro2) |
+		 ocb_note_clr_alarm(2150,heathro2) |
+		 ocb_note_clr_alarm(2160,heathro2) |
+		 ocb_note_clr_alarm(2170,heathro2)
+! return 1 takes precedemce over 2 ! 
+if hv_line_4_test == 3 then 
+   hv_line_4_test = 1
+ 
+end 
+
+
+object hv_line_4_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_4_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 5 (M1/8,M1/12) TEST *********!
+
+
+object hv_line_5_test = int
+begin
+
+hv_line_5_test = ocb_note_clr_alarm(1630,heathro2) | 
+		 ocb_note_clr_alarm(1640,heathro2) |
+		 ocb_note_clr_alarm(1650,heathro2) |
+		 ocb_note_clr_alarm(1660,heathro2) |
+		 ocb_note_clr_alarm(1670,heathro2) |
+		 ocb_note_clr_alarm(1680,heathro2) |
+		 ocb_note_clr_alarm(1710,heathro2) |
+		 ocb_note_clr_alarm(1720,heathro2)
+! return 1 takes precedemce over 2 ! 
+if hv_line_5_test == 3 then 
+   hv_line_5_test = 1
+ 
+end 
+
+
+object hv_line_5_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_5_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 6 (SUB 27,SUB 46) TEST *********!
+
+
+object hv_line_6_test = int
+   begin
+   hv_line_6_test = ocb_note_clr_alarm(7100,heathrow) | 
+		    ocb_note_clr_alarm(7110,heathrow) |
+		    ocb_note_clr_alarm(7120,heathrow) |
+		    ocb_note_clr_alarm(7130,heathrow) |
+		    ocb_note_clr_alarm(7140,heathrow) |
+		    ocb_note_clr_alarm(6150,heathro2) |
+		    ocb_note_clr_alarm(6160,heathro2) |
+		    ocb_note_clr_alarm(6170,heathro2) |
+		    ocb_note_clr_alarm(6180,heathro2)
+   ! return 1 takes precedemce over 2 ! 
+   if hv_line_6_test == 3 then 
+      hv_line_6_test = 1
+   end 
+
+
+object hv_line_6_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_6_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 7 (SUB 58,SUB 34,SUB 33) TEST *********!
+
+
+object hv_line_7_test = int
+   begin
+   hv_line_7_test = ocb_note_clr_alarm(7100,heathro2) | 
+		    ocb_note_clr_alarm(7110,heathro2) |
+		    ocb_note_clr_alarm(7120,heathro2) |
+		    ocb_note_clr_alarm(7130,heathro2) |
+		    ocb_note_clr_alarm(8030,heathrow) |
+		    ocb_note_clr_alarm(7440,heathrow) |
+		    ocb_note_clr_alarm(7450,heathrow) |
+		    ocb_note_clr_alarm(7460,heathrow) |
+		    ocb_note_clr_alarm(8040,heathrow) |
+		    ocb_note_clr_alarm(8050,heathrow) |
+		    ocb_note_clr_alarm(8060,heathrow) |
+		    ocb_note_clr_alarm(8070,heathrow) |
+		    ocb_note_clr_alarm(7400,heathrow) |
+		    ocb_note_clr_alarm(7410,heathrow) |
+		    ocb_note_clr_alarm(7420,heathrow) |
+		    ocb_note_clr_alarm(7430,heathrow) |
+		    ocb_note_clr_alarm(8240,heathrow)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_7_test == 3 then
+      hv_line_7_test = 1
+   end 
+
+object hv_line_7_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_7_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 8 (M1/11,SUB 76) TEST *********!
+
+
+object hv_line_8_test = int
+   begin
+   hv_line_8_test = ocb_note_clr_alarm(1690,heathro2) | 
+                    ocb_note_clr_alarm(1700,heathro2) |
+                    ocb_note_clr_alarm(650,heathro2) |
+                    ocb_note_clr_alarm(660,heathro2) |
+                    ocb_note_clr_alarm(670,heathro2) |
+                    ocb_note_clr_alarm(680,heathro2) |
+                    ocb_note_clr_alarm(690,heathro2) |
+                    ocb_note_clr_alarm(700,heathro2) |
+                    ocb_note_clr_alarm(710,heathro2)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_8_test == 3 then
+      hv_line_8_test = 1
+   end 
+
+
+object hv_line_8_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_8_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 9 (SUB 61) TEST *********!
+
+
+object hv_line_9_test = int
+   begin
+   hv_line_9_test = ocb_note_clr_alarm(2730,heathro2) | 
+                    ocb_note_clr_alarm(2740,heathro2) |
+                    ocb_note_clr_alarm(2750,heathro2) |
+                    ocb_note_clr_alarm(2760,heathro2) |
+                    ocb_note_clr_alarm(2770,heathro2) |
+                    ocb_note_clr_alarm(2780,heathro2) |
+                    ocb_note_clr_alarm(1730,heathro2)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_9_test == 3 then
+      hv_line_9_test = 1
+   end 
+
+
+object hv_line_9_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_9_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+!******** LINE 10 (SUB 85,SUB 60,SUB 90) TEST *********!
+
+
+object hv_line_10_test = int
+   begin
+   hv_line_10_test = ocb_note_clr_alarm(2290,heathro2) |
+                    ocb_note_clr_alarm(2300,heathro2) |
+                    ocb_note_clr_alarm(2310,heathro2) |
+                    ocb_note_clr_alarm(2320,heathro2) |
+                    ocb_note_clr_alarm(2330,heathro2) |
+                    ocb_note_clr_alarm(2140,heathro2) |
+                    ocb_note_clr_alarm(2150,heathro2) |
+                    ocb_note_clr_alarm(2160,heathro2) |
+                    ocb_note_clr_alarm(2170,heathro2) |
+                    ocb_note_clr_alarm(2180,heathro2) |
+                    ocb_note_clr_alarm(2280,heathro2)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_10_test == 3 then
+      hv_line_10_test = 1
+   end 
+
+object hv_line_10_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_10_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 11 (SUB 37,SUB 36) TEST *********!
+
+
+object hv_line_11_test = int
+   begin
+   hv_line_11_test = ocb_note_clr_alarm(7470,heathrow) 
+   !
+                     ocb_note_clr_alarm(7480,heathrow) |
+                     ocb_note_clr_alarm(7490,heathrow) |
+                     ocb_note_clr_alarm(7500,heathrow) |
+                     ocb_note_clr_alarm(7510,heathrow) |
+                     ocb_note_clr_alarm(7520,heathrow) |
+                     ocb_note_clr_alarm(7530,heathrow) |
+                     ocb_note_clr_alarm(7540,heathrow) |
+                     ocb_note_clr_alarm(7550,heathrow)
+
+   !
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_11_test == 3 then
+      hv_line_11_test = 1
+   end 
+
+
+object hv_line_11_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_11_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 12 (SUB 87,SUB 56,SUB 57,SUB 92) TEST *********!
+
+
+object hv_line_12_test = int
+   begin
+   hv_line_12_test = ocb_note_clr_alarm(8330,heathro2) |
+                     ocb_note_clr_alarm(8340,heathro2) |
+                     ocb_note_clr_alarm(8350,heathro2) |
+                     ocb_note_clr_alarm(6100,heathro2) |
+                     ocb_note_clr_alarm(6110,heathro2) |
+                     ocb_note_clr_alarm(6120,heathro2) |
+                     ocb_note_clr_alarm(6130,heathro2) |
+                     ocb_note_clr_alarm(6140,heathro2) |
+                     ocb_note_clr_alarm(7930,heathrow) |
+                     ocb_note_clr_alarm(7940,heathrow) |
+                     ocb_note_clr_alarm(7950,heathrow) |
+                     ocb_note_clr_alarm(7960,heathrow) |
+                     ocb_note_clr_alarm(7970,heathrow) |
+                     ocb_note_clr_alarm(8360,heathrow)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_12_test == 3 then
+      hv_line_12_test = 1
+   end 
+
+
+object hv_line_12_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_12_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 13 (SUB 47,SUB 71,SUB 1,SUB 30,SUB 31) TEST *********!
+
+
+object hv_line_13_test = int
+   begin
+   hv_line_13_test = ocb_note_clr_alarm(140,heathro2) |
+                     ocb_note_clr_alarm(150,heathro2) |
+                     ocb_note_clr_alarm(160,heathro2) |
+                     ocb_note_clr_alarm(170,heathro2) |
+                     ocb_note_clr_alarm(180,heathro2) |
+                     ocb_note_clr_alarm(4630,heathro2) |
+                     ocb_note_clr_alarm(4640,heathro2) |
+                     ocb_note_clr_alarm(4650,heathro2) |
+                     ocb_note_clr_alarm(4660,heathro2) |
+                     ocb_note_clr_alarm(7300,heathrow) |
+                     ocb_note_clr_alarm(7310,heathrow) |
+                     ocb_note_clr_alarm(7320,heathrow) |
+                     ocb_note_clr_alarm(7330,heathrow) |
+                     ocb_note_clr_alarm(7340,heathrow) |
+                     ocb_note_clr_alarm(7350,heathrow) |
+                     ocb_note_clr_alarm(7360,heathrow) |
+                     ocb_note_clr_alarm(7370,heathrow) |
+                     ocb_note_clr_alarm(7380,heathrow) |
+                     ocb_note_clr_alarm(7390,heathrow)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_13_test == 3 then
+      hv_line_13_test = 1
+   end 
+
+
+object hv_line_13_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_13_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 14 (SUB 89) TEST *********!
+
+
+object hv_line_14_test = int
+   begin
+   hv_line_14_test = ocb_note_clr_alarm(8190,heathrow) |
+                     ocb_note_clr_alarm(8200,heathrow) |
+                     ocb_note_clr_alarm(8210,heathrow) |
+                     ocb_note_clr_alarm(8220,heathrow) |
+                     ocb_note_clr_alarm(8230,heathrow)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_14_test == 3 then
+      hv_line_14_test = 1
+   end 
+
+
+object hv_line_14_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_14_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!******** LINE 15 (SUB 39,SUB 29,SUB 52,SUB 38) TEST *********!
+
+
+object hv_line_15_test = int
+   begin
+   hv_line_15_test = ocb_note_clr_alarm(7610,heathrow) |
+                     ocb_note_clr_alarm(7620,heathrow) |
+                     ocb_note_clr_alarm(7630,heathrow) |
+                     ocb_note_clr_alarm(7190,heathrow) |
+                     ocb_note_clr_alarm(7200,heathrow) |
+                     ocb_note_clr_alarm(7210,heathrow) |
+                     ocb_note_clr_alarm(7220,heathrow) |
+                     ocb_note_clr_alarm(7230,heathrow) |
+                     ocb_note_clr_alarm(7240,heathrow) |
+                     ocb_note_clr_alarm(7250,heathrow) |
+                     ocb_note_clr_alarm(7260,heathrow) |
+                     ocb_note_clr_alarm(7270,heathrow) |
+                     ocb_note_clr_alarm(7280,heathrow) |
+                     ocb_note_clr_alarm(7290,heathrow) |
+                     ocb_note_clr_alarm(7720,heathrow) |
+                     ocb_note_clr_alarm(7730,heathrow) |
+                     ocb_note_clr_alarm(7740,heathrow) |
+                     ocb_note_clr_alarm(7750,heathrow) |
+                     ocb_note_clr_alarm(7760,heathrow) |
+                     ocb_note_clr_alarm(7770,heathrow) |
+                     ocb_note_clr_alarm(7780,heathrow) |
+                     ocb_note_clr_alarm(7790,heathrow) |
+                     ocb_note_clr_alarm(7560,heathrow) |
+                     ocb_note_clr_alarm(7570,heathrow) |
+                     ocb_note_clr_alarm(7580,heathrow) |
+                     ocb_note_clr_alarm(7590,heathrow) |
+                     ocb_note_clr_alarm(7600,heathrow) |
+                     ocb_note_clr_alarm(8178,heathrow)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_15_test == 3 then
+      hv_line_15_test = 1
+   end 
+
+
+object hv_line_15_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_15_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+
+!******** LINE 16 (SUB 43,SUB 42,SUB 41) TEST *********!
+
+
+object hv_line_16_test = int
+   begin
+   hv_line_16_test = ocb_note_clr_alarm(3340,heathro2) |
+                     ocb_note_clr_alarm(3350,heathro2) |
+                     ocb_note_clr_alarm(3360,heathro2) |
+                     ocb_note_clr_alarm(3370,heathro2) |
+                     ocb_note_clr_alarm(3380,heathro2) |
+                     ocb_note_clr_alarm(3240,heathro2) |
+                     ocb_note_clr_alarm(3460,heathro2) |
+                     ocb_note_clr_alarm(3250,heathro2) |
+                     ocb_note_clr_alarm(3260,heathro2) |
+                     ocb_note_clr_alarm(3470,heathro2) |
+                     ocb_note_clr_alarm(3270,heathro2) |
+                     ocb_note_clr_alarm(3480,heathro2) |
+                     ocb_note_clr_alarm(3280,heathro2) |
+                     ocb_note_clr_alarm(3290,heathro2) |
+                     ocb_note_clr_alarm(3300,heathro2) |
+                     ocb_note_clr_alarm(3310,heathro2) |
+                     ocb_note_clr_alarm(3320,heathro2) |
+                     ocb_note_clr_alarm(3330,heathro2) |
+                     ocb_note_clr_alarm(3130,heathro2) |
+                     ocb_note_clr_alarm(3140,heathro2) |
+                     ocb_note_clr_alarm(3150,heathro2) |
+                     ocb_note_clr_alarm(3160,heathro2) |
+                     ocb_note_clr_alarm(3170,heathro2) |
+                     ocb_note_clr_alarm(3180,heathro2)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_16_test == 3 then
+      hv_line_16_test = 1
+   end 
+
+
+object hv_line_16_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_16_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+
+!******** LINE 17 (SUB 54,SUB 82,SUB 98) TEST *********!
+
+
+object hv_line_17_test = int
+   begin
+   hv_line_17_test = ocb_note_clr_alarm(8300,heathrow) |
+                     ocb_note_clr_alarm(4130,heathro2) |
+                     ocb_note_clr_alarm(4140,heathro2) |
+                     ocb_note_clr_alarm(4150,heathro2) |
+                     ocb_note_clr_alarm(4160,heathro2) |
+                     ocb_note_clr_alarm(4170,heathro2) |
+                     ocb_note_clr_alarm(4180,heathro2) |
+                     ocb_note_clr_alarm(4190,heathro2) |
+                     ocb_note_clr_alarm(4200,heathro2) |
+                     ocb_note_clr_alarm(4210,heathro2) |
+                     ocb_note_clr_alarm(8310,heathrow) |
+                     ocb_note_clr_alarm(4220,heathro2) |
+                     ocb_note_clr_alarm(4230,heathro2) |
+                     ocb_note_clr_alarm(4240,heathro2) |
+                     ocb_note_clr_alarm(4250,heathro2) |
+                     ocb_note_clr_alarm(4330,heathro2)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_17_test == 3 then
+      hv_line_17_test = 1
+   end 
+
+
+object hv_line_17_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_17_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+
+!******** LINE 18 (SUB 50,SUB 74,SUB 44, SUB 72, SUB 83) TEST *********!
+
+
+object hv_line_18_test = int
+   begin
+   hv_line_18_test = ocb_note_clr_alarm(2720,heathro2) |
+                     ocb_note_clr_alarm(2710,heathro2) |
+                     ocb_note_clr_alarm(3570,heathrow) |
+                     ocb_note_clr_alarm(3580,heathrow) |
+                     ocb_note_clr_alarm(3590,heathrow) |
+                     ocb_note_clr_alarm(3600,heathrow) |
+                     ocb_note_clr_alarm(3610,heathrow) |
+                     ocb_note_clr_alarm(3190,heathro2) |
+                     ocb_note_clr_alarm(3200,heathro2) |
+                     ocb_note_clr_alarm(3210,heathro2) |
+                     ocb_note_clr_alarm(3220,heathro2) |
+                     ocb_note_clr_alarm(3230,heathro2) |
+                     ocb_note_clr_alarm(3250,heathro2)
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_18_test == 3 then
+      hv_line_18_test = 1
+   end 
+
+
+object hv_line_18_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_18_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+
+!******** LINE 19 (SUB 53,SUB 97,SUB 84, SUB 51) TEST *********!
+
+
+object hv_line_19_test = int
+   begin
+   hv_line_19_test = ocb_note_clr_alarm(7800,heathrow) |
+                     ocb_note_clr_alarm(7810,heathrow) |
+                     ocb_note_clr_alarm(7820,heathrow) |
+                     ocb_note_clr_alarm(7830,heathrow) |
+                     ocb_note_clr_alarm(7840,heathrow) |
+                     ocb_note_clr_alarm(7850,heathrow) |
+                     ocb_note_clr_alarm(7860,heathrow) |
+                     ocb_note_clr_alarm(7870,heathrow) |
+                     ocb_note_clr_alarm(7880,heathrow) |
+                     ocb_note_clr_alarm(7890,heathrow) |
+                     ocb_note_clr_alarm(7900,heathrow) |
+                     ocb_note_clr_alarm(7910,heathrow) |
+                     ocb_note_clr_alarm(7920,heathrow) |
+                     ocb_note_clr_alarm(7980,heathrow) |
+                     ocb_note_clr_alarm(7990,heathrow) |
+                     ocb_note_clr_alarm(8000,heathrow) |
+                     ocb_note_clr_alarm(8010,heathrow) |
+                     ocb_note_clr_alarm(8020,heathrow) |
+                     ocb_note_clr_alarm(7640,heathrow) |
+                     ocb_note_clr_alarm(7650,heathrow) |
+                     ocb_note_clr_alarm(7660,heathrow) |
+                     ocb_note_clr_alarm(7670,heathrow) |
+                     ocb_note_clr_alarm(7680,heathrow) |
+                     ocb_note_clr_alarm(7690,heathrow) |
+                     ocb_note_clr_alarm(7700,heathrow) |
+                     ocb_note_clr_alarm(7710,heathrow) 
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_19_test == 3 then
+         hv_line_19_test = 1
+   end 
+
+object hv_line_19_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+line_test = hv_line_19_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+
+!******** LINE 20 (SUB 3,SUB 4,SUB 5, SUB 6, SUB 7, SUB 8, SUB 9, SUB 10,
+                   SUB 11, SUB 14, SUB 20, SUB 26, SUB 45, SUB 65,
+                   SUB M1/10, SUB M1/14) TEST *********!
+
+
+object hv_line_20_test = int
+   begin
+   hv_line_20_test = ocb_note_clr_alarm(100,heathro2) |
+                     ocb_note_clr_alarm(110,heathro2) |
+                     ocb_note_clr_alarm(120,heathro2) |
+                     ocb_note_clr_alarm(130,heathro2) |
+                     ocb_note_clr_alarm(600,heathro2) |
+                     ocb_note_clr_alarm(610,heathro2) |
+                     ocb_note_clr_alarm(620,heathro2) |
+                     ocb_note_clr_alarm(1100,heathro2) |
+                     ocb_note_clr_alarm(1110,heathro2) |
+                     ocb_note_clr_alarm(1120,heathro2) |
+                     ocb_note_clr_alarm(1130,heathro2) |
+                     ocb_note_clr_alarm(1600,heathro2) |
+                     ocb_note_clr_alarm(1610,heathro2) |
+                     ocb_note_clr_alarm(1620,heathro2) |
+                     ocb_note_clr_alarm(2100,heathro2) |
+                     ocb_note_clr_alarm(2110,heathro2) |
+                     ocb_note_clr_alarm(2120,heathro2) |
+                     ocb_note_clr_alarm(2130,heathro2) |
+                     ocb_note_clr_alarm(2600,heathro2) |
+                     ocb_note_clr_alarm(2610,heathro2) |
+                     ocb_note_clr_alarm(2620,heathro2) |
+                     ocb_note_clr_alarm(2630,heathro2) |
+                     ocb_note_clr_alarm(3100,heathro2) |
+                     ocb_note_clr_alarm(3110,heathro2) |
+                     ocb_note_clr_alarm(3120,heathro2) |
+                     ocb_note_clr_alarm(3600,heathro2) |
+                     ocb_note_clr_alarm(3610,heathro2) |
+                     ocb_note_clr_alarm(3620,heathro2) |
+                     ocb_note_clr_alarm(3650,heathro2) |
+                     ocb_note_clr_alarm(4100,heathro2) |
+                     ocb_note_clr_alarm(4110,heathro2) |
+                     ocb_note_clr_alarm(4120,heathro2) |
+                     ocb_note_clr_alarm(4600,heathro2) |
+                     ocb_note_clr_alarm(4610,heathro2) |
+                     ocb_note_clr_alarm(4620,heathro2) |
+                     ocb_note_clr_alarm(5100,heathro2) |
+                     ocb_note_clr_alarm(5110,heathro2) |
+                     ocb_note_clr_alarm(5120,heathro2) |
+                     ocb_note_clr_alarm(5600,heathro2) |
+                     ocb_note_clr_alarm(5610,heathro2) |
+                     ocb_note_clr_alarm(5620,heathro2) |
+                     ocb_note_clr_alarm(5630,heathro2) |
+                     ocb_note_clr_alarm(2640,heathro2) |
+                     ocb_note_clr_alarm(2650,heathro2) |
+                     ocb_note_clr_alarm(2660,heathro2) |
+                     ocb_note_clr_alarm(2670,heathro2) |
+                     ocb_note_clr_alarm(2680,heathro2) |
+                     ocb_note_clr_alarm(2880,heathro2) |
+                     ocb_note_clr_alarm(2210,heathro2) |
+                     ocb_note_clr_alarm(2220,heathro2) |
+                     ocb_note_clr_alarm(2230,heathro2) |
+                     ocb_note_clr_alarm(2240,heathro2) |
+                     ocb_note_clr_alarm(15740,heathrow) |
+                     ocb_note_clr_alarm(15635,heathrow) |
+                     ocb_note_clr_alarm(15645,heathrow) |
+                     ocb_note_clr_alarm(15655,heathrow) |
+                     ocb_note_clr_alarm(15665,heathrow) |
+                     ocb_note_clr_alarm(15675,heathrow) |
+                     ocb_note_clr_alarm(15685,heathrow) |
+                     ocb_note_clr_alarm(15695,heathrow) |
+                     ocb_note_clr_alarm(15705,heathrow) 
+   ! return 1 takes precedence over 2 ! 
+   if hv_line_20_test == 3 then
+         hv_line_20_test = 1
+   end 
+
+
+object hv_line_20_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var line_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_4"
+   end
+
+line_test = hv_line_20_test
+if line_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if line_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y = 0 hv_line_20_button
+
+end
+
+mimic = main_object w=300,h=300,just=centrecentre,fg=white,bg=black,resizable

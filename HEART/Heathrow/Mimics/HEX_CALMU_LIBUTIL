@@ -1,0 +1,925 @@
+load mimic_libutil
+load graphs_libutil
+
+type calmu_out_type = db_elements(e_value)
+type str_tab = table(db_addr=int,str=string(8),failure=onoff)
+type op_element_type = db_elements(db_addr,b_value)
+type ip_element_type = db_elements(db_addr,e_value)
+type bool_element_type = db_elements(db_addr,b_value)
+
+type s_e_time_type = enum(display_date = "date",
+                          display_datetime = "date time",
+                          display_time = "time",none = "none")
+type trendrow_type = db_elements (sample_source,sample_date, sample_value)
+
+const max_display_points = 400
+
+type trendtable_type = trendrow_type[max_display_points]
+
+object calmu_trend(w, h, font, ch, tfg, fg, bg, 
+              src=source, id=db_address,
+              time_span=axis2_periods,
+              v_max=real, v_min=real, time_now=yesno, 
+              lines=yesno, values=yesno, start_end=loopback s_e_time_type,
+              program_col=colour, manual_col=colour,
+              outstn_col=colour, disabled_col=colour, trend_col=colour,
+              stats_col=colour, invalid_col=colour, help_str=string_30,
+              trendtable = loopback trendtable_type)
+
+var i = loopback value_row_type
+var help_area = help  string_30
+var trend_span=int
+var tmin=dynam_time
+var tmax=dynam_time
+var interval = loopback  int
+var grats = loopback  max_min_row_type
+var horiz = loopback  ta_sb_r_type
+var verti = loopback  ta_sb_r_type
+var current_mode = onoff
+var trend_period_config_value = int
+var trended_data_period = int
+var db_trend_table = input db_trend
+var row = int
+var error1 = loopback string(80)
+var error_no1 = loopback int
+var error = loopback string(80)
+var error_no = loopback int
+var stream_nam = loopback string(30)
+var archive_trend_test = input config_db_elements_type
+var data_for_trend = yesno
+var data_for_archive = yesno
+
+begin
+
+if invalid start_end then
+   start_end = none
+
+y+=h
+
+if v_max > v_min then
+   begin
+   get_db_trend_config(source(src),id,db_trend_table)  
+   get_config_db_elements(source(src),id,archive_trend_test)
+   set default horiz
+   set default verti
+   set value horiz.offset = 0
+   set value horiz.units_displayed = 1 
+   set value verti.offset = 0
+   set value verti.units_displayed = 1
+   current_mode = on
+   case time_span of
+      p1h     trend_span = 3600
+      p2h     trend_span = 7200
+      p4h     trend_span = 14400
+      p6h     trend_span = 21600
+      p8h     trend_span = 28800
+      p10h    trend_span = 36000
+      p12h    trend_span = 43200
+      p18h    trend_span = 64800
+      p24h    trend_span = 86400
+      p36h    trend_span = 129600
+      p2d     trend_span = 172800
+      p3d     trend_span = 259200
+      p4d     trend_span = 345600
+      p5d     trend_span = 432000
+      p6d     trend_span = 518400
+      p1w     trend_span = 604800
+      p2w     trend_span = 1209600
+      p4w     trend_span = 2419200
+      p8w     trend_span = 4838400
+      p12w    trend_span = 7257600
+      p16w    trend_span = 9676800
+      p20w    trend_span = 12096000
+      p26w    trend_span = 15724800
+      p1yr     trend_span = 31449600
+      p2yr     trend_span = 62899200
+      p3yr     trend_span = 94348800
+      default  trend_span = 86400
+
+   
+   if valid interval then
+      interval = grats.interval
+   else 
+      interval = 1
+
+   if time_now == yes then
+      tmax = current_time
+   else
+      tmax = current_time + (interval - (current_time % interval))
+
+   tmin = tmax - trend_span
+
+   if start_end == none then
+     begin
+      if int(tmax-tmin) <= 64800 then ! time if < 1 day !
+         start_end = display_time     
+      else if int(tmax-tmin) <= 518400 then ! date/time if < 2 weeks !
+         start_end = display_datetime
+      else if int(tmax-tmin) <=  94348800 then ! date if < 3 years !
+         start_end = display_date
+     end  
+      
+      case start_end of
+           display_date      begin
+                             timef=local_dmy
+                             while length (string(tmax)) > w/3 and ch <> 0 do
+                                ch --
+                             end
+           display_datetime  begin
+                             timef=local_dm_hm
+                             while length (string(tmax)) > w/2 and ch <> 0 do
+                                ch --
+                             end
+           display_time      begin
+                             timef=local_hm
+                             while length (string(tmax)) > w/5 and ch <> 0 do
+                                ch --
+                             end
+           default
+              begin
+              end
+  
+      ch ++   
+
+      end
+
+   set default grats 
+   if lines == yes  then 
+     grats = axis(tmin,tmax,v_min,v_max,on,off,horiz,verti,no,values,axis1)
+   else
+     grats = axis(tmin,tmax,v_min,v_max,off,off,horiz,verti,no,values,axis1)
+
+   case getword(2,db_trend_table.period) of
+     "secs"
+      begin    
+      trend_period_config_value = int(getword(1,db_trend_table.period))
+      trended_data_period = 1000 * trend_period_config_value
+      end
+     "mins"
+      begin    
+      trend_period_config_value = int(getword(1,db_trend_table.period))  
+      trended_data_period = 60 * trend_period_config_value * 1000    
+      end
+     "hours"
+      begin    
+      trend_period_config_value = int(getword(1,db_trend_table.period))  
+      trended_data_period = 3600 * trend_period_config_value * 1000
+      end
+     "days"
+      begin    
+      trend_period_config_value = int(getword(1,db_trend_table.period))  
+      trended_data_period = 3600 * 24 * trend_period_config_value * 1000
+      end
+   default trended_data_period = 0
+
+!check if trend and archive facility is configured for point!
+if trended_data_period < trend_span then
+   begin
+   data_for_archive = yes
+   data_for_trend = no
+   end
+ else
+   begin
+   data_for_archive = no 
+   data_for_trend = yes
+   end
+
+if archive_trend_test.archive_exists then 
+      request_archiver_data(trendtable,
+                            tmin,
+                            tmax,
+                            src,
+                            src+" "+stream_name,
+                            id,
+                            error,
+                            error_no,
+                            data_for_archive) 
+
+if archive_trend_test.trend_exists then
+      request_trend_data(trendtable, 
+                         tmin,
+                         tmax,
+                         src,
+                         id,
+                         onoff(time_now),
+                         trend_span,
+                         error1,
+                         error_no1,
+                         data_for_trend)
+
+refl=refl_y
+if valid trendtable then
+   i =draw_mimic_graphline_with_popup (tmin,tmax,v_min,v_max, no,id,
+                                       trendtable,program_col,manual_col,
+                                       outstn_col,disabled_col, trend_col,
+                                       stats_col,invalid_col)
+
+if start_end <> none then
+  begin
+    y += (ch+5)
+    text(just=centreleft,tmin)
+    text(x=w,just=centreright,tmax)
+    start_end = none
+  end 
+
+end
+
+object request_calmu_archiver_data(w,h,
+                returned_sampled_data = loopback trendtable_type,
+                tmin = time("CENTISECONDS"),
+                tmax = time("CENTISECONDS"),
+                src = string,
+                stream_nam = string(30),
+                db_addr = db_address,
+                error_text = loopback string(80),
+                error_level = loopback int,
+                update_trendtable = yesno)
+
+var sampled_data = trendtable_type
+var dummy_sampled_data_row = trendrow_type
+var ip = input  archivetable_type
+var bstats_ip = input bstatstable_type
+var estats_ip = input estatstable_type
+var n_rows_added = loopback int
+var ostream_nam = loopback string(30)
+var osrc = loopback string
+var odb_addr = loopback db_address
+var otmin = loopback time
+var otmax = loopback time
+var display_sample = difftime
+var sample_tmin = time
+var first = int
+
+begin
+
+error_text = ""
+
+sa = lastrow returned_sampled_data + 1
+for aa to lastrow returned_sampled_data do
+   sampled_data[aa] = returned_sampled_data[sa - aa]
+sampled_data[sa] = dummy_sampled_data_row
+display_sample = real((tmax - tmin) / real(max_display_points - 1))
+if display_sample == 0.00 then
+   display_sample = 0.01
+
+if invalid osrc then
+   begin
+   set default osrc
+   set default ostream_nam
+   set default odb_addr
+   set default otmax
+   set default otmin
+   end
+
+!
+If the only change to the request is to slide the time span forwards by less
+than the total span then we can reuse some of the existing sampled_data.
+!
+
+!if osrc == src and odb_addr == db_addr and ostream_nam == stream_nam then
+   begin
+   if (otmax - tmax) == (otmin - tmin) then 
+      begin
+      if (tmax > otmax) and (tmax - otmax < tmax - tmin) then
+         begin
+         first = 1
+         for aa to lastrow sampled_data do
+            if sampled_data[aa].sample_date < tmin then
+               first = aa
+         for aa from first to lastrow sampled_data do
+            sampled_data[aa - first + 1] = sampled_data[aa]
+         otmax = tmax
+         otmin = tmin
+         if (remote_archiver_enabled == 1) or (getword(2, stream_nam) == "Value") then
+            begin
+            set limit2  ip.time = tmax
+            request ip
+            end
+         else if (getword(2, stream_nam) == "Mins_True") or (getword(2, stream_nam) == "F_T_Trans") then
+            begin
+            set limit2  bstats_ip.time = tmax
+            request bstats_ip
+            end
+         else
+            begin
+            set limit2  estats_ip.time = tmax
+            request estats_ip
+            end
+         n_rows_added -= first - 1
+         sampled_data[lastrow sampled_data - first] = dummy_sampled_data_row
+         end
+      end
+   end!
+
+if (remote_archiver_enabled == 1) or (getword(2, stream_nam) == "Value") then
+   begin
+      if osrc <> src or odb_addr <> db_addr or ostream_nam <> stream_nam
+   or abs(tmax - otmax) >=  display_sample 
+   or abs(tmin - otmin) >=  display_sample then
+      begin      ! setup initial filters !
+      osrc = src
+      odb_addr = db_addr
+      ostream_nam = stream_nam
+      otmin = tmin
+      otmax = tmax
+      set invalid ip
+      set source ip = arhsource(source(src))
+      set filter ip.stream_name = lim_eq
+      set limit  ip.stream_name = stream_nam
+      set filter ip.db_addr = lim_eq
+      if (getword(2, stream_nam) == "Mins_True") or
+         (getword(2, stream_nam) == "F_T_Trans") then
+         set limit  ip.db_addr = db_addr - B1 + E1
+      else
+         set limit  ip.db_addr = db_addr
+      set filter ip.time = lim_ge_le2
+      set limit ip.time = tmin
+      set limit2  ip.time = tmax
+      request ip
+      sampled_data[1] = dummy_sampled_data_row
+      n_rows_added = 0
+      end
+
+   if valid ip then
+      begin
+      if lastrow sampled_data then
+         sample_tmin = sampled_data[lastrow sampled_data].sample_date
+      else
+         sample_tmin = min time
+      for aa to lastrow ip do 
+         begin
+         if ip[aa].time >= sample_tmin + display_sample then
+            begin
+            sa = lastrow sampled_data + 1
+            sampled_data[sa] = trendrow_type
+            sampled_data[sa].sample_date = ip[aa].time
+            sampled_data[sa].sample_value = ip[aa].e_value
+            sample_tmin = ip[aa].time
+            end
+         end
+      if lastrow ip == max_display_points then
+         begin
+         ! request next possible max_display_points rows !
+         set filter ip.time = lim_gt_le2
+         set limit ip.time = sample_tmin
+         set limit2 ip.time = tmax
+         set invalid ip 
+         request ip
+         n_rows_added = lastrow sampled_data
+         end
+      end
+   
+   if get busy ip and update_trendtable == yes then
+      begin
+      error_level = 1
+      error_text = "Waiting for server response"
+      end
+
+   if get noaccessible ip then
+      begin
+      error_text = "Access Denied"
+      end
+   else if update_trendtable == yes then
+      begin
+      sa = lastrow sampled_data + 1
+      set invalid returned_sampled_data
+      for aa to lastrow sampled_data do
+         returned_sampled_data[aa] = sampled_data[sa - aa]
+      end
+   end
+
+if error_text <> "" then
+      std_message(ch = 12,just = centrecentre,fg = decoroff,x = x + w/2,
+                        y = y - h/2,"Warning",error_text)
+
+end
+
+
+
+object convert_to_sno(val1=int,val2=int,val3=int,val4=int)=string
+   begin
+   if (val1 == 0) or (val2 == 0) or (val3 == 0) or (val4 == 0) then
+      convert_to_sno = ""
+   else
+      begin
+      convert_to_sno = toascii(val1/(2**8))+toascii(val1&((2**8)-1))
+      convert_to_sno += toascii(val2/(2**8))+toascii(val2&((2**8)-1))
+      convert_to_sno += toascii(val3/(2**8))+toascii(val3&((2**8)-1))
+      convert_to_sno += toascii(val4/(2**8))+toascii(val4&((2**8)-1)) 
+      end
+   end
+
+object convert_to_time(val1=int,val2=int)=string
+var days =int
+var months = int
+var hours = int 
+var mins=int
+var secs=int
+   begin
+   convert_to_time = ""
+   days = (val1&((2**10)-1))/(2**5)
+   if days < 10 then 
+      convert_to_time += "0"
+   convert_to_time += days+"/"
+   months = (val1&((2**14)-1))/(2**10)
+   if months < 10 then 
+      convert_to_time += "0"
+   convert_to_time += months+"  "
+   hours = val1&((2**5)-1)
+   mins = val2/(2**10)
+   secs = (val2&((2**10)-1))/(2**4)
+   if hours < 10 then 
+      convert_to_time += "0"
+   convert_to_time += hours+":"
+   if mins < 10 then
+      convert_to_time += "0"
+   convert_to_time += mins+":"
+   if secs < 10 then
+      convert_to_time += "0"
+   convert_to_time += secs
+   end
+
+object convert_from_sno(str=string, val1=loopback int,val2=loopback int,val3= loopback int,val4=loopback int)
+   begin
+   val1 = (fromascii(getchar(1,str))*(2**8))+fromascii(getchar(2,str))
+   if invalid val1 then val1=0
+   if val1 == 12336 then val1=0
+   val2 = (fromascii(getchar(3,str))*(2**8))+fromascii(getchar(4,str))
+   if invalid val2 then val2=0
+   if val2 == 12336 then val2=0
+   val3 = (fromascii(getchar(5,str))*(2**8))+fromascii(getchar(6,str))
+   if invalid val3 then val3=0
+   if val3 == 12336 then val3=0
+   val4 = (fromascii(getchar(7,str))*(2**8))+fromascii(getchar(8,str))
+   if invalid val4 then val4=0
+   if val4 == 12336 then val4=0
+   end
+ 
+object request_calmu_sno(src = source, db_addr = int,b_db_loc=int) = str_tab
+var sno_inp1 = input ip_element_type
+var sno_inp2 = input ip_element_type
+var sno_inp3 = input ip_element_type
+var sno_inp4 = input ip_element_type
+var sno_valid = input bool_element_type
+var ret_value = loopback str_tab
+var local_src = loopback source
+begin
+if invalid local_src then
+   begin
+   local_src = src
+   set source sno_inp1 = local_src
+   set filter sno_inp1.db_addr = lim_eq
+   set limit sno_inp1.db_addr = db_address("E"+db_addr)
+   set persist sno_inp1
+   set source sno_inp2 = local_src
+   set filter sno_inp2.db_addr = lim_eq
+   set limit sno_inp2.db_addr = db_address("E"+(db_addr+1))
+   set persist sno_inp2
+   set source sno_inp3 = local_src
+   set filter sno_inp3.db_addr = lim_eq
+   set limit sno_inp3.db_addr = db_address("E"+(db_addr+2))
+   set persist sno_inp3
+   set source sno_inp4 = local_src
+   set filter sno_inp4.db_addr = lim_eq
+   set limit sno_inp4.db_addr = db_address("E"+(db_addr+3))
+   set persist sno_inp4
+   set source sno_valid = local_src
+   set filter sno_valid.db_addr = lim_eq
+   set limit sno_valid.db_addr = db_address("B"+b_db_loc)
+   set persist sno_valid
+   end
+request sno_inp1
+request sno_inp2
+request sno_inp3
+request sno_inp4
+request sno_valid
+set default ret_value
+if (valid sno_inp1) and (valid sno_inp2) and valid (sno_inp3) and (valid sno_inp4) and (valid sno_valid) then
+   begin
+   realf = fixed0
+   ret_value.db_addr = db_addr     ret_value.str=convert_to_sno(int(sno_inp1.e_value),int(sno_inp2.e_value),int(sno_inp3.e_value),int(sno_inp4.e_value))
+   ret_value.failure = sno_valid.b_value 
+   end
+if (get busy sno_inp1) or (get busy sno_inp2) or (get busy sno_inp3) or (get busy sno_inp4) then
+   ret_value.str = "BUSY" 
+request_calmu_sno = ret_value
+end
+
+object write_calmu_sn(src = source,new_sn = str_tab)
+var op_sno1 = output calmu_out_type
+var op_sno2 = output calmu_out_type
+var op_sno3 = output calmu_out_type 
+var op_sno4 = output calmu_out_type   
+var val1 = loopback int
+var val2 = loopback int
+var val3 = loopback int
+var val4 = loopback int
+var shared i = loopback int
+begin 
+convert_from_sno(new_sn.str,val1,val2,val3,val4)
+set source op_sno1 = src
+set filter op_sno1.db_addr = lim_eq
+set limit op_sno1.db_addr = db_address("E"+(new_sn.db_addr+46))
+set default op_sno1
+set value op_sno1.e_value = val1 
+request op_sno1
+
+set source op_sno2 = src
+set filter op_sno2.db_addr = lim_eq
+set limit op_sno2.db_addr = db_address("E"+(new_sn.db_addr+47))
+set default op_sno2
+set value op_sno2.e_value = val2 
+request op_sno2
+
+set source op_sno3 = src
+set filter op_sno3.db_addr = lim_eq
+set limit op_sno3.db_addr = db_address("E"+(new_sn.db_addr+48))
+set default op_sno3
+set value op_sno3.e_value = val3 
+request op_sno3
+
+set source op_sno4 = src
+set filter op_sno4.db_addr = lim_eq
+set limit op_sno4.db_addr = db_address("E"+(new_sn.db_addr+49))
+set default op_sno4
+set value op_sno4.e_value = val4 
+request op_sno4
+end
+
+
+object request_element(src=source,db_addr=int)=real
+var ip_element = input ip_element_type
+   begin
+   set source ip_element=src
+   set filter ip_element.db_addr=lim_eq
+   set limit ip_element.db_addr=db_address("E"+db_addr)
+   set persist ip_element
+   request ip_element
+   if valid ip_element then
+      request_element = ip_element.e_value 
+   end
+
+object request_b_element(src=source,db_addr=int)=onoff
+var ip_element = input bool_element_type
+   begin
+   set source ip_element=src
+   set filter ip_element.db_addr=lim_eq
+   set limit ip_element.db_addr=db_address("B"+db_addr)
+   set persist ip_element
+   request ip_element
+   if valid ip_element then
+      request_b_element = ip_element.b_value 
+   else
+      request_b_element = off
+   end
+
+object display_anal(ch,val=string,comms_failed=onoff)
+var old_x = int
+var old_y = int
+   begin
+   just = centreright
+   w = int(length(val)+10)
+   h = ch+2
+   if (comms_failed==on) then
+      fg=magenta
+   else
+      fg=decoroff
+   rect 
+   fg= black
+   tfg= black
+   old_x=x
+   old_y=y
+   lw=4
+   fg=decorlight
+   clear
+   y = (y-(h/2)) add
+   x = x-w add
+   y=y+h add line
+   fg=decorshadow
+   clear 
+   add
+   x=x+w+4 add
+   add
+   y=y-h-4 add line
+   x = x+(w-x)
+   x = old_x-5
+   y = old_y
+   text(val)
+   end
+
+object change_db(src=source,db_addr=db_address,val=onoff)
+var op_db_element = output db_elements(b_value)
+begin
+set source op_db_element = src
+set filter op_db_element.db_addr = lim_eq
+set limit op_db_element.db_addr = db_addr
+set default op_db_element
+set value op_db_element.b_value = val
+request op_db_element
+end
+
+object convert_to_2w(val1=real,val2=real)=string
+   begin
+   convert_to_2w = ""
+   if (int(val2) & (2**15)) then 
+      begin
+      convert_to_2w = "-"
+      end
+   if int(val2)&((2**15)-1) then
+      convert_to_2w = convert_to_2w+string(int(val2)&((2**15)-1))+string(val1)
+   else
+      convert_to_2w = convert_to_2w+string(val1)
+   end
+
+object convert_from_hex(val1=real,val2=real)=string
+   begin
+   convert_from_hex = ((val1*(16**2))+val2)
+   end
+
+object calmu_met_basic(bg,fg,w,h,just,db_offset=int,cal_no=int,comms_addr=int)
+var src = source
+var val = real 
+var val2 = real
+var val3 = real
+var val4 = real 
+var comms_down = onoff
+begin
+realf=fixed0
+src = source(0)
+rect(fg=GREEN4)
+comms_down = request_b_element(src,comms_addr)
+if comms_down then
+   box(lw=5,fg=flashred)
+x = 45 y = 15 text(just=centreleft,"CALMU METER "+cal_no,ch=22,tfg=white)
+ch=20
+x = 20 y = 60 text(just=centreleft,"SERIAL NO",tfg=white)
+val = request_element(src,db_offset)
+val2 = request_element(src,db_offset+1)
+val3 = request_element(src,db_offset+2)
+val4 = request_element(src,db_offset+3)
+display_anal(x=260,convert_to_sno(int(val),int(val2),int(val3),int(val4)),comms_down)
+y += 30 text(just=centreleft, "PHASE 1",tfg=white)
+realf=fixed1
+val=request_element(src,db_offset+4)
+display_anal(x=260,val+" KV",comms_down)
+realf=fixed0
+y += 30 text(just=centreleft,"PHASE 1",tfg=white)
+val=request_element(src,db_offset+5)
+display_anal(x=260,val+" A",comms_down)
+y +=30 text(just=centreleft,"INSTANT. KVA",tfg=white)
+val=request_element(src,db_offset+6)
+val2=request_element(src,db_offset+7)
+realf=fixed2
+display_anal(x=260,convert_to_2w(val,val2),comms_down)
+realf=fixed0
+end
+
+
+mimic calmu_mim_basic = calmu_met_basic w=200,h=230,just=centrecentre,fg=white,bg=black,resizable
+!*****************************************************!
+object cal_met_detailed(bg,fg,w,h,tbg,tfg,db_offset=int,b_db_offset=int,cal_no=int,sub_no=int,comms_addr=int,hist_cnt=int)
+var val=real
+var val2=real
+var val3=real
+var val4=real
+var val_pos=int
+var val_string=string
+var src=source
+var curr = real
+var volt = real
+var comms_down = onoff
+var update_time = loopback time
+begin
+just=centreleft
+src=source(0)
+realf = fixed0
+x = 0 y = 0 clear
+
+comms_down = request_b_element(src,comms_addr)
+X=-145 Y=-170 Add Y=-35  Add LINE(lw=2,fg=white) clear
+X=175 Y=-170 Add Y=-35  Add LINE(lw=2,fg=white) clear
+X=-545 Y=-170 Add Y=160  Add LINE(lw=2,fg=white) clear
+X=535 Y=-170 Add Y=160  Add LINE(lw=2,fg=white) clear
+X=-545 Y=-170 Add X=535  Add LINE(lw=2,fg=white) clear
+X=-545 Y=-35 Add X=535  Add LINE(lw=2,fg=white) clear
+X=-545 Y=160 Add X=535  Add LINE(lw=2,fg=white) clear
+X=0 Y=-35 Add Y=160  Add LINE(lw=2,fg=white) clear
+
+scale = 200
+
+x = 0 y =-240 text(just=centrecentre,"CALMU METER: "+cal_no + "  SUB NO: " + sub_no,ch=60,tfg=white)
+!x = 200 text("SUB NO: "+sub_no,ch=60,tfg=white)!
+x = -500 y = -200 text("SERIAL NUMBER",ch=25,tfg=white)
+val=request_element(src,db_offset)
+val2=request_element(src,db_offset+1)
+val3=request_element(src,db_offset+2)
+val4=request_element(src,db_offset+3)
+X =-210
+display_anal(ch=20,convert_to_sno(int(val),int(val2),int(val3),int(val4)),comms_down)
+! PHASE 1 displays !
+x = -400 y = -150 text("PHASE 1",ch=25,tfg=white)
+x +=-125
+y +=25
+ch=20
+val_pos=-250
+realf=fixed1
+text("VOLTAGE (KV)",ch=20,tfg=white)
+val=request_element(src,db_offset+4)
+display_anal(x=val_pos,string(val),comms_down)
+realf=fixed0
+volt = val
+y +=26 text("CURRENT (A)",ch=20,tfg=white)
+val=request_element(src,db_offset+5)
+display_anal(x=val_pos,val,comms_down)
+curr = val
+y +=26 text("POWER (KW)",ch=20,tfg=white)
+val=curr*volt
+display_anal(x=val_pos,val,comms_down)
+
+! PHASE 2 displays !
+x = -20 y = -150 text("PHASE 2",ch=25,tfg=yellow)
+x += -110
+y +=25 
+val_pos=80
+realf=fixed1
+text("VOLTAGE (KV)",ch=20,tfg=yellow)
+val=request_element(src,db_offset+27)
+display_anal(x=val_pos,val,comms_down)
+realf=fixed0
+volt = val
+y +=26 text("CURRENT (A)",ch=20,tfg=yellow)
+val=request_element(src,db_offset+28)
+display_anal(x=val_pos,val,comms_down)
+curr = val
+y +=26 text("POWER (KW)",ch=20,tfg=yellow)
+val=curr*volt
+display_anal(x=val_pos,val,comms_down)
+
+
+! PHASE 3 displays !
+x =  325 y = -150 text("PHASE 3",ch=25,tfg=yellow)
+x += -125
+y +=25 
+val_pos = 445
+realf=fixed1
+text("VOLTAGE (KV)",ch=20,tfg=yellow)
+val=request_element(src,db_offset+29)
+display_anal(x=val_pos,val,comms_down)
+realf=fixed0
+volt = val
+y +=26 text("CURRENT (A)",ch=20,tfg=yellow)
+val=request_element(src,db_offset+30)
+display_anal(x=val_pos,val,comms_down)
+curr = val
+y +=26 text("POWER (KW)",ch=20,tfg=yellow)
+val = curr*volt
+display_anal(x=val_pos,val,comms_down)
+X = -525
+y = 0
+text(just=centreleft,"INSTANTANEOUS KVA",tfg=white)
+val=request_element(src,db_offset+6)
+val2=request_element(src,db_offset+7)
+display_anal(x=-40,convert_to_2w(val,val2),comms_down)
+y+=26 text("RESISTIVE POWER",ch=20,tfg=yellow)
+val=request_element(src,db_offset+10)
+val2=request_element(src,db_offset+11)
+display_anal(x=-40,convert_to_2w(val,val2),comms_down)
+y +=26 text("REACTIVE POWER",ch=20,tfg=yellow)
+val=request_element(src,db_offset+12)
+val2=request_element(src,db_offset+13)
+display_anal(x=-40,convert_to_2w(val,val2),comms_down)
+y +=26 text("UNITS CONSUMED",ch=20,tfg=yellow)
+val=request_element(src,db_offset+14)
+val2=request_element(src,db_offset+15)
+val_string=val
+if val2 > 0 then
+   val_string=string(val2)+string(val_string)
+display_anal(x=-40,val_string,comms_down)
+y +=26 text("UNITS GENERATED",ch=20,tfg=yellow)
+val=request_element(src,db_offset+16)
+val2=request_element(src,db_offset+17)
+val_string=val
+if val2 > 0 then
+   val_string=string(val2)+string(val_string)
+display_anal(x=-40,val_string,comms_down)
+y +=26 text("REACTIVE UNITS LAGGING",ch=20,tfg=yellow)
+val=request_element(src,db_offset+18)
+val2=request_element(src,db_offset+19)
+val_string = val
+if val2 > 0 then
+   val_string = string(val2)+string(val_string)
+display_anal(x=-40,val_string,comms_down)
+x = 10 y= 0
+text("REACTIVE UNITS LEADING",ch=20,tfg=yellow)
+val=request_element(src,db_offset+20)
+val2=request_element(src,db_offset+21)
+val_string = val
+if val2 > 0 then
+   val_string = string(val2)+string(val_string)
+display_anal(x=500,val_string,comms_down)
+y+=26 text("SUPPLY FEQUENCY",ch=20,tfg=yellow)
+val=request_element(src,db_offset+26)
+realf=fixed3
+display_anal(x=500,val/1000,comms_down)
+realf=fixed0
+y +=26 text("AVERAGE POWER FACTOR",ch=20,tfg=yellow)
+val=request_element(src,db_offset+22)
+realf=fixed4
+display_anal(x=500,val/1000,comms_down)
+realf=fixed0
+y +=26 text("TIME (GMT)",ch=20,tfg=yellow)
+val=request_element(src,db_offset+23)
+val2=request_element(src,db_offset+24)
+val3=request_element(src,db_offset+25)
+val_string = ""
+if val<10 then 
+   val_string += "0"
+val_string += val+":"
+if val2<10 then 
+    val_string += "0"
+val_string += val2+":"
+if val3<10 then 
+   val_string += "0"
+val_string += val3
+display_anal(x=500,val_string,comms_down)
+y +=26 text("LOAD PERIOD TIME (GMT)",ch=20,tfg=yellow)
+val=request_element(src,db_offset+!54!40)
+val2=request_element(src,db_offset+!55!41)
+display_anal(x=500,update_time+"  "+convert_to_time(int(val),int(val2)),comms_down)
+y +=26 text("LOAD PERIOD VALUE",ch=20,tfg=yellow)
+val=request_element(src,db_offset+!61!42)
+realf=fixed4
+display_anal(x=500,val,comms_down)
+realf=fixed0
+y = 210
+x=-500
+text("HIST COUNT",ch=20,tfg=white)
+val=request_element(src,!db_offset+33!hist_cnt)!****************!
+display_anal(x=-350,val,comms_down)
+x=-225
+y = 210
+if (request_b_element(src,b_db_offset)==off) then
+   fg = decoroff
+else
+   fg = flashred
+if xv_thin_button(ch=18,tfg=black,"Update Meter",195) then
+   begin
+   update_time = current_time
+   change_db(src,db_address("B"+b_db_offset),on)
+   end   
+x=105
+if (request_b_element(src,b_db_offset+16)==off) then
+   fg = decoroff
+else
+   fg = flashred
+if xv_thin_button(ch=18,tfg=black,"Historical Update",195) then
+   change_db(src,db_address("B"+(b_db_offset+!16!32)),on) 
+x = -60
+if (request_b_element(src,b_db_offset+95)==off) then
+   fg = decoroff
+else
+   fg = flashred
+if xv_thin_button(ch=18,tfg=black,"Load Survey Update",195) then
+   change_db(src,db_address("B"+(b_db_offset+95)),on)   
+end
+
+object cal_trend_details(bg,fg,w,h,tbg,tfg,                    
+               e_db_offset=db_address,max_range=int,
+               min_range=int,meter_no=int)
+var start_end = loopback s_e_time_type
+var trendtable = loopback trendtable_type
+var help_str = string_30
+var error_string = loopback string(80)
+var error_level = loopback int
+begin
+
+start_end =display_datetime
+request_calmu_archiver_data (trendtable,min time,current_time,arhsource(0),source (0) +"VALUE",e_db_offset,error_string,error_level,yes)
+
+just=centrecentre
+
+y=-150 text(ch=22,"CALMU METER " + meter_no + " TREND")
+if invalid max_range then 
+   calmu_trend(x=-200,y=-100,w=400,h=200,source(0),e_db_offset,p4d,
+         1024,0,yes,yes,yes,start_end,
+         red,red,red,red,red,red,red,help_str,trendtable)
+else
+   calmu_trend(x=-200,y=-100,w=400,h=200,source(0),e_db_offset,p4d,
+         max_range,min_range,yes,yes,yes,start_end,
+         red,red,red,red,red,red,red,"test",trendtable)
+
+
+end
+
+object main_object(just,fg,bg)
+   begin 
+   cal_met_detailed(1,1,1,1,1,1)!**********1ADDED!
+   end
+
+mimic calmu_mim_detailed = cal_met_detailed w=1140,h=550,just=centrecentre,fg=white,bg=GREEN4,resizable
+
+mimic calmu_trend = cal_trend_details
+w=600,h=400,just=centrecentre,fg=white,bg=GREEN4,resizable
+
+mimic = main_object  w=1140,h=550,just=centrecentre,fg=white,bg=GREEN4,resizable
+

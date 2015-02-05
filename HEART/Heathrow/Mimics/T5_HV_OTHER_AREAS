@@ -1,0 +1,1046 @@
+!**	HEATHROW\T5_HV_OTHER_AREAS		**!
+!** 	Modified by ULTRA - 02 Dec 2008		**!
+!** 	Inclusion of RTU24-04 Sub 160		**!
+!**						**!
+!** 	Modified by ULTRA - 29 Nov 2007		**!
+!** 	Inclusion of OS78 NAA Subs 188, 189, 157, 158	**!
+!**						**!
+!** 	Modified by ULTRA - 04 Apr 2007		**!
+!** 	Updated panel designations			**!
+!**						**!
+!** 	Modified by ULTRA - 21 Nov 2006		**!
+!** 	Inclusion of OS24 MSCP Subs 161, 163, 193	**!
+
+!********* SUBSTATION ********!
+!********* 		      ********!
+load hv_lib
+load browser
+load generic_meter_library
+load dual_bus_objects
+load transformer_types
+load hv_switch
+load lv_breaker
+
+! ***	*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 	*** !
+! *** 	Data Request Additional fault checks			*** !
+! ***	*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 	*** !
+
+
+! ** get boolean input ** !
+Object boolean_status(b_offset=int,src=source)=onoff 
+var boolean_ip = input b_db_row_type
+begin
+	if invalid get source boolean_ip then 
+	begin
+		set source boolean_ip = src
+		set filter boolean_ip.db_addr = lim_eq
+		set limit boolean_ip.db_addr = db_address(int(b1) +b_offset-1)
+		set priority boolean_ip.db_addr = 15
+		set persist boolean_ip
+		set mayexist boolean_ip
+		request boolean_ip
+	end
+	boolean_status = boolean_ip.b_value
+	if invalid boolean_ip.b_value then boolean_status = off
+end
+
+
+object main_sub_call(box_bg=colour,width=int,height=int,txt_top=string,txt_btm=string,txt_col=colour,txt_size=int,popup_mimic=yesno,mimic_title=string,src=source,res3=int,res2=string,res1=int,fg)
+var mm = toplevel  string_50
+var btn_bg = colour
+begin
+	if fg==magenta then btn_bg=magenta
+	else if fg==flashred then btn_bg=flashred
+	else if fg==red then btn_bg=red
+	else if fg==aquamarine3 then btn_bg=aquamarine3
+	else btn_bg=grey80
+
+	X=0 Y=0 W=width H=height ANGLE=0 JUST=centrecentre FS=FILLSOLID ROTRECT(fg=btn_bg)
+	if anyb then
+	  begin
+		if popup_mimic==yes then
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+			set existing mm
+      	  		request mm
+		end
+		else
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+      	 	 	set selfreplace mm
+      	  		request mm
+		end
+	  end
+
+	Clear
+	X=-(width/2) Y=(height/2) Add
+	Y=-(height/2) Add
+	X=(width/2) Y=-(height/2) Add
+	FG=white LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-(width/2) Y=(height/2) Add	
+	X=(width/2) Add
+	Y=-(height/2) Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	CH=txt_size FONT=FONT_NORMAL FONTNAME="Arial" TFG=txt_col JUST=centrecentre
+
+	if txt_btm=="" or txt_btm==string then
+	begin
+		X=0 Y=0  TEXT(txt_top)
+	end
+	else
+	begin
+		X=0 Y=-10 TEXT(txt_top)
+		X=0 Y=10 TEXT(txt_btm)
+	end
+end
+
+object blank(cb_type=string,plc_int=int,cb_int=int,c_int=int,e_int=int,code=int,src=source,num=int,pos=string,act_code=int,angle)
+begin
+clear
+	lw=1
+	X=0 Y=0 W=30 H=38 FG=GREY80 JUST=centrecentre FS=FILLSOLID ANGLE=0 ROTRECT Clear
+	FG=grey
+	X=-16 Y=19 Add X=16 Y=19 Add X=16 Y=-19 Add line clear
+	
+	FG=white 
+	X=-16 Y=18 Add X=-16 Y=-20 Add X=15 Y=-20 Add line clear
+
+	fg=green4   LW=2
+	X=0 Y=-20 Add X=0 Y=-10 Add line clear
+	X=0 Y=20 Add X=0 Y=10 Add line clear
+	X=-5 Y=10 Add X=5 Y=10 Add line clear
+	X=-5 Y=-10 Add X=5 Y=-10 Add line clear
+
+	x=23 y=0 text(ch=12,tfg=black,num)
+end
+
+object sub_call(width=int,height=int,txt_top=string,txt_btm=string,txt_col=colour,txt_size=int,popup_mimic=yesno,mimic_title=string,src=source,res3=int,res2=string,res1=int,fg)
+var mm = toplevel  string_50
+begin
+	X=0 Y=0 W=width H=height ANGLE=0 JUST=centrecentre FG=GREY80 FS=FILLSOLID ROTRECT
+	if anyb then
+	  begin
+		if popup_mimic==yes then
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+			set existing mm
+      	  		request mm
+		end
+		else
+		begin
+	  		fg=grey rect
+      	  		set source mm = src
+      	 	 	set mimic mm = mimic_title
+      	 	 	set selfreplace mm
+      	  		request mm
+		end
+	  end
+
+	Clear
+	X=-(width/2) Y=(height/2) Add
+	Y=-(height/2) Add
+	X=(width/2) Y=-(height/2) Add
+	FG=white LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-(width/2) Y=(height/2) Add	
+	X=(width/2) Add
+	Y=-(height/2) Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	CH=txt_size FONT=FONT_NORMAL FONTNAME="Arial" TFG=txt_col JUST=centrecentre
+
+	if txt_btm=="" or txt_btm==string then
+	begin
+		X=0 Y=0  TEXT(txt_top)
+	end
+	else
+	begin
+		X=0 Y=-10 TEXT(txt_top)
+		X=0 Y=10 TEXT(txt_btm)
+	end
+end
+
+object multiple_alarm_test(plc_offset=int,b_offset=int,num_alarms=int,src=source) = colour
+var plc_inputs = input b_bool_type[2]		! * comms inputs * !
+var equip_alarms = input alarm_row_type[1000]
+var alarm_box=yesno
+var n = int
+var alarm_clear_count = int
+begin
+         		if invalid get source plc_inputs then 	! * get database values * !
+         		begin
+	   		set source plc_inputs = src
+	   		set filter plc_inputs.db_addr = lim_ge
+	   		set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   		set priority plc_inputs.db_addr = 15
+	   		set persist plc_inputs
+	   		set mayexist plc_inputs
+	   		request plc_inputs
+		end
+
+		if plc_inputs[1].b_value==1 and plc_inputs[2].b_value==1 then
+		   begin
+			 multiple_alarm_test = magenta
+		   end
+		else if invalid num_alarms or num_alarms==int then 
+		   begin
+			multiple_alarm_test = grey80
+		   end
+		else 
+		   begin
+		      if invalid get source equip_alarms then
+		         begin
+		   	set source equip_alarms = src
+		   	set max_rows equip_alarms  = num_alarms 
+		   	set filter equip_alarms.db_addr = lim_ge	
+		   	set limit equip_alarms.db_addr = db_address(int(b1) + b_offset-1)
+		   	set priority equip_alarms.db_addr = 15
+		   	set persist equip_alarms 
+		   	set mayexist equip_alarms
+		   	request equip_alarms
+		         end
+
+			if invalid equip_alarms[1].alarm_status then
+			begin
+				multiple_alarm_test = grey80
+			end
+			else
+			begin
+				alarm_clear_count = 0
+				n=1
+				while n <= num_alarms DO
+				begin
+					if equip_alarms[n].alarm_status==w_note or equip_alarms[n].alarm_status==w_clr then
+					   begin
+						n=num_alarms+1
+					   end	
+					else
+					   begin
+						alarm_clear_count = alarm_clear_count + 1
+						n++
+					   end
+				end
+
+				if alarm_clear_count <> num_alarms then
+				   multiple_alarm_test = red
+				else
+				   multiple_alarm_test = grey80
+			end
+		   end
+
+			! * debug to display the number of dbase points found before (if any) either w_note or w_clr * !
+			!	text(ch=40,alarm_clear_count )	!
+end
+
+!
+***	Substation 151 -  North Main	 - Fed from BSP Sub 150				*** 
+*** 	Supplies T5 Area A ,secondary substations 155 and 191, the Energy Centre & 	***
+***	Multi-Storey Car Park Area.							***
+!
+object sub151
+var alarm_col= colour
+var alarm_col1= colour
+var alarm_col2= colour
+begin
+	clear
+	LW=3
+	X=-135 Y=-220 Add y-=55 Add X+=50 Add Y+=55 Add line(fg=white) clear 		! * p18 -19 link* !
+	lw=3
+	X=-235 Y=-247	Add y+=40 add line(fg=white) clear
+	X=15 Y=-247	Add y+=40 add line(fg=white) clear
+
+	X=65 Y=-207 Add y+=15 add line(fg=white) clear
+
+	! * labels * !
+	just=centrecentre
+	X=-235 Y=-287	text("SS150-P6") y+=12  text("INCOMER TX1") 
+	X=15 Y=-287 	text("SS150-P18") y+=12  text("INCOMER TX2") 
+
+	tfg=black ch=12
+	x = 65 y = -187 text("P24") y+= 12 text("TX4") y+= 12 text("SS190")
+
+	scale = 120
+	X=-335 Y=-174	modbus_cb(45300,46284,45460,2554,6854,6980,heathrow,4,"btm",40,int,string,int,int)
+	X=-285 Y=-174	modbus_cb(45300,46285,45480,2555,6855,6980,heathrow,5,"btm",50,int,string,int,int)
+	X=-235 Y=-174	modbus_cb(45300,46286,45500,2556,6856,6980,heathrow,6,"btm",60,int,string,int,int)
+	X=-235 Y=-247	modbus_cb(45300,46293,45640,2563,6863,6980,heathrow,13,"top",130,int,string,int,int)
+	X=-135 Y=-247	modbus_cb(45300,46298,45740,2568,6868,6980,heathrow,18,"top",180,int,string,int,int)
+	X=-85 Y=-247	modbus_cb(45300,46299,45760,2569,6869,6980,heathrow,19,"top",190,int,string,int,int)
+	X=15 Y=-247	modbus_cb(45300,46303,45840,2573,6873,6980,heathrow,23,"top",230,int,string,int,int)
+	X=115 Y=-174	modbus_cb(45300,46312,46020,2582,6882,6980,heathrow,32,"btm",320,int,string,int,int)
+
+	scale = 256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	LHS	 !
+	alarm_col1=multiple_alarm_test(45300,45400,360,heathrow)
+
+	!	RHS	 !
+	alarm_col2=multiple_alarm_test(45300,45760,379,heathrow)
+
+	if alarm_col1 == magenta then 
+		alarm_col = magenta
+	else if alarm_col1 == red or  alarm_col2 == red then 
+		alarm_col = red
+	else
+		alarm_col = grey80
+
+	X=-235 Y=-211	main_sub_call(grey80,240,20,"SUB 151","",white,20,no,"sub_stn_151",heathrow,int,"string",int,fg=alarm_col)
+	X=15 Y=-211	main_sub_call(grey80,240,20,"SUB 151","",white,20,no,"sub_stn_151",heathrow,int,"string",int,fg=alarm_col)
+end
+
+!
+***	Substation 152 -  South Main - Fed from BSP Sub 150				*** 
+*** 	Supplies T5 Area A ,secondary substations 156 and 182, the Energy Centre & 	***
+***	Multi-Storey Car Park Area.							***
+!
+object sub152
+var alarm_col= colour
+var alarm_col1= colour
+var alarm_col2= colour
+begin
+	Clear
+
+	X=-250 Y=255 Add Y=200 Add X=-200 Add Y=255 Add
+	FG=white LS=SOLID   LW=3 CS=CAPROUND LINE clear
+	lw=3
+	X=-400 Y=260 Add y-=40 add line(fg=white) clear
+	X=-100 Y=260 Add y-=40 add line(fg=white) clear
+
+	X=-250 Y=270 Add y+=15 add line(fg=white) clear
+	
+	! * labels * !
+	just=centrecentre
+	X=-400 Y=190 text("SS150-P8") y+=12  text("INCOMER TX1") 
+	X=-100 Y=190 text("SS150-P16") y+=12  text("INCOMER TX2")
+
+	tfg=black ch=12
+	x = -250 y = 290 text("P18") y+= 12 text("TX6") y+= 12 text("SS190")
+
+	scale = 120
+	X=-400 Y=230	modbus_cb(42100,43161,42420,1562,6308,6445,heathrow,12,"top",120,int,string,int,int)
+	X=-300 Y=302	modbus_cb(42100,43165,42500,1566,6312,6445,heathrow,16,"btm",160,int,string,int,int)
+	X=-250 Y=230	modbus_cb(42100,43168,42560,1569,6315,6445,heathrow,19,"top",190,int,string,int,int)
+	X=-200 Y=230	modbus_cb(42100,43169,42580,1570,6316,6445,heathrow,20,"top",200,int,string,int,int)
+	X=-100 Y=230	modbus_cb(42100,43173,42660,1574,6320,6445,heathrow,24,"top",240,int,string,int,int)
+	X=-100 Y=302	modbus_cb(42100,43175,42700,1576,6322,6445,heathrow,26,"btm",260,int,string,int,int)
+	X=-50 Y=302	modbus_cb(42100,43182,42840,1583,6329,6445,heathrow,33,"btm",330,int,string,int,int)
+	X=0 Y=302	modbus_cb(42100,43183,42860,1584,6330,6445,heathrow,34,"btm",340,int,string,int,int)
+
+	scale = 256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	LHS	 !
+	alarm_col1=multiple_alarm_test(42100,42200,380,heathrow)
+
+	!	RHS	 !
+	alarm_col2=multiple_alarm_test(42100,42580,399,heathrow)
+
+	if alarm_col1 == magenta then 
+		alarm_col = magenta
+	else if alarm_col1 == red or  alarm_col2 == red then 
+		alarm_col = red
+	else
+		alarm_col = grey80
+
+	X=-384 Y=265 main_sub_call(grey80,300,20,"SUB 152","",white,20,no,"sub_stn_152",heathrow,int,"string",int,fg=alarm_col)
+	X=-106 Y=265  main_sub_call(grey80,240,20,"SUB 152","",white,20,no,"sub_stn_152",heathrow,int,"string",int,fg=alarm_col)
+
+end
+
+!
+***										*** 
+*** 	Substation 159 - Fuel Farm Deluge System					***
+*** 										***
+!
+object sub159
+var alarm_col= colour
+var alarm_col1= colour
+var alarm_col2= colour
+begin
+	Clear
+	scale=120
+	X=370 Y=-193 hv_switch_obj(	"RMU",		27000,		27095,		2004,		6106,		heathro3,		"1",		"top",		int,		int,		int,		int	,int)
+	X=420 Y=-193 hv_switch_obj(	"RMU",		27000,		27700,		2005,		6107,		heathro3,		"2",		"top",		int,		int,		int,		int	,int)
+	X=470 Y=-193 hv_switch_obj(	"RMU",		27000,		27105,		2006,		6108,		heathro3,		"4",		"top",		int,		int,		int,		int	,int)
+	X=520 Y=-193 hv_switch_obj(	"RMU",		27000,		27710,		2007,		6109,		heathro3,		"5",		"top",		int,		int,		int,		int	,int)
+
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+
+	!	alarms group 1	 !
+	alarm_col1=multiple_alarm_test(27000,27080,84,heathro3)
+
+	!	alarms group 2	 !
+	alarm_col2=multiple_alarm_test(27000,27700,14,heathro3)
+
+	if alarm_col1 == magenta then 
+		alarm_col = magenta
+	else if alarm_col1 == red or  alarm_col2 == red then 
+		alarm_col = red
+	else
+		alarm_col = grey80
+
+	X=399 Y=-158	main_sub_call(grey80,92,20,"SUB","",white,20,yes,"sub_stn_159",heathrow,int,"string",int,fg=alarm_col)
+	X=491 Y=-158	main_sub_call(grey80,92,20,"159","",white,20,yes,"sub_stn_159",heathrow,int,"string",int,fg=alarm_col)
+	! ** Separator line ** !
+	clear
+	X=445 Y=-168 Add
+	X=445 Y=-148 Add
+	FG=aquamarine3 LS=SOLID   LW=4 CS=CAPROUND LINE clear
+
+end
+
+!
+***										*** 
+*** 	Substation 165 - Southern Ancillary Area 					***
+*** 										***
+!
+object sub165
+var alarm_col= colour
+begin	
+	scale=120
+	X=370 Y=-193 hv_switch_obj("RMU",	27300,	27795,	1402,	20068,	heathro2,	"1",	"top",	int,	int,	int,	28070,int)
+	X=420 Y=-193 hv_switch_obj("RMU",	27300,	27802,	1403,	20069,	heathro2,	"2",	"top",	int,	int,	int,	28070,int)
+	X=470 Y=-193 hv_switch_obj("RMU",	27300,	27809,	1404,	20070,	heathro2,	"4",	"top",	int,	int,	int,	28070,int)
+	X=520 Y=-193 hv_switch_obj("RMU",	27300,	27816,	1405,	20071,	heathro2,	"5",	"top",	int,	int,	int,	28070,int)
+	
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	if boolean_status(28070,heathro2)==on then
+	   alarm_col = magenta
+	else
+	   alarm_col=multiple_alarm_test(27300,27780,69,heathro2)
+
+	X=399 Y=-158  main_sub_call(grey80,92,20,"SUB","",white,20,yes,"sub_stn_165",heathro2,int,"string",int,fg=alarm_col)
+	X=491 Y=-158  main_sub_call(grey80,92,20,"165","",white,20,yes,"sub_stn_165",heathro2,int,"string",int,fg=alarm_col)
+	! ** Separator line ** !
+	clear
+	X=445 Y=-168 Add
+	X=445 Y=-148 Add
+	FG=aquamarine3 LS=SOLID   LW=4 CS=CAPROUND LINE clear
+
+
+end
+
+!
+***										*** 
+*** 	Substation 187 - Energy Centre						***
+*** 										***
+!
+object sub187
+var alarm_col= colour
+begin
+	
+	scale=120
+	X=370 Y=-193 hv_switch_obj(	"RMU",		27300,		27965,		1428,		20095,		heathro2,		"1",		"top",		int,		int,		int,		int	,int)
+	X=420 Y=-193 hv_switch_obj(	"RMU",		27300,		27972,		1429,		20096,		heathro2,		"2",		"top",		int,		int,		int,		int	,int)
+	X=470 Y=-193 hv_switch_obj(	"RMU",		27300,		27993,		1432,		20099,		heathro2,		"7",		"top",		int,		int,		int,		int	,int)
+	X=520 Y=-193 hv_switch_obj(	"RMU",		27300,		28000,		1433,		20100,		heathro2,		"8",		"top",		int,		int,		int,		int	,int)
+	
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	alarm_col=multiple_alarm_test(27300,27940,106,heathro2)
+
+	X=399 Y=-158  main_sub_call(grey80,92,20,"SUB","",white,20,yes,"sub_stn_187",heathro2,int,"string",int,fg=alarm_col)
+	X=491 Y=-158  main_sub_call(grey80,92,20,"187","",white,20,yes,"sub_stn_187",heathro2,int,"string",int,fg=alarm_col)
+	! ** Separator line ** !
+	clear
+	X=445 Y=-168 Add
+	X=445 Y=-148 Add
+	FG=aquamarine3 LS=SOLID   LW=4 CS=CAPROUND LINE clear
+
+end
+
+!
+***										*** 
+*** 	Substation 190 - Energy Centre						***
+*** 										***
+!
+object lv_190_status(plc_offset=int,src=source,txt_id=string,res2=string,res1=int)
+var plc_inputs = input b_bool_type[2]
+var alarm1_col = colour
+var alarm2_col = colour
+var alarm3_col = colour
+var alarm4_col = colour
+var alarm5_col = colour
+var alarm6_col = colour
+begin
+	alarm1_col = lv_alarm_test(27909,2,heathro2)		!** Local Tx4 **!
+	alarm2_col =lv_alarm_test(27912,2,heathro2)		!** Local Tx5 **!
+	alarm3_col =lv_alarm_test(27918,2,heathro2)		!** Local Tx6 **!
+	alarm4_col =lv_alarm_test(27860,10,heathro2)		!** ACB4 & ACB5 **!
+	alarm5_col =lv_alarm_test(27870,5,heathro2)		!** ACB6 **!
+	alarm6_col = lv_alarm_test(27875,10,heathro2)		!** BS 4-5 & BS 5-6 **!
+		
+	if alarm1_col == flashred or
+	alarm2_col == flashred or
+	alarm3_col == flashred or
+	alarm4_col == flashred or
+	alarm5_col == flashred or
+	alarm6_col == flashred then
+		fg = flashred
+	else if alarm1_col ==red or
+	alarm2_col ==red or
+	alarm3_col ==red or
+	alarm4_col ==red or
+	alarm5_col == red or
+	alarm6_col == red then
+		fg = red
+	else
+		fg = grey80
+
+	   if invalid get source plc_inputs then 
+	   begin
+		! GET PLC INPUTS !
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+	  end
+
+
+	X=0 Y=0 W=50 H=50 ANGLE=0 JUST=centrecentre FS=FILLSOLID rotrect
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on
+	then
+		tfg=magenta
+	else
+		tfg=white
+	lw=1
+	X=-25 Y=25 Add Y=-25 Add X=25 Y=-25 Add line(fg=white) clear
+	X=-25 Y=25 Add X=25 Add Y=-25 Add line(fg=black) clear
+
+	ch=18 font=font_bold just=centrecentre
+	X=0 Y=16  text(txt_id) clear
+
+	X=-20 Y=-20 W=20 H=20 just=topleft fg=green4 ls=solid lw=3 sa=0 circle
+	X=0 Y=-20 W=20 H=20 circle clear
+end
+
+object sub190
+var alarm_col= colour
+begin
+
+	clear	
+	scale=260
+	just = centrecentre
+
+	lw=3
+	x =  297 y = -73 add y -= 80 add line (fg=white) clear
+	x =  482 y = -73 add y -= 80 add line (fg=white) clear
+
+	tfg=black ch=12
+
+	x = 297 y = -210 text("SS151")
+	y+= 15 text("P24")
+
+	x =482 y = -210 text("SS152")
+	y+= 15 text("P18")
+
+	scale=120
+	x=297 y=-167 modbus_cb(45300,46304,45860,2574,6874,6980,heathrow,24,"btm",240,int,string,int,int)
+	X=370 Y=-193 hv_switch_obj(	"RMU",		27300,		27885,		1416,		20083,		heathro2,		"1",		"top",		int,		int,		int,		int	,int)
+	X=420 Y=-193 hv_switch_obj(	"RMU",		27300,		27892,		1417,		20084,		heathro2,		"2",		"top",		int,		int,		int,		int	,int)
+	x=482 y=-167 modbus_cb(42100,43167,42540,1568,6314,6445,heathrow,18,"btm",180,int,string,int,int)
+
+	scale=180
+	x = 297 y = -73 lv_190_status(27300,heathro2,"TX4",string,int)
+	x = 482 y = -73 lv_190_status(27300,heathro2,"TX6",string,int)
+
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	alarm_col=multiple_alarm_test(27300,27860,64,heathro2)
+
+	X=395 Y=-158  main_sub_call(grey80,96,20,"SUB 190","",white,20,yes,"sub_stn_190",heathro2,int,"string",int,fg=alarm_col)
+end
+
+!
+***										*** 
+*** 	Substation 161 - MSCP5 West Central					***
+*** 										***
+!
+object sub161
+var alarm_col= colour
+begin
+	clear
+	scale=120
+	X=370 Y=-193 hv_switch_obj("RMU",	10300,	10840,	1922,	6258,	heathro2,	"1",	"top",	int,	int,	int,	10800,int)
+	X=420 Y=-193 hv_switch_obj("RMU",	10300,	10847,	1923,	6259,	heathro2,	"2",	"top",	int,	int,	int,	10800,int)
+	X=470 Y=-193 hv_switch_obj("RMU",	10300,	10854,	1924,	6260,	heathro2,	"4",	"top",	int,	int,	int,	10800,int)
+	X=520 Y=-193 hv_switch_obj("RMU",	10300,	10861,	1925,	6261,	heathro2,	"5",	"top",	int,	int,	int,	10800,int)
+	
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	if boolean_status(10800,heathro2)==on then
+	   alarm_col = magenta
+	else
+	   alarm_col=multiple_alarm_test(10300,10830,70,heathro2)
+
+	X=399 Y=-158  main_sub_call(grey80,92,20,"SUB","",white,20,yes,"sub_stn_161",heathro2,int,"string",int,fg=alarm_col)
+	X=491 Y=-158  main_sub_call(grey80,92,20,"161","",white,20,yes,"sub_stn_161",heathro2,int,"string",int,fg=alarm_col)
+	! ** Separator line ** !
+	clear
+	X=445 Y=-168 Add
+	X=445 Y=-148 Add
+	FG=aquamarine3 LS=SOLID   LW=4 CS=CAPROUND LINE clear
+
+end
+
+!
+***										*** 
+*** 	Substation 163 - MSCP5 South West						***
+*** 										***
+!
+object sub163
+var alarm_col= colour
+begin
+	clear
+	scale=120	
+	X=370 Y=-193 hv_switch_obj("RMU",	10300,	10950,	1935,	6272,	heathro2,	"1",	"top",	int,	int,	int,	10915,int)
+	X=420 Y=-193 hv_switch_obj("RMU",	10300,	10957,	1936,	6273,	heathro2,	"2",	"top",	int,	int,	int,	10915,int)
+
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	if boolean_status(10915,heathro2)==on then
+		alarm_col = magenta
+	else
+	   	alarm_col=multiple_alarm_test(10300,10945,35,heathro2)
+
+	X=395 Y=-158  main_sub_call(grey80,96,20,"SUB 163","",white,20,yes,"sub_stn_163",heathro2,int,"string",int,fg=alarm_col)
+end
+
+!
+***										*** 
+*** 	Substation 193 - MSCP5 North West						***
+*** 										***
+!
+object sub193
+var alarm_col= colour
+begin
+	clear
+	scale=120	
+	X=370 Y=-193 hv_switch_obj("RMU",	10300,	11030,	1944,	6283,	heathro2,	"1",	"top",	int,	int,	int,	10995,int)
+	X=420 Y=-193 hv_switch_obj("RMU",	10300,	11037,	1945,	6284,	heathro2,	"2",	"top",	int,	int,	int,	10995,int)
+
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	if boolean_status(10995,heathro2)==on then
+		alarm_col = magenta
+	else
+	   	alarm_col=multiple_alarm_test(10300,11025,35,heathro2)
+
+	X=395 Y=-158  main_sub_call(grey80,96,20,"SUB 193","",white,20,yes,"sub_stn_193",heathro2,int,"string",int,fg=alarm_col)
+end
+
+!
+***										*** 
+*** 	Substation 157 - Northern Ancillary Area					***
+*** 										***
+!
+object sub157
+var alarm_col= colour
+begin
+	clear
+	scale=120	
+	X=370 Y=-193 hv_switch_obj("RMU",	7400,	7570,	463,	664,	heathro2,	"1",	"top",	int, 	int, 	int,	7535,int)
+	X=420 Y=-193 hv_switch_obj("RMU",	7400,	7577,	464,	665,	heathro2,	"2",	"top",	int,	int,	int,	7535,int)
+
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	if boolean_status(7535,heathro2)==on then
+		alarm_col = magenta
+	else
+	   	alarm_col=multiple_alarm_test(7400,7565,39,heathro2)
+
+	X=395 Y=-158  main_sub_call(grey80,96,20,"SUB 157","",white,20,yes,"sub_stn_157",heathro2,int,"string",int,fg=alarm_col)
+end
+
+!
+***										*** 
+*** 	Substation 158 - Petrol Station						***
+*** 										***
+!
+object sub158
+var alarm_col= colour
+begin
+	clear
+	scale=120	
+	X=370 Y=-193 hv_switch_obj("RMU",	7400,	7650,	472,	675,	heathro2,	"1",	"top",	int,	int,	int,	7615,int)
+	X=420 Y=-193 hv_switch_obj("RMU",	7400,	7657,	473,	676,	heathro2,	"2",	"top",	int,	int,	int,	7615,int)
+
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	if boolean_status(7615,heathro2)==on then
+		alarm_col = magenta
+	else
+	   	alarm_col=multiple_alarm_test(7400,7645,39,heathro2)
+
+	X=395 Y=-158  main_sub_call(grey80,96,20,"SUB 158","",white,20,yes,"sub_stn_158",heathro2,int,"string",int,fg=alarm_col)
+end
+
+!
+***										*** 
+*** 	Substation 188 - T5 Hotel							***
+*** 										***
+!
+object sub188
+var alarm_col= colour
+begin
+	
+	scale=120
+	X=370 Y=-193 hv_switch_obj(	"RMU",		7400,		7725,		480,		685,		heathro2,		"1",		"top",		int,		int,		int,		7695	,int)
+	X=420 Y=-193 hv_switch_obj(	"RMU",		7400,		7732,		481,		686,		heathro2,		"2",		"top",		int,		int,		int,		7695	,int)
+	X=470 Y=-193 hv_switch_obj(	"RMU",		7400,		7739,		482,		687,		heathro2,		"4",		"top",		int,		int,		int,		7695	,int)
+	X=520 Y=-193 hv_switch_obj(	"RMU",		7400,		7746,		483,		688,		heathro2,		"5",		"top",		int,		int,		int,		7695	,int)
+	
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	if boolean_status(7695,heathro2)==on then
+	   alarm_col = magenta
+	else
+	   alarm_col=multiple_alarm_test(7400,7725,64,heathro2)
+
+	X=399 Y=-158  main_sub_call(grey80,92,20,"SUB","",white,20,yes,"sub_stn_188",heathro2,int,"string",int,fg=alarm_col)
+	X=491 Y=-158  main_sub_call(grey80,92,20,"188","",white,20,yes,"sub_stn_188",heathro2,int,"string",int,fg=alarm_col)
+	! ** Separator line ** !
+	clear
+	X=445 Y=-168 Add
+	X=445 Y=-148 Add
+	FG=aquamarine3 LS=SOLID   LW=4 CS=CAPROUND LINE clear
+
+end
+
+!
+***										*** 
+*** 	Substation 189 - T5 Hotel							***
+*** 										***
+!
+object sub189
+var alarm_col= colour
+begin
+	clear
+	scale=120
+	X=370 Y=-193 hv_switch_obj("RMU",	7400,	7460,	450,	650,	heathro2,	"1",	"top",	int,	int,	int,	int,int)
+	X=420 Y=-193 hv_switch_obj("RMU",	7400,	7467,	451,	651,	heathro2,	"2",	"top",	int,	int,	int,	int,int)
+	X=470 Y=-193 hv_switch_obj("RMU",	7400,	7474,	452,	652,	heathro2,	"4",	"top",	int,	int,	int,	int,int)
+	X=520 Y=-193 hv_switch_obj("RMU",	7400,	7481,	453,	653,	heathro2,	"5",	"top",	int,	int,	int,	int,int)
+	
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	alarm_col=multiple_alarm_test(7400,7460,64,heathro2)
+
+	X=399 Y=-158  main_sub_call(grey80,92,20,"SUB","",white,20,yes,"sub_stn_189",heathro2,int,"string",int,fg=alarm_col)
+	X=491 Y=-158  main_sub_call(grey80,92,20,"189","",white,20,yes,"sub_stn_189",heathro2,int,"string",int,fg=alarm_col)
+	! ** Separator line ** !
+	clear
+	X=445 Y=-168 Add
+	X=445 Y=-148 Add
+	FG=aquamarine3 LS=SOLID   LW=4 CS=CAPROUND LINE clear
+
+end
+
+!
+***										*** 
+*** 	Substation 160 - BA TUG Charging						***
+*** 										***
+!
+object sub160
+var alarm_col= colour
+begin
+	clear
+	scale=120
+	X=370 Y=-193 hv_switch_obj("RMU",	10300,	11115,	1954,	6290,	heathro2,	"1",	"top",	int,	int,	int,	11075,int)
+	X=420 Y=-193 hv_switch_obj("RMU",	10300,	11122,	1955,	6291,	heathro2,	"2",	"top",	int,	int,	int,	11075,int)
+	X=470 Y=-193 hv_switch_obj("RMU",	10300,	11129,	1956,	6292,	heathro2,	"4",	"top",	int,	int,	int,	11075,int)
+	X=520 Y=-193 hv_switch_obj("RMU",	10300,	11136,	1957,	6293,	heathro2,	"5",	"top",	int,	int,	int,	11075,int)
+	
+	scale=256
+	! ** Get Alarm Status Colour - this checks circuit breaker status using multiple alarm checks ** !
+	!	ALL	 !
+	if boolean_status(11075,heathro2)==on then
+	   alarm_col = magenta
+	else
+	   alarm_col=multiple_alarm_test(10300,11105,70,heathro2)
+
+	X=399 Y=-158  main_sub_call(grey80,92,20,"SUB","",white,20,yes,"sub_stn_160",heathro2,int,"string",int,fg=alarm_col)
+	X=491 Y=-158  main_sub_call(grey80,92,20,"160","",white,20,yes,"sub_stn_160",heathro2,int,"string",int,fg=alarm_col)
+	! ** Separator line ** !
+	clear
+	X=445 Y=-168 Add
+	X=445 Y=-148 Add
+	FG=aquamarine3 LS=SOLID   LW=4 CS=CAPROUND LINE clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+clear
+! * links * !
+scale = 256
+! ** SUB165-P2 TO SUB152-P33 ** !
+X=-493 Y=-65 Add
+X=-493 Y=-255 Add
+X=-156 Y=-255 Add
+X=-156 Y=-322 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB165-P1 TO SUB160-P1 ** !
+X=-534 Y=-65 Add
+X=-534 Y=-112 Add
+X=-560 Y=-112 Add
+X=-560 Y=75 Add
+X=-416 Y=75 Add
+X=-416 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB165-P4 TO SUB160-P5 ** !
+X=-452 Y=-65 Add
+X=-452 Y=-112 Add
+X=-385 Y=-112 Add
+X=-385 Y=45 Add
+X=-293 Y=45 Add
+X=-293 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB190-P1 TO SUB160-P4 ** !
+X=-280 Y=-65 Add
+X=-280 Y=-112 Add
+X=-365 Y=-112 Add
+X=-365 Y=30 Add
+X=-334 Y=30 Add
+X=-334 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+
+! ** SUB190-P2 TO SUB187-P1 ** !
+X=-239 Y=-65 Add
+X=-239 Y=-112 Add
+X=-142 Y=-112 Add
+X=-142 Y=-65 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB187-P7 TO SUB152-P16 ** !
+X=-60 Y=-65 Add
+X=-60 Y=-215 Add
+X=-361 Y=-215 Add
+X=-361 Y=-322 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB187-P2 TO SUB151-P4 ** !
+X=-101 Y=-65 Add
+X=-101 Y=-185 Add
+X=150 Y=-185 Add
+X=150 Y=-319 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB163-P1 TO SUB187-P8 ** !
+X=-221 Y=120 Add
+X=-221 Y=30 Add
+X=17 Y=30 Add
+X=17 Y=-112 Add
+X=-19 Y=-112 Add
+X=-19 Y=-65 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB188-P1 TO SUB152-P34 ** !
+X=53 Y=-65 Add
+X=53 Y=-240 Add
+X=-116 Y=-240 Add
+X=-116 Y=-322 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB188-P2 TO SUB188-P4 ** !
+X=95 Y=-65 Add
+X=95 Y=-112 Add
+X=136 Y=-112 Add
+X=136 Y=-65 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB188-P5 TO SUB189-P1 ** !
+X=177 Y=-65 Add
+X=177 Y=-112 Add
+X=228 Y=-112 Add
+X=228 Y=-65 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB189-P2 TO SUB189-P4 ** !
+X=269 Y=-65 Add
+X=269 Y=-112 Add
+X=310 Y=-112 Add
+X=310 Y=-65 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB189-P5 TO SUB151-P6 ** !
+X=351 Y=-65 Add
+X=351 Y=-140 Add
+X=232 Y=-140 Add
+X=232 Y=-322 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB161-P4 TO SUB160-P2 ** !
+X=-33 Y=120 Add
+X=-33 Y=60 Add
+X=-375 Y=60 Add
+X=-375 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB161-P2 TO SUB157-P1 ** !
+X=-74 Y=120 Add
+X=-74 Y=45 Add
+X=185 Y=45 Add
+X=185 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB163-P2 TO SUB161-P1 ** !
+X=-181 Y=120 Add
+X=-181 Y=75 Add
+X=-115 Y=75 Add
+X=-115 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB161-P5 TO SUB193-P2 ** !
+X=9 Y=120 Add
+X=9 Y=75 Add
+X=119 Y=75 Add
+X=119 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB193-P1 TO SUB158-P1 ** !
+X=78 Y=120 Add
+X=78 Y=60 Add
+X=294 Y=60 Add
+X=294 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB159-P1 TO SUB157-P2 ** !
+X=419 Y=-65 Add
+X=419 Y=-112 Add
+X=390 Y=-112 Add
+X=390 Y=-5 Add
+X=226 Y=-5 Add
+X=226 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+!  ** SUB159-P5 TO SUB151-P5 ** !
+X=541 Y=-65 Add
+X=541 Y=-226 Add
+X=192 Y=-226 Add
+X=192 Y=-322 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+!  ** SUB159-P2 TO SUB151-P32 ** !
+X=459 Y=-65 Add
+X=459 Y=-275 Add
+X=519 Y=-275 Add
+X=519 Y=-322 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB159-P4 TO SUB158-P2 ** !
+X=501 Y=-65 Add
+X=501 Y=-112 Add
+X=565 Y=-112 Add
+X=565 Y=75 Add
+X=335 Y=75 Add
+X=335 Y=120 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+! ** SUB165-P5 TO SUB152-P26 ** !
+X=-411 Y=-65 Add
+X=-411 Y=-275 Add
+X=-196 Y=-275 Add
+X=-196 Y=-322 Add
+FG=white LS=SOLID   LW=2 CS=CAPROUND LINE clear
+
+scale=210
+X=425 Y=-155 sub151
+X=-115 Y=-547 sub152
+
+X=-838 Y=69 sub165
+X=-583 Y=69 sub190
+X=-445 Y=69 sub187
+X=-250 Y=69 sub188
+X=-75 Y=69 sub189
+X=115 Y=69 sub159
+
+X=-720 Y=256 sub160
+X=-525 Y=256 sub163
+X=-418 Y=256 sub161
+X=-226 Y=256 sub193
+X=-118 Y=256 sub157
+X=-10 Y=256 sub158
+
+clear
+
+
+! ** label** !
+scale=256
+! ** SUB165 ** !
+X=-513 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 1")
+X=-438 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 2")
+! ** SUB190 ** !
+X=-268 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU")
+! ** SUB187 ** !
+X=-130 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 1")
+X=-55 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 3")
+! ** SUB159 ** !
+X=430 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 1")
+X=505 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 2")
+
+! ** SUB163 ** !
+X=-210 Y=140 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU")
+! ** SUB161 ** !
+X=-103 Y=140 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 1")
+X=-28 Y=140 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 2")
+! ** SUB193 ** !
+X=87 Y=140 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU")
+
+! ** SUB188 ** !
+X=65 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 1")
+X=140 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 2")
+! ** SUB189 ** !
+X=240 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 1")
+X=315 Y=-48 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 2")
+! ** SUB157 ** !
+X=197 Y=140 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU")
+! ** SUB158 ** !
+X=305 Y=140 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU")
+
+! ** SUB160 ** !
+X=-405 Y=140 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 1")
+X=-330 Y=140 CH=9 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("RMU 2")
+
+
+scale=256
+X=-490 Y=295 main_sub_call(grey80,160,25,"T5 11KV OVERVIEW","",blue4,14,no,"t5_11kv_overview",heathrow,int,"string",int)
+x = -570 y = 310 browser(1398,heathro2,1140)
+
+! ** label ** !
+tfg=black just=centrecentre font=font_bold
+X=10 Y=-380 CH=16 text("T5 Other Areas")
+
+end
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

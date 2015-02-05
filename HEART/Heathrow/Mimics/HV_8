@@ -1,0 +1,224 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!**********Hv Ring 8************!
+
+
+load mimic_libutil
+load ocb
+load nse_ocb_4
+load hv_8_sub_stations
+load hv_cable_ident
+Load BROWSER
+
+!************* SUB M1/3 ***************
+
+object sub_m1_3
+
+begin
+
+sub_symbol_m1_3
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(500,630,18,28,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(500,640,19,29,heathro2,2,"top")
+
+x = 50 y = -40 add
+ 
+end!
+
+
+!************* SUB M1/2 ***************!
+
+object sub_m1_2
+
+begin
+
+sub_symbol_m1_2
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(1000,1140,33,54,heathro2,6,"top")
+x = 50 y = 0 ocb_mont(1000,1150,34,55,heathro2,7,"top")
+
+
+end
+
+
+
+
+!************* SUB M1/7 ***************!
+
+!object sub_m1_7
+
+begin
+
+sub_symbol_m1_7
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 50 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x = 0  y = 0 ocb_mont(2000,2190,65,134,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(2000,2200,66,135,heathro2,2,"top")
+
+end!
+
+
+!*********** HV 8 NORTH INTAKE ************!
+
+object hv_8_north_intake
+
+var call_var = toplevel  string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "north_intake"
+
+W=150 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"North Intake",just=centrecentre) clear
+
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 0 y = 25 add y = -25 add line(fg=red) clear
+x = 100 y = 25 add y = -25 add line(fg=red) clear
+
+scale=120
+x = 0 y = 0 ocb(1,120,2,26,heathrow,2,"top")
+x = 100 y = 0 ocb(1,380,15,39,heathrow,19,"top")
+
+
+end
+
+
+!************* EAST INTAKE ***************!
+
+!object hv_8_east_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathro2
+set selfreplace call_var
+set mimic call_var = "east_intake"
+
+w=150 h=25 x=175 y=25 rect(fg=decoroff)
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 250 y = 38 text(tfg=white,ch=25,"East Intake",just=centrecentre) clear
+x = 325 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 325 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw = 2
+x = 50 y = 40 add y -= 75 add line (fg=orange3) clear
+lw = 4
+x = -25 y = 40 add x = 175 add line (fg=orange3) clear
+
+scale = 120
+
+x = 50 y = 0 nse_ocb_4(22000,22050,802,1804,1800,HEATHRO2,2,"TOP",202)
+
+x = 150 y = 40 nse_ocb_4(22000,22090,804,1806,1800,HEATHRO2,4,"SECT",206)
+
+end!
+
+!************* SUB 126 ***************!
+
+object sub_126
+
+begin
+
+sub_symbol_126
+
+lw = 2
+!x = 0 y = -25 add y += 50 add line (fg=red) clear
+x = 100 y = -25 add y += 50 add line (fg=red) clear!
+x = 150 y = -25 add y += 50 add line (fg=red) clear
+
+scale = 300
+!x =0 y = 0 hv_lib_breaker("eclipse",10500,10580,800,900,996,HEATHRO3,1,"TOP",10)
+x =100  y = 0 hv_lib_breaker("eclipse",10500,10720,807,907,996,HEATHRO3,7,"TOP",INT)!
+x =150  y = 0 hv_lib_breaker("eclipse",10500,10740,808,908,996,HEATHRO3,8,"TOP",30)
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+clear
+
+lw = 2
+
+! M1/3-1 TO NI-2 !
+x = -400 y = -75 add
+y -= 15 add
+x -= 50 add
+y += 200 add
+x += 400 add
+y += 15 add
+line(fg=red) clear
+x = -250 y = 110 cable_ident("red","maggot","5.6") clear
+x = -404 y = -75 disk(fg=red,w=10,h=10) clear
+x =-400 y = -55 text(just=centrecentre,tfg=black,ch=12,"Pot Ended") clear
+ 
+
+
+! M1/2-6 TO NI-19 !
+x = -150 y = -75 add
+y -= 15 add
+x -= 50 add
+y += 175 add
+x += 250 add
+y += 40 add
+line(fg=red) clear
+x = -100 y = 85 cable_ident("red","maggot","5.6") clear
+ 
+
+! S126-8 TO  M1/2 P7!
+x = 0 y = -275 add
+y -= 25 add
+x += 100 add
+y += 210 add
+x -= 200 add
+y +=20 add
+line(fg=red) clear
+x = 50 y = -300 cable_ident("red","maggot","5.6") clear
+
+x = -150 y = -50 sub_m1_2
+!x = -150 y = -250 hv_8_east_intake!
+x = -150 y = -250 sub_126
+x = -50 y = 150 hv_8_north_intake
+
+
+x = -570 y = 310 browser(1068,heathrow,1140)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

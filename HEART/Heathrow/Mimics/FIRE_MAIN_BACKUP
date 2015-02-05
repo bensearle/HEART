@@ -1,0 +1,615 @@
+! HEATHROW CMS -  FIRE MAIN BACKUP
+
+loaded by: FIRE_MAIN
+
+!
+
+load fire_main_backup_help
+
+load mimic_libutil
+
+type b_db_row_type = table db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var output op=b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+****************************************************************
+* FIRE MAIN BACKUP OBJECT                                      *
+* this object is called from the Top Level variable (mimic)    *
+****************************************************************
+!
+
+object fire_main_backup(plc_offset=int,b_offset=int,c_offset=int,src=source,fg)
+
+var pp1_height                     = int
+
+!B INPUTS
+b_inputs[1] = backup_status
+b_inputs[2] = backup_enable
+b_inputs[3] = backup_didsable
+b_inputs[4] = backup_emer_stop
+b_inputs[6] = backup_stopping
+b_inputs[7] = start_stop_pp1
+b_inputs[8] = pp1_running
+b_inputs[9] = close_penstocks
+b_inputs[10] = pen_opened
+b_inputs[11] = pen_closed
+!
+var b_inputs = input b_db_row_type[11]
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+!ALARM INPUTS
+alarm_inputs[1] = backup_operated_alarm
+alarm_inputs[3] = pp1_running_alarm
+!
+var alarm_inputs = input alarm_row_type[3]
+
+var title_text                     = loopback string(30)
+var backup_status_text             = loopback string(30)
+var pp1_status_text                = loopback string(30)
+var backup_colour                  = loopback colour
+var backup_alarm_background_colour = loopback colour
+var valve_fg                       = loopback colour
+var pp1_colour                     = loopback colour
+var pp1_alarm_colour               = loopback colour
+
+var backup_control_menu            = menu string(30)
+
+var helpstr                        = help string(30)
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source b_inputs then 
+
+   begin
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset - 1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset + 3)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   end
+
+
+
+! CONFIGURE MENU !
+
+just=centreleft
+w=210 h=60
+x=-130 y=0
+set rect backup_control_menu 
+set title backup_control_menu = "Fire Main Backup Menu"
+set remove backup_control_menu = "Enable Backup"
+set remove backup_control_menu = "Disable Backup"
+set remove backup_control_menu = "Normal Stop"
+set remove backup_control_menu = "Start PP1"
+set remove backup_control_menu = "Stop PP1"
+set remove backup_control_menu = "Close Penstocks"
+
+
+! CONTROL MENU !
+
+if valid backup_control_menu then
+begin
+case backup_control_menu of 
+   
+  "Enable Backup"
+    begin
+      set title_text = "Enable Backup"
+    end
+  
+  "Disable Backup"
+    begin
+      set title_text = "Disable Backup"
+    end
+   
+  "Normal Stop"
+    begin
+      set title_text = "Normal Stop"
+    end
+
+  "Start PP1"
+    begin
+      set title_text = "Start PP1"
+    end
+
+  "Stop PP1"
+    begin
+      set title_text = "Stop PP1"
+    end
+
+  "Close Penstocks"
+    begin
+      set title_text = "Close Penstocks"
+    end
+
+
+   default
+   begin
+   end
+   set invalid backup_control_menu
+end
+
+
+! SELECT TEXT BACKUP STATUS !
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+   begin 
+   backup_status_text ="Comms Failure"
+   backup_colour = magenta
+   backup_alarm_background_colour = decoroff
+   end
+
+else
+begin
+
+if b_inputs[6].b_value == on then
+
+   begin
+   backup_status_text = "Stopping"
+   backup_colour = flashred
+   backup_alarm_background_colour = decoroff
+   end
+
+else if alarm_inputs[1].alarm_status == w_note then
+
+   begin
+   backup_status_text = "Pumps Running"
+   backup_colour = white
+   backup_alarm_background_colour = flashred
+   end
+
+else if alarm_inputs[1].alarm_status == w_clr then
+
+   begin
+   backup_status_text = "Pumps Running"
+   backup_colour = white
+   backup_alarm_background_colour = red
+   end
+
+else
+
+   begin
+      if b_inputs[1].b_value == on then 
+      begin
+      backup_status_text = "Disabled"
+      backup_colour = red
+      backup_alarm_background_colour = decoroff
+      end
+  
+      else
+      begin
+      backup_status_text = "Enabled"
+      backup_colour = blue
+      backup_alarm_background_colour = decoroff
+      end
+  
+   end
+end
+
+
+! SET CONTROL MENU OPTIONS !
+    
+   set add backup_control_menu = "Enable Backup"      
+   set add backup_control_menu = "Disable Backup"
+   set add backup_control_menu = "Normal Stop"
+   set add backup_control_menu = "Start PP1"
+   set add backup_control_menu = "Stop PP1"
+   set add backup_control_menu = "Close Penstocks" 
+
+
+! SELECT TEXT PRESSURISING PUMP STATUS !
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+   begin
+   pp1_height = 10
+   pp1_status_text ="PP1 Status Unknown"
+   pp1_colour = magenta
+   end
+
+else
+begin
+
+if b_inputs[8].b_value == off then
+   begin
+   pp1_height = 13
+   pp1_status_text = "PP1 Running"
+   pp1_colour = green4
+   end
+
+else 
+  begin
+  pp1_height = 13
+  pp1_status_text = "PP1 Stopped"
+  pp1_colour = white
+  end
+
+end
+
+! SELECT PENSTOCK VALVE FG COLOUR !
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+  valve_fg = magenta
+
+else
+begin
+
+if b_inputs[10].b_value == off and b_inputs[11].b_value == off then
+  valve_fg = flashred
+
+else if b_inputs[10].b_value == off then
+  valve_fg = green4
+
+else if b_inputs[11].b_value == off then
+  valve_fg = white
+
+else
+  valve_fg = red
+
+end
+
+! DRAW SYMBOL !
+
+bg=decoroff
+fg=valve_fg
+just = centrecentre
+x = -103 rect (w=54,h=60,fg=bg)
+x -= 27 y += 30 add
+y -= 60 add
+x += 54 add line (fg=decorlight) clear 
+y += 60 add
+x -= 54 add line (fg=decorshadow) clear
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+   begin
+   lw=1
+   x = -93 y = -7 add
+   x = -107 y = 7 add line clear
+   x = -93 y = -5 add
+   x -= 4 y -= 4 add
+   x += 6 add
+   y += 6 add
+   x -= 4 y -= 4 add
+   fill clear
+   x = -105 y = 7 add
+   x -= 4 y -= 4 add
+   y += 6 add
+   x += 6 add
+   x -= 4 y -= 4 add
+   fill clear
+   lw=2
+   x = -100 y = 0
+   circle (w=30,h=30)
+   y -= 23
+   ch =10
+   tfg = black
+   x -= 2 text ("Penstocks")
+   ch =10
+   tfg = magenta
+   y += 45  text (ch=9,"UNKNOWN")
+   end
+
+else
+begin
+
+if b_inputs[10].b_value == off and b_inputs[11].b_value then
+   begin
+      lw=1
+      x = -100 y = -10 add
+      y += 20 add line clear
+      x = -100 y = -9 add
+      x -= 4 add
+      x += 4 y -= 6 add
+      x += 4 y += 6 add
+      x -= 4 add
+      fill clear
+      x = -100 y = 8 add
+      x -= 4 add
+      x += 4 y += 6 add
+      x += 4 y -= 6 add
+      x -= 4 add
+      fill clear
+      lw=2
+      x = -100 y = 0
+      circle (w=30,h=30)
+      y -= 23
+  
+   ch =10
+   tfg = black
+   x -= 2 text ("Penstocks")
+   ch =10
+   y += 45  text ("OPENED")
+   clear
+   end
+
+else if b_inputs[10].b_value and b_inputs[11].b_value == off then
+   begin
+
+      
+      lw=1
+      x = -110 y = 0 add
+      x += 20 add line clear
+      x = -110 y = 0 add
+      y -= 4 add    
+      x -= 6 y += 4 add
+      x += 6 y += 4 add
+      y -= 4 add 
+      fill clear
+      x = -92 y = 0 add
+      y -= 4 add    
+      x += 6 y += 4 add
+      x -= 6 y += 4 add
+      y -= 4 add
+      fill clear
+      lw=2
+      x = -100 y = 0
+      circle (w=30,h=30)
+      y -= 23
+     
+   ch =10
+   tfg = black
+   x -= 2 text ("Penstocks")
+   ch =10
+   y +=45  text ("CLOSED")
+
+   end
+
+else if b_inputs[10].b_value and b_inputs[11].b_value then
+   begin
+   lw=1
+   x = -93 y = -7 add
+   x = -107 y = 7 add line clear
+   x = -93 y = -5 add
+   x -= 4 y -= 4 add
+   x += 6 add
+   y += 6 add
+   x -= 4 y -= 4 add
+   fill clear
+   x = -105 y = 7 add
+   x -= 4 y -= 4 add
+   y += 6 add
+   x += 6 add
+   x -= 4 y -= 4 add
+   fill clear
+   lw=2
+   x = -100 y = 0
+   circle (w=30,h=30)
+   y -= 23
+   ch =10
+   tfg = black
+   x -= 2 text ("Penstocks")
+   ch =10
+   y += 45  text ("TRAVEL")
+   end
+
+else if b_inputs[10].b_value == off and b_inputs[11].b_value == off then
+   begin
+   lw=2
+   x = -100 y = 0
+   circle (w=30,h=30)
+   ch = 20 
+   text ("?")
+   y -= 23
+   
+   ch =10
+   tfg = black
+   x -= 2 text ("Penstocks")
+   ch =10
+   y += 45  text ("ERROR")
+   end
+
+end
+
+just = centrecentre
+x = 0 y = 0 rect(w=150,h=60,fg=decoroff)
+x += 75 y -= 30 add y += 60 add x -= 150 add line(lw=1,fg=decorshadow) clear
+y = 30 add y -= 60 add x += 150 add line(lw=1,fg=decorlight) clear
+x = 0 y = -20 text(title_text,ch=16,tfg=black)
+
+
+
+!****** PP1 Running alarm through Out-station 16 ******!
+
+
+
+if alarm_inputs[3].alarm_status == w_note then
+
+   pp1_alarm_colour = flashred
+
+else if alarm_inputs[3].alarm_status == w_clr then
+
+   pp1_alarm_colour = red
+
+else
+
+   pp1_alarm_colour = decoroff
+
+x = 0 y = 20 rect(w=130,h=15,fg=pp1_alarm_colour)
+
+
+if title_text == "Enable Backup" then
+   begin 
+      just=centrecentre
+      x = -65 y = 0 command_button("Cancel","",60,"",ch=14)
+      x = -35 y = 10 if anyb(w=60,h=20) then
+      begin
+      set title_text = "Fire Main Backup"
+      end
+      clear
+      x = 5 y = 0 command_button("Confirm","",60,"",ch=14)
+      x = 35 y = 10 if anyb(w=60,h=20) then     
+      begin
+      set_b_value(db_address(int(b1) + b_offset + 2), src, off)      
+      set_b_value(db_address(int(b1) + b_offset + 1), src, off)
+      set_b_value(db_address(int(b1) + b_offset), src, on)
+      set title_text = "Fire Main Backup"
+      clear
+
+      end
+   end
+
+else if title_text == "Disable Backup" then
+   begin
+     
+      x = -65 y = 0 command_button("Cancel","",60,"",ch=14)
+      x = -35 y = 10 if anyb(w=60,h=20) then
+      begin
+      set title_text = "Fire Main Backup"
+      end
+      clear
+      x = 5 y = 0 command_button("Confirm","",60,"",ch=14)
+      x = 35 y = 10 if anyb(w=60,h=20) then
+      begin
+      set_b_value(db_address(int(b1) + b_offset + 2), src, off)
+      set_b_value(db_address(int(b1) + b_offset), src, off)
+      set_b_value(db_address(int(b1) + b_offset + 1), src, on)
+      title_text = "Fire Main Backup"
+      clear      
+      end
+   end
+
+else if title_text == "Normal Stop" then
+  
+   begin
+     
+      x = -65 y = 0 command_button("Cancel","",60,"",ch=14)
+      x = -35 y = 10 if anyb(w=60,h=20) then
+      begin 
+      set title_text = "Fire Main Backup"
+      end
+
+      clear
+      x = 5 y = 0 command_button("Confirm","",60,"",ch=14)
+      x = 35 y = 10 if anyb(w=60,h=20) then
+      begin
+      
+      set_b_value(db_address(int(b1) + b_offset + 1), src, off)
+      set_b_value(db_address(int(b1) + b_offset), src, off)
+      set_b_value(db_address(int(b1) + b_offset + 2), src, on)
+      title_text = "Fire Main Backup"
+      clear
+      
+      end
+   end
+
+else if title_text == "Start PP1" then
+   begin
+     set_b_value(db_address(int(b1) + b_offset + 5), src, on)
+     title_text = "Fire Main Backup"
+     clear
+   end
+
+else if title_text == "Stop PP1" then
+   begin
+     set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+     title_text = "Fire Main Backup"
+     clear
+   end
+
+else if title_text == "Close Penstocks" then
+  
+   begin
+     
+      x = -65 y = 0 command_button("Cancel","",60,"",ch=14)
+      x = -35 y = 10 if anyb(w=60,h=20) then
+      begin 
+      set title_text = "Fire Main Backup"
+      end
+
+      clear
+      x = 5 y = 0 command_button("Confirm","",60,"",ch=14)
+      x = 35 y = 10 if anyb(w=60,h=20) then
+      begin
+      set_b_value(db_address(int(b1) + b_offset + 7), src, on)
+      title_text = "Fire Main Backup"
+      clear
+      
+      end
+   end
+
+else
+   begin
+   x = 0 y = -2 rect(w=130,h=18,fg=backup_alarm_background_colour)
+   x = -65 y = 7 add x += 130 add y -= 18 add line(lw=1,fg=decorlight) clear 
+   y = -11 add x -= 130 add y += 18 add line(lw=1,fg=decorshadow) clear
+   x = 0 y = -1 text(backup_status_text,ch=18,tfg=backup_colour) clear
+   
+   x = -65 y = 27 add x += 130 add y -= 15 add line(lw=1,fg=decorlight) clear 
+   y = 12 add x -= 130 add y += 15 add line(lw=1,fg=decorshadow) clear
+   x = 0 y = 19 text(font=font_bold,
+                     pp1_status_text,ch=pp1_height,tfg=pp1_colour) clear
+
+
+   if invalid backup_control_menu then
+   title_text = "Fire Main Backup"
+   
+   end
+
+just=centreleft
+w=210 h=60
+x=-130 y=0
+set text helpstr = "backup_help"
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+scale = 256
+
+x = 0 y = 0 fire_main_backup(16000,16200,810,heathrow) 
+end
+
+mimic = main_object w=300,h=200,just=centrecentre,fg=white,bg=black,resizable

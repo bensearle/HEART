@@ -1,0 +1,251 @@
+! HEATHROW CMS - STATUS DISPLAY
+
+loaded by: POTABLE_WATER
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type status_type = enum (town_supply="TOWN SUPPLY",
+                         tank_supply="TANK SUPPLY",
+                         shutdown="SHUTDOWN",
+                         error="Error")
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+
+ 
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+!
+******************************************************************
+* STATUS DISPLAY OBJECT                                          *
+* this object is called by the Top Level variable (mimic)        *
+******************************************************************
+!
+
+object status_display(just,scale,plc_offset=int,b_offset=int,enable_offset=int,hp_one_offset=int,hp_two_offset=int,hp_three_offset=int,src=source)
+
+!B INPUTS
+b_inputs[1] = town_supply_ip
+b_inputs[2] = tank_supply_ip
+b_inputs[3] = shutdown_ip
+!
+var b_inputs = input b_db_row_type[3]
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+var status_bg = loopback  colour
+var control_status = loopback  status_type
+
+var status_menu = menu  string
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid b_inputs then 
+   begin
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset-1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   end
+
+! SELECT BG COLOUR !
+
+status_bg = decoroff
+
+
+! CASE MENU OPTIONS !
+
+if valid status_menu then
+   begin
+
+   case status_menu of
+        "Select Town Supply"
+            begin
+            set_b_value(db_address(int(b1) + b_offset), src, off)
+            set_b_value(db_address(int(b1) + b_offset + 1), src, off)
+            set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+            if control_status == shutdown then
+               begin
+               set_b_value(db_address(int(b1) + enable_offset), src, off)
+               set_b_value(db_address(int(b1) + enable_offset - 1), src, on)
+               end
+            end
+
+        "Select Tank Supply"
+            begin
+             set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+             set_b_value(db_address(int(b1) + b_offset + 1), src, off)
+             set_b_value(db_address(int(b1) + b_offset), src, on)
+             if control_status == shutdown then
+               begin
+               set_b_value(db_address(int(b1) + enable_offset), src, off)
+               set_b_value(db_address(int(b1) + enable_offset - 1), src, on)
+               end
+            end
+
+        "System Shutdown"
+            begin
+             set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+             set_b_value(db_address(int(b1) + b_offset), src, off)
+             set_b_value(db_address(int(b1) + b_offset + 1), src, on)
+             set_b_value(db_address(int(b1) + enable_offset - 1), src, off)
+             set_b_value(db_address(int(b1) + enable_offset), src, on)
+             set_b_value(db_address(int(b1) + hp_one_offset ), src, off)
+             set_b_value(db_address(int(b1) + hp_two_offset ), src, off)
+             set_b_value(db_address(int(b1) + hp_three_offset ), src, off)
+             set_b_value(db_address(int(b1) + hp_one_offset + 5), src, on)
+             set_b_value(db_address(int(b1) + hp_two_offset + 5), src, on)
+             set_b_value(db_address(int(b1) + hp_three_offset + 5), src, on)
+             end
+
+        default
+            begin
+            end
+
+   set invalid status_menu
+   end
+
+
+! CONFIGURE MENU !
+
+if plc_inputs[1].b_value==0 or
+   plc_inputs[2].b_value==0 then
+   begin
+   w=140 h=40
+   end
+else
+   begin
+   w=0 h=0
+   end
+
+x=0 y=0
+set rect status_menu
+set title  status_menu = "System Status Menu"
+
+
+if valid b_inputs then
+   begin
+
+   set empty status_menu
+
+   if b_inputs[1].b_value then 
+      begin
+      control_status = town_supply
+      set add status_menu   = "Select Tank Supply"
+      set add status_menu   = "System Shutdown"
+      end
+
+   else if b_inputs[2].b_value then
+      begin
+      control_status = tank_supply
+      set add status_menu   = "Select Town Supply"
+      set add status_menu   = "System Shutdown"
+      end
+
+   else if b_inputs[3].b_value then
+      begin
+      control_status = shutdown
+      set add status_menu  = "Select Town Supply"
+      set add status_menu  = "Select Tank Supply"
+      end
+
+   else
+      begin
+      control_status = error
+      set add status_menu   = "Select Town Supply"
+      set add status_menu   = "Select Tank Supply"
+      set add status_menu   = "System Shutdown"
+      end
+   
+   set invalid b_inputs
+   end
+
+
+! DRAW SYMBOL !
+
+rect(fg=status_bg,h=40,w=140) 
+x -= 70 y += 20 add y -= 40 add x += 140 add line(lw=1,fg=decorlight) clear
+x = 70 y = -20 add y += 40 add x -= 140 add line(lw=1,fg=decorshadow) clear
+x = 0 y = -10 text (tfg=black,ch=15,"System Status: ")
+if control_status == shutdown then
+   tfg = flashred
+else
+   tfg = blue
+y=10 text(ch=15,control_status)
+
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=250
+just=centrecentre
+y=50
+status_display(15000,11014,12020,11100,11115,12100,heathrow)
+
+
+end
+
+mimic = main_object w=400,h=240,just=centrecentre,fg=white,bg=black,resizable

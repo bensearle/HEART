@@ -1,0 +1,64 @@
+Load MX_SYS_IPOBJS
+Load MX_TABLE_L
+Load generic_bar_meter
+Load generic_dial_meter
+LOAD HV_LIB_HELP
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object  generic_bar_meter_lib(plc_comms=int,
+				c_offset=int,
+				e_offset=int,
+				b_over=int,
+				b_under=int,
+				src=source,
+				units=string,
+				metname=string,
+				range_lo=real,
+				range_hi=real,
+				dec_places=int,
+				bar_colour=colour,
+				range_dec_places=int,
+				res_int1=int,
+				res_str1=string)
+var helpstr = help string(30)
+begin
+   clear
+   if plc_comms==int then 
+   begin
+	x=0 y=10 CH=10 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT("BAR")
+	x=0 y=20 CH=10 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT("METER")
+	scale=80
+   end
+   else scale=256
+   	x=0 y=-10  generic_bar_meter_obj(plc_comms,c_offset,e_offset,b_over,b_under,src,units,metname,range_lo,range_hi,dec_places,bar_colour,range_dec_places,res_int1,res_str1)
+   scale=256
+   just=centrecentre
+   x = 0 y = -10 w = 70 h = 70
+   set text helpstr = "bar_meter_lib_help"
+end
+
+object  generic_dial_meter_lib(meter_address1=int,meter_address2=int,src=source,range_lo=int,range_hi=int,danger_lo=int,danger_hi=int,metname=string,units_str=string,dial_in_use=yesno,reserved1=int)
+var helpstr = help string(30)
+begin
+   clear
+   if meter_address1==int then 
+   begin
+	x=0 y=10 CH=10 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT("BAR")
+	x=0 y=20 CH=10 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT("METER")
+	scale=80
+   end
+   else scale=256
+   	x=0 y=-10  dial_meter(meter_address1,meter_address2,src,range_lo,range_hi,danger_lo,danger_hi,metname,units_str,dial_in_use,reserved1)
+  scale=256
+   just=centrecentre
+   x = 0 y = -10 w = 70 h = 70
+   set text helpstr = "dial_meter_lib_help"
+end
+
+
+Object obj1(w,h,fg,bg)
+Begin
+!generic_bar_meter_lib(int,157,int,int,int,heathro3,"kV","PANEL 6",13.5,36.5,0,blue,1,int,string)!
+!generic_dial_meter_lib(INT,INT,SOURCE,0,80,70,80,"Future","kV",no,INT)!
+End

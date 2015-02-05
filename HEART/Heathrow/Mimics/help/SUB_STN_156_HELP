@@ -1,0 +1,35 @@
+helptext sub_stn_156_help =
+ "
+ **** SUB STATION 156 POPUP MIMIC ****
+ ------------------------------------------------- -------------------------------------------------
+Southern Airside Road - Substation 156 
+ ------------------------------------------------- -------------------------------------------------
+
+This Mimic displays circuit breaker status, current and voltage for Panels on Substation 156.
+
+
+HV Mimic
+The Circuit Breakers are Control and Monitoring. 
+
+The Analogue meters display high and low alarms together with under/over/invalid ranges.
+Low and High alarms may be set by the operator. The meter can also be tagged.
+
+Maximum Demand meters are also shown (display only)
+
+LV Mimic Popup
+Substation 156 houses 2 off 11/0.415kV transformers for the supply of local equipment via an LV switchboard.
+The statuses of the local transformers and the LV ACBs are displayed via the LV popup mimic (TX1 and TX2 objects).
+
+FEGP
+A Navigation Button is provided for Sub 156 FEGP status mimic
+
+
+References:
+------------------
+Operation and Maintenance Manual 	- 
+
+Keypages from the Mimic Menu Object -  for information on mimic objects used (HV Area)
+ ------------------
+
+ "
+

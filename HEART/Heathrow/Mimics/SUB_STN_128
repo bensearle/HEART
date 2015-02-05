@@ -1,0 +1,200 @@
+load mimic_libutil
+load SUB_STN_128_HELP
+load hv_lib
+load generic_meter_library
+
+!*********** BUSBAR 128 ************!
+
+object busbar_128
+var helpstr	= help string(30)
+var line_col	= colour
+
+begin
+   	scale = 256
+   	just = centrecentre
+   	x = 20 y = 20 w = 850 h = 460
+   	set text helpstr = "sub_stn_128_help"
+
+	line_col=magenta3
+	just = centrecentre
+
+	! main busbar and title !
+
+	tfg = black 
+	x = 345 y = 25 add text ("128",ch = 25) clear
+	x = -350 y = 0 add x += 700 add line(lw=4,fg=line_col) clear
+
+	! connecting lines !
+
+	lw=2
+	! p1 !
+	x =   -325 y = 0 add y -= 65 add line (fg=line_col) clear
+
+	! p2 !
+	x =  -275 y = 0 add y += 65 add line (fg=line_col) clear
+
+	! p3 !
+	x =   -225 y = 0 add y += 65 add line (fg=line_col) clear
+	x =   -225 y = 140 add y +=25 add line (fg=line_col) clear	
+
+	! p4 !
+	x =   -175 y = 0 add y += 65 add line (fg=line_col) clear
+	x =  -175 y = 140 add y += 25 add line (fg=line_col) clear
+
+	! p5 sect !
+	x =     -50 y = 0 add y += 50 add line (fg=line_col) clear
+	! earth !
+	x =    -65 y = 50 add x +=30 add line line (fg=line_col) clear
+	x =    -60 y = 55 add x +=20 add line line (fg=line_col) clear
+	x =    -55   y = 60 add x +=10 add line line (fg=line_col) clear
+
+	! p6 !
+	x =   0 y = 0 add y += 65 add line (fg=line_col) clear
+	x =   0 y =140 add y +=25 add line (fg=line_col) clear
+
+	! p7 sect !
+	x =    125 y = 0 add y += 50 add line (fg=line_col) clear
+	! earth !
+	x =   110 y = 50 add x +=30 add line line (fg=line_col) clear
+	x =   115 y = 55 add x +=20 add line line (fg=line_col) clear
+	x =   120   y = 60 add x +=10 add line line (fg=line_col) clear
+
+	! p8 !
+	x =   175 y = 0 add y += 65 add line (fg=line_col) clear
+	x =   175 y = 140 add y += 25 add line (fg=line_col) clear
+
+	! p9 !
+	x =   225 y = 0 add y += 65 add line (fg=line_col) clear
+	x =   225 y = 140 add y += 25 add line (fg=line_col) clear
+
+	! p10 !
+	x =   275 y = 0 add y -= 65 add line (fg=line_col) clear
+
+	! p11 !
+	x =   325 y = 0 add y -= 65 add line (fg=line_col) clear
+
+
+	! circuit breakers !
+
+   	scale = 300
+
+	x  = -325	y = -25	hv_lib_breaker("eclipse",37000,37150,1150,5000,5040,HEATHROW,1,"TOP",10)
+	x  = -275	y = 25	hv_lib_breaker("eclipse",37000,37170,1151,5001,5040,HEATHROW,2,"BTM",20)
+	x  = -225	y = 25	hv_lib_breaker("eclipse",37000,37190,1152,5002,5040,HEATHROW,3,"BTM",int)
+	x = -175	y = 25	hv_lib_breaker("eclipse",37000,37210,1153,5003,5040,HEATHROW,4,"BTM",int)
+	x = -100	y =0 	hv_lib_breaker("eclipse",37000,37250,1155,5005,5040,HEATHROW,5,"SECT",30)
+	x = -50	y = 25	hv_lib_breaker("type3",37000,37230,1154,5004,5040,HEATHROW,5,"SECT",int,angle=270)
+	x = 0	y = 25 	hv_lib_breaker("eclipse",37000,37270,1156,5006,5040,HEATHROW,6,"BTM",int)
+	x = 75	y =0	hv_lib_breaker("eclipse",37000,37310,1158,5008,5040,HEATHROW,7,"SECT",40)
+	x = 125	y = 25	hv_lib_breaker("type3",37000,37290,1157,5007,5040,HEATHROW,7,"SECT",int,angle=270)
+	x = 175	y = 25	hv_lib_breaker("eclipse",37000,37330,1159,5009,5040,HEATHROW,8,"BTM",int)
+	x = 225	y = 25	hv_lib_breaker("eclipse",37000,37350,1160,5010,5040,HEATHROW,9,"BTM",int)
+	x  = 275	y = -25	hv_lib_breaker("eclipse",37000,37370,1161,5011,5040,HEATHROW,10,"TOP",50)
+	x  = 325	y = -25	hv_lib_breaker("eclipse",37000,37390,1162,5012,5040,HEATHROW,11,"TOP",60)
+
+
+	! hv meters !
+
+	scale = 155
+
+	x = -325	y = -93	generic_bar_meter_lib(37000,1165,5017,37068,37069,heathrow,"A","PANEL 1",0,400,0,yellow,0,int,string)
+	x = -375	y = -93	generic_bar_meter_lib(37000,1166,5018,37072,37073,heathrow,"kV","PANEL 1",9.35,12.65,0,blue,1,int,string)
+	x = -275	y = 103	generic_bar_meter_lib(37000,1167,5019,37076,37077,heathrow,"A","PANEL 2",0,400,0,yellow,0,int,string)
+	x = -325	y = 103	generic_bar_meter_lib(37000,1168,5020,37080,37081,heathrow,"kV","PANEL 2",9.35,12.65,0,blue,1,int,string)
+	x = -225	y = 103	generic_bar_meter_lib(37000,1169,5021,37084,37085,heathrow,"A","PANEL 3",0,200,0,yellow,0,int,string)
+	x = -175	y = 103	generic_bar_meter_lib(37000,1170,5022,37088,37089,heathrow,"A","PANEL 4",0,200,0,yellow,0,int,string)
+	x = -75	y = -73	generic_bar_meter_lib(37000,1171,5023,37092,37093,heathrow,"A","PANEL 5",0,800,0,yellow,0,int,string)
+	x = 0	y =103	generic_bar_meter_lib(37000,1172,5024,37096,37097,heathrow,"A","PANEL 6",0,400,0,yellow,0,int,string)
+	x = 100	y = -73	generic_bar_meter_lib(37000,1173,5025,37100,37101,heathrow,"A","PANEL 7",0,800,0,yellow,0,int,string)
+	x = 175	y = 103	generic_bar_meter_lib(37000,1174,5026,37104,37105,heathrow,"A","PANEL 8",0,200,0,yellow,0,int,string)
+	x = 225	y = 103	generic_bar_meter_lib(37000,1175,5027,37108,37109,heathrow,"A","PANEL 9",0,200,0,yellow,0,int,string)
+	x = 275	y = -93	generic_bar_meter_lib(37000,1176,5028,37112,37113,heathrow,"A","PANEL10",0,400,0,yellow,0,int,string)
+	x = 225	y = -93	generic_bar_meter_lib(37000,1177,5029,37116,37117,heathrow,"kV","PANEL10",9.35,12.65,0,blue,1,int,string)
+	x = 325	y = -93	generic_bar_meter_lib(37000,1178,5030,37120,37121,heathrow,"A","PANEL11",0,400,0,yellow,0,int,string)
+	x = 375	y = -93	generic_bar_meter_lib(37000,1179,5031,37124,37125,heathrow,"kV","PANEL11",9.35,12.65,0,blue,1,int,string)
+
+
+	! transformers !
+
+	scale = 256
+
+	x = -225 	y = 175	transformer_lib("LT 1","LOCAL")
+	x = - 175 y = 175	transformer_lib("Tx 1","")
+	x = 0 	y = 175	transformer_lib("LT 2","LOCAL")
+	x = 175 	y = 175	transformer_lib("Tx 2","")
+	x = 225 	y = 175	transformer_lib("LT 3","LOCAL")
+
+
+	! labels !
+
+	scale = 260
+
+	tfg = black ch =12
+	! p1 !
+	x = -325	y = -170	text("Sub 121")
+	x = -325	y = -157	text("P 9")
+
+	! p2 !
+	x = -275	y = 157	text("Spare")
+	x = -275	y = 170	text("")
+
+	! p3 !
+	x = -225	y = 207	text("Local")
+	x = -225	y = 220	text("Tx.1")
+
+	! p4 !
+	x = -175 y = 207	text("T1 Txfr")
+	x = -175 y = 220	text("Bag Tx1")
+
+	! p5 !
+	x = -75	y = -150	text("")
+	x = -75	y = -138	text("Bus Sect")
+
+	x = -27	y =35	text("a")
+	x = -50	y =70	text("RH Bus")
+		y =82	text("Earth")
+		y =94	text("Switch")
+
+	! p6 !
+	x = 0	y = 207	text("Local")
+	x = 0	y = 220	text("Tx.2")
+
+
+	! p7 !
+	x = 100	y = -150	text("")
+	x = 100	y = -138	text("Bus Sect")
+
+	x = 148	y =35	text("a")
+	x = 125	y =70	text("RH Bus")
+		y = 82	text("Earth")
+		y = 94	text("Switch")
+
+	! p8 !
+	x = 175	y = 207	text("T1 Txfr")
+	x = 175	y = 220	text("Bag Tx2")
+
+	! p9 !
+	x = 225	y = 207	text("Local")
+	x = 225	y = 220	text("Tx.3")
+
+	! p10 !
+	x = 250	y = -170	text("Sub 148")
+	x = 250	y = -157	text("P10")
+
+	! p11 !
+	x = 350	y = -170	text("Sub147")
+	x = 350	y = -157	text("P6")
+
+!
+x=0 y=0 text(tfg=flashred,ch=36,"MIMIC UNDER CONTRUCTION")
+!
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+X=0 Y=-30 busbar_128
+end
+mimic = MAIN_OBJECT W=850, h=460, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE
+
+

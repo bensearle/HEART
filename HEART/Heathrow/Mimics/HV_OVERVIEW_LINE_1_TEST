@@ -1,0 +1,77 @@
+! M1/3 OCB's !
+
+load mimic_libutil
+load hv_overview_ocb_alarm_test
+
+object hv_line_1_test = int
+begin
+
+if ocb_note_clr_alarm(630,heathro2) == 1
+or ocb_note_clr_alarm(640,heathro2) == 1
+
+then
+     hv_line_1_test = 1 ! OCB WAITING FOR NOTE !
+else
+
+if ocb_note_clr_alarm(630,heathro2) == 2
+or ocb_note_clr_alarm(640,heathro2) == 2
+
+then
+     hv_line_1_test = 2 ! OCB WAITING FOR CLEAR !
+else
+     hv_line_1_test = 0 ! NORMAL !
+ 
+end 
+
+
+object hv_line_1_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "hv_8"
+   end
+
+if hv_line_1_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if hv_line_1_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 45 h = 18 rect(fg=button_bg_colour)
+x = -22 y = 9 add x += 45 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 23 y = -9 add x -= 45 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -16 y = -5 command_button("Hot Key","",35,"",ch=8)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y = 0 hv_line_1_button
+
+end
+
+mimic = main_object w=300,h=300,just=centrecentre,fg=white,bg=black,resizable

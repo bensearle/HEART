@@ -1,0 +1,92 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!************* BUSBAR 42 *************!
+
+object busbar_42
+
+begin
+
+just = centrecentre
+
+tfg = black x = 0 y = -15 add text ("42",ch = 25) clear
+
+lw=2
+x = -325 y = 0 add x += 650 add line(lw=4,fg=blue) clear
+ 
+y = 0  x = -250 add y += 60 add line(fg=blue) clear
+y = 0  x = -200 add y += 60 add line(fg=blue) clear
+y = 0  x = -150 add y += 60 add line(fg=blue) clear
+y = 0  x = -100 add y += 50 add line(fg=blue) clear
+y = 0  x =  -50 add y += 60 add line(fg=blue) clear
+y = 0  x =    0 add y += 60 add line(fg=blue) clear
+y = 0  x =   50 add y += 60 add line(fg=blue) clear
+y = 0  x =  100 add y += 60 add line(fg=blue) clear
+y = 0  x =  150 add y += 60 add line(fg=blue) clear
+y = 0  x =  200 add y += 60 add line(fg=blue) clear
+y = 0  x =  250 add y += 60 add line(fg=blue) clear
+ 
+y = 0 x = -300 add y -= 50 add line(FG=blue) clear
+y = 0 x = 300  add y -= 50 add line(fg=blue) clear
+
+scale = 120
+x = -300
+
+y = -25    ocb_mont(3000,3240,123,239,heathro2,1,"top")
+y = 25
+x = -250   ocb_mont(3000,3460,303,255,heathro2,2,"btm")
+x = -200   ocb_mont(3000,3250,124,240,heathro2,3,"btm")
+x = -150   ocb_mont(3000,3260,125,241,heathro2,4,"btm")
+x = -100   ocb_mont(3000,3470,304,256,heathro2,5,"btm")   
+x =  -50   ocb_mont(3000,3270,126,242,heathro2,6,"btm")
+   x = 0   ocb_mont(3000,3480,305,257,heathro2,7,"btm")
+x =   50   ocb_mont(3000,3280,127,243,heathro2,8,"btm")
+x =  100   ocb_mont(3000,3290,128,244,heathro2,9,"btm")
+x =  150   ocb_mont(3000,3300,129,245,heathro2,10,"btm")
+x =  200   ocb_mont(3000,3310,130,246,heathro2,11,"btm")
+x =  250   ocb_mont(3000,3320,131,247,heathro2,12,"btm")
+x =  300  y = -25 ocb_mont(3000,3330,132,248,heathro2,13,"top")
+
+scale=100
+y = 75
+x = -250  transformer("T 1","")
+x = -200  transformer("T 1","")
+x = -150  transformer("T 2","")
+x =  -50  transformer("T 1","")
+X =  0     transformer("T2","")
+x =   50  transformer("T 1","")
+x =  100  transformer("T 2","")
+x =  150  transformer("T 1","")
+x =  200  transformer("T 1","")
+x =  250  transformer("T 1","")
+
+scale = 260
+tfg = black ch=12
+x = -250 y = 105 text("BLDG 549")
+x = -175 y = 105 text("UNITED")
+x = -175 y = 120 text("AIRLINES")
+x =  -100 y = 70 text("BLANK")
+x =  -25 y = 105 text("MENZIES")
+x =   50 y = 105 text("AIR")
+x =   90 y = 105 text("FRANCE")
+x =  150 y = 105 text("JAL")
+x =  200 y = 105 text("MENZIES")
+x = 255  y = 105 text("DHL /") 
+x =  255 y = 120 text("MENZIES")
+
+x = -300 y = -60 text("SS41 P2")
+x = 300 y = -60 text("SS43 P1")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = -25 busbar_42
+
+end
+
+mimic = main_object w=800,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

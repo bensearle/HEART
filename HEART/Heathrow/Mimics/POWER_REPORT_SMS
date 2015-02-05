@@ -1,0 +1,638 @@
+Load XTEL_READ_WRITE_LIB
+
+! state machine descriptions for object log_on !
+! -------------------------------------------------------------------- !
+const find_user_number = 1
+const find_current_fors = 2
+const log_on_to_source = 3
+const state_finished = 4
+
+! state machine descriptions for main object !
+! ------------------------------------------------------------------ !
+const log_on_to_scope = 1
+const do_calcs = 2
+
+
+object debug(str = string)
+var op = filewrite string
+
+begin
+set reset op
+set console op
+set value op = str
+request op
+
+end
+
+object refresh(src = source)
+var op = output b_value_type
+
+begin
+set source op = src
+request op
+
+end
+
+! *********************************************************** !
+
+object log_on (server_name = source, users_name = string, password = string, mastered_for = set(area)) = int
+
+var current_fors = input workstations(wrkstn_is_me,current_mastered_areas)
+var workstation_op = output workstations (user_number, login_password, current_mastered_areas)
+var user_ip = input users(user_number)
+var log_on_progress = string
+var state = loopback int
+
+begin
+if invalid state then state = find_user_number
+
+! find the user number from the user name !
+! -------------------------------------------------------------- !
+
+if state == find_user_number then
+   begin
+   
+   if invalid get source user_ip then
+      begin
+      set source user_ip = server_name
+      set mayexist user_ip
+      set filter user_ip.name = lim_eq
+      set limit user_ip.name = users_name
+      request user_ip
+      end
+   
+   if valid user_ip and not get busy user_ip then
+       state = find_current_fors   
+   end
+
+
+! find any currently mastered FORs !
+! --------------------------------------------------------- !
+
+if state == find_current_fors then
+   begin
+   
+   if invalid get source current_fors then
+      begin
+      set source current_fors = server_name
+      set filter current_fors.wrkstn_is_me = lim_eq
+      set limit current_fors.wrkstn_is_me = yes
+      request current_fors
+      end
+
+   if valid current_fors and not get busy current_fors then
+      state = log_on_to_source   
+  end
+
+! log on to Xtel as the specified user, mastering the additional FORs !
+! ---------------------------------------------------------------------------------------------------- !
+
+if state == log_on_to_source then
+   begin
+   
+   if invalid get source workstation_op then
+      begin
+      set source workstation_op = server_name
+      set old_default workstation_op
+      set default workstation_op
+      set old_off workstation_op.user_number
+      set old_off workstation_op.login_password
+      set old_off workstation_op.current_mastered_areas
+      set filter workstation_op.wrkstn_is_me = lim_eq
+      set limit workstation_op.wrkstn_is_me = yes
+      set value workstation_op.user_number = user_ip.user_number
+      set value workstation_op.login_password = password 
+      set value workstation_op.current_mastered_areas = mastered_for + current_fors.current_mastered_areas
+  
+      request workstation_op   
+      end
+
+   if valid workstation_op and get status workstation_op == "" then
+      state = state_finished
+      
+   end
+
+
+
+if invalid get status workstation_op then
+   log_on = 0
+else
+   log_on = ((state == state_finished) and (get status workstation_op == ""))
+
+end
+
+! *************************************************************************** !
+
+
+object log_on_for_read (server_name = source, users_name = string, password = string) = int
+
+var workstation_op = output workstations (user_number, login_password)
+var user_ip = input users(user_number)
+var log_on_progress = string
+var state = loopback int
+
+begin
+if invalid state then state = find_user_number
+
+! find the user number from the user name !
+! -------------------------------------------------------------- !
+
+if state == find_user_number then
+   begin
+   if invalid get source user_ip then
+      begin
+      set source user_ip = server_name
+      set mayexist user_ip
+      set filter user_ip.name = lim_eq
+      set limit user_ip.name = users_name
+      request user_ip
+      end
+   
+   if valid user_ip and not get busy user_ip then
+      state = log_on_to_source   
+   end
+
+
+! log on to Xtel as the specified user !
+! -------------------------------------------------- !
+
+if state == log_on_to_source then
+   begin
+   
+   if invalid get source workstation_op then
+      begin
+      set source workstation_op = server_name
+      set old_default workstation_op
+      set default workstation_op
+      set old_off workstation_op.user_number
+      set old_off workstation_op.login_password
+      set filter workstation_op.wrkstn_is_me = lim_eq
+      set limit workstation_op.wrkstn_is_me = yes
+      set value workstation_op.user_number = user_ip.user_number
+      set value workstation_op.login_password = password 
+  
+      request workstation_op   
+      end
+
+   if valid workstation_op and get status workstation_op == "" then
+      state = state_finished     
+   end
+
+
+if invalid get status workstation_op then
+   log_on_for_read = 0
+else
+   log_on_for_read = ((state == state_finished) and (get status workstation_op == ""))
+
+end
+
+! *************************************************************************** !
+
+
+object main_object(w,h,fg,bg)
+
+! loopback variables !
+var state = loopback int
+var logged_on = loopback int
+
+var e1_value = input e_value_type
+var e2_value = input e_value_type
+var e3_value = input e_value_type
+var e4_value = input e_value_type
+var b10001_value = input b_value_type
+
+var north_current_ocb8 	= input e_value_type    
+var north_current_ocb16 	= input e_value_type    
+var north_volts_ocb8   	= input e_value_type    
+var north_volts_ocb16 	= input e_value_type    
+var west_current_ocb6  	= input e_value_type
+var west_current_ocb16  	= input e_value_type    
+var west_current_ocb22  	= input e_value_type    
+var west_volts_ocb6   	= input e_value_type    
+var west_volts_ocb16 	= input e_value_type
+var west_current_ocb3          = input e_value_type 
+var west_current_ocb14        = input e_value_type
+  
+var north_current_ocb3	= input e_value_type
+var north_volts_ocb3	= input e_value_type
+var north_current_ocb10	= input e_value_type
+var north_volts_ocb10	= input e_value_type
+var ss112_vcb1_current	= input e_value_type
+var ss112_bs1_volts	= input e_value_type
+var ss112_bs2_volts	= input e_value_type
+var ss112_vcb11_current 	= input e_value_type
+var ss113_bs1_current	= input e_value_type
+var ss113_bs1_volts	= input e_value_type
+var ss113_bs2_current	= input e_value_type
+var ss113_bs2_volts	= input e_value_type
+
+var sms_test_alarm              = input b_value_type
+var serv_a_fail		= input b_value_type
+var serv_b_fail		= input b_value_type
+var h_single		= input b_value_type
+var serv_c_fail		= input b_value_type
+var serv_d_fail		= input b_value_type
+var h2_single		= input b_value_type
+var serv_e_fail		= input b_value_type
+var serv_f_fail		= input b_value_type
+var h3_single		= input b_value_type
+var harcs_fault		= input b_value_type
+var harcs_fail		= input b_value_type
+var fm_linea		= input b_value_type
+var fm_lineb		= input b_value_type
+var serv_g_fail		= input b_value_type
+var mains_fail_139		= input b_value_type
+var mains_low_139		= input b_value_type
+
+var sms_holding                   = yesno
+var sms_init		= yesno
+var serv_a_holding		= yesno
+var serv_a_init		= yesno
+var serv_b_holding		= yesno
+var serv_b_init		= yesno
+var serv_c_holding		= yesno
+var serv_c_init		= yesno
+var serv_d_holding		= yesno
+var serv_d_init		= yesno
+var serv_e_holding		= yesno
+var serv_e_init		= yesno
+var serv_f_holding		= yesno
+var serv_f_init		= yesno
+var harcs_fault_holding	= yesno
+var harcs_fault_init		= yesno
+var harcs_fail_holding	= yesno
+var harcs_fail_init		= yesno
+var fm_holding		= yesno
+var fm_init		= yesno
+var serv_g_holding		= yesno
+var serv_g_init		= yesno
+var mains_fail_139_holding	= yesno
+var mains_fail_139_init	= yesno
+var mains_low_139_holding	= yesno
+var mains_low_139_init	= yesno
+
+
+
+
+var reporter_wdog		= onoff
+
+var sms			= int
+var smsa			= int
+var smsb			= int
+var smsc			= int
+var smsd			= int
+var smse			= int
+var smsf			= int
+var smsaf			= int
+var smsaff		= int
+var smsfm		= int
+var smsg			= int
+var smsmf		= int
+var smsml		= int
+var smsrep		= int
+
+var total_pwr 		= real
+var bawcc_pwr 		= real
+var west_pwr		= real
+var fuel_pwr                         = real
+
+
+var total_pwr_op	= output e_value_type   
+var bawcc_pwr_op	= output e_value_type
+var west_pwr_op	= output e_value_type
+var fuel_pwr_op      = output e_value_type
+
+
+var reporter_wdog_op	= output b_value_type
+
+begin
+
+if invalid state then 
+   begin
+
+    !------------------------- POWER  CALCS ---------------------------- !
+
+   
+
+   get_e_value(heathrow,e5,north_current_ocb8)
+   get_e_value(heathrow,e7,north_current_ocb16)
+   get_e_value(heathrow,e15,north_volts_ocb8)
+   get_e_value(heathrow,e16,north_volts_ocb16)
+   get_e_value(heathrow,e254,west_current_ocb6)
+   get_e_value(heathrow,e263,west_current_ocb16)
+   get_e_value(heathrow,e268,west_current_ocb22)
+   get_e_value(heathrow,e269,west_volts_ocb6)
+   get_e_value(heathrow,e270,west_volts_ocb16)
+   get_e_value(heathrow,e252,west_current_ocb3)
+   get_e_value(heathrow,e261,west_current_ocb14)
+
+   get_e_value(heathro2,e1522,north_current_ocb3)
+   get_e_value(heathro2,e1533,north_volts_ocb3)
+   get_e_value(heathro2,e1531,north_current_ocb10)
+   get_e_value(heathro2,e1534,north_volts_ocb10)
+   get_e_value(heathro2,e3010,ss112_vcb1_current)
+   get_e_value(heathro2,e3013,ss112_bs1_volts)
+   get_e_value(heathro2,e3022,ss112_bs2_volts)
+   get_e_value(heathro2,e3024,ss112_vcb11_current)
+   get_e_value(heathro2,e3113,ss113_bs1_current)
+   get_e_value(heathro2,e3114,ss113_bs1_volts)
+   get_e_value(heathro2,e3122,ss113_bs2_current)
+   get_e_value(heathro2,e3123,ss113_bs2_volts)
+
+
+   ! Logon to the Scope server using user and password details !
+   state = log_on_to_scope
+   end
+
+if state == log_on_to_scope then
+   begin
+   if invalid logged_on then
+      logged_on = 0
+   
+   if not logged_on then
+      logged_on = log_on_for_read (heathrow, "reporter", "reporter") and
+                         log_on_for_read (heathro2, "reporter", "reporter") and
+                         log_on_for_read (heathro4, "reporter", "reporter") and
+                         log_on (heathro3, "reporter", "reporter", set(a1)) 
+
+   if logged_on then
+      state = do_calcs
+   end
+
+
+if state == do_calcs then
+   begin
+   total_pwr 	= !((north_current_ocb8.e_value   * north_volts_ocb8.e_value)  
+	    	+ (north_current_ocb16.e_value * north_volts_ocb16.e_value)
+		+ !((north_current_ocb3.e_value * north_volts_ocb3.e_value)
+		+ (north_current_ocb10.e_value * north_volts_ocb10.e_value)
+	    	+ (west_current_ocb22.e_value * west_volts_ocb16.e_value)
+	    	+ (west_current_ocb6.e_value   * west_volts_ocb6.e_value)
+	    	+ (west_current_ocb16.e_value * west_volts_ocb16.e_value))
+	    	* 3.0 / 1732.050808
+
+   bawcc_pwr 	= ((ss112_bs1_volts.e_value * ss112_vcb1_current.e_value)
+	        	+ (ss112_bs2_volts.e_value * ss112_vcb11_current.e_value)
+	        	+ (ss113_bs1_volts.e_value * ss113_bs1_current.e_value)
+		+ (ss113_bs2_volts.e_value * ss113_bs2_current.e_value))
+		* 3.0 / 1732.050808
+
+   west_pwr	=(((west_current_ocb22.e_value * west_volts_ocb16.e_value)
+		+ (west_current_ocb6.e_value   * west_volts_ocb6.e_value)
+		+ (west_current_ocb16.e_value * west_volts_ocb16.e_value))
+		* 3.0 / 1732.050808)
+		-  bawcc_pwr
+
+  fuel_pwr              =((west_current_ocb3.e_value * west_volts_ocb6.e_value)
+                             + (west_current_ocb14.e_value * west_volts_ocb16.e_value))
+                              * 3.0 / 1732.050808
+
+
+   ! Write the data to the scope databae using the derived values !  
+   if valid total_pwr and valid bawcc_pwr and valid west_pwr and valid fuel_pwr then
+      begin
+      set default total_pwr_op
+      set default bawcc_pwr_op
+      set default west_pwr_op 
+      set default fuel_pwr_op    
+      set value total_pwr_op.e_value = total_pwr
+      set value bawcc_pwr_op.e_value = bawcc_pwr
+      set value west_pwr_op.e_value  = west_pwr
+      set value fuel_pwr_op.e_value = fuel_pwr
+
+      if valid total_pwr then
+	   begin
+	   get_e_value(heathro3,e1,e1_value)
+	   if invalid e1_value then
+            set_e_value(heathro3,e1,total_pwr_op)
+	   if valid e1_value and (e1_value.e_value <> total_pwr) then
+		set_e_value(heathro3,e1,total_pwr_op)
+	   end
+
+      if valid bawcc_pwr then
+	   begin
+	   get_e_value(heathro3,e2,e2_value)
+	   if invalid e2_value then
+            set_e_value(heathro3,e2,bawcc_pwr_op)
+	   if valid e2_value and (e2_value.e_value <> bawcc_pwr) then
+		set_e_value(heathro3,e2,bawcc_pwr_op)
+	   end
+
+      if valid west_pwr then
+	   begin
+	   get_e_value(heathro3,e3,e3_value)
+	   if invalid e3_value then
+            set_e_value(heathro3,e3,west_pwr_op)
+	   if valid e3_value and (e3_value.e_value <> west_pwr) then
+		set_e_value(heathro3,e3,west_pwr_op)
+	   end
+
+      if valid fuel_pwr then
+	   begin
+	   get_e_value(heathro3,e4,e4_value)
+	   if invalid e4_value then
+            set_e_value(heathro3,e4,fuel_pwr_op)
+	   if valid e4_value and (e4_value.e_value <> fuel_pwr) then
+		set_e_value(heathro3,e4,fuel_pwr_op)
+	   end
+
+      state = do_calcs
+      end
+   end
+!--------------------------------SMS-----------------------------------------!
+get_b_value(heathro3,b10000,sms_test_alarm)
+get_b_value(heathrow,b68,serv_a_fail)
+get_b_value(heathrow,b69,serv_b_fail)
+get_b_value(heathrow,b70,h_single)
+get_b_value(heathro2,b68,serv_c_fail)
+get_b_value(heathro2,b69,serv_d_fail)
+get_b_value(heathro2,b19988,h2_single)
+get_b_value(heathro3,b68,serv_e_fail)
+get_b_value(heathro3,b69,serv_f_fail)
+get_b_value(heathro3,b70,h3_single)
+get_b_value(heathrow,b753,harcs_fault)
+get_b_value(heathrow,b756,harcs_fail)
+get_b_value(heathrow,b15000,fm_linea)
+get_b_value(heathrow,b15001,fm_lineb)
+get_b_value(heathrow,b9031,serv_g_fail)
+get_b_value(heathrow,b16005,mains_fail_139)
+get_b_value(heathrow,b16006,mains_low_139)
+
+
+!SMS test!
+if sms_test_alarm.b_value == 1 and sms_holding == no then sms_init = yes
+
+if sms_test_alarm.b_value == 1 then sms_holding = yes
+
+if sms_test_alarm.b_value == 0 then sms_holding = no
+
+if sms_init == yes then
+	begin
+	sms = launchapp ("c:\\windows\\orange.bat","This is a test message please ignore")!c:\\windows\\orange.bat","This_is_a_test_message_please_ignore!
+	sms_init = no
+	end
+!SMS reporter system failed!
+smsrep = launchapp ("c:\\windows\\repok.bat","")
+!SMS 139 mains failed!
+if mains_fail_139.b_value == 0 and mains_fail_139_holding == no then mains_fail_139_init = yes
+
+if mains_fail_139.b_value == 0 then mains_fail_139_holding = yes
+
+if mains_fail_139.b_value == 1 then mains_fail_139_holding = no
+
+if mains_fail_139_init == yes then
+	begin
+	smsmf = launchapp ("c:\\windows\\orange.bat","Mains Supply failed to Building 139 approximately 4HRs supply")
+	mains_fail_139_init = no
+	end
+!SMS 139 battery low!
+if mains_low_139.b_value == 0 and mains_low_139_holding == no then mains_low_139_init = yes
+
+if mains_low_139.b_value == 0 then mains_low_139_holding = yes
+
+if mains_low_139.b_value == 1 then mains_low_139_holding = no
+
+if mains_low_139_init == yes then
+	begin
+	smsml = launchapp ("c:\\windows\\orange.bat","UPS Battery low in Building 139 Servers at risk")
+	mains_low_139_init = no
+	end
+!SMS Server A failure!
+if serv_a_fail.b_value == 0 and h_single.b_value == 1 and serv_a_holding == no then serv_a_init = yes
+
+if serv_a_fail.b_value == 0 and h_single.b_value == 1 then serv_a_holding = yes
+
+if h_single.b_value == 0 then serv_a_holding = no
+
+if serv_a_init == yes then
+	begin
+	smsa = launchapp ("c:\\windows\\orange.bat","Server A FAILED")
+	serv_a_init = no
+	end
+!SMS Server B failure!
+if serv_b_fail.b_value == 0 and h_single.b_value == 1 and serv_b_holding == no then serv_b_init = yes
+
+if serv_b_fail.b_value == 0 and h_single.b_value == 1 then serv_b_holding = yes
+
+if h_single.b_value == 0 then serv_b_holding = no
+
+if serv_b_init == yes then
+	begin
+	smsb = launchapp ("c:\\windows\\orange.bat","Server B FAILED")
+	serv_b_init = no
+	end
+!SMS Server C Failure!
+if serv_c_fail.b_value == 0 and h2_single.b_value == 1 and serv_c_holding == no then serv_c_init = yes
+
+if serv_c_fail.b_value == 0 and h2_single.b_value == 1 then serv_c_holding = yes
+
+if h2_single.b_value == 0 then serv_c_holding = no
+
+if serv_c_init == yes then
+	begin
+	smsc = launchapp ("c:\\windows\\orange.bat","Server C FAILED")
+	serv_c_init = no
+	end
+!SMS Server D Failure!
+if serv_d_fail.b_value == 0 and h2_single.b_value == 1 and serv_d_holding == no then serv_d_init = yes
+
+if serv_d_fail.b_value == 0 and h2_single.b_value == 1 then serv_d_holding = yes
+
+if h2_single.b_value == 0 then serv_d_holding = no
+
+if serv_d_init == yes then
+	begin
+	smsd = launchapp ("c:\\windows\\orange.bat","Server D FAILED")
+	serv_d_init = no
+	end
+!SMS Server E Failure!
+if serv_e_fail.b_value == 0 and h3_single.b_value == 1 and serv_e_holding == no then serv_e_init = yes
+
+if serv_e_fail.b_value == 0 and h3_single.b_value == 1 then serv_e_holding = yes
+
+if h3_single.b_value == 0 then serv_e_holding = no
+
+if serv_e_init == yes then
+	begin
+	smse = launchapp ("c:\\windows\\orange.bat","Server E FAILED")
+	serv_e_init = no
+	end
+!SMS Server F Failure!
+if serv_f_fail.b_value == 0 and h3_single.b_value == 1 and serv_f_holding == no then serv_f_init = yes
+
+if serv_f_fail.b_value == 0 and h3_single.b_value == 1 then serv_f_holding = yes
+
+if h3_single.b_value == 0 then serv_f_holding = no
+
+if serv_f_init == yes then
+	begin
+	smsf = launchapp ("c:\\windows\\orange.bat","Server F FAILED")
+	serv_f_init = no
+	end
+
+!SMS Server G Fail!
+if serv_g_fail.b_value == 1 and serv_g_holding == no then serv_g_init = yes
+
+if serv_g_fail.b_value == 1 then serv_g_holding = yes
+
+if serv_g_fail.b_value == 0 then serv_g_holding = no
+
+if serv_g_init == yes then
+	begin
+	smsf = launchapp ("c:\\windows\\orange.bat","Server G FAILED")
+	serv_g_init = no
+	end
+
+
+!SMS ARCS Fault!
+if harcs_fault.b_value == 1 and harcs_fault_holding == no then harcs_fault_init = yes
+
+if harcs_fault.b_value == 1 then harcs_fault_holding = yes
+
+if harcs_fault.b_value == 0 then harcs_fault_holding = no
+
+if harcs_fault_init == yes then
+	begin
+	smsaf = launchapp ("c:\\windows\\orange.bat","Airfield Ring Changeover fault")
+	harcs_fault_init = no
+	end
+
+!SMS ARCS Failed!
+if harcs_fail.b_value == 1 and harcs_fail_holding == no then harcs_fail_init = yes
+
+if harcs_fail.b_value == 1 then harcs_fail_holding = yes
+
+if harcs_fail.b_value == 0 then harcs_fail_holding = no
+
+if harcs_fail_init == yes then
+	begin
+	smsaff = launchapp ("c:\\windows\\orange.bat","Airfield Ring Changeover FAILED")
+	harcs_fail_init = no
+	end
+!SMS Firemain Comms Failure!
+if fm_linea.b_value == 1 and fm_lineb.b_value == 1 and fm_holding == no then fm_init = yes
+
+if fm_linea.b_value == 1 and fm_lineb.b_value == 1 then fm_holding = yes
+
+if fm_linea.b_value == 0 or fm_lineb.b_value == 0 then fm_holding = no
+
+if fm_init == yes then
+	begin
+	smsfm = launchapp ("c:\\windows\\orange.bat","Firemain all communications FAILED")
+	fm_init = no
+	end
+!-----------------------------RepWdog-------------------------------------!
+
+reporter_wdog = on
+set default reporter_wdog_op
+set value reporter_wdog_op.b_value = reporter_wdog
+get_b_value(heathro3,b10001,b10001_value)
+if invalid b10001_value then
+   set_b_value(heathro3,b10001,reporter_wdog_op)
+if valid b10001_value and (b10001_value.b_value <> on) then
+   set_b_value(heathro3,b10001,reporter_wdog_op)
+
+
+end
+
+mimic = main_object w=700,h=500,just=centrecentre,resizable

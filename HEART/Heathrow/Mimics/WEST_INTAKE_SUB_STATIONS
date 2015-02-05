@@ -1,0 +1,67 @@
+load mimic_libutil
+load ocb_alarm_test
+load sub_stn_40
+
+
+!*************** SUB 40 **************!
+
+
+object sub_symbol_40
+
+var call_var = popup  sub_stn_40
+
+begin
+if sub_alarm(3000,3620,heathrow) == 1 
+or sub_alarm(3000,3630,heathrow) == 1 
+or sub_alarm(3000,3640,heathrow) == 1 then
+
+   begin
+     W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+   end
+
+else if sub_alarm(3000,3620,heathrow) == 2
+     or sub_alarm(3000,3630,heathrow) == 2 
+     or sub_alarm(3000,3640,heathrow) == 2 then
+
+     begin
+       W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+     end
+
+else if sub_alarm(15000,3620,heathrow) == 3
+     or sub_alarm(15000,3630,heathrow) == 3
+     or sub_alarm(15000,3640,heathrow) == 3 then
+
+     begin
+       W=100 H=25 X=-25 Y=25 RECT(fg=red)
+     end
+
+else
+
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+set title call_var = "Sub Station 40"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 40",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+sub_symbol_40
+
+end
+
+mimic = main_object w=400,h=200,just=centrecentre,fg=white,bg=black,resizable

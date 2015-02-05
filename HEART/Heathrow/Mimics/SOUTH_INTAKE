@@ -1,0 +1,271 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!*******HV NORTH INTAKE*********!
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ammeter
+load transformer_meter
+
+!*********LOADS FOR SOUTH INTAKE 2***********!
+
+LOAD nse_transformer_2
+LOAD nse_ocb_4
+!LOAD nse_ocb_alarm!
+!LOAD nse_busbar_alarm!
+LOAD nse_transformer_alarm
+LOAD nse_transformer_3
+LOAD small_transformer_meter
+
+!******************END**********************!
+
+
+load hv_menu_bar
+load hv_hierarchy
+
+
+
+!***********************************************************
+* SOUTH INTAKE OBJECT                                      *
+***********************************************************!
+
+object south_intake
+begin
+scale=256 just = centrecentre
+
+
+scale = 256 just = centrecentre
+tfg = green4 ch = 20
+x = 205 y = 35 text("Front")
+x = 210 y = -35 text("Rear")
+
+
+! REAR BAR !
+x = 50 y = -20 add
+x += 550 add
+line(fg=green4,lw=4) clear
+
+! FRONT BAR !
+x = 50 y = 50 add
+x += 550 add
+line(fg=green4,lw=4) clear
+
+lw=2
+
+x = 100 y = -20 add y -= 60 add line(fg=green4) clear
+x = 75 y = 50 add y -= 130 add x += 25 add line(fg=green4) clear
+x = 88 y = -80 add y -= 30 add line(fg=green4) clear
+
+x = 150 y = -20 add y -= 60 add line(fg=green4) clear
+x = 125 y = 50 add y -= 130 add x += 25 add line(fg=green4) clear
+x = 138 y = -80 add y -= 30 add line(fg=green4) clear
+
+x = 375 y = -20 add y -= 60 add line(fg=green4) clear
+x = 350 y = 50 add y -= 130 add x += 25 add line(fg=green4) clear
+x = 362 y = -80 add y -= 30 add line(fg=green4) clear
+
+x = 425 y = -20 add y -= 60 add line(fg=green4) clear
+x = 400 y = 50 add y -= 130 add x += 25 add line(fg=green4) clear
+x = 412 y = -80 add y -= 30 add line(fg=green4) clear
+
+x = 475 y = -20 add y -= 60 add line(fg=green4) clear
+x = 450 y = 50 add y -= 130 add x += 25 add line(fg=green4) clear
+x = 462 y = -80 add y -= 30 add line(fg=green4) clear
+
+x = 525 y = -20 add y -= 60 add line(fg=green4) clear
+x = 500 y = 50 add y -= 130 add x += 25 add line(fg=green4) clear
+x = 512 y = -80 add y -= 30 add line(fg=green4) clear
+
+x = 575 y = -20 add y -= 60 add line(fg=green4) clear
+x = 550 y = 50 add y -= 130 add x += 25 add line(fg=green4) clear
+x = 562 y = -80 add y -= 30 add line(fg=green4) clear
+
+
+x = 250 y = -20 add y += 70 add line(fg=green4) clear
+
+
+
+scale=120
+
+X=75   Y=20 ocb(1000,1400,69,94,heathrow,12,"top") clear
+X=100  Y=-50 ocb(1000,1420,70,95,heathrow,12,"top") clear
+X=125  Y=20 ocb(1000,1440,71,96,heathrow,13,"top") clear
+X=150  Y=-50 ocb(1000,1460,72,97,heathrow,13,"top") clear
+
+X=225  Y=125 ocb_mont(1000,1740,73,98,heathrow,14,"btm") clear
+X=175  Y=125 ocb_mont(1000,1750,74,99,heathrow,14,"btm") clear
+
+X=250  Y=20 ocb(1000,1480,75,100,heathrow,15,"top") clear
+
+X=325  Y=125 ocb_mont(1000,1760,76,101,heathrow,16,"btm") clear
+X=275  Y=125 ocb_mont(1000,1770,77,102,heathrow,16,"btm") clear
+
+X=350  Y=20 ocb(1000,1500,78,103,heathrow,17,"top") clear
+X=375  Y=-50 ocb(1000,1520,79,104,heathrow,17,"top") clear
+
+X=400  Y=20 ocb(1000,1540,80,105,heathrow,18,"top") clear
+X=425  Y=-50 ocb(1000,1560,81,106,heathrow,18,"top") clear
+X=450  Y=20 ocb(1000,1580,82,107,heathrow,19,"top") clear
+X=475  Y=-50 ocb(1000,1600,83,108,heathrow,19,"top") clear
+X=500  Y=20 ocb(1000,1620,84,109,heathrow,20,"top") clear
+X=525  Y=-50 ocb(1000,1640,85,110,heathrow,20,"top") clear
+X=550  Y=20 ocb(1000,1660,86,111,heathrow,21,"top") clear
+X=575  Y=-50 ocb(1000,1680,87,112,heathrow,21,"top") clear
+
+scale = 256 just = centrecentre
+end
+
+object south_intake_mimic
+begin
+
+x = 0 y = -60 south_intake
+
+x = -300 y = 40 h = 180 w = 250 rect(fg=aquamarine3) clear
+x = 150 y = 40 h = 180 w = 250 rect(fg=aquamarine3) clear
+lw=2
+
+X = 225 Y = -10 add y += 85 add line(fg=green4) clear
+X = 175 Y = -80 add y += 155 add x += 50 add line(fg=green4) clear
+x = 200 y = 75 add y += 240 add line(fg=green4) clear
+
+X = 325 Y = -10 add y += 85 add line(fg=green4) clear
+X = 275 Y = -80 add y += 155 add x += 50 add line(fg=green4) clear
+x = 300 y = 75 add y += 240 add line(fg=green4) clear
+
+scale = 120
+
+X=225  Y=30 ocb_mont(1000,1740,73,98,heathrow,14,"btm") clear
+X=175  Y=30 ocb_mont(1000,1750,74,99,heathrow,14,"btm") clear
+
+X=325  Y=30 ocb_mont(1000,1760,76,101,heathrow,16,"btm") clear
+X=275  Y=30 ocb_mont(1000,1770,77,102,heathrow,16,"btm") clear
+
+scale = 100
+x= 200 y = 315 transformer("Tx 1","SEB")
+x= 300 y = 315 transformer("Tx 2","SEB")
+
+scale = 200
+y = -245 x = 88 ammeter(58,heathrow,"0-400A","SUB 89")
+y = -245 x = 138 ammeter(59,heathrow,"0-400A","M1/11")
+y = -245 x = 362 ammeter(62,heathrow,"0-400A","M1/12")
+y = -245 x = 412 ammeter(63,heathrow,"0-400A","SUB 58")
+y = -245 x = 462 ammeter(64 ,heathrow,"0-400A","SUB 46")
+Y = -245 X = 512 ammeter (70,heathrow,"0-400A","SUB 23")
+y = -245 x = 562 ammeter (69 ,heathrow,"0-800A","NI P9")
+
+scale = 240
+x = 140  y = 185 transformer_meter(65,60,heathrow,"SOUTH","1","0-400A")
+x = 370  y = 185 transformer_meter(66,61,heathrow,"SOUTH","2","0-400A")
+end
+
+!*******************SOUTH INTAKE 2*******************!
+OBJECT south_intake_2
+
+BEGIN
+
+JUST=CENTRECENTRE
+
+X = -650 Y = 0 ADD
+X = -80 ADD LINE(LW=4,FG=GREEN4) CLEAR
+x = -400 y = -250 TEXT(TFG=GREEN4,CH=30,"11KV SOUTH INTAKE")
+
+x = -580 y = 20 TEXT(TFG=GREEN4,CH=20,"SECTION 1")
+x = -300 y = 20 TEXT(TFG=GREEN4,CH=20,"SECTION 2")
+
+x = -150 y = -240 text(tfg=BLACK,ch=12,"North Intake P9")
+x = -150 y = -228 text(tfg=BLACK,ch=12,"Interconnector")
+x = -150 y = -216 text(tfg=BLACK,ch=12,"10 MVA")
+
+SCALE = 130
+X = 0 Y = 0
+X -= 630 Y -= 200 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21030,701,1703,1700,HEATHRO2,1,"TOP",100)
+X += 51 Y -= 150 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21050,702,1704,1700,HEATHRO2,2,"TOP",102)
+X += 51 Y -= 150 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21070,703,1705,1700,HEATHRO2,3,"TOP",104)
+
+X += 35 Y += 50 NSE_OCB_4(21000,21090,704,1706,1700,HEATHRO2,4,"SECT",106)
+
+X += 35 Y -= 200 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21110,705,1707,1700,HEATHRO2,5,"TOP",108)
+X += 51 Y -= 150 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21130,706,1708,1700,HEATHRO2,6,"TOP",110)
+X += 51 Y -= 150 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21150,707,1709,1700,HEATHRO2,7,"TOP",112)
+X += 51 Y -= 150 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21170,708,1710,1700,HEATHRO2,8,"TOP",114)
+X += 51 Y -= 150 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21190,709,1711,1700,HEATHRO2,9,"TOP",116)
+X += 51 Y -= 150 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21210,710,1712,1700,HEATHRO2,10,"TOP",118)
+X += 51 Y -= 150 ADD Y += 200 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y -= 50 NSE_OCB_4(21000,21230,711,1713,1700,HEATHRO2,11,"TOP",120)
+
+X += 65 Y += 50 NSE_OCB_4(21000,21270,713,1715,1700,HEATHRO2,13,"SECT",124)
+
+X = 0 Y = 0
+X -= 125 Y += 100 ADD Y -= 100 ADD LINE(LW=6,FG=GREEN4)
+X += 0 Y += 50 NSE_OCB_4(21000,21250,712,1714,1700,HEATHRO2,12,"BTM",122)
+clear
+
+SCALE = 150
+X = 0 Y = 0
+x -= 630 y -= 140 hv_17_meter(731,1731,HEATHRO2,"small_ammeter","M1/13")
+x += 51 y += 0 hv_17_meter(732,1732,HEATHRO2,"small_ammeter","EAST")
+x += 51 y += 0 hv_17_meter(733,1733,HEATHRO2,"small_ammeter","SPARE")
+x += 70 y += 0 hv_17_meter(735,1735,HEATHRO2,"small_ammeter","M1/12")
+x += 51 y += 0 hv_17_meter(736,1736,HEATHRO2,"small_ammeter","SS 89")
+x += 51 y += 0 hv_17_meter(737,1737,HEATHRO2,"small_ammeter","M1/11")
+x += 51 y += 0 hv_17_meter(738,1738,HEATHRO2,"small_ammeter","SS46")
+x += 51 y += 0 hv_17_meter(739,1739,HEATHRO2,"small_ammeter","SS23")
+x += 51 y += 0 hv_17_meter(740,1740,HEATHRO2,"small_ammeter","SS58")
+x += 51 y += 0 hv_17_meter(741,1741,HEATHRO2,"big_ammeter","NORTH")
+
+scale=180
+!X = 0 Y = 0 !
+! CB4 !
+x = -495 y = 90 hv_17_meter(734,1734,HEATHRO2,"med_size_ammeter","SECT 1/2")
+
+!X = 0 Y = 0 !
+! CB13 !
+!x = -85 y = -90 hv_17_meter(744,1744,HEATHRO2,"med_size_ammeter","SECT 2/3")!
+
+! CB12 !
+x = -125 y = 260 hv_17_meter(743,1743,HEATHRO2,"SMALL_voltmeter","TX1")
+x = -190 y = 260 hv_17_meter(742,1742,HEATHRO2,"well_big_ammeter","TX1")
+
+
+scale=130
+X = 0 Y = 0
+X = -125 Y = 150 tap_change(21000,1758,759,1700,HEATHRO2,"33/11KV","24MVA",1,152)
+
+END
+!*************END OF SOUTH INTAKE 2****************!
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+goto_menu
+x = 500 y = 270 command_button(89,heathrow)
+clear
+scale = 240
+x = -20 y = -25 south_intake_mimic
+clear
+
+scale = 250
+x = 75 y = -70 south_intake_2
+CLEAR
+
+scale = 260
+x = 0 y = 322 menu_bar
+
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

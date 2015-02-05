@@ -1,0 +1,129 @@
+
+!******************************************************************************!
+!                       Created by Vijay Kara                                           !
+!                              date 3/2/2009                                                
+!
+
+!   This mimic is for veiwing purposes only and does not allow any    !
+!    live CONTROL or Monitoring                                                     !
+
+!******************************************************************************!
+
+!*******T5 Track Transit System***********!
+
+
+
+load mimic_libutil
+load track_transit_system
+
+
+
+object busbar_tts
+begin
+
+
+x = 0  y = 0 busbar_tts
+
+scale=250
+
+
+end
+
+!********** BELOW OBJECT NEEDS TO BE ADDED TO MIMIC AS IS CALLED BELOW IN POPUP *****!
+!************** T5 TTS Traction Supply ****************!
+object lv_t5_tts_popup(bg)
+begin
+	tfg=white
+	clear lw=3
+	X=-175 Y=65 Add X=-25 Y=65 Add line(fg=white) clear
+	X=25 Y=65 Add X=175 Y=65 Add line(fg=white) clear
+
+	X=-150 Y=65 Add Y-=90 Add X+=44 Add Y-=25 Add line(fg=white) clear
+	X=-50 Y=65 Add Y-=90 Add X-=44 Add Y-=25 Add line(fg=white) clear
+	X=-100 Y=-65 Add X=-100 Y=-120 Add line(fg=white) clear
+
+	X=50 Y=65 Add Y-=90 Add X+=44 Add Y-=25 Add line(fg=white) clear
+	X=150 Y=65 Add Y-=90 Add X-=44 Add Y-=25 Add line(fg=white) clear
+	X=100 Y=-65 Add X=100 Y=-120 Add line(fg=white) clear
+
+	! ** SS156-T5B-TX11 ** !
+	scale=200
+	x=-150 y=30	lv_breaker("",8200,8285,1745,2345,heathro2," ","top",int,int,int)
+	x=-50 y=30	lv_breaker("",8200,8290,1746,2346,heathro2," ","top",int,int,int)
+	x=-100 y=-70	transformer_select("TYPE4",8200,15,8347,1756,INT,heathro2,"T5B-TX11","SS156-",11,INT,white,green,scale=100)
+
+	! ** SS155-T5B-TX10 ** !
+	x=50 y=30	lv_breaker("",8200,8275,1743,2343,heathro2," ","top",int,int,int)
+	x=150 y=30	lv_breaker("",8200,8280,1744,2344,heathro2," ","top",int,int,int)
+	x=100 y=-70	transformer_select("TYPE4",8200,15,8332,1755,INT,heathro2,"T5B-TX10","SS155-",10,INT,white,green,scale=100)
+
+	ch=14 just=centrecentre
+	X=-100 Y=-140	text("SS156")
+	Y+=12		text("P4")
+	X=100 Y=-140	text("SS155")
+	Y+=12		text("P18")
+	ch=18 font = font_bold
+	X=0 Y=120 	TEXT("T5B Core 3")
+	Y+=15		text("LV Switchboard (TTS Traction Supply)")
+
+	ch=14 just=topleft
+	x=-130 y=20 text("T5B-156-")
+	y+=12 text("TX11 ACB1")
+	x=-30 y=20 text("T5B-156-")
+	y+=12 text("TX11 ACB2")
+	x=70 y=20 text("T5B-155-")
+	y+=12 text("TX10 ACB1")
+	x=170 y=20 text("T5B-155-")
+	y+=12 text("TX10 ACB2")
+	x=-160 y=65 text("1.7 MVA Supply Feeder")
+	x=40 y=65 text("1.7 MVA Supply Feeder")
+end
+mimic lv_t5_tts_popup = lv_t5_tts_popup w=480,h=340,just=centrecentre, bg=lightblue4
+
+!**********************Main Object*************************************!
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var lv_pop = popup lv_t5_tts_popup
+begin
+
+clear
+
+x = -50 y = -75 busbar_tts
+
+x = 5 y = 225 ttslink1(angle=60)        !****************Left Cross*************!
+x = -320 y = 525 ttslink1(angle=120)  !****************Left Cross*************!
+x = 500 y = 225 ttslink1(angle=60)     !****************Right Cross*************!
+x = 170 y = 525 ttslink1(angle=120)    !****************Right Cross*************!
+x =267 y = -383 ttslink2(angle=45)     !****************Angled line at SLM*************!
+
+x = -290 y = -510 ttsdiodebox1
+x = -257 y = -490 ttsdiode1
+x = -220 y = -510 ttsdiodebox2
+x = -190 y = -490 ttsdiode2
+
+x = -25 y = -75 Symbol_t5_tts
+
+!****** CODE ADDED TO DEMO POPUP - AM 1110909 *********!
+w=40 h=45 x=-280 y=-590
+if rotanyb then
+	request lv_pop
+
+w=40 h=45 x=-213 y=-590 
+if rotanyb then
+	request lv_pop
+
+
+scale=256
+
+x = -570 y = 470 browser(1836,heathro2,1140)
+
+end
+
+
+mimic = main_object w=1600,h=1200,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+
+
+
+

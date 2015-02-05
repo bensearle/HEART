@@ -1,0 +1,822 @@
+!**  	
+LV OBJECTS
+created : 	15 april 2004	lv circuit breaker
+updated 	10 may 2004	alarm test added
+**!
+
+load fp_generic_server_request
+
+type main_menu_row = table (main_menu_items= string(27))
+
+object multiple_alm_test(plc_offset=int,b_offset=int,num_alarms=int,src=source) = colour
+var plc_inputs = input b_bool_type[2]		! * comms inputs * !
+var equip_alarms = input alarm_row_type[1000]
+var alarm_box=yesno
+var n = int
+var alarm_clear_count = int
+begin
+         		if invalid get source plc_inputs then 	! * get database values * !
+         		begin
+	   		set source plc_inputs = src
+	   		set filter plc_inputs.db_addr = lim_ge
+	   		set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   		set priority plc_inputs.db_addr = 15
+	   		set persist plc_inputs
+	   		set mayexist plc_inputs
+	   		request plc_inputs
+		end
+
+		if plc_inputs[1].b_value==1 and plc_inputs[2].b_value==1 then
+		   begin
+			 multiple_alm_test = magenta
+		   end
+		else if invalid num_alarms or num_alarms==int then 
+		   begin
+			multiple_alm_test = grey80
+		   end
+		else 
+		   begin
+		      if invalid get source equip_alarms then
+		         begin
+		   	set source equip_alarms = src
+		   	set max_rows equip_alarms  = num_alarms 
+		   	set filter equip_alarms.db_addr = lim_ge	
+		   	set limit equip_alarms.db_addr = db_address(int(b1) + b_offset-1)
+		   	set priority equip_alarms.db_addr = 15
+		   	set persist equip_alarms 
+		   	set mayexist equip_alarms
+		   	request equip_alarms
+		         end
+
+			if invalid equip_alarms[1].alarm_status then
+			begin
+				multiple_alm_test = grey80
+			end
+			else
+			begin
+				alarm_clear_count = 0
+				n=1
+				while n <= num_alarms DO
+				begin
+					if equip_alarms[n].alarm_status==w_note or equip_alarms[n].alarm_status==w_clr then
+					   begin
+						n=num_alarms+1
+					   end	
+					else
+					   begin
+						alarm_clear_count = alarm_clear_count + 1
+						n++
+					   end
+				end
+
+				if alarm_clear_count <> num_alarms then
+				   multiple_alm_test = red
+				else
+				   multiple_alm_test = grey80
+			end
+		   end
+
+			! * debug to display the number of dbase points found before (if any) either w_note or w_clr * !
+			!	text(ch=40,alarm_clear_count )	!
+end
+
+
+object main_sub_call(box_bg=colour,width=int,height=int,txt_top=string,txt_btm=string,txt_col=colour,txt_size=int,popup_mimic=yesno,mimic_title=string,src=source,res3=int,res2=string,res1=int,fg)
+var mm = toplevel  string_50
+var btn_bg = colour
+begin
+	if fg==magenta then btn_bg=magenta
+	else if fg==flashred then btn_bg=flashred
+	else if fg==red then btn_bg=red
+	else if fg==aquamarine3 then btn_bg=aquamarine3
+	else btn_bg=grey80
+
+	X=0 Y=0 W=width H=height ANGLE=0 JUST=centrecentre FS=FILLSOLID ROTRECT(fg=btn_bg)
+	if anyb then
+	  begin
+	  	fg=grey rect
+      	  	set source mm = src
+      	 	 set mimic mm = mimic_title
+      	 	 set selfreplace mm
+      	  	request mm
+	  end
+
+	Clear
+	X=-(width/2) Y=(height/2) Add
+	Y=-(height/2) Add
+	X=(width/2) Y=-(height/2) Add
+	FG=white LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-(width/2) Y=(height/2) Add	
+	X=(width/2) Add
+	Y=-(height/2) Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	CH=txt_size FONT=FONT_NORMAL FONTNAME="Arial" TFG=txt_col JUST=centrecentre
+
+	if txt_btm=="" or txt_btm==string then
+	begin
+		X=0 Y=0  TEXT(txt_top)
+	end
+	else
+	begin
+		X=0 Y=-10 TEXT(txt_top)
+		X=0 Y=10 TEXT(txt_btm)
+	end
+end
+
+
+object lv_alarm_test(b_offset=int,num_alarms=int,src=source) = colour
+var equip_alarms = input alarm_row_type[10]
+var alarm1 = alarm_status
+var alarm2 = alarm_status
+var alarm3 = alarm_status
+var alarm4 = alarm_status
+var alarm5 = alarm_status
+var alarm6 = alarm_status
+var alarm7 = alarm_status
+var alarm8 = alarm_status
+var alarm9 = alarm_status
+var alarm10 = alarm_status
+begin
+	if invalid get source equip_alarms then
+	   begin
+	   set source equip_alarms = src
+	   set max_rows equip_alarms  = num_alarms
+	   set filter equip_alarms.db_addr = lim_ge
+	   set limit equip_alarms.db_addr = db_address(int(b1) + b_offset-1)
+	   set priority equip_alarms.db_addr = 15
+	   set persist equip_alarms 
+	   set mayexist equip_alarms
+	   request equip_alarms
+	end
+
+	if invalid equip_alarms[1].alarm_status then alarm1 = alarm_clear else alarm1 = equip_alarms[1].alarm_status 
+	if invalid equip_alarms[2].alarm_status then alarm2 = alarm_clear else alarm2 = equip_alarms[2].alarm_status 
+	if invalid equip_alarms[3].alarm_status then alarm3 = alarm_clear else alarm3 = equip_alarms[3].alarm_status 
+	if invalid equip_alarms[4].alarm_status then alarm4 = alarm_clear else alarm4 = equip_alarms[4].alarm_status 
+	if invalid equip_alarms[5].alarm_status then alarm5 = alarm_clear else alarm5 = equip_alarms[5].alarm_status 
+	if invalid equip_alarms[6].alarm_status then alarm6 = alarm_clear else alarm6 = equip_alarms[6].alarm_status 
+	if invalid equip_alarms[7].alarm_status then alarm7 = alarm_clear else alarm7 = equip_alarms[7].alarm_status 
+	if invalid equip_alarms[8].alarm_status then alarm8 = alarm_clear else alarm8 = equip_alarms[8].alarm_status 
+	if invalid equip_alarms[9].alarm_status then alarm9 = alarm_clear else alarm9 = equip_alarms[9].alarm_status 
+	if invalid equip_alarms[10].alarm_status then alarm10 = alarm_clear else alarm10 = equip_alarms[10].alarm_status 
+
+	if alarm1 == w_note or alarm2 == w_note or
+	alarm3 == w_note or alarm4 == w_note or
+	alarm5 == w_note or alarm6 == w_note or
+	alarm7 == w_note or alarm8 == w_note or
+	alarm9 == w_note or alarm10 == w_note then
+		begin
+			lv_alarm_test = flashred
+		end
+	else if alarm1 == w_clr or alarm2 == w_clr or
+	alarm3 == w_clr or alarm4 == w_clr or
+	alarm5 == w_clr or alarm6 == w_clr or
+	alarm7 == w_clr or alarm8 == w_clr or
+	alarm9 == w_clr or alarm10 == w_clr then
+		begin
+			lv_alarm_test = red
+		end
+	else
+		lv_alarm_test = grey80
+end
+
+
+
+
+!** closed **!
+object closed_lv_cb(cb_fg = colour,angle)
+begin
+  	just = centrecentre
+  	fg = cb_fg lw=3
+  	x=-15 y = -20 add x+=30 y+=40 add line clear
+  	x=15 y = -20 add x-=30 y+=40 add line clear
+  	x = 0 y = 25 add y = -25 add line clear
+end
+
+!** tripped **!
+object tripped_lv_cb(cb_fg = colour,angle)
+begin
+  just = centrecentre
+  fg = cb_fg
+  lw=3
+  x=-13 y = -10 add   y += 20 x += 26 add line clear
+  x=13 y = -10 add   y += 20 x -= 26 add line clear
+  x = 0 y = 0 circle(h=36,w=36) clear
+  x = 15 y = 0 add x += 10 add line clear
+  x = -15 y = 0 add x -= 10 add line clear
+end
+
+!**  isolated **!
+object isolated_lv_cb(ocb_fg=colour,angle)
+begin
+  fg = ocb_fg  lw=3
+  y = -25 add  y += 8 add  x -= 7 add  x += 14 add line clear
+  y = 25 x -= 7 add  y -= 8 add  x -= 7 add  x +=14 add line clear
+end
+
+
+object lv_breaker(cb_type=string,plc_offset=int,b_offset=int,c_offset=int,e_offset=int,src=source,ident=string,position=string(4),num_alarms=int,spec_addr=int,res1=int,angle)
+var plc_inputs 	= input b_bool_type[2]
+var cb_inputs	= input b_bool_type[5]
+var special_comms_ip = input b_bool_type
+var alarm_inputs	= input alarm_row_type[9]
+var manual_dress	= input e_db_row_type
+var tag_message	= input c_db_row_type
+
+var plc_a_comms_flt 	= onoff
+var plc_b_comms_flt 	= onoff
+var cb_ptw_ip	 	= onoff	!1!
+var cb_open_ip	 	= onoff	!2!
+var cb_closed_ip	 	= onoff	!3!
+var alarm1_ip	 	= onoff	!4!
+var alarm2_ip	 	= onoff	!5!
+var special_alarm 		=onoff ! unique address used to animate fg magenta !
+var cb_tripped_al		=alarm_status !1!
+var cb_closed_al		=alarm_status !2!
+var alarm1_al		=alarm_status !3!
+var alarm2_al		=alarm_status !4!
+var alarm3_al		=alarm_status !5!
+var alarm4_al		=alarm_status !6!
+var alarm5_al		=alarm_status !7!
+var alarm6_al		=alarm_status !8!
+
+var cb_foreground		= loopback	colour
+var cb_background	= loopback	colour
+
+! menus !
+var main_menu		= menu		string(40)
+var tag_message_panel 	= panel		panel_item_row
+var number_alarms		= int
+begin
+	if invalid num_alarms then number_alarms=2
+
+         if invalid get source plc_inputs then 
+         begin
+   	! get plc inputs !
+   	set source plc_inputs = src
+   	set filter plc_inputs.db_addr = lim_ge
+   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+   	set priority plc_inputs.db_addr = 15
+   	set persist plc_inputs
+   	set mayexist plc_inputs
+   	request plc_inputs
+
+   	! get cb inputs !
+   	set source cb_inputs = src
+   	set filter cb_inputs.db_addr = lim_ge
+   	set limit cb_inputs.db_addr = db_address(int(b1) + b_offset -1)
+   	set priority cb_inputs.db_addr = 15
+   	set persist cb_inputs
+   	set mayexist cb_inputs
+   	request cb_inputs
+
+	if spec_addr <> int and spec_addr <>0 then
+	begin
+		set source special_comms_ip = src
+		set filter special_comms_ip.db_addr = lim_ge
+		set limit special_comms_ip.db_addr = db_address(int(b1) + spec_addr - 1)
+		set priority special_comms_ip.db_addr = 15
+		set persist special_comms_ip
+		set mayexist special_comms_ip
+		request special_comms_ip
+	end
+
+   	! get cb alarm inputs !
+   	set source alarm_inputs = src
+   	set filter alarm_inputs.db_addr = lim_ge
+   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset)
+   	set priority alarm_inputs.db_addr = 15
+   	set persist alarm_inputs
+   	set max_rows alarm_inputs  = num_alarms
+   	set mayexist alarm_inputs
+   	request alarm_inputs
+
+   	! get ocb manual dress status !
+   	set source manual_dress = src
+   	set filter manual_dress.db_addr = lim_eq
+   	set limit manual_dress.db_addr = db_address(int(e1) + e_offset - 1)
+   	set persist manual_dress 
+   	request manual_dress
+
+   	! get ocb tag message !
+   	set source tag_message = src
+   	set filter tag_message.db_addr = lim_eq
+   	set limit tag_message.db_addr = db_address(int(c1) + c_offset -1)
+   	set persist tag_message
+   	request tag_message
+
+         end
+
+	! ocb colour selection !
+	! ocb foreground !
+	plc_a_comms_flt = plc_inputs[1].b_value
+	plc_b_comms_flt = plc_inputs[2].b_value
+
+	cb_ptw_ip	 	= cb_inputs[1].b_value
+	cb_open_ip	 	= cb_inputs[2].b_value
+	cb_closed_ip	 	= cb_inputs[3].b_value
+	alarm1_ip		= cb_inputs[4].b_value
+	alarm2_ip		= cb_inputs[5].b_value
+
+	cb_tripped_al	 	=alarm_inputs[1].alarm_status
+	cb_closed_al	 	=alarm_inputs[2].alarm_status
+	alarm1_al		=alarm_inputs[3].alarm_status
+	alarm2_al		=alarm_inputs[4].alarm_status
+
+	if invalid special_comms_ip.b_value then special_alarm = off else
+		special_alarm = special_comms_ip.b_value
+
+	if plc_a_comms_flt == on and plc_b_comms_flt == on then
+		cb_foreground = magenta
+	else if special_alarm == on then
+		cb_foreground = magenta
+	else if
+		cb_closed_al	 	== w_note or
+		cb_tripped_al		== w_note or
+		alarm1_al		== w_note or
+		alarm2_al		== w_note then
+			cb_foreground = flashred
+	else if
+		cb_closed_al	 	== w_clr or
+		cb_tripped_al		== w_clr or
+		alarm1_al		== w_clr or
+		alarm2_al		== w_clr 	then
+			cb_foreground = red
+
+	else if int(manual_dress.e_value) >=1 and int(manual_dress.e_value) <= 2 then
+	   begin
+		case int(manual_dress.e_value) of
+		1,2
+			cb_foreground = white
+		default
+		   begin
+		   end
+	   end
+	else
+		cb_foreground = green4
+
+	! ocb background !
+	if cb_inputs[1].b_value then
+		cb_background = orange
+
+	else if int(manual_dress.e_value) >= 1 and int(manual_dress.e_value) <= 2 then
+	   begin
+		case int(manual_dress.e_value) of
+		1  ! dressed to on !
+			if cb_closed_ip == on and cb_open_ip == off then
+			   	cb_background = flashblue
+			else
+			   	cb_background = blue
+		2  ! dressed to off !
+			if cb_closed_ip == off and cb_open_ip == on then
+			   	cb_background = flashblue
+			else
+			   	cb_background = blue
+	
+		default
+		   begin
+		   end
+	   end
+	else if tag_message.c_value <> "" then
+		cb_background = yellow
+	else
+		cb_background = decoroff
+
+	! main symbol !
+
+	x = 0 y = 0
+	just = centrecentre
+
+	if position == "sect" then
+	   begin
+ 		if manual_dress.e_value > 0 and tag_message.c_value <> "" then
+  		   begin
+    		 	rect(w=55,h=45,fg=yellow) 
+  		   end
+  		else if cb_ptw_ip == on and tag_message.c_value <> "" then
+  		      begin
+    			rect(w=53,h=43,fg=yellow) 
+ 		      end
+
+  		if manual_dress.e_value > 0 and cb_ptw_ip == on then
+  		   begin
+    			if tag_message.c_value <> "" then
+      			   	rect(w=55,h=45,fg=yellow) 
+			else	rect(w=55,h=45,fg=blue)
+    			rect(w=53,h=43,fg=blue) 
+  		   end
+  		rotrect(w=50,h=40,fg=cb_background) clear
+  		w=50 h=40 set rect main_menu clear
+	   end
+	else
+	   begin
+  		if manual_dress.e_value > 0 and tag_message.c_value <> "" then
+ 		   begin
+    			rect(w=45,h=55,fg=yellow) 
+  		   end
+  		else if cb_ptw_ip == on and tag_message.c_value <> "" then
+  		      begin
+    			rect(w=43,h=53,fg=yellow) 
+  		      end
+
+  		if manual_dress.e_value > 0 and cb_ptw_ip == on then
+  		   begin
+    			if tag_message.c_value <> "" then
+      			   	rect(w=45,h=55,fg=yellow)
+			else	rect(w=45,h=55,fg=blue) 
+    				rect(w=43,h=53,fg=blue) 
+  	  	   end
+  		x = 0 y = 0 w = 40 h = 50 rotrect(fg=cb_background) clear
+  		x = 0 y = 0 w = 40 h = 50 set rect main_menu clear
+	   end
+
+	! tag message box !
+	if selb and tag_message.c_value <> "" then
+	begin
+  	   message_text_box(tag_message.c_value)
+	end
+
+	if position == "sect" then
+	   begin
+  	   	x -= 25 y += 20 add y -= 40 add
+  	   	x += 50 add line(fg=decorlight) clear
+		x=25 y=-20 add y += 40 add
+   	   	x -= 50 add line(fg=decorshadow) clear
+  	   	fg = cb_foreground 	clear
+	   end
+	else
+	   begin
+  		x -= 20 y += 25 add y -= 50 add
+  		x += 40 add line(fg=decorlight) clear
+  		x=20  y=-25 add y+= 50 add
+  		x -= 40 add line(fg=decorshadow) clear
+  		fg = cb_foreground	clear
+	end
+
+	if position == "sect" then
+	   set title main_menu = "bus section lv breaker"+ident
+	else
+	   set title main_menu = "lv circuit breaker "+ident
+
+	set empty main_menu
+	set remove main_menu = "Alter tag message"
+	set remove main_menu = "Clear tag message"
+	set remove main_menu = "Alter permit to work"
+	set remove main_menu = "Undress cb"
+	set remove main_menu = "Dress to off"
+	set remove main_menu = "Dress to on"
+	set add main_menu = "Alter tag message"
+	set add main_menu = "Clear tag message"
+	set add main_menu = "Alter permit to work"
+
+	x=0 y=0 
+     		! tripped !
+	if (cb_open_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 2 or (cb_closed_ip == off and cb_type=="no_open" and manual_dress.e_value == 0) then
+	   begin
+  	    	if position == "sect" then
+  		   tripped_lv_cb(cb_foreground)
+  		else
+    		    tripped_lv_cb(cb_foreground,angle=90)
+  	                
+                            angle = 90
+		if (cb_open_ip == on and cb_closed_ip == on and manual_dress.e_value == 0) then 
+		   set add main_menu = "Dress to off"
+
+  		set add main_menu = "Dress to on"
+
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "Undress cb"
+	   end
+     	else if	! closed !
+	   (cb_closed_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 1  then
+	   begin
+  		if position == "sect" then
+	    	   closed_lv_cb(cb_foreground,angle=90)
+  		else
+    		   closed_lv_cb(cb_foreground)
+
+  		set add main_menu = "Dress to off"
+
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "Undress cb"
+	   end
+     	else 
+	   begin
+  		if position == "sect" then
+	    	   isolated_lv_cb(cb_foreground,angle=90)
+  		else
+    		  isolated_lv_cb(cb_foreground)
+
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "Undress cb"
+
+		set add main_menu = "Dress to off"
+	   end
+
+
+
+	! menu control !
+	! main menu selection !
+
+         if valid main_menu then
+            begin
+	  case main_menu of
+	
+	  "Alter tag message"
+	  begin
+	     set title tag_message_panel 	= "modify tag message"	
+	     set label tag_message_panel.str	= "tag message :"
+	     set unpinned tag_message_panel
+	     request tag_message_panel
+	  end
+
+	  "Clear tag message"
+	     set_c_value(db_address(int(c1) +c_offset - 1),src,"")
+
+	  "Alter permit to work"
+	  begin
+	     if cb_ptw_ip == on then
+	        set_b_value(db_address(int(b1) + b_offset -1),src,off)
+	     else
+	        set_b_value(db_address(int(b1) + b_offset -1),src,on)
+	  end	
+
+	  "Undress cb"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+	  "Dress to on"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+	  "Dress to off"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+
+   	default
+   	   begin
+   	   end
+
+	set invalid main_menu
+            end
+
+	! tag message panel !
+	if valid tag_message_panel then
+	   begin
+    	   	set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+    	   	set invalid tag_message_panel
+  	   end
+
+
+	if position == "sect" then
+	   begin
+  	         	x = 0 y = 28 text(just=centrecentre,tfg=black,ch=16,ident)
+	   end
+	else
+	   begin
+  	   	x = 28 y = 0 text(just=centreleft,tfg=black,ch=16,ident)
+	   end
+end
+
+
+
+object lv_switch_dress(sw_type=string,c_offset=int,e_offset=int,src=source,ident=string,position=string(4),ptw_offset=int,res1=int,angle)
+var manual_dress	= input e_db_row_type
+var tag_message	= input c_db_row_type
+var ptw_input 	= input b_db_row_type
+var cb_foreground	= loopback	colour
+var cb_background	= loopback	colour
+
+! menus !
+var main_menu		= menu		string(40)
+var tag_message_panel 	= panel		panel_item_row
+begin
+
+         if invalid get source manual_dress then 
+         begin
+   	! get ocb manual dress status !
+   	set source manual_dress = src
+   	set filter manual_dress.db_addr = lim_eq
+   	set limit manual_dress.db_addr = db_address(int(e1) + e_offset - 1)
+   	set persist manual_dress 
+   	request manual_dress
+
+   	! get ocb tag message !
+   	set source tag_message = src
+   	set filter tag_message.db_addr = lim_eq
+   	set limit tag_message.db_addr = db_address(int(c1) + c_offset -1)
+   	set persist tag_message
+   	request tag_message
+
+	! GET PTW INPUT !
+	if ptw_offset <> int then
+	begin
+	set source ptw_input = src
+	set filter ptw_input.db_addr = lim_ge
+	set limit ptw_input.db_addr = db_address(int(b1) + ptw_offset -1)
+	set priority ptw_input.db_addr = 15
+	set persist ptw_input
+	set mayexist ptw_input
+	request ptw_input
+	end
+
+         end
+
+	cb_foreground = white
+	cb_background = blue
+
+	just=centrecentre
+
+	if ptw_offset <> int then
+	begin
+	
+		if tag_message.c_value <> "" and ptw_input.b_value == 1 then
+    			begin
+			rect(w=50,h=60,fg=yellow)
+			rect(w=45,h=55,fg=orange)
+			end
+		else if tag_message.c_value <> "" then
+    			rect(w=45,h=55,fg=yellow)
+
+		else if ptw_input.b_value == 1 then
+			rect(w=45,h=55,fg=orange)
+	end
+	
+	else	if tag_message.c_value <> "" then
+    			rect(w=45,h=55,fg=yellow) 
+
+		x = 0 y = 0 w = 40 h = 50 rotrect(fg=cb_background) clear
+  		x = 0 y = 0 w = 40 h = 50 set rect main_menu clear
+
+	! tag message box !
+	if selb and tag_message.c_value <> "" then
+	begin
+  	   message_text_box(tag_message.c_value)
+	end
+
+  		x -= 20 y += 25 add y -= 50 add
+  		x += 40 add line(fg=decorlight) clear
+  		x=20  y=-25 add y+= 50 add
+  		x -= 40 add line(fg=decorshadow) clear
+  		fg = cb_foreground	clear
+
+
+	set title main_menu = "switch "+ident
+
+	set empty main_menu
+	set remove main_menu = "Alter tag message"
+	set remove main_menu = "Clear tag message"
+	set remove main_menu = "Alter permit to work"
+	set remove main_menu = "Dress to open"
+	set remove main_menu = "Dress to closed"	
+	set add main_menu = "Alter tag message"
+	set add main_menu = "Clear tag message"
+
+	if ptw_offset <> int then
+	set add main_menu = "Alter permit to work"
+
+if sw_type == "fused" then
+   begin
+	x=0 y=0 
+
+    	if manual_dress.e_value == 0 or manual_dress.e_value == 2 then
+	   begin
+		
+		X=0 Y=-23 Add X=0 Y=23 Add lw=3 line clear
+		X=0 Y=0 W=11 H=32 JUST=centrecentre LS=SOLID LW=2 ANGLE=0 ROTBOX
+  		set add main_menu = "Dress to open"
+	   end
+    	else if manual_dress.e_value == 1 then
+	   begin
+		
+		X=-15 Y=-20 Add X=0 Y=23  Add lw=3 line clear
+		X=-8 Y=0 W=11 H=32 JUST=centrecentre LS=SOLID LW=2 ANGLE=340 ROTBOX
+  		set add main_menu = "Dress to closed"
+	   end
+   end
+
+else if sw_type == "isol" then
+   begin
+	x=0 y=0 
+
+    	if manual_dress.e_value == 0 or manual_dress.e_value == 2 then
+	   begin
+		
+		X=0 Y=-23 Add X=0 Y=23 Add lw=3 line clear
+		set add main_menu = "Dress to open"
+	   end
+    	else if manual_dress.e_value == 1 then
+	   begin
+		
+		X=-15 Y=-20 Add X=0 Y=23  Add lw=3 line clear
+		set add main_menu = "Dress to closed"
+	   end
+   end
+
+else
+   begin
+	x=0 y=0 
+    	if manual_dress.e_value == 0 or manual_dress.e_value == 2 then
+	   begin
+
+  	    	X=0 Y=-23 Add X=0 Y=23 Add lw=3 line clear
+		X=0 Y=0 W=11 H=32 JUST=centrecentre LS=SOLID LW=2 ANGLE=0 ROTBOX
+  		set add main_menu = "Dress to open"
+	   end
+    	else if manual_dress.e_value == 1 then
+	   begin
+
+		X=-13 Y=-14 Add X=15 Y=14  Add lw=3 line clear
+		X=0 Y=0 W=11 H=32 JUST=centrecentre LS=SOLID LW=2 ANGLE=315 ROTBOX
+  		set add main_menu = "Dress to closed"
+	   end
+   end
+
+	! menu control !
+	! main menu selection !
+
+         if valid main_menu then
+            begin
+	  case main_menu of
+	
+	  "Alter tag message"
+	  begin
+	     set title tag_message_panel 	= "modify tag message"	
+	     set label tag_message_panel.str	= "tag message :"
+	     set unpinned tag_message_panel
+	     request tag_message_panel
+	  end
+
+	  "Clear tag message"
+	     set_c_value(db_address(int(c1) +c_offset - 1),src,"")
+
+	  "Alter permit to work"
+	  begin
+	     if ptw_input.b_value == 1 then
+	        set_b_value(db_address(int(b1) + ptw_offset -1),src,off)
+	     else
+	        set_b_value(db_address(int(b1) + ptw_offset -1),src,on)
+	  end
+
+	  "Undress switch"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+	  "Dress to open"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+	  "Dress to closed"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+
+   	default
+   	   begin
+   	   end
+
+	set invalid main_menu
+            end
+
+	! tag message panel !
+	if valid tag_message_panel then
+	   begin
+    	   	set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+    	   	set invalid tag_message_panel
+  	   end
+
+  	   	x = 28 y = 0 text(just=centreleft,tfg=black,ch=16,ident)
+
+end
+
+
+object lv_props(lv_prop_type=string,fg)
+begin
+	clear
+	if lv_prop_type=="no_cb" then
+		CIRCLE(X=-14, Y=-15, W=36, H=40, lw=3, SA=0) clear
+
+	if lv_prop_type=="no_cb" or  lv_prop_type=="nc_cb"  then
+	begin
+		X=-1 Y=-20 Add X=-1 Y=20 Add lw=3 line clear
+		X=-9 Y=-11 Add X=8 Y=11 Add lw=3 line clear
+		X=7 Y=-11 Add X=-10 Y=11 Add lw=3 line clear
+	end
+
+	if lv_prop_type=="nc_sw"  then
+	begin
+		X=1 Y=-21 Add X=1 Y=22 Add lw=3 line clear
+		X=0 Y=0 W=11 H=32 JUST=centrecentre LS=SOLID LW=2 ANGLE=0 ROTBOX
+	end
+
+	if lv_prop_type=="no_sw"  then
+	begin
+		X=-13 Y=-14 Add X=15 Y=14  Add lw=3 line clear
+		X=0 Y=0 W=11 H=32 JUST=centrecentre LS=SOLID LW=2 ANGLE=315 ROTBOX
+	end
+
+
+end
+
+
+
+! main object !
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+

@@ -1,0 +1,148 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!********* Hv WEST INTAKE 	********!
+!********* 02 September 2004	********!
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load arcs_status_file
+load sel_in_progress_fix
+load browser
+load generic_meter_library
+
+
+!***********************************************************
+* WEST INTAKE OBJECT                                       *
+***********************************************************!
+
+object west_intake
+begin
+	just = centrecentre ch=12
+	scale = 256
+	x = -560 y = 0 add x += 1120 add line(fg=blue,lw=4) clear
+	lw=3
+	x = -540 y = 0	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 9")	y=-178 text ("P1")	! *** PANEL 1 *** !
+	x =-490 y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 51")	y=-178 text ("P4")	! *** PANEL 2 *** !
+	x =-440 y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 74")	y=-178 text ("P5")	! *** PANEL 3 *** !
+	x =-390 y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 41")	y=-178 text ("P1")	! *** PANEL 4 *** !
+	x =-345 y = 0 	add y +=190 add line(fg=blue) clear						! *** PANEL 5 *** !
+	x =-320 y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 113")	y=-178 text ("P9")	! *** PANEL 6 *** !
+	x =-270  y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 103")	y=-178 text ("P2")	! *** PANEL 7 *** !
+	x =-220  y = 0 	add y+=100 add line(fg=blue) clear						! *** PANEL 8  Genesis Car Park Transformer *** !
+	x =-150  y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 62")	y=-178 text ("P18")	! *** PANEL 10 *** !
+	x =-100  y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 62")	y=-178 text ("P26")	! *** PANEL 11 *** !
+	x =-50  y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 293")	y=-178 text ("P19")	! *** PANEL 12 *** !
+	x = 0   y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 113")	y=-178 text ("P13")	! *** PANEL 13 *** !
+	x = 50   y = 0 	add y -= 70 add line(fg=blue) clear 	y-=15 text ("Spare") 			! *** PANEL 14 *** !
+	x = 100   y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 293")	y=-178 text ("P9")	! *** PANEL 15 *** !
+	x = 150   y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 73")	y=-178 text ("P4")	! *** PANEL 16 *** !
+	x = 200   y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 116")	y=-178 text ("P10")	! *** PANEL 17 *** !
+	x = 270   y = 0 	add y += 100 add line(fg=blue) clear						! *** PANEL 19 Local Transformer *** !
+	x = 320   y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 44")	y=-178 text ("P1")	! *** PANEL 20 *** !
+	x = 370   y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 98")	y=-178 text ("P2")	! *** PANEL 21 *** !
+	x = 420   y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 112")	y=-178 text ("P11")	! *** PANEL 22 *** !
+	x = 435   y = 0 	add y += 190 add line(fg=blue) clear						! *** PANEL 23 *** !
+	x =470    y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 43")	y=-178 text ("P2")	! *** PANEL 24 *** !
+	x =520    y = 0 	add y -= 100 add line(fg=blue) clear	y=-190 text ("SS 138")	y=-178 text ("P8")	! *** PANEL 25 *** !
+
+	! *** New West Intake *** !
+	scale=120
+	! *** PANEL 1 *** ! 		x =-540 y=-50	ocb(3000,3120,151,276,heathrow,1,"top")
+	! *** PANEL 2 *** ! 		x =-490 y=-50	ocb(3000,3300,161,286,heathrow,2,"top")
+	! *** PANEL 3 *** ! 		x =-440 y=-50	ocb(3000,3240,158,283,heathrow,3,"top")
+	! *** PANEL 4 *** ! 		x =-390 y=-50	ocb_mont(3000,3500,154,279,heathrow,4,"top")
+	! *** PANEL 5 *** ! 		x =-345 y=50 	ocb(3000,3180,155,280,heathrow,5,"btm")
+	! *** PANEL 6 *** !		x =-320 y=-50	ocb(3000,3160,153,278,heathrow,6,"top")
+	! *** PANEL 7 *** ! 		x =-270  y=-50	ocb(3000,3140,152,277,heathrow,7,"top")
+	! *** PANEL 8 *** ! 		x =-220  y=50	ocb_mont(3000,3960,118,328,heathrow,8,"btm")		! **   Genesis Car Park Transformer  ** !
+	! *** PANEL 9 *** ! 		x =-185  y=0 	ocb(3000,3280,160,285,heathrow,9,"sect",ANGLE=90)
+	! *** PANEL 10 *** !	x =-150  y=-50	ocb(3000,3100,150,275,heathrow,10,"top")
+	! *** PANEL 11 *** !	x =-100   y=-50	ocb(3000,3460,170,295,heathrow,11,"top")
+	! *** PANEL 12 *** !	x =-50   y=-50	ocb(3000,3420,168,293,heathrow,12,"top")
+	! *** PANEL 13 *** !	x =0    y=-50	ocb(3000,3360,164,289,heathrow,13,"top")
+	! *** PANEL 14 *** !	x =50   y=-50	ocb(3000,3820,111,321,heathrow,14,"btm")
+	! *** PANEL 15 *** !	x =100   y=-50	ocb(3000,3220,157,282,heathrow,15,"top")
+	! *** PANEL 16 *** !	x =150   y=-50	ocb(3000,3480,171,296,heathrow,16,"top")
+	! *** PANEL 17 *** ! 	x =200   y=-50	ocb(3000,3200,156,281,heathrow,17,"top")
+	! *** PANEL 18 *** ! 	x =235   y=0	ocb(3000,3400,167,292,heathrow,18,"sect",ANGLE=90)
+	! *** PANEL 19 *** ! 	x =270   y=50	ocb_mont(3000,3970,119,329,heathrow,19,"btm")	! **   Local Transformer  ** !
+	! *** PANEL 20 *** !	x =320   y=-50	ocb(3000,3320,162,287,heathrow,20,"top")
+	! *** PANEL 21 *** !	x =370   y=-50	ocb(3000,3340,163,288,heathrow,21,"top")
+	! *** PANEL 22 *** !	x =420   y=-50	ocb(3000,3440,169,294,heathrow,22,"top")
+	! *** PANEL 23 *** !	x =435   y=50 	ocb(3000,3380,165,290,heathrow,23,"btm")
+	! *** PANEL 24 *** !	x =470   y=-50	ocb_mont(3000,3510,166,291,heathrow,24,"top")
+	! *** PANEL 25 *** ! 	x =520   y=-50	ocb(3000,3260,159,284,heathrow,25,"top")
+
+
+					! generic_bar_meter_obj(plc_comms,c_offset,e_offset,b_over,b_under,src,units,metname,range_lo,range_hi,dec_places,bar_colour,range_dec_places,res_int1,res_str1) !
+
+scale=153
+! *** PANEL 1 *** ! 		x = -540 Y=-125 	generic_bar_meter_obj(3000,1320,251,int,int,heathrow,"A","SUB 9",0,400,0,yellow,0,int,"")
+! *** PANEL 2 *** ! 		x =-490 Y=-125 	generic_bar_meter_obj(3000,1321,259,int,int,heathrow,"A","SUB 51",0,400,0,yellow,0,int,"")
+! *** PANEL 3 *** ! 		x =-440 Y=-125 	generic_bar_meter_obj(3000,1322,257,int,int,heathrow,"A","SUB 74",0,400,0,yellow,0,int,"")
+! *** PANEL 4 *** ! 		x =-390 Y=-125 	generic_bar_meter_obj(3000,1323,253,int,int,heathrow,"A","SUB 41",0,400,0,yellow,0,int,"")
+! *** PANEL 6  *** ! 	x =-320 Y=-125 	generic_bar_meter_obj(3000,1325,272,int,int,heathrow,"A","113 F2",0,400,0,yellow,0,int,"")
+! *** PANEL 7  *** ! 	x =-270 Y=-125 	generic_bar_meter_obj(3000,1326,252,int,int,heathrow,"A","SUB 103",0,400,0,yellow,0,int,"")		
+! *** PANEL 8  *** ! 	x =-220 Y=-125 	!generic_bar_meter_obj(3000,1327,250,int,int,heathrow,"A","GEN TX",0,400,0,yellow,0,int,"") 	no analogues yet!
+! *** PANEL 9  *** ! 	x =-185 y=70 	!generic_bar_meter_obj(3000,1328,250,int,int,heathrow,"A","9",0,400,0,yellow,0,int,"") 		no analogues yet!
+! *** PANEL 10 *** ! 	x =-150 Y=-125 	generic_bar_meter_obj(3000,1329,250,int,int,heathrow,"A","NTH FDR",0,400,0,yellow,0,int,"")
+! *** PANEL 11 *** ! 	x =-100 Y=-125 	generic_bar_meter_obj(3000,1330,267,int,int,heathrow,"A","STH FDR",0,400,0,yellow,0,int,"")		
+! *** PANEL 12 *** ! 	x =-50 Y=-125 	generic_bar_meter_obj(3000,1331,265,int,int,heathrow,"A","SUB 121",0,400,0,yellow,0,int,"")
+! *** PANEL 13 *** ! 	x =0 Y=-125 	generic_bar_meter_obj(3000,1332,262,int,int,heathrow,"A","113 F1",0,400,0,yellow,0,int,"")
+! *** PANEL 14 *** ! 	x =50 Y=-125 	!generic_bar_meter_obj(3000,1333,250,int,int,heathrow,"A","14",0,400,0,yellow,0,int,"") 	no analogues yet!
+! *** PANEL 15 *** ! 	x =100 Y=-125 	generic_bar_meter_obj(3000,1334,256,int,int,heathrow,"A","SUB 121",0,400,0,yellow,0,int,"")		
+! *** PANEL 16 *** ! 	x =150 Y=-125 	generic_bar_meter_obj(3000,1335,268,int,int,heathrow,"A","INTER.",0,800,0,yellow,0,int,"")		
+! *** PANEL 17 *** ! 	x =200 Y=-125 	generic_bar_meter_obj(3000,1336,255,int,int,heathrow,"A","SUB 116",0,400,0,yellow,0,int,"")		
+! *** PANEL 18 *** ! 	x =235 y=70 	!generic_bar_meter_obj(3000,1337,250,int,int,heathrow,"A","18",0,400,0,yellow,0,int,"") 	no analogues yet!
+! *** PANEL 19 *** !	x =270 Y=-125 	! generic_bar_meter_obj(3000,1338,250,int,int,heathrow,"A","LOCAL TX",0,400,0,yellow,0,int,"") 	no analogues yet!
+! *** PANEL 20 *** ! 	x =320 Y=-125 	generic_bar_meter_obj(3000,1339,260,int,int,heathrow,"A","SUB 44",0,400,0,yellow,0,int,"")
+! *** PANEL 21 *** ! 	x =370 Y=-125 	generic_bar_meter_obj(3000,1340,261,int,int,heathrow,"A","SUB 98",0,400,0,yellow,0,int,"")		
+! *** PANEL 22 *** ! 	x =420 Y=-125 	generic_bar_meter_obj(3000,1341,266,int,int,heathrow,"A","SUB 112",0,400,0,yellow,0,int,"")		
+! *** PANEL 24 *** ! 	x =470 Y=-125 	generic_bar_meter_obj(3000,1343,264,int,int,heathrow,"A","SUB 43",0,400,0,yellow,0,int,"")
+! *** PANEL 25 *** ! 	x =520 Y=-125 	generic_bar_meter_obj(3000,1344,258,int,int,heathrow,"A","SUB 138",0,400,0,yellow,0,int,"")
+
+! *** PANEL 5 *** ! 		x =-300 Y=125 	generic_bar_meter_obj(3000,1346,269,int,int,heathrow,"kV","SS 150",1,13,1,blue,0,int,"")         ! SS 150 - P3    !
+! *** PANEL 5 *** ! 		x =-345  Y=125 	generic_bar_meter_obj(3000,1324,254,int,int,heathrow,"A","SS 150",0,2000,0,yellow,0,int,"")    ! SS 150 - P3    !
+! *** PANEL 23 *** ! 	x = 435 Y=125 	generic_bar_meter_obj(3000,1342,263,int,int,heathrow,"A","SS 150",0,2000,0,yellow,0,int,"")    ! SS 150 - P15    !
+! *** PANEL 23 *** ! 	x = 385 Y=125 	generic_bar_meter_obj(3000,1347,270,int,int,heathrow,"kV","SS 150",1,13,1,blue,0,int,"")         ! SS 150 - P15    !
+
+	scale = 100
+	X=-345 Y=195 transformer("TX 1","SS150")
+	X=435 Y=195 transformer("TX 2","SS150")
+
+	X=-220 Y=95 transformer("TX 1","")
+	X=270 Y=95 transformer("LTX","")
+
+	! ** Labels ** !
+	scale=256 just=centrecentre
+	X=-345 Y=225 text("SS 150")
+	X=-345 Y=240 text("P 3")
+	X=-220 Y=125 text("Genisis")
+	X=-220 Y+=12 text("Car Park")
+	Y+=12 text("Transformer")
+
+	X=435 Y=225 text("SS 150")
+	X=435 Y=240 text("P 15")
+	X=270 Y=125 text("Local")
+	X=270 Y+=12 text("Transformer")
+
+	x = 0 y = -250 text("WEST INTAKE",just=centrecentre,ch=20,tfg=blue)
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	X=-480 Y=278 deselect_box(3000,3003,heathrow,"Control Status") clear
+
+	x = 0 y = -80 west_intake clear
+
+	scale = 155
+	X=355 Y=200 status_box(1,700,3000,3700,heathrow)
+
+	scale=256
+	x = -570 y = 310 browser(1079,heathrow,1140)
+end
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

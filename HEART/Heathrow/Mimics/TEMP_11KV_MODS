@@ -1,0 +1,60 @@
+load mimic_libutil
+load transformer_meter
+load transformer
+load ocb
+load TEMP_11KV_MODS_HELP
+
+object temp_11kv_mods(lw,angle)
+begin
+just = centrecentre
+lw=4
+scale=100
+fg=green
+
+x = -300 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb(1,480,18,42,heathrow,5,"btm")
+
+x = -150 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb(1,520,19,43,heathrow,8,"btm")
+
+x = 50 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb(1,540,20,44,heathrow,12,"btm")
+
+x = 200 y = 0 add 
+y += 60 add
+y -= 60 add line(lw=5) clear
+y += 25 add
+ocb(1,500,21,45,heathrow,15,"btm")
+
+!scale = 100!
+y = 70 x = -300 add transformer("Tx 4","SEB")
+
+y = 70 x = -150 add transformer("Tx 3","SEB")
+
+y = 70 x = 50 add transformer("Tx 1","SEB")
+
+y = 70 x = 200 add transformer("Tx 2","SEB")
+
+x = -300 y = 160 transformer_meter(15,3,heathrow,"NORTH","4","0-400A")
+x = -150 y = 160 transformer_meter(15,5,heathrow,"NORTH","3","0-400A")
+x =  50 y = 160 transformer_meter(16,7,heathrow,"NORTH","1","0-400A")
+x = 200  y = 160 transformer_meter(16,11,heathrow,"NORTH","2","0-400A")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=400
+x=0 y=-100 temp_11kv_mods
+end
+
+mimic = main_object w=1200,h=840,just=centrecentre,fg=white,bg=black,resizable

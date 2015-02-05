@@ -1,0 +1,84 @@
+! HEATHROW CMS - HV BATH
+
+loaded by: HV_OVERVIEW
+!
+
+load paul_lib
+
+
+object bath_intake_lines (fg,bg)
+begin
+lw=3
+fg=yellow
+X=-468 Y=-344  ADD
+X=-437 Y=-344  ADD
+line
+clear
+X=-426 Y=-344  ADD
+X=-395 Y=-344  ADD
+line
+clear
+lw=2
+
+X=-461 Y=-370  ADD
+X=-461 Y=-345  ADD
+line
+clear
+X=-401 Y=-370  ADD
+X=-401 Y=-345  ADD
+line
+clear
+X=-406 Y=-343  ADD
+X=-406 Y=-289  ADD
+X=-377 Y=-289  ADD
+line
+clear
+X=-367 Y=-295  ADD
+X=-367 Y=-312  ADD
+line
+clear
+X=-355 Y=-289  ADD
+X=-348 Y=-289  ADD
+line
+clear
+X=-339 Y=-284  ADD
+X=-339 Y=-258  ADD
+X=-349 Y=-258  ADD
+line
+clear
+X=-372 Y=-259  ADD
+X=-382 Y=-259  ADD
+line
+clear
+X=-404 Y=-259  ADD
+X=-414 Y=-259  ADD
+line
+clear
+X=-437 Y=-259  ADD
+X=-456 Y=-259  ADD
+X=-456 Y=-345  ADD
+line
+clear
+end
+
+
+object bath_intake_substations (fg,bg)
+begin
+fg=yellow
+X=-366 Y=-323 os("59")
+X=-366 Y=-295 os("77")
+X=-338 Y=-295 os("81")
+X=-426 Y=-265 os("78")
+X=-393 Y=-265 os("79")
+X=-361 Y=-265 os("80")
+clear
+end
+
+
+
+object bath_intake 
+begin
+bath_intake_lines
+bath_intake_substations
+
+end

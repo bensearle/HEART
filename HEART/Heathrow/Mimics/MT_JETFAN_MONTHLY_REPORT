@@ -1,0 +1,484 @@
+load report_tllib
+Load REPLIB
+load archive2_std_libutil
+load debug_libutil
+
+CONST column_width = 60 
+
+TYPE KEYED_TWO_A_VALUES = TABLE (
+	! 1RW !    ID = ID,
+	!  R  !       STREAM = STREAM,
+	!  R  !          STREAM_NAME = STREAM_NAME,
+	!  R  !       KEYNUMBER = KEYNUMBER,
+	! 2RW !    TIME = CS_TIME,
+	!  RW !    KEYED_TWO_A_VALUES_1 = REAL,
+	!  RW !    KEYED_TWO_A_VALUES_2 = REAL )
+
+type stats_display_type = enum( percent_time_true = "Percentage true",
+				ft_transitions = "False-true transitions")
+
+!*******************************************************************************!
+!February is a leap year every fourth year, except at the turn of the century.!
+!There are 29 days in a leap year for february, normally 28!
+!Every 400 years the century year is also a leap year!
+!Thus 1900 is not a leap year, 1996 and 2000 are leap years!
+
+!Beware though, because MDL doesn't know that 2000 is a leap year, nor do DOS !
+!PC's. SUN machines do recognize 29-Feb-2000!
+
+!Original Object did not work, was re-written 30-6-1999 !
+!Jan, mar, may,Jul,Aug,Oct,Dec = 31 !
+!Apr,Jun,Sep,Nov = 30 !
+
+!*******************************************************************************!
+
+
+object daysInMonth ( ip_date = string) = int
+
+var str_month = string(3)
+var year = int
+begin
+
+str_month = getchars(4,3,time(ip_date))
+CASE str_month OF
+"APR","JUN","SEP","NOV"
+   daysInMonth = 30
+"FEB" 
+   begin 
+      year = int(getchars(8,4,time(ip_date)))
+      if (((year % 4 == 0) and (year % 100 <> 0)) or (year % 400 == 0)) then
+	 begin
+	 daysInMonth = 29
+	 end
+      else
+	   daysInMonth = 28
+   end
+DEFAULT
+   daysInMonth = 31
+end
+
+! ------------------------------------------------------------------------------------------------------------------- !
+! This object will return boolean statistics for single element !
+! The choice is :                                                                 !
+! percent_time_true      : The percentage of the period for which the element was true is displayed ! 
+! ft_transitions : The number of fasle-true transitions for the period is displayed !
+! The object also returns the percentage time true !
+! ------------------------------------------------------------------------------------------------------------------- !
+
+object return_boolean_stats(ch,just,realf,
+			server_name = source,
+				address = db_address,
+				report_period = report_period_type,
+				stats_display = stats_display_type,
+			var_busy = loopback yesno)=string
+! INPUT !
+var boolean_data = input keyed_two_a_values[40]
+
+! TEMPORARY !
+var i = int
+var time_true = real
+var total_transitions = real
+var percent_true = real
+var final_text = string
+var omit_time_true = int
+var total_secs_in_month = int
+var temp_time1 = int
+var temp_time2 = int
+var temp_time = time
+var num_days_over = int
+
+var requested_data = loopback yesno
+begin
+
+! calculate the total time for last month in seconds !
+! ------------------------------------------------------------------------- !
+
+   num_days_over = int(getchars(1,2,current_time))
+   temp_time = time(int(current_time) - (num_days_over * 86400))
+
+! request the boolean stats data for last month !
+! -------------------------------------------------------------------- !
+if invalid requested_data then
+   begin
+   requested_data = yes
+   set source boolean_data = arhsource(server_name)
+
+   set filter boolean_data.time = lim_ge_lt2
+
+   timef = local_dmy_hms
+   set limit boolean_data.time = time ("01" + getchars(3,9,temp_time))
+
+   timef = local_dmy_hms
+   temp_time1 = int(get limit boolean_data.time)
+   temp_time2 = int(daysInMonth(temp_time))*86400
+   set limit2 boolean_data.time = time(temp_time1+temp_time2)
+
+
+   set filter boolean_data.stream_name = lim_eq
+   set limit boolean_data.stream_name = server_name + " B_STATS"
+   
+   set filter boolean_data.keynumber = lim_eq
+   set limit boolean_data.keynumber = convert_db_address_to_keynumber(address)
+   
+   request boolean_data   
+   end
+! calculate the total time true in seconds !
+! ----------------------------------------------------------- !
+debug("BUSY :"+get busy boolean_data+" VALID :"+valid boolean_data+" LASTROW :"+lastrow boolean_data)
+if valid boolean_data then
+   begin
+   if lastrow boolean_data > 0 then
+      begin   
+      time_true = 0
+      for i from 1 to lastrow boolean_data do
+         begin
+         time_true += boolean_data[i].keyed_two_a_values_2
+         end
+      time_true = time_true*60
+
+      ! calculate the percentage of the month that the element was true omitting the omit_true_time !
+      ! ------------------------------------------------------------------------------------------------------------------------------------ !
+
+     percent_true = time_true / 3600
+
+      ! calculate the total number of false to true transitions in the month ! 
+      ! ------------------------------------------------------------------------------------------------- !
+      total_transitions = 0
+      for i from 1 to lastrow boolean_data do
+         total_transitions += boolean_data[i].keyed_two_a_values_1
+      end 
+   else
+      begin
+      percent_true = 0 
+      end
+   end
+! display the text required !
+! -------------------------------------- !
+case stats_display of
+   percent_time_true    final_text = percent_true
+   ft_transitions               final_text = total_transitions
+   default                      begin end
+
+! prevent printing until the data has been obtained !
+! ------------------------------------------------------------------------- !
+if get busy boolean_data then
+   begin
+   var_busy = yes
+   end
+else
+   begin 
+   return_boolean_stats = final_text
+   end
+end
+
+			
+! ***************************************************************************************** !
+!----------------- JET FAN RUN HOURS REPORT ------------------------!
+
+object JETFAN_MONTHLY_REPORT(w,h,fg,bg,report_period=report_period_type,report_date=string,just)=yesno
+
+var i =int
+var fld_1 = string
+var fld_2 = string
+var fld_3 = string
+
+var getting_data = loopback yesno
+var temp_time = time
+var num_days_over = int
+
+VAR text_file = FILEWRITE string
+
+Begin
+getting_data = no
+FONT=FONT_BOLD
+
+num_days_over = int(getchars(1,2,current_time))
+temp_time = time(int(current_time) - (num_days_over * 86400))
+
+     SET RESET text_file
+     SET FILE text_file = "monthly-jetfan-report-" +  getchars(4,8,temp_time) + ".htm"
+     SET NOAPPEND text_file
+     text_file = ""
+     text_file += ""
+     request text_file
+     SET APPEND text_file
+     text_file= "<html><head><link rel=stylesheet href=css/text.css type=text/css></head><body text=#FFFFFF bgcolor=#004080>"
+     request text_file
+     text_file= "<font face=Verdana, Arial, Helvetica, sans-serif color=#FFFFFF>" 
+     request text_file
+     text_file= "<center>" 
+     request text_file
+     text_file= "<font size=4><b>Main Tunnel Jetfan Reports</b></font><br><br>For: " + getchars(4,8,temp_time) + "<br><br>" 
+     request text_file
+     text_file= "<table width=80% align=center border=1>"
+     request text_file
+     text_file= "<th class=headertext2 width=30%>Jet Fan</th><th class=headertext2 width=20%>No. of Starts</th><th class=headertext2 width=20%>Total Run Hours</th>"
+     request text_file
+
+     fld_1 = return_boolean_stats (heathro2,b26750,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26750,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 1</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26751,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26751,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 2</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26752,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26752,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 3</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+  
+     fld_1 = return_boolean_stats (heathro2,b26753,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26753,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 4</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26754,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26754,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 5</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26755,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26755,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 6</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26756,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26756,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 7</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26757,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26757,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 8</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26758,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26758,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 9</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26759,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26759,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Inbound Jet Fan 10</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26760,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26760,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 1</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26761,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26761,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 2</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26762,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26762,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 3</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26763,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26763,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 4</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26764,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26764,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 5</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26765,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26765,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 6</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26766,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26766,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 7</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26767,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26767,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 8</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26768,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26768,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 9</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26769,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26769,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>Outbound Jet Fan 10</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26770,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26770,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>West Bore Jet Fan 1</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26771,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26771,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>West Bore Jet Fan 2</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26772,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26772,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>West Bore Jet Fan 3</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26773,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26773,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>West Bore Jet Fan 4</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26774,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26774,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>West Bore Jet Fan 5</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26775,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26775,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>West Bore Jet Fan 6</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26776,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26776,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>East Bore Jet Fan 1</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+     
+     fld_1 = return_boolean_stats (heathro2,b26777,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26777,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>East Bore Jet Fan 2</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26778,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26778,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>East Bore Jet Fan 3</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26779,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26779,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>East Bore Jet Fan 4</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26780,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26780,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>East Bore Jet Fan 5</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     fld_1 = return_boolean_stats (heathro2,b26781,report_period,ft_transitions, getting_data,realf= fixed1)
+     fld_2 = return_boolean_stats (heathro2,b26781,report_period,percent_time_true, getting_data,realf = fixed1)
+     if (getting_data==no) then
+     begin
+          text_file = "<tr><td class=text>East Bore Jet Fan 6</td><td class=text>" + fld_1 + "</td><td class=text>" + fld_2 + "</td></tr>"
+          request text_file
+     end
+
+     text_file = "</table></body></html>"
+     request text_file
+     SET RESET text_file
+
+
+FG=BLACK
+REALF=FIXED3
+FONT=FONT_NORMAL
+jetfan_monthly_report=getting_data
+end
+

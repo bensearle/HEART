@@ -1,0 +1,464 @@
+load mimic_libutil
+load north_ocb_1_meter
+load north_ocb_2_meter
+load north_ocb_4_meter
+load north_ocb_6_meter
+load north_ocb_11_meter
+load north_ocb_13_meter
+load north_ocb_14_meter
+load north_ocb_16_meter
+load north_ocb_19_meter
+load north_ocb_20_meter
+load north_ocb_21_meter
+load overview_meter_alarm_test
+
+
+object meter_button_north_1
+
+var call_var = popup north_ocb_1_meter
+var alarm_colour_1 = loopback colour
+
+begin
+
+if meter_test(1,heathrow) == 1 then
+   begin
+   alarm_colour_1 = flashred
+   end
+
+else if meter_test(1,heathrow) == 2 then
+   begin
+   alarm_colour_1 = red
+   end
+
+else 
+   begin
+   alarm_colour_1 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_1)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 1"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_2
+
+var call_var = popup north_ocb_2_meter
+var alarm_colour_2 = loopback colour
+
+begin
+
+if meter_test(2,heathrow) == 1 then
+   begin
+   alarm_colour_2 = flashred
+   end
+
+else if meter_test(2,heathrow) == 2 then
+   begin
+   alarm_colour_2 = red
+   end
+
+else 
+   begin
+   alarm_colour_2 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_2)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 2"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_4
+
+var call_var = popup north_ocb_4_meter
+var alarm_colour_4 = loopback colour
+
+begin
+
+if meter_test(14,heathrow) == 1 then
+   begin
+   alarm_colour_4 = flashred
+   end
+
+else if meter_test(14,heathrow) == 2 then
+   begin
+   alarm_colour_4 = red
+   end
+
+else 
+   begin
+   alarm_colour_4 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_4)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 4"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_6
+
+var call_var = popup north_ocb_6_meter
+var alarm_colour_6 = loopback colour
+
+begin
+
+if meter_test(4,heathrow) == 1 then
+   begin
+   alarm_colour_6 = flashred
+   end
+
+else if meter_test(4,heathrow) == 2 then
+   begin
+   alarm_colour_6 = red
+   end
+
+else 
+   begin
+   alarm_colour_6 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_6)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 6"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_11
+
+var call_var = popup north_ocb_11_meter
+var alarm_colour_11 = loopback colour
+
+begin
+
+if meter_test(6,heathrow) == 1 then
+   begin
+   alarm_colour_11 = flashred
+   end
+
+else if meter_test(6,heathrow) == 2 then
+   begin
+   alarm_colour_11 = red
+   end
+
+else 
+   begin
+   alarm_colour_11 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_11)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 11"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_13
+
+var call_var = popup north_ocb_13_meter
+var alarm_colour_13 = loopback colour
+
+begin
+
+if meter_test(8,heathrow) == 1 then
+   begin
+   alarm_colour_13 = flashred
+   end
+
+else if meter_test(8,heathrow) == 2 then
+   begin
+   alarm_colour_13 = red
+   end
+
+else 
+   begin
+   alarm_colour_13 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_13)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 13"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_14
+
+var call_var = popup north_ocb_14_meter
+var alarm_colour_14 = loopback colour
+
+begin
+
+if meter_test(9,heathrow) == 1 then
+   begin
+   alarm_colour_14 = flashred
+   end
+
+else if meter_test(9,heathrow) == 2 then
+   begin
+   alarm_colour_14 = red
+   end
+
+else 
+   begin
+   alarm_colour_14 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_14)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 14"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_16
+
+var call_var = popup north_ocb_16_meter
+var alarm_colour_16 = loopback colour
+
+begin
+
+if meter_test(10,heathrow) == 1 then
+   begin
+   alarm_colour_16 = flashred
+   end
+
+else if meter_test(10,heathrow) == 2 then
+   begin
+   alarm_colour_16 = red
+   end
+
+else 
+   begin
+   alarm_colour_16 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_16)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 16"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_19
+
+var call_var = popup north_ocb_19_meter
+var alarm_colour_19 = loopback colour
+
+begin
+
+if meter_test(12,heathrow) == 1 then
+   begin
+   alarm_colour_19 = flashred
+   end
+
+else if meter_test(12,heathrow) == 2 then
+   begin
+   alarm_colour_19 = red
+   end
+
+else 
+   begin
+   alarm_colour_19 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_19)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 19"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_20
+
+var call_var = popup north_ocb_20_meter
+var alarm_colour_20 = loopback colour
+
+begin
+
+if meter_test(13,heathrow) == 1 then
+   begin
+   alarm_colour_20 = flashred
+   end
+
+else if meter_test(13,heathrow) == 2 then
+   begin
+   alarm_colour_20 = red
+   end
+
+else 
+   begin
+   alarm_colour_20 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_20)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 20"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object meter_button_north_21
+
+var call_var = popup north_ocb_21_meter
+var alarm_colour_21 = loopback colour
+
+begin
+
+if meter_test(17,heathrow) == 1 then
+   begin
+   alarm_colour_21 = flashred
+   end
+
+else if meter_test(17,heathrow) == 2 then
+   begin
+   alarm_colour_21 = red
+   end
+
+else 
+   begin
+   alarm_colour_21 = decoroff
+   end
+
+
+just = centrecentre
+x = 0 y = 0 w = 18 h = 18 rect(fg=alarm_colour_21)
+x = -9 y = 9 add x += 18 add y -= 18 add line(lw=1,fg=decorshadow) clear
+x = 9 y = -9 add x -= 18 add y += 18 add line(lw=1,fg=decorlight) clear
+
+x = -5 y = -5 command_button("M","",12,"",ch=8)
+
+set title call_var = "North Intake Meter 21"
+
+if anyb then
+  begin
+    request call_var
+  end
+
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 250
+x = 0 y = 0 meter_button_north_1
+x = 0 y = 40 meter_button_north_2
+
+end
+
+mimic = main_object w=250,h=200,just=centrecentre,fg=white,bg=black,resizable

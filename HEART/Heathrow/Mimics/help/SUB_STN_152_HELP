@@ -1,0 +1,29 @@
+helptext sub_stn_152_help =
+ "
+ **** SUB STATION 152 POPUP MIMIC ****
+ ------------------------------------------------- -------------------------------------------------
+T5 South Main Substation 152 
+ ------------------------------------------------- -------------------------------------------------
+The primary function of the T5 South Main Substation 152 is to provide supplies to the T5 Concourse A building, the secondary substations 156 and 182, the Energy Centre and the Multi-Storey Car Park Area.
+
+
+HV Mimic
+
+The Circuit Breakers are Control and Monitoring. 
+
+The Analogue meters display high and low alarms together with under/over/invalid ranges.
+Low and High alarms may be set by the operator. The meter can also be tagged.
+
+Maximum Demand meters are also shown (display only)
+
+
+
+References:
+------------------
+Operation and Maintenance Manual 	- 
+
+Keypages from the Mimic Menu Object -  for information on mimic objects used (HV Area)
+ ------------------
+
+ "
+

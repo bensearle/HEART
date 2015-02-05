@@ -1,0 +1,51 @@
+load mimic_libutil
+load fuse_sw
+load oil_switch
+load transformer
+load oil_switch_mon
+load hv_fuse_mon
+
+!*********** BUSBAR 99 *************!
+
+object busbar_99
+
+begin
+
+tfg = black x = 85 y = -5 add text ("99",ch = 25) clear
+x = -25 y = 25 add x = 125 add line(lw=4,fg=yellow) clear
+
+lw=2
+x = 0 y = -25 add y += 50 add line (fg=yellow) clear
+x = 50 y = -25 add y += 50 add line (fg=yellow) clear
+x = 100  y = 25 add y += 50 add line (fg=yellow) clear
+
+scale = 120
+!x = 0 y = 0 oil_switch(26045,992,2043,heathrow,"c")
+x = 50 y = 0 oil_switch(26047,993,2044,heathrow,"c")
+x = 100 y = 50 hv_fuse(26049,994,2045,heathrow,"c")!
+
+x = 0 y = 0 oil_switch_mon(1,300,1191,58,heathro2,1,"top")   	! Panel 1 !
+x = 50 y = 0 oil_switch_mon(1,310,1192,59,heathro2,2,"top")	! Panel 2 !
+x=100 y=50 hv_fuse_mon(1,320,1193,60,heathro2,3,"btm") 	! Panel 3 !
+
+scale = 100
+X =  100  Y = 95 add transformer("LT 1","LOCAL")
+
+scale=260
+tfg=black ch=12
+just=centrecentre
+
+x = 0 y = -50 text("SS110")
+x = 0 y = -35 text("P2")
+x = 50 y =- 50 text("SS134")
+x = 50 y =- 35 text("P1")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -50 y = -25 busbar_99
+
+end
+
+mimic = main_object w=200,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

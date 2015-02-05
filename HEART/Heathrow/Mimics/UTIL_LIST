@@ -1,0 +1,38 @@
+ACCEPT_TIMEOUT_CONFIG Acceptance Timeouts 
+ALARM_TIMES_CONFIG Alarm Times 
+ALARM_VIEW Alarm View 
+STREAMS_CONFIG Archiver Streams Configuration +ARH
+DEVICES_CONFIG Archiver Devices Configuration +ARH
+DEVICES_UTIL Archiver Devices Control +ARH
+BREAKPOINT_UTIL Breakpoint 
+COMMS_CHARGEBANDS_UTIL Comms Chargebands 
+COMMS_NIGHTLINES_UTIL Comms Nightlines 
+DATABASE_CONFIG Database Configuration 
+DATABASE_SCANNER_CONFIG Database Scanner Configuration 
+FOR_CONFIG FOR Configuration 
+GROUP_SCAN_UTIL Group Scan 
+GROUP_SCANNER_CONFIG Group Scanner Configuration 
+HELPTEXT_UTIL Helptext Editor 
+MASTER_UTIL Mastership 
+MIMIC_DIRECTORY_UTIL Mimic Directory 
+MIMICEDIT_UTIL Original Mimic Editor 
+MIMICEDITOR Enhanced Mimic Editor
+MX_EDITOR Version 2 Mimic Editor
+OS_ARCHIVE_CONFIG OS Archive Configuration 
+OUTSTATION_CONFIG OS Configuration 
+OSMMS_UTIL OS MMS 
+OS_PROGRAMMING_UTIL OS Programming 
+PRINTER_CONFIG Printer Configuration 
+PROFILE_UTIL Profile Editor 
+RECOVERY_UTIL Recovery 
+REPORT_UTIL Report Editor
+REPORT_CONFIG Reporter Configuration .REP
+RTL_CREATION_UTIL Runtime Logic Creation 
+RTL_SCHEDULER_UTIL Runtime Logic Scheduler 
+SCHEDULE_UTIL Schedule Editor 
+SEQUENCE_UTIL Sequence 
+SUPERVISOR_UTIL Supervisor Utility
+SPECIALDAYS_UTIL Special Days 
+USER_CONFIG User Configuration 
+USER_FOR_CONFIG User FOR Configuration 
+WRKSTN_CONFIG Workstation Configuration 

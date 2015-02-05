@@ -1,0 +1,832 @@
+! HEATHROW CMS - KEY 1
+
+loaded by: HIERARCHY
+!
+
+load mimic_libutil
+
+load main_hierarchy
+
+
+type ocb_state_type = enum(closed="On",
+                      tripped="Off",
+                      racked_down="Racked Down",
+                      feeder_earth_off="Feeder Earth Off",
+                      feeder_earth_on ="Feeder Earth On",
+                      busbar_earth_off="Busbar Earth Off",
+                      busbar_earth_on ="Busbar Earth On")
+
+type switch_state_type = enum(switch_closed="Closed",
+                           switch_open="Open",
+                           switch_feeder_earth_on="Feeder Earth On")
+
+type lv_state_type = enum(lv_mains_on="Mains On",
+                          lv_standby_on="Standby On",
+                          lv_off ="Both Supplies Off")
+
+
+!
+************************************************************
+* OCB DISPLAY ONLY OBJECT                                  *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object ocb_display(display_state=ocb_state_type)
+
+var ocb_width = loopback  int
+var ocb_height = loopback int
+
+begin
+ocb_width=66
+ocb_height=80
+
+just=centrecentre
+x=0 y=0
+rect(fg=decoroff,w=ocb_width,h=ocb_height)
+clear
+x-=ocb_width/2 
+y+=ocb_height/2 add
+y-=ocb_height add
+x+=ocb_width add
+line(lw=2,fg=decorlight)
+clear
+add
+y+=ocb_height add
+x-=ocb_width add
+line(lw=2,fg=decorshadow)
+clear
+
+x=0 y=0
+
+lw=6
+fg=green4
+
+case display_state of
+    closed
+    begin
+    y +=25 x -= 24 add
+    y -= 50 x += 50 add line clear
+    y += 50 add
+    x -= 50 y -= 50 add line clear
+    x += 25 y += 25 add clear
+    end
+
+    tripped
+    begin
+    x = 0 y = 0 circle(h=56 ,w=56) clear
+    x -= 20 y +=24  add
+    x += 43 y -= 44 add line clear
+    y +=  44 add
+    x -= 42 y -= 43 add line clear
+    end
+
+    racked_down
+    begin
+    x=0 y=-ocb_height/2 add
+    y+=15 add
+    x-=9 add
+    x+=18 add
+    line clear
+    x=0
+    y=ocb_height/2 add
+    y-=15 add
+    x-=9 add
+    x+=18 add
+    line
+    end
+
+    feeder_earth_off
+    begin
+    lw=4
+    x=0 
+    y=-ocb_height/2 add
+    y+=15 add
+    line
+    clear
+    disk(w=12,h=12)
+    y+=20
+    disk(w=12,h=12)
+    add
+    y+=15 add
+    x+=20 add
+    x-=40 add
+    x+=20 add
+    line clear
+    y+=8 add
+    x+=15 add
+    x-=30 add
+    x+=15 add
+    line clear
+    y+=7 add
+    x+=8 add
+    x-=16 add
+    x+=8 add
+    line
+    end
+
+    feeder_earth_on
+    begin
+        lw=4
+    x=0 
+    y=-ocb_height/2 add
+    y+=15 add
+    line
+    disk(w=12,h=12)
+    y+=20
+    disk(w=12,h=12)
+    add
+    y+=15 add
+    x+=20 add
+    x-=40 add
+    x+=20 add
+    line clear
+    y+=8 add
+    x+=15 add
+    x-=30 add
+    x+=15 add
+    line clear
+    y+=7 add
+    x+=8 add
+    x-=16 add
+    x+=8 add
+    line
+
+    end
+
+    busbar_earth_off
+    begin
+    lw=4
+    x=0 
+    y=ocb_height/2 add
+    y-=15 add
+    line
+    clear
+    disk(w=12,h=12)
+    y-=20
+    disk(w=12,h=12)
+    add
+    y-=15 add
+    x+=20 add
+    x-=40 add
+    x+=20 add
+    line clear
+    y-=8 add
+    x+=15 add
+    x-=30 add
+    x+=15 add
+    line clear
+    y-=7 add
+    x+=8 add
+    x-=16 add
+    x+=8 add
+    line
+
+    end
+
+    busbar_earth_on
+    begin
+    lw=4
+    x=0 
+    y=ocb_height/2 add
+    y-=15 add
+    line
+    disk(w=12,h=12)
+    y-=20
+    disk(w=12,h=12)
+    add
+    y-=15 add
+    x+=20 add
+    x-=40 add
+    x+=20 add
+    line clear
+    y-=8 add
+    x+=15 add
+    x-=30 add
+    x+=15 add
+    line clear
+    y-=7 add
+    x+=8 add
+    x-=16 add
+    x+=8 add
+    line
+
+    end
+
+    default 
+    begin
+    end
+
+clear
+end  
+
+
+!
+************************************************************
+* OIL SWITCH DISPLAY ONLY OBJECT                           *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object oil_switch_display(display_state = switch_state_type)
+begin
+
+! DRAW OIL SWITCH !
+
+just = centrecentre
+rect (w=40,h=80,fg=decoroff)
+clear
+x -= 20 y += 40 add
+y -= 80 add
+x += 40 add 
+line (fg=decorlight) clear 
+add
+y += 80 add
+x -= 40 add line (fg=decorshadow) clear
+
+lw = 4
+
+case display_state of
+   
+     switch_closed
+       begin
+       fg=green4
+       x = 0 y = -40 add
+       y += 80 add 
+       line  
+       clear
+       y -= 55 add disk(h=14,w=14)
+       y += 30 add line
+       disk(h=14,w=14)  
+       clear
+       end
+
+    switch_open
+       begin
+       fg=green4
+       x = 0 y = -40 add
+       y += 25 add line  clear
+       y += 30 add    
+       y += 25 add line  clear       
+       y -= 55 add disk(h=10,w=10,fg=white)
+       circle(h=10,w=10)
+       y += 30 add disk(h=10,w=10,fg=white)  
+       circle(h=10,w=10) clear
+       y = 0 x = -10 add
+       x = 11 add line(lw=6) 
+       clear
+       end
+     
+    switch_feeder_earth_on
+begin
+      fg=white
+      x= 0 y = 0
+      
+      y -= 40 add
+      y += 8 add line clear
+      disk (w=8,h=8)
+      lw=4
+      y += 1 add
+      y += 20 add line clear
+      disk (w=8,h=8)
+      lw=2
+      y += 1 add
+      y += 8 add line 
+      x -= 11 add
+      x += 22 add line clear
+      x -= 4 y += 5 add
+      x -= 14 add line clear
+      x += 4 y += 5 add
+      x += 6 add line clear
+      lw=4
+      x=0
+      y += 24 add
+      x -= 6 add line clear
+      x += 12 add
+      x -= 6 add
+      y += 8 add line clear
+
+      end
+    
+    default 
+    begin 
+    end
+  
+end
+
+
+!
+************************************************************
+* FUSE SWITCH DISPLAY ONLY OBJECT                          *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object fuse_switch_display(fuse_state=switch_state_type)
+begin
+
+! DRAW FUSE SWITCH !
+
+just = centrecentre
+rect (w=40,h=80,fg=decoroff)
+clear
+x -= 20 y += 40 add
+y -= 80 add
+x += 40 add 
+line (fg=decorlight) clear 
+add
+y += 80 add
+x -= 40 add line (fg=decorshadow) clear
+
+lw = 4
+fg=green4
+case fuse_state of
+ switch_closed
+   begin
+   lw = 4
+   x = 0 y = -40 add
+   y += 10 add
+   x -= 7 add
+   x += 14 add line clear
+   x = 0 y = -21 add circle(h=18,w=18)
+   y = 20 add circle(h=18,w=18) clear
+   y += 9 x -= 7 add
+   x += 14 add 
+   x -= 7 add
+   y += 10 add
+   line clear
+   x = 9 y = -20 add
+   x = -9 y = 20 add 
+   line clear
+   x = 9 add
+   x = -9 y = -20 add line clear
+   end
+
+  switch_open
+   begin
+   lw =4
+   x = 0 y = -40 add
+   y += 10 add
+   x -= 7 add
+   x += 14 add line clear
+   lw=1
+   x = -10 y = 0 add   circle(w=16,h=16)
+   x = 10 add circle (w=16,h=16) clear
+   y = -7 add
+   x = -10 y = 7 add line clear
+   y = -7 add
+   x = 10 y = 7 add line clear
+   y += 23 x -= 17 add
+   x += 14 add 
+   x -= 7 add
+   y += 10 add
+   line (lw=4) clear
+
+end
+
+
+  switch_feeder_earth_on
+begin
+      fg=white
+      x= 0 y = 0
+      
+      y -= 40 add
+      y += 8 add line clear
+      disk (w=8,h=8)
+      lw=4
+      y += 1 add
+      y += 20 add line clear
+      disk (w=8,h=8)
+      lw=2
+      y += 1 add
+      y += 8 add line 
+      x -= 11 add
+      x += 22 add line clear
+      x -= 4 y += 5 add
+      x -= 14 add line clear
+      x += 4 y += 5 add
+      x += 6 add line clear
+      lw=4
+      x=0
+      y += 24 add
+      x -= 6 add line clear
+      x += 12 add
+      x -= 6 add
+      y += 8 add line clear
+
+      end
+
+default
+begin
+end
+
+end
+
+
+!
+************************************************************
+* LV CHANGEOVER CONTACTOR DISPLAY ONLY OBJECT              *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object lv_changeover_display(lv_state=lv_state_type)
+begin
+
+just = centrecentre
+rect (h=100,w=120,fg=decoroff)
+y += 50 x -= 60 add
+y -= 100 add
+x +=119 add line(fg=decorlight) clear
+x += 1 add
+y += 100 add
+x -= 120 add
+line (fg=black) clear
+x=0 y=0 
+x -= 10 y -= 35 add
+x -= 40 add
+y += 69 add line (fg=decorshadow) clear
+y += 1 add
+x += 40 add
+y -= 70 add line (fg=decorlight) clear
+x = 60 y=0
+x -= 10 y -= 35 add
+x -= 40 add
+y += 69 add line (fg=decorshadow) clear
+y += 1 add
+x += 40 add
+y -= 70 add line (fg=decorlight) clear
+
+case lv_state of
+
+lv_mains_on
+begin
+fg = green4
+! DRAW SOLID DISKS AND LINE ON LEFT OF SYMBOL !
+   x = -30  y = -50 add
+   y += 50 add line(lw=2) clear
+   y -= 20 add disk(w=14,h=14)
+   y += 40 add disk(w=14,h=14) clear
+   y -= 40 add
+   y += 40 add line(lw=4) clear
+   y += 1 add 
+   y += 29 add line (lw=2) clear
+! DRAW WHITE DISKS AND SMALL HORIZONTAL LINE ON RIGHT OF SYMBOL !
+   x = 30 y = -50 add
+   y += 30 add line(lw=2) clear
+           add disk(w=14,h=14,fg=white)
+           add circle(w=14,h=14)
+   y += 40 add disk(w=14,h=14,fg=white) 
+           add circle(w=14,h=14) clear
+   y += 7 add 
+   y += 23 add line (lw=2) clear
+   y -= 50 x -= 10 add 
+   x += 20 add line(lw=4) clear
+end
+
+lv_standby_on
+begin
+fg = red
+! DRAW SOLID DISKS AND LINE ON RIGHT OF SYMBOL !
+   x = 30  y = -50 add
+   y += 50 add line(lw=2) clear
+   y -= 20 add disk(w=14,h=14)
+   y += 40 add disk(w=14,h=14) clear
+   y -= 40 add
+   y += 40 add line(lw=4) clear
+   y += 1 add 
+   y += 29 add line (lw=2) clear
+! DRAW WHITE DISKS AND SMALL HORIZONTAL LINE ON LEFT OF SYMBOL !
+   x = -30 y = -50 add
+   y += 30 add line(lw=2) clear
+           add disk(w=14,h=14,fg=white)
+           add circle(w=14,h=14)
+   y += 40 add disk(w=14,h=14,fg=white) 
+           add circle(w=14,h=14) clear
+   y += 7 add 
+   y += 23 add line (lw=2) clear
+   y -= 50 x -= 10 add 
+   x += 20 add line(lw=4) clear
+   end
+
+  lv_off
+    begin
+    fg = red
+    ! DRAW WHITE DISKS AND SMALL HORIZONTAL LINE ON LEFT OF SYMBOL !
+    x = -30 y = -50 add
+    y += 30 add line(lw=2) clear
+            add disk(w=14,h=14,fg=white)
+            add circle(w=14,h=14)
+    y += 40 add disk(w=14,h=14,fg=white) 
+            add circle(w=14,h=14) clear
+    y += 7 add 
+    y += 23 add line (lw=2) clear
+    y -= 50 x -= 10 add 
+    x += 20 add line(lw=4) clear
+    ! DRAW WHITE DISKS AND SMALL HORIZONTAL LINE ON RIGHT OF SYMBOL !
+    x = 30 y = -50 add
+    y += 30 add line(lw=2) clear
+            add disk(w=14,h=14,fg=white)
+            add circle(w=14,h=14)
+    y += 40 add disk(w=14,h=14,fg=white) 
+            add circle(w=14,h=14) clear
+    y += 7 add 
+    y += 23 add line (lw=2) clear
+    y -= 50 x -= 10 add 
+    x += 20 add line(lw=4) clear
+    end 
+
+
+  default
+    begin
+    end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var tmp = onoff
+begin
+goto_menu
+x = 400
+y = 350
+command_button(269,heathrow)
+clear
+scale = 180
+ch = 11
+tfg = decoroff
+
+
+x = -300 y = -300 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 add text (scale = 280,"State 1")
+x += 20 y -= 5
+y -= 45
+ocb_display(closed)
+
+x = -250 y = -300 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 add text (scale = 280,"State 2")
+x += 20 y -= 5
+y -= 45
+ocb_display(tripped)
+
+x = -200 y = -300 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 add text (scale = 280,"State 3")
+x += 20 y -= 5
+y -= 45
+ocb_display(racked_down)
+
+x = -150 y = -300 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 add text (scale = 280,"State 4")
+x += 20 y -= 5
+y -= 45
+ocb_display(feeder_earth_off)
+
+x = -100 y = -300 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 add text (scale = 280,"State 5")
+x += 20 y -= 5
+y -= 45
+ocb_display(feeder_earth_on)
+
+x = -50 y = -300 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 add text (scale = 280,"State 6")
+x += 20 y -= 5
+y -= 45
+ocb_display(busbar_earth_off)
+
+x = 0 y = -300 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 add text (scale = 280,"State 7")
+x += 20 y -= 5
+y -= 45
+ocb_display(busbar_earth_on)
+
+y = -230 x = -320 add
+x = 20 add line(lw=4,fg=red) clear
+ch = 20 
+x = -300 y = -380 add text (scale = 280,"High Voltage Oil/Vacuum Circuit Breaker")
+ch = 14 
+y = -345 x = 50 
+text (scale = 280,"State 1 :-  "+closed)
+y += 17 text (scale = 280,"State 2 :-  "+tripped)
+y += 17 text (scale = 280,"State 3 :-  "+racked_down)
+y += 17 text (scale = 280,"State 4 :-  "+feeder_earth_off)
+y += 17 text (scale = 280,"State 5 :-  "+feeder_earth_on)
+y += 17 text (scale = 280,"State 6 :-  "+busbar_earth_off)
+y += 17 text (scale = 280,"State 7 :-  "+busbar_earth_on)
+clear
+
+
+!oil switch!
+ch = 11
+scale = 280
+
+x = -300 y = - 100 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 text ("State 1") clear x +=20 y -= 5 clear 
+y -= 70 clear
+
+oil_switch_display(switch_closed) clear
+x = -250 y = - 100 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 text ("State 2") clear x +=20 y -= 5 clear 
+y -= 70 clear
+oil_switch_display(switch_open) clear
+x = -200 y = - 100 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 text ("State 3") clear x +=20 y -= 5 clear
+y -= 70 clear
+oil_switch_display(switch_feeder_earth_on) clear
+y = -30 x = - 320 add
+x += 140 add line(lw=4,fg=red) clear
+ch = 20 
+x = -300 y = -180 add text ("High Voltage Oil Switch")
+ch = 14 
+y = -145 x = -150 
+text ("State 1 :-  "+switch_closed)
+y += 17 text ("State 2 :-  "+switch_open)
+y += 17 text ("State 3 :-  "+switch_feeder_earth_on)
+clear
+
+
+ch = 11
+x = -300 y = 100 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 text ("State 1") clear x +=20 y -= 5 clear 
+y -= 70 clear
+fuse_switch_display(switch_closed) clear
+x = -250 y = 100 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 text ("State 2") clear x +=20 y -= 5 clear 
+y -= 70 clear
+fuse_switch_display(switch_open) clear
+x = -200 y = 100 add
+y += 70 add line(lw=2,fg=red) clear
+x -= 20 y += 5 text ("State 3") clear x +=20 y -= 5 clear
+y -= 70 clear
+fuse_switch_display(switch_feeder_earth_on) clear
+y = 170 x = - 320 add
+x += 140 add line(lw=4,fg=red) clear
+ch = 20 
+x = -300 y = 20 add text ("High Voltage Fuse Switch")
+ch = 14 
+y = 55 x = -150 
+text ("State 1 :-  "+switch_closed)
+y += 17 text ("State 2 :-  "+switch_open)
+y += 17 text ("State 3 :-  "+switch_feeder_earth_on)
+clear
+
+
+x = -260 y = 300 add
+x -= 33 add
+y += 70 add line(lw=2,fg=green4) clear 
+x += 32 y -= 70
+x += 33 add
+y += 70 add line(lw=2,fg=green4) clear 
+x -= 55 y += 5 add text("State 1") x += 55 y -= 5 
+x -= 32 y -= 70 clear
+lv_changeover_display(lv_mains_on)
+x = -110 y = 300 add
+x -= 33 add
+y += 70 add line(lw=2,fg=green4) clear 
+x += 32 y -= 70
+x += 33 add
+y += 70 add line(lw=2,fg=green4) clear 
+x -= 55 y += 5 add text("State 2") x += 55 y -= 5 
+x -= 32 y -= 70 clear
+lv_changeover_display(lv_standby_on)
+x = 40 y = 300 add
+x -= 33 add
+y += 70 add line(lw=2,fg=green4) clear 
+x += 32 y -= 70
+x += 33 add
+y += 70 add line(lw=2,fg=green4) clear 
+x -= 55 y += 5 add text("State 3") x += 55 y -= 5 
+x -= 32 y -= 70 clear
+lv_changeover_display(lv_off)
+x = -320 y = 370 add
+x = 100 add line(lw=4,fg=green4) clear
+ch = 20 
+x = -300 y = 210 add text ("Low Voltage Changeover Contactor")
+ch = 14 
+y = 245 x = 130 
+text ("State 1 :-  "+lv_mains_on)
+y += 17 text ("State 2 :-  "+lv_standby_on)
+y += 17 text ("State 3 :-  "+lv_off)
+clear
+
+
+!
+W=620 H=175 X=-340 Y=-390  BOX
+W=620 H=175 X=-340 Y=-185  BOX
+W=620 H=175 X=-340 Y=15  BOX
+W=620 H=170 X=-340 Y=210  BOX
+!
+
+
+!
+************************************************************
+* LV GENERATOR DISPLAY ONLY OBJECT                         *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+
+just = centrecentre
+clear
+x = 150 y = 90
+rect(h=66,w=57,fg=decoroff)
+x -= 30 y += 35 add
+y -= 70 add
+x += 60 add line(fg=decorlight) clear
+!x += 30 add!
+y += 70 add
+x -= 60 add line(fg=decorshadow) clear
+fg = white
+x += 36 y -= 25
+arc(sa=0,aa=180,W=10,H=15,lw=2)
+x -= 11
+arc(sa=180,aa=180,W=10,H=15,lw=2)
+x +=5 y -=1
+circle(lw=2,h=35,w=35)
+tfg = black
+ch = 20
+y -= 30 add text ("R C")
+
+
+!
+************************************************************
+* LV GENERATOR DISPLAY ONLY OBJECT                         *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+just = centrecentre
+clear
+x = 250 y = 90
+rect(h=66,w=57,fg=decoroff)
+x -= 30 y += 35 add
+y -= 70 add
+x += 60 add line(fg=decorlight) clear
+!x += 30 add!
+y += 70 add
+x -= 60 add line(fg=decorshadow) clear
+fg = green4
+x += 36 y -= 25
+arc(sa=0,aa=180,W=10,H=15,lw=2)
+x -= 11
+arc(sa=180,aa=180,W=10,H=15,lw=2)
+x +=5 y -=1
+circle(lw=2,h=35,w=35)
+tfg = black
+ch = 20
+y -= 30 add text ("R C")
+clear
+
+
+Clear
+
+LINE
+
+lw=3 
+fg = red
+
+Clear
+X=149 Y=126  Add 
+X=149 Y=166  Add 
+X=251 Y=166  Add 
+X=251 Y=126  Add 
+LINE
+
+Clear
+X=117 Y=166  Add 
+X=284 Y=167  Add 
+LINE
+clear
+
+
+tfg = decoroff
+
+ch = 20 
+x = 270 y = 30 add text ("Low Voltage Generator")
+
+
+scale = 280
+ch = 11
+x = 150 y = 180 text ("State 1") 
+x = 250 text ("State 2") 
+clear
+
+y = 60 x = 370 
+text ("State 1 :-  Stopped")
+y += 17 text ("State 2 :-  Running")
+clear
+
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

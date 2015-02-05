@@ -1,0 +1,72 @@
+load mimic_libutil
+load lv_contactor
+load lv_generator
+load transformer
+load ocb_barcis
+load ocb_monitored
+
+
+!*********** BUSBAR 4 *************!
+
+object busbar_4
+
+begin
+
+tfg = black x = -145 y = -0 add text ("Substation 4",ch = 25) clear
+
+lw = 2
+
+scale = 260
+X=55 Y=50  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=84 Y=50  ADD
+Y=135  ADD
+line (fg=red) clear
+
+X=50 Y=135  ADD
+x=90  ADD
+line (fg=red,lw=4) clear
+
+x = -75 y = -25 add x = 75 add line(lw=4,fg=red) clear
+
+x = -50  y = -25 add y -= 50 add line (fg=red) clear
+x = 0    y = -25 add y -= 50 add line (fg=red) clear
+x = 50   y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x =   -50 y = -50 ocb_mont(500,600,13,25,heathro2,1,"top")
+x =     0 y = -50 ocb_mont(500,610,14,26,heathro2,2,"top")
+x =    50  y = 0   ocb_mont(500,620,15,27,heathro2,3,"btm")
+
+
+scale = 140
+x = 90 y = 45 lv_generator(500,730,17,0,heathro2)
+
+scale = 100
+X =  50 Y = 45 transformer("LT 1","LOCAL") 
+
+scale = 120
+x = 70 y = 100 lv_changeover(500,720,16,heathro2)
+
+scale = 256
+just=centrecentre
+tfg=black
+ch=12
+x = -50 y = -100 text("M1/14")
+x = -50 y = -85 text("P6")
+x = 0 y = -85 text("SS5 P2")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = -25 busbar_4
+
+end
+
+mimic = main_object w=300,h=350,just=centrecentre,fg=white,bg=aquamarine3,resizable

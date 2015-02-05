@@ -1,0 +1,822 @@
+
+load fp_generic_server_request
+!
+*************************************************
+* MONITORED OCB CIRCUIT BREAKER OBJECT                     *
+* this object is called by the hv library hv_lib 		*
+*************************************************
+!
+
+
+object fp_ocb_mont(plc_offset=int,b_offset=int,c_offset=int,e_offset=int,
+                src=source,ident = int,top_btm_sect=string(4),angle,fg)
+
+!PLC INPUTS
+plc_inputs[1] = plc_a_comms_fail_ip
+plc_inputs[2] = plc_b_comms_fail_ip
+!
+var plc_inputs = input b_bool_type[2]
+ 
+!B INPUTS
+b_inputs[1] = ocb_permit_to_work_ip
+b_inputs[2] = ocb_earth_switch_ip or left_hand_bus_sect_earth
+b_inputs[3] = ocb_closed_ip
+b_inputs[4] = ocb_open_ip
+b_inputs[5] = ocb_low_gas_ip
+b_inputs[6] = ocb_trip_overcurrent_/prot_operated_ip
+b_inputs[7] = ocb_tripped_earth_fault_ip
+b_inputs[8] = ocb_watchdog_ip
+b_inputs[9] = right_hand_bus_sect_earth
+b_inputs[10] = reserved!
+
+var b_inputs = input b_bool_type[10]
+
+!ALARM INPUTS
+alarm_inputs[1] = ocb_earth_switch_al
+alarm_inputs[2] = ocb_closed_al
+alarm_inputs[3] = ocb_open_al
+alarm_inputs[4] = ocb_low_gas_al
+alarm_inputs[5] = ocb_low_gas_al
+alarm_inputs[6] = ocb_over_prot_op_al
+alarm_inputs[7] = ocb_tripped_earth_fault
+!
+var alarm_inputs = input alarm_row_type[8]
+var manually_dress_ip = input  e_db_row_type
+var tag_message_ip = input  c_db_row_type
+
+!LOOPBACKS!
+var ocb_bg = loopback  colour
+var ocb_fg = loopback  colour
+
+!PANELS AND MENUS!
+var main_menu = menu  string(30)
+var tag_message_panel = panel  panel_item_row
+
+begin
+	! INITIALISATION !
+
+	if invalid fg then fg=green4
+
+	if invalid get source plc_inputs then 
+	begin
+		set source plc_inputs = src
+		set filter plc_inputs.db_addr = lim_ge
+		set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+		set priority plc_inputs.db_addr = 15
+		set persist plc_inputs
+		set mayexist plc_inputs
+		request plc_inputs
+
+		set source alarm_inputs = src
+		set filter alarm_inputs.db_addr = lim_ge
+		set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset)
+		set priority alarm_inputs.db_addr = 15
+		set persist alarm_inputs
+		set mayexist alarm_inputs
+		request alarm_inputs
+
+		set source b_inputs = src
+		set filter b_inputs.db_addr = lim_ge
+		set limit b_inputs.db_addr = db_address(int(b1) + b_offset - 1)
+		set priority b_inputs.db_addr = 15
+		set persist b_inputs
+		set mayexist b_inputs
+		request b_inputs
+
+		set source tag_message_ip = src
+		set filter tag_message_ip.db_addr = lim_eq
+		set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+		set persist tag_message_ip
+		request tag_message_ip
+
+		set source manually_dress_ip = src
+		set filter manually_dress_ip.db_addr = lim_eq
+		set limit manually_dress_ip.db_addr = db_address(int(e1) + e_offset - 1)
+		set persist manually_dress_ip 
+		request manually_dress_ip
+	end
+
+
+	!SELECT OCB BG COLOUR!
+
+	just=centrecentre
+	if top_btm_sect=="sect" then
+	begin
+		if manually_dress_ip.e_value > 0 and tag_message_ip.c_value <> "" then
+		begin
+			if b_inputs[1].b_value==on then
+			begin
+				rect(w = 94, h = 76,x=0, y=0,fg=yellow )
+				rect(w = 86, h = 72,x=0, y=0,fg=blue )
+			end
+			else
+			begin
+				rect(w = 92, h = 74,x=0, y=0,fg=yellow )
+			end
+		end
+		else if b_inputs[1].b_value==on and tag_message_ip.c_value <> "" then
+			rect(w = 92, h = 74,x=0, y=0,fg=yellow )
+  		else if manually_dress_ip.e_value > 0 and b_inputs[1].b_value==on then
+        			rect(w = 70, h = 88,x=0, y=0,fg=blue) 
+	end
+	else
+	begin
+		if manually_dress_ip.e_value > 0 and tag_message_ip.c_value <> "" then
+		begin
+			rect(w = 74, h = 92,x=0, y=0,fg=yellow )
+
+			if b_inputs[1].b_value==on then
+				rect(w = 70, h = 88,x=0, y=0,fg=blue )
+		end
+		else if b_inputs[1].b_value==on and tag_message_ip.c_value <> "" then
+			rect(w = 74, h = 92,x=0, y=0,fg=yellow )
+		else if manually_dress_ip.e_value > 0 and b_inputs[1].b_value==on then
+    			rect(w = 70, h = 88,x=0, y=0,fg=blue) 
+	end
+
+
+	if b_inputs[1].b_value==on then
+		ocb_bg = orange
+	else if int(manually_dress_ip.e_value) >= 1 and 
+	int(manually_dress_ip.e_value) <= 7 then
+	begin
+		case int(manually_dress_ip.e_value) of
+		1 
+			if b_inputs[3].b_value==on and b_inputs[4].b_value == off then
+				ocb_bg = flashblue
+			else
+				ocb_bg = blue
+		2
+      			if b_inputs[3].b_value == off and b_inputs[4].b_value==on then
+				ocb_bg = flashblue
+			else
+				ocb_bg = blue
+		3
+			if b_inputs[3].b_value == off and b_inputs[4].b_value == off then
+				ocb_bg = flashblue
+			else
+				ocb_bg = blue
+		4
+			if top_btm_sect == "rmu" then
+			begin
+				if b_inputs[2].b_value == on and b_inputs[4].b_value == on then
+					ocb_bg = flashblue
+				else
+					ocb_bg = blue
+			end
+			else
+			ocb_bg = blue
+		5
+			if top_btm_sect == "rmu" then
+			begin
+				if b_inputs[2].b_value == on then
+					ocb_bg = flashblue
+				else
+					ocb_bg = blue
+			end
+			else
+			ocb_bg = blue
+		6 
+			ocb_bg = blue
+
+		7
+			ocb_bg = blue
+		default
+		  begin
+		  end
+	end
+	else if tag_message_ip.c_value <> "" then
+		ocb_bg = yellow
+	else
+		ocb_bg = decoroff
+
+
+
+	!SET OCB FG COLOUR!
+
+	if plc_inputs[1].b_value==on and plc_inputs[2].b_value==on then
+		ocb_fg = magenta
+	else if fg == magenta2 then
+		ocb_fg = magenta
+	else if alarm_inputs[1].alarm_status == w_note or
+	alarm_inputs[2].alarm_status == w_note or
+	alarm_inputs[3].alarm_status == w_note or
+	alarm_inputs[4].alarm_status == w_note or
+	alarm_inputs[5].alarm_status == w_note or
+	alarm_inputs[6].alarm_status == w_note or
+	alarm_inputs[7].alarm_status == w_note or
+	alarm_inputs[8].alarm_status == w_note then
+		ocb_fg = flashred
+	else if alarm_inputs[1].alarm_status == w_clr or
+	alarm_inputs[2].alarm_status == w_clr or
+	alarm_inputs[3].alarm_status == w_clr or
+	alarm_inputs[4].alarm_status == w_clr or
+	alarm_inputs[5].alarm_status == w_clr or
+	alarm_inputs[6].alarm_status == w_clr or
+	alarm_inputs[7].alarm_status == w_clr or 
+	alarm_inputs[8].alarm_status == w_clr or 
+	b_inputs[4].b_value==on then         
+		ocb_fg = red
+	else if int(manually_dress_ip.e_value) >= 1 and 
+	int(manually_dress_ip.e_value) <= 7 then
+		ocb_fg = white
+	else
+		ocb_fg = green4
+
+
+
+	!MAIN MENU CONTROL!
+
+	if valid main_menu then
+	   begin
+ 
+	   case main_menu of
+	      "Alter Tag Message"
+	         begin
+		set title tag_message_panel = "Modify Alter Tag Message"
+		set label tag_message_panel.str = "Alter Tag Message :"
+		set unpinned tag_message_panel
+		request tag_message_panel
+	         end
+
+	      "Clear Tag Message"
+	         begin
+		set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+	         end
+
+	      "Alter Permit To Work"
+	         begin
+		if b_inputs[1].b_value==on then
+		begin
+			set_b_value(db_address(int(b1) + b_offset -1), src, off)
+		end
+		else
+			set_b_value(db_address(int(b1) + b_offset -1), src, on)
+	         end
+
+	      "Undress OCB"
+		set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+	      "Dress to On"
+		set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+	      "Dress to Off"
+		set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+	      "Dress to Racked Down"
+		set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+	      "Dress to Feeder Earth Off"
+		set_e_value(db_address(int(e1) + e_offset - 1),src, 4)
+	      "Dress to Feeder Earth On"
+		set_e_value(db_address(int(e1) + e_offset - 1),src, 5)
+	      "Dress to Left Section Earth" 
+		set_e_value(db_address(int(e1) + e_offset - 1),src, 6)
+	      "Dress to Right Section Earth"
+		set_e_value(db_address(int(e1) + e_offset - 1),src, 7)
+	      default
+		begin
+		end
+
+	   set invalid main_menu
+	   end
+
+
+	! TAG MESSAGE PANEL !
+
+	if valid tag_message_panel then
+	begin
+		set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	end
+
+
+	!MAIN MENU!
+
+	just = centrecentre
+	w = 70 h = 80
+	x=0 y=0
+	set rect main_menu 
+	if top_btm_sect == "sect" then
+		set title main_menu = "Bus Section Breaker"
+	else
+		set title main_menu = "Monitored OCB  "+ident
+
+	set remove main_menu = "Alter Tag Message"
+	set remove main_menu = "Clear Tag Message"
+	set remove main_menu = "Alter Permit To Work"
+	set remove main_menu = "Dress to On"
+	set remove main_menu = "Dress to Off"
+	set remove main_menu = "Dress to Racked Down"
+	set remove main_menu = "Dress to Feeder Earth Off"
+	set remove main_menu = "Dress to Feeder Earth On"
+	set remove main_menu = "Dress to Left Section Earth"
+	set remove main_menu = "Dress to Right Section Earth"
+	set remove main_menu = "Undress OCB"
+	set add main_menu = "Alter Tag Message"
+	set add main_menu = "Clear Tag Message"
+	set add main_menu = "Alter Permit To Work"
+
+	! **** tag message box **** !
+
+	if selb and tag_message_ip.c_value <> "" then
+	begin
+		message_text_box(tag_message_ip.c_value)
+	end
+
+	! **** draw main symbol **** !
+
+	x = 0 y = 0
+	just = centrecentre
+	rotrect (w=66,h=80,fg=ocb_bg) clear
+	x -= 33 y += 40 add
+	y -= 80 add
+	x += 66 add line (fg=decorlight) clear 
+	y += 1 add
+	y += 79 add
+	x -= 66 add line (fg=decorshadow) clear
+	x += 33 y -= 40 clear
+	fg = ocb_fg
+	ch = 18
+
+
+	if top_btm_sect == "top" then
+	begin
+		x = 40 y = 0 add text(ch=28,tfg=black,just=centreleft,ident)
+	end
+	else if top_btm_sect == "btm" then
+	begin
+		x = 40 y = 0 add text(ch=28,tfg=black,just=centreleft,ident)
+	end
+	else if top_btm_sect == "rmu" then
+	begin
+		x = 40 y = 0 add text(ch=28,tfg=black,just=centreleft,ident)
+	end
+	else
+	begin
+		x = 50 y = 0 add text (ch=28,tfg=black,just=centrecentre, ident)
+	end
+
+	x = 0 y = 0 clear
+	tfg = black
+
+
+	if int(manually_dress_ip.e_value) >= 1 then
+	case int(manually_dress_ip.e_value) of
+	1  !**** closed **** !
+	begin
+		lw=6
+		y = 75
+		y -= 50 x -= 25 add
+		y -= 50 x += 50 add line clear
+		y += 50 add
+		x -= 50 y -= 50 add line clear
+		x += 25 y += 25 add clear
+		x = 0 y = 40 add
+		x = 0 y = -40 add line clear
+		set add main_menu = "Dress to Off"
+		set add main_menu = "Undress OCB"
+	end
+
+	2 !**** open **** !
+	begin
+		lw=6
+		y = -20
+		y += 40 x -= 20 add
+		y -= 40 x += 40 add line clear
+		y += 40 add
+		x -= 40 y -= 40 add line clear
+		x += 20 y += 20 add
+		x = 0 y = 0 circle(h=56 ,w=56) clear
+		x = 0 y = 27 add
+		x = 0 y = 40 add line clear
+		x = 0 y = -27 add
+		x = 0 y = -40 add line clear
+
+		set add main_menu = "Dress to On"
+
+		if top_btm_sect == "rmu" then
+		begin
+			set add main_menu = "Dress to Feeder Earth Off"
+		end
+		else set add main_menu = "Dress to Racked Down"
+
+		set add main_menu = "Undress OCB"
+	end
+
+	3 !**** racked out **** !
+	begin
+		lw=6
+		y = -40 add
+		y += 20 add
+		x -= 7 add
+		x += 14 add line clear
+		y += 60 x -= 7 add
+		y -= 20 add
+		x -= 7 add
+		x += 14 add line clear
+		set add main_menu = "Dress to Off"
+
+		if top_btm_sect == "sect" then
+		begin
+			set add main_menu = "Dress to Left Section Earth"
+			set add main_menu = "Dress to Right Section Earth"
+		end
+		else set add main_menu = "Dress to Feeder Earth Off"
+
+		set add main_menu = "Undress OCB"
+	end
+
+	4  !**** feeder earth off **** !
+	begin
+		if top_btm_sect == "top" then
+		begin
+			lw=2
+			y -= 40 add
+			y += 5 add line clear
+			y += 4 add
+			circle (w=10,h=10) clear
+			y += 20 
+			circle (w=10,h=10)
+			lw=2
+			y += 3 add
+			y += 6 add line 
+			x -= 15 add
+			x += 30 add line clear
+			x -= 5 y += 10 add
+			x -= 20 add line clear
+			x += 6 y += 9 add
+			x += 8 add line clear
+		end
+		else if top_btm_sect == "btm" then
+		begin
+			lw=2     
+			y += 40 add
+			y -= 5 add line clear
+			y -= 3 add
+			circle (w=10,h=10) clear
+			y -= 20 
+			circle (w=10,h=10)
+			lw=2
+			y -= 3 add
+			y -= 7 add line 
+			x += 15 add
+			x -= 30 add line clear
+			x += 5 y -= 10 add
+			x += 20 add line clear
+			x -= 6 y -= 9 add
+			x -= 8 add line clear
+		end
+		else if top_btm_sect == "rmu" then
+		begin
+			lw=2     
+			y += 40 add
+			y -= 5 add line clear
+			y -= 3 add
+			circle (w=10,h=10) clear
+			y -= 20 
+			circle (w=10,h=10)
+			lw=2
+			y -= 3 add
+			y -= 7 add line 
+			x += 15 add
+			x -= 30 add line clear
+			x += 5 y -= 10 add
+			x += 20 add line clear
+			x -= 6 y -= 9 add
+			x -= 8 add line clear
+		end
+
+		set add main_menu = "Dress to Feeder Earth On"
+		if top_btm_sect == "rmu" then
+		begin
+			set add main_menu = "Dress to Off"
+		end
+		else set add main_menu = "Dress to Racked Down"
+
+		set add main_menu = "Undress OCB"
+	end           
+       
+	5 !*** feeder earth on ***!
+	begin
+		if top_btm_sect == "top" then
+		begin
+			lw=2
+			y -= 40 add
+			y += 8 add line clear
+			disk (w=10,h=10)
+			lw=6
+			x += 2
+			y += 1 add
+			y += 20 add line clear
+			x -= 2
+			disk (w=10,h=10)
+			lw=2
+			y += 3 add
+			y += 6 add line 
+			x -= 15 add
+			x += 30 add line clear
+			x -= 5 y += 10 add
+			x -= 20 add line clear
+			x += 6 y += 9 add
+			x += 8 add line clear
+		end
+		else if top_btm_sect == "btm" then
+		begin
+			lw=2
+			y += 40 add
+			y -= 8 add line clear
+			disk (w=10,h=10)
+			lw=6
+			x += 2
+			y -= 1 add
+			y -= 20 add line clear
+			disk (w=10,h=10)
+			x -= 2
+			lw=2
+			y -= 3 add
+			y -= 6 add line 
+			x += 15 add
+			x -= 30 add line clear
+			x += 5 y -= 10 add
+			x += 20 add line clear
+			x -= 6 y -= 9 add
+			x -= 8 add line clear
+		end
+		else if top_btm_sect == "rmu" then
+		begin
+			lw=2
+			y += 40 add
+			y -= 8 add line clear
+			disk (w=10,h=10)
+			lw=6
+			x += 2
+			y -= 1 add
+			y -= 20 add line clear
+			disk (w=10,h=10)
+			x -= 2
+			lw=2
+			y -= 3 add
+			y -= 6 add line 
+			x += 15 add
+			x -= 30 add line clear
+			x += 5 y -= 10 add
+			x += 20 add line clear
+			x -= 6 y -= 9 add
+			x -= 8 add line clear
+		end
+
+		set add main_menu = "Dress to Feeder Earth Off"
+		set add main_menu = "Undress OCB"
+	end
+
+	6 !**** Left Hand Section Earth**** !
+	begin
+		if top_btm_sect == "sect" then
+		begin
+			just=centrecentre
+			fg = ocb_fg
+			lw=4
+			x = 0
+			y += 40 add
+			y -= 8 add line clear 
+			disk(w=10,h=10) 
+			lw=6
+			y -= 1 add
+			y -= 20 add line clear
+			disk(w=10,h=10)
+			lw=4
+			y -= 3 add
+			y -= 6 add line
+			x += 15 add
+			x -= 30 add line clear
+			x += 5 y -= 10 add
+			x += 20 add line clear
+			x -= 6 y -= 9 add
+			x -= 8 add line clear
+         
+			set add main_menu = "Dress to Racked Down"
+			set add main_menu = "Dress to Right Section Earth"
+			set add main_menu = "Undress OCB"
+		end
+	end
+
+	7 !**** Right Hand Section Earth **** !
+	begin
+		if top_btm_sect == "sect" then
+		begin
+			just=centrecentre
+			fg = ocb_fg
+			lw=4 			
+			x = 0 y = -80
+			y += 40 add
+			y += 8 add line clear 
+			disk(w=10,h=10) 
+			lw=6
+			y += 1 add
+			y += 20 add line clear
+			disk(w=10,h=10)
+			lw=4			
+			y += 3 add
+			y += 6 add line
+			x += 15 add
+			x -= 30 add line clear
+			x += 5 y += 10 add
+			x += 20 add line clear
+			x -= 6 y += 9 add
+			x -= 8 add line clear
+              
+			set add main_menu = "Dress to Racked Down"
+			set add main_menu = "Dress to Left Section Earth"
+			set add main_menu = "Undress OCB"
+		end
+	end
+
+	default
+	  begin
+	  end
+
+	else if b_inputs[2].b_value==on AND top_btm_sect == "top" then
+	begin
+		lw=2
+		y -= 40 add
+		y += 8 add line clear
+		disk (w=10,h=10)
+		lw=6
+		x += 2
+		y += 1 add
+		y += 20 add line clear
+		x -= 2
+		disk (w=10,h=10)
+		lw=2
+		y += 3 add
+		y += 6 add line 
+		x -= 15 add
+		x += 30 add line clear
+		x -= 5 y += 10 add
+		x -= 20 add line clear
+		x += 6 y += 9 add
+		x += 8 add line clear
+
+		set add main_menu = "Dress to Off"
+	end
+	else if b_inputs[2].b_value==on AND top_btm_sect == "btm" then
+	begin
+		lw=2
+		y += 40 add
+		y -= 8 add line clear
+		disk (w=10,h=10)
+		lw=6
+		x += 2
+		y -= 1 add
+		y -= 20 add line clear
+		disk (w=10,h=10)
+		x -= 2
+		lw=2
+		y -= 3 add
+		y -= 6 add line 
+		x += 15 add
+		x -= 30 add line clear
+		x += 5 y -= 10 add
+		x += 20 add line clear
+		x -= 6 y -= 9 add
+		x -= 8 add line clear
+
+		set add main_menu = "Dress to Off"
+	end
+	
+	else if b_inputs[2].b_value==on AND top_btm_sect == "rmu" then
+	begin
+		lw=2
+		y += 40 add
+		y -= 8 add line clear
+		disk (w=10,h=10)
+		lw=6
+		x += 2
+		y -= 1 add
+		y -= 20 add line clear
+		disk (w=10,h=10)
+		x -= 2
+		lw=2
+		y -= 3 add
+		y -= 6 add line 
+		x += 15 add
+		x -= 30 add line clear
+		x += 5 y -= 10 add
+		x += 20 add line clear
+		x -= 6 y -= 9 add
+		x -= 8 add line clear
+
+		set add main_menu = "Dress to Off"
+	end
+
+	else if b_inputs[2].b_value==on AND top_btm_sect == "sect" then
+	begin
+		just=centrecentre
+		fg = ocb_fg
+		lw=4
+		x = 0
+		y += 40 add
+		y -= 8 add line clear 
+		disk(w=10,h=10) 
+		lw=6
+		y -= 1 add
+		y -= 20 add line clear
+		disk(w=10,h=10)
+		lw=4
+		y -= 3 add
+		y -= 6 add line
+		x += 15 add
+		x -= 30 add line clear
+		x += 5 y -= 10 add
+		x += 20 add line clear
+		x -= 6 y -= 9 add
+		x -= 8 add line clear
+
+		set add main_menu = "Dress to Off"
+	end
+	else if b_inputs[9].b_value==on AND top_btm_sect == "sect" then
+	begin
+		just=centrecentre
+		fg = ocb_fg
+		lw=4 			
+		x = 0 y = -80
+		y += 40 add
+		y += 8 add line clear 
+		disk(w=10,h=10) 
+		lw=6
+		y += 1 add
+		y += 20 add line clear
+		disk(w=10,h=10)
+		lw=4			
+		y += 3 add
+		y += 6 add line
+		x += 15 add
+		x -= 30 add line clear
+		x += 5 y += 10 add
+		x += 20 add line clear
+		x -= 6 y += 9 add
+		x -= 8 add line clear
+
+		set add main_menu = "Dress to Off"
+	end
+	else if b_inputs[4].b_value==on then
+	begin
+		lw=6
+		y = -20
+		y += 40 x -= 20 add
+		y -= 40 x += 40 add line clear
+		y += 40 add
+		x -= 40 y -= 40 add line clear
+		x += 20 y += 20 add
+		x = 0 y = 0 circle(h=56 ,w=56) clear
+		x = 0 y = 27 add
+		x = 0 y = 40 add line clear
+		x = 0 y = -27 add
+		x = 0 y = -40 add line clear
+		set add main_menu = "Dress to On"
+		if top_btm_sect <> "rmu" then
+		set add main_menu = "Dress to Racked Down"
+	end
+	else if b_inputs[3].b_value==on then
+	begin
+		lw=6
+		y = 75
+		y -= 50 x -= 25 add
+		y -= 50 x += 50 add line clear
+		y += 50 add
+		x -= 50 y -= 50 add line clear
+		x += 25 y += 25 add clear
+		x = 0 y = 40 add
+		x = 0 y = -40 add line clear
+		set add main_menu = "Dress to Off"
+	end
+	else ! **** racked out **** !
+	begin
+		lw=6
+		y = -40 add
+		y += 20 add
+		x -= 7 add
+		x += 14 add line clear
+		y += 60 x -= 7 add
+		y -= 20 add
+		x -= 7 add
+		x += 14 add line clear
+	
+		set add main_menu = "Dress to Off"
+	
+		if top_btm_sect == "sect" then
+		begin
+			set add main_menu = "Dress to Left Section Earth"
+			set add main_menu = "Dress to Right Section Earth"
+		end
+		else set add main_menu = "Dress to Feeder Earth Off"
+	end
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+!
+fg=magenta
+X=-303 Y=-33 fp_ocb_mont(8000,8100,400,2351,heathro3,1,"btm",fg=magenta2)
+X=-103 Y=-33 fp_ocb_mont(8000,8100,400,2351,heathro3,1,"btm")
+!
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,bg=aquamarine3,resizable

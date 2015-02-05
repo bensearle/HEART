@@ -1,0 +1,867 @@
+! HEATHROW CMS - OCB BARCIS
+
+loaded by: HV_1,2,3,4,5,6,7,9,12,13,14,15
+!
+
+load mimic_libutil
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type b_bool_type =  db_elements(b_value)
+
+type alarm_row_type =  db_elements(alarm_status)
+
+type main_menu_row = table (main_menu_items= string(20))
+
+type execute_states = enum(execute = "Execute",
+                           cancel = "Cancel")
+type panel_item_row = table (str = string(40))
+
+
+ 
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!
+******************************************************************
+* SET E VALUE                                                    *
+* This object writes the vaLue of a real from a given server.    *
+******************************************************************
+!
+
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+************************************************************
+* BARCIS OCB CIRCUIT BREAKER OBJECT                        *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object ocb_barcis(b_offset=int,c_offset=int,e_offset=int,src=source,
+                  ident = int,top_btm_sect=string(4),angle)
+
+
+! OCB TYPE INPUTS !
+
+var ocb_permit_to_work_ip = input  b_bool_type
+var ocb_closed_ip = input  b_bool_type
+var ocb_tripped_ip = input  b_bool_type
+
+! ALARMS !
+
+var ocb_closed_alarm = input  alarm_row_type
+var ocb_tripped_alarm = input  alarm_row_type
+var ocb_close_in_discr = input  alarm_row_type
+var ocb_trip_in_discr = input  alarm_row_type
+
+! REAL INPUTS !
+
+var manually_dress_ip = input  e_db_row_type
+
+! CHARACTER INPUTS !
+
+var tag_message_ip = input  c_db_row_type
+
+! LOOPBACKS !
+
+var ocb_bg = loopback  colour
+var ocb_fg = loopback  colour
+var sel_cyan = loopback  string(10)
+var sel_var = loopback  onoff
+
+! PANELS AND MENUS !
+var main_menu = menu  string(30)
+var tag_message_panel = panel  panel_item_row
+var execute_panel = panel  execute_states
+
+
+begin
+! INITIALISATION !
+
+if invalid get source ocb_permit_to_work_ip then 
+   begin
+
+! PLC TYPE REQUESTS !
+
+! OCB REQUESTS !
+
+   set source ocb_permit_to_work_ip = src
+   set filter ocb_permit_to_work_ip.db_addr = lim_eq
+   set limit ocb_permit_to_work_ip.db_addr = db_address(int(b1) + b_offset -1)
+   set persist ocb_permit_to_work_ip 
+   request ocb_permit_to_work_ip
+ 
+   set source ocb_tripped_ip = src
+   set filter ocb_tripped_ip.db_addr = lim_eq
+   set limit ocb_tripped_ip.db_addr = db_address(int(b1) + b_offset +1)
+   set persist ocb_tripped_ip 
+   request ocb_tripped_ip
+
+   set source ocb_tripped_alarm = src
+   set filter ocb_tripped_alarm.db_addr = lim_eq
+   set limit ocb_tripped_alarm.db_addr = db_address(int(b1) + b_offset +1)
+   set persist ocb_tripped_alarm 
+   request ocb_tripped_alarm
+
+   set source ocb_closed_ip = src
+   set filter ocb_closed_ip.db_addr = lim_eq
+   set limit ocb_closed_ip.db_addr = db_address(int(b1) + b_offset +2)
+   set persist ocb_closed_ip 
+   request ocb_closed_ip
+
+   set source ocb_closed_alarm = src
+   set filter ocb_closed_alarm.db_addr = lim_eq
+   set limit ocb_closed_alarm.db_addr = db_address(int(b1) + b_offset +2)
+   set persist ocb_closed_alarm 
+   request ocb_closed_alarm
+
+   set source ocb_trip_in_discr = src
+   set filter ocb_trip_in_discr.db_addr = lim_eq
+   set limit ocb_trip_in_discr.db_addr = db_address(int(b1) + b_offset +3)
+   set persist ocb_trip_in_discr 
+   request ocb_trip_in_discr
+
+   set source ocb_close_in_discr = src
+   set filter ocb_close_in_discr.db_addr = lim_eq
+   set limit ocb_close_in_discr.db_addr = db_address(int(b1) + b_offset +4)
+   set persist ocb_close_in_discr 
+   request ocb_close_in_discr
+
+!REQUEST TEXT FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+!REQUEST REAL FROM SCOPE!  
+
+   set source manually_dress_ip = src
+   set filter manually_dress_ip.db_addr = lim_eq
+   set limit manually_dress_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist manually_dress_ip 
+   request manually_dress_ip
+
+end
+
+!SELECT OCB BG COLOUR!
+
+ 
+if anyb then 
+begin
+sel_cyan = "cyan" 
+ ocb_bg = cyan
+end
+
+else if ocb_permit_to_work_ip.b_value then
+   ocb_bg = orange
+
+else if int(manually_dress_ip.e_value) >= 1 and 
+        int(manually_dress_ip.e_value) <= 7 then
+   begin
+   case int(manually_dress_ip.e_value) of
+      1 
+      
+      if ocb_closed_ip.b_value and ocb_tripped_ip.b_value == off then
+         ocb_bg = flashblue
+      else
+         ocb_bg = blue
+      
+       
+      2
+      
+      if ocb_closed_ip.b_value == off and ocb_tripped_ip.b_value then
+         ocb_bg = flashblue
+      else
+         ocb_bg = blue
+      
+
+      3
+      
+      if ocb_closed_ip.b_value == off and ocb_tripped_ip.b_value == off then
+
+         ocb_bg = flashblue
+      else
+         ocb_bg = blue      
+    
+      4
+      ocb_bg = blue
+
+      5
+      ocb_bg = blue
+      
+      6 
+      ocb_bg = blue
+
+      7
+      ocb_bg = blue
+
+      default
+      begin
+      end
+   end
+   
+
+else if tag_message_ip.c_value <> "" then
+   ocb_bg = yellow
+else
+   ocb_bg = decoroff
+
+
+!SET OCB FG COLOUR!
+
+if ocb_close_in_discr.alarm_status == w_note or
+   ocb_trip_in_discr.alarm_status == w_note or
+   ocb_tripped_alarm.alarm_status == w_note or
+   ocb_closed_alarm.alarm_status == w_note 
+then
+   ocb_fg = flashred
+
+else if 
+   ocb_close_in_discr.alarm_status == w_clr or
+   ocb_trip_in_discr.alarm_status == w_clr or
+   ocb_tripped_alarm.alarm_status == w_clr or
+   ocb_closed_alarm.alarm_status == w_clr 
+then 
+   ocb_fg = red
+
+
+else if int(manually_dress_ip.e_value) >= 1 and 
+        int(manually_dress_ip.e_value) <= 7 then
+   begin
+   case int(manually_dress_ip.e_value) of 
+      1
+      ocb_fg = white
+      2
+      ocb_fg = white     
+      3
+      ocb_fg = white 
+      5
+      ocb_fg = white 
+      6
+      ocb_fg = white 
+      7
+      ocb_fg = white 
+      4
+      begin
+      if ocb_tripped_ip.b_value and ocb_closed_ip.b_value then
+         ocb_fg = black
+      else
+         ocb_fg = white
+      end
+
+    default
+       begin
+       end
+   end       
+else
+    ocb_fg = green4
+
+
+!MAIN MENU CONTROL!
+
+if valid main_menu then
+   begin
+ 
+   case main_menu of
+      "Alter Tag Message"
+         begin
+         set title tag_message_panel = "Modify Alter Tag Message"
+         set label tag_message_panel.str = "Alter Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tag Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Permit To Work"
+         begin
+         if ocb_permit_to_work_ip.b_value then
+            begin
+            set_b_value(db_address(int(b1) + b_offset -1), src, off)
+            end
+         else
+            set_b_value(db_address(int(b1) + b_offset -1), src, on)
+         end
+         
+                  
+      "Undress OCB"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+
+      "Dress to On"
+
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+
+      "Dress to Off"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+
+      "Dress to Racked Down"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+
+      "Dress to Feeder Earth Off"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 4)
+
+      "Dress to Feeder Earth On"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 5)
+
+      "Dress to Bus-Bar Earth Off"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 6)
+
+      "Dress to Bus-Bar Earth On"
+         set_e_value(db_address(int(e1) + e_offset - 1),src, 7)
+
+      default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+!EXECUTE PANEL!
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+!MAIN MENU!
+
+just = centrecentre
+w = 70 h = 80
+x=0 y=0
+set rect main_menu 
+if top_btm_sect == "sect" then
+   set title main_menu = "Bus Section Breaker"
+else
+   set title main_menu = "Barcis OCB  "+ident
+
+set remove main_menu = "Alter Tag Message"
+set remove main_menu = "Clear Tag Message"
+set remove main_menu = "Alter Permit To Work"
+set remove main_menu = "Manually Dress Input"
+
+set remove main_menu = "Dress to On"
+set remove main_menu = "Dress to Off"
+set remove main_menu = "Dress to Racked Down"
+set remove main_menu = "Dress to Feeder Earth Off"
+set remove main_menu = "Dress to Feeder Earth On"
+set remove main_menu = "Dress to Bus-Bar Earth Off"
+set remove main_menu = "Dress to Bus-Bar Earth On"
+set remove main_menu = "Undress OCB"
+set add main_menu = "Alter Tag Message"
+set add main_menu = "Clear Tag Message"
+set add main_menu = "Alter Permit To Work"
+
+! TAG MESSAGE BOX !
+
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+
+
+
+
+!********************************************************!
+!                  DRAW MAIN SYMBOL                      !
+!********************************************************!
+
+x = 0 y = 0
+just = centrecentre
+rotrect (w=66,h=80,fg=ocb_bg)
+clear
+x -= 33 y += 40 add
+y -= 80 add
+x += 66 add line (fg=decorlight) clear 
+y += 1 add
+y += 79 add
+x -= 66 add line (fg=decorshadow) clear
+x += 33 y -= 40 clear
+fg = ocb_fg
+ch = 18
+if manually_dress_ip.e_value > 0 then tfg = white
+else tfg = black
+x = 52 y = -0 add text (ch=28,tfg=white,just=centrecentre, ident)
+
+x = 0 y = 0 clear
+tfg = black
+
+if int(manually_dress_ip.e_value) >= 1 then
+   case int(manually_dress_ip.e_value) of
+
+      1
+         begin
+         lw=6
+         y = 75
+         y -= 50 x -= 25 add
+         y -= 50 x += 50 add line clear
+         y += 50 add
+         x -= 50 y -= 50 add line clear
+         x += 25 y += 25 add clear
+
+         set add main_menu = "Dress to Off"
+         set add main_menu = "Undress OCB"
+         end
+
+      2
+         begin
+         lw=6
+         y = -20
+         y += 40 x -= 20 add
+         y -= 40 x += 40 add line clear
+         y += 40 add
+         x -= 40 y -= 40 add line clear
+         x += 20 y += 20 add
+         x = 0 y = 0 circle(h=56 ,w=56) clear
+         set add main_menu = "Dress to On"
+         set add main_menu = "Dress to Racked Down"
+         set add main_menu = "Undress OCB"
+         end
+
+      3
+         begin
+         !RACKED OUT!
+         lw=6
+         y = -40 add
+         y += 20 add
+         x -= 7 add
+         x += 14 add line clear
+         y += 60 x -= 7 add
+         y -= 20 add
+         x -= 7 add
+         x += 14 add line clear
+         set add main_menu = "Dress to Off"
+
+         if top_btm_sect <> "sect" then
+            begin
+            set add main_menu = "Dress to Feeder Earth Off"
+            set add main_menu = "Dress to Bus-Bar Earth Off"
+            end
+         set add main_menu = "Undress OCB"
+         end
+
+      4
+      begin
+         !FEEDER EARTH OFF!
+         if top_btm_sect == "top" then
+            begin
+            lw=2
+            y -= 40 add
+            y += 5 add line clear
+            y += 4 add
+            circle (w=10,h=10) clear
+            y += 20 
+            circle (w=10,h=10)
+            lw=2
+            y += 3 add
+            y += 6 add line 
+            x -= 15 add
+            x += 30 add line clear
+            x -= 5 y += 10 add
+            x -= 20 add line clear
+            x += 6 y += 9 add
+            x += 8 add line clear
+            y += 12 add
+            x -= 8 add line clear
+            x += 5 add
+            y += 10 add line clear
+            end
+         else if top_btm_sect == "btm" then
+            begin
+            lw=2     
+            y += 40 add
+            y -= 5 add line clear
+            y -= 3 add
+            circle (w=10,h=10) clear
+            y -= 20 
+            circle (w=10,h=10)
+            lw=2
+            y -= 3 add
+            y -= 7 add line 
+            x += 15 add
+            x -= 30 add line clear
+            x += 5 y -= 10 add
+            x += 20 add line clear
+            x -= 6 y -= 9 add
+            x -= 8 add line clear
+            y -= 12 add
+            x += 8 add line clear
+            x -= 5 add
+            y -= 10 add line clear
+            end
+
+            set add main_menu = "Dress to Racked Down"
+            set add main_menu = "Dress to Feeder Earth On"
+            set add main_menu = "Undress OCB"
+
+         end           
+       
+
+      5
+         begin
+         if top_btm_sect == "top" then
+         begin
+         lw=2
+         y -= 40 add
+         y += 8 add line clear
+         disk (w=10,h=10)
+         lw=6
+         x += 2
+         y += 1 add
+         y += 20 add line clear
+         x -= 2
+         disk (w=10,h=10)
+         lw=2
+         y += 3 add
+         y += 6 add line 
+         x -= 15 add
+         x += 30 add line clear
+         x -= 5 y += 10 add
+         x -= 20 add line clear
+         x += 6 y += 9 add
+         x += 8 add line clear
+         y += 12 add
+         x -= 8 add line clear
+         x += 5 add
+         y += 10 add line clear
+         end
+         else
+         begin
+         lw=2
+         y += 40 add
+         y -= 8 add line clear
+         disk (w=10,h=10)
+         lw=6
+         X += 2
+         y -= 1 add
+         y -= 20 add line clear
+         disk (w=10,h=10)
+         x -= 2
+         lw=2
+         y -= 3 add
+         y -= 6 add line 
+         x += 15 add
+         x -= 30 add line clear
+         x += 5 y -= 10 add
+         x += 20 add line clear
+         x -= 6 y -= 9 add
+         x -= 8 add line clear
+         y -= 12 add
+         x += 8 add line clear
+         x -= 5 add
+         y -= 10 add line clear
+         end
+
+         set add main_menu = "Dress to Feeder Earth Off"
+         set add main_menu = "Undress OCB"
+         end
+
+
+      6
+         begin
+         !BUSBAR EARTH OFF! 
+         if top_btm_sect == "top" then
+         begin
+         lw=2     
+         y += 40 add
+         y -= 5 add line clear
+         y -= 3 add
+         circle (w=10,h=10) clear
+         y -= 20 
+         circle (w=10,h=10)
+         lw=2
+         y -= 3 add
+         y -= 7 add line 
+         x += 15 add
+         x -= 30 add line clear
+         x += 5 y -= 10 add
+         x += 20 add line clear
+         x -= 6 y -= 9 add
+         x -= 8 add line clear
+         y -= 12 add
+         x += 8 add line clear
+         x -= 5 add
+         y -= 10 add line clear
+         end
+         else
+         begin
+            lw=2
+            y -= 40 add
+            y += 5 add line clear
+            y += 4 add
+            circle (w=10,h=10) clear
+            y += 20 
+            circle (w=10,h=10)
+            lw=2
+            y += 3 add
+            y += 6 add line 
+            x -= 15 add
+            x += 30 add line clear
+            x -= 5 y += 10 add
+            x -= 20 add line clear
+            x += 6 y += 9 add
+            x += 8 add line clear
+            y += 12 add
+            x -= 8 add line clear
+            x += 5 add
+            y += 10 add line clear
+         end
+         set add main_menu = "Dress to Racked Down"
+         set add main_menu = "Dress to Bus-Bar Earth On"
+         set add main_menu = "Undress OCB"
+         end
+
+      7
+         !BUSBAR EARTH ON!
+         begin
+         if top_btm_sect == "top" then
+         begin
+         lw=2
+         y += 40 add
+         y -= 8 add line clear
+         disk (w=10,h=10)
+         lw=6
+         X += 2
+         y -= 1 add
+         y -= 20 add line clear
+         disk (w=10,h=10)
+         x -= 2
+         lw=2
+         y -= 3 add
+         y -= 6 add line 
+         x += 15 add
+         x -= 30 add line clear
+         x += 5 y -= 10 add
+         x += 20 add line clear
+         x -= 6 y -= 9 add
+         x -= 8 add line clear
+         y -= 12 add
+         x += 8 add line clear
+         x -= 5 add
+         y -= 10 add line clear
+         end
+         else
+	 begin
+         lw=2
+         y -= 40 add
+         y += 8 add line clear
+         disk (w=10,h=10)
+         lw=6
+         x += 2
+         y += 1 add
+         y += 20 add line clear
+         x -= 2
+         disk (w=10,h=10)
+         lw=2
+         y += 3 add
+         y += 6 add line 
+         x -= 15 add
+         x += 30 add line clear
+         x -= 5 y += 10 add
+         x -= 20 add line clear
+         x += 6 y += 9 add
+         x += 8 add line clear
+         y += 12 add
+         x -= 8 add line clear
+         x += 5 add
+         y += 10 add line clear
+	 end
+         set add main_menu = "Dress to Bus-Bar Earth Off"
+         set add main_menu = "Undress OCB"
+         end
+
+      default
+         begin
+         end
+
+   
+else if ocb_tripped_ip.b_value then
+   begin
+   lw=6
+   y = -20
+   y += 40 x -= 20 add
+   y -= 40 x += 40 add line clear
+   y += 40 add
+   x -= 40 y -= 40 add line clear
+   x += 20 y += 20 add
+   x = 0 y = 0 circle(h=56 ,w=56) clear
+   set add main_menu = "Dress to On"
+   set add main_menu = "Dress to Racked Down"
+   end
+
+else if ocb_closed_ip.b_value then
+   begin
+   lw=6
+   y = 75
+   y -= 50 x -= 25 add
+   y -= 50 x += 50 add line clear
+   y += 50 add
+   x -= 50 y -= 50 add line clear
+   x += 25 y += 25 add clear
+   set add main_menu = "Dress to Off"
+   end
+
+
+
+else
+      begin
+      !RACKED OUT!
+      lw=6
+      y = -40 add
+      y += 20 add
+      x -= 7 add
+      x += 14 add line clear
+      y += 60 x -= 7 add
+      y -= 20 add
+      x -= 7 add
+      x += 14 add line clear
+      set add main_menu = "Dress to Off"
+if top_btm_sect <> "sect" then
+   begin
+      set add main_menu = "Dress to Feeder Earth Off"
+      set add main_menu = "Dress to Bus-Bar Earth Off"
+   end
+      end
+end
+
+object ocb_barcis_DUMMY(b_offset=int,c_offset=int
+                ,e_offset=int,src=source,ident = int,ted=string,angle)
+begin
+just = centrecentre
+rotrect (w=66,h=80,fg=decoroff)
+clear
+x -= 33 y += 40 add
+y -= 80 add
+x += 66 add line (fg=decorlight) clear 
+y += 1 add
+y += 79 add
+x -= 66 add line (fg=decorshadow) clear
+x += 33 y -= 40 clear
+fg = red
+ch = 18
+x = 18 y = -28 add text (just=centrecentre, ident)
+x = 0 y = 0 clear
+      lw=2
+      y -= 40 add
+      y += 80 add line clear
+      y -= 26 x -= 13 add
+      y -= 26 x += 26 add line clear
+      y += 26 add
+      x -= 26 y -= 26 add line clear
+      x += 13 y += 13 add clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+!scale = 700!
+!X=-1 Y=0  ocb(1,1,heathrow,22)!
+scale = 120
+
+X=-100 Y=0  ocb_barcis(25000,25,25,heathrow,3,"top")
+
+scale = 120
+X= 100 Y=0  ocb_barcis(25000,25,25,heathrow,3,"btm")
+
+
+end
+
+mimic = main_object w=400,h=200,just=centrecentre,bg=black,resizable

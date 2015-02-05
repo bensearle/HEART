@@ -1,0 +1,89 @@
+!****************************************************************!
+!*********Modified by SS/VK -- 10/11/2011****************!
+!****Sub 57 OCB's transfered from Heathrow to**********!
+!************************Heathro2****************************!
+!******************Modified by SS/VK --25/10/2011**********!
+!***Sub 57 Generator & Changeover Switch Removed*****!
+!*****No longer exists, TX 2 added, LT1 & LT2 renamed***!
+!****************************************************************!
+
+
+load mimic_libutil
+load ocb_monitored
+load transformer
+load lv_contactor
+load lv_generator_scorpion
+
+!************ BUSBAR *************!
+
+object busbar_57
+begin
+
+just = centrecentre
+
+tfg = black x = 20 y = -45 text ("57",ch =25) clear
+
+x = 50 Y = 30 text(ch=12,"Spare")
+x = 50 Y = 45 text(ch=12,"Isolated")
+x = -100 y = 80 text(ch=12,"LV 36")
+x = -100 y = 95 text(ch=12,"Pier 3")
+x = -105 y = 110 text(ch=12,"Tx 2")
+x = -50 y = 80 text(ch=12,"57/1")
+x = 0 y = 80 text(ch=12,"57/2")
+x = 100 y = -85 text(ch=12,"32 P19")
+x = 150 y = -85 text(ch=12,"296 P8")
+
+x = -125 y = -25 add x = 175 add line(lw=4,fg=red) clear
+
+lw=2
+x = -100  y = -25 add y +=50 add line (fg=red) clear
+x =  -50  y = -25 add y += 78 add line (fg=red) clear
+x =    0  y = -25 add y += 50 add line (fg=red) clear
+x =   50  y = -25 add y += 30 add line (fg=red) clear
+x =  100  y = -25 add y -= 50 add line (fg=red) clear
+x =  150  y = -25 add y -= 50 add line (fg=red) clear
+
+!x =-50 y = 62 add!
+!x -= 40 add!
+!y += 115 add!
+line(fg=red) clear
+
+!x =-60 y = 175  add!
+!y = 100 add!
+line(fg=red) clear
+
+!x = -104 y = 175 add!
+!x += 60 add!
+line(fg=red,lw=4) clear
+
+scale = 120
+x =   -100 y =0 ocb_mont(10000,10170,316,266,heathro2,1,"btm")
+x =   -50  y =  0  ocb_mont(10000,10130,317,267,heathro2,2,"btm")
+x =     0  y =  0  ocb_mont(10000,10140,318,268,heathro2,3,"btm")
+x =    50  y =  0  ocb_mont(10000,10150,319,269,heathro2,4,"btm")
+x =   100  y = -50 ocb_mont(10000,10160,320,270,heathro2,5,"top")
+x =   150  y = -50 ocb_mont(10000,10120,321,271,heathro2,6,"top")
+
+scale = 100
+
+X =  -50 Y = 45 transformer("LT 1","LOCAL")
+X =  0   Y  = 45 transformer("LT 2","LOCAL")
+X =  -100   Y  = 45 transformer("TX 2","LOCAL")
+
+scale = 140
+!x = -47 y = 95 lv_generator_scp(6000,6960,6970,1194,heathro2)!
+
+scale = 120
+!x = -75 y = 140 lv_changeover(6000,6960,1195,heathro2)!
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = - 25  busbar_57
+
+end
+
+mimic = main_object w=400,h=350,just=centrecentre,fg=white,bg=aquamarine3,resizable

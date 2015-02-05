@@ -1,0 +1,190 @@
+! HEATHROW CMS - O2 DISPLAY 
+
+loaded by: FIRE_MAIN
+!
+
+load mimic_libutil
+
+type e_alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type e_test_row =  db_alarm_config(db_addr,
+					   config_number,
+					   test_value)
+
+type e_test_table =  e_test_row[6]
+
+
+
+! 
+*************************************************************
+* O2 DISPLAY OBJECT                                         *
+* this object is called by the Top Level variable (mimic)   *
+*************************************************************
+!
+
+object o2_display(e_offset=int,src=source)
+
+var oxy_alarm = input  e_alarm_row_type
+var oxy_level_ip = input  e_db_row_type
+var input_setpoint = input  e_test_table
+var output_setpoint = output  e_test_table
+
+var temp_menu = menu  string
+var high_setpoint_panel = panel  int
+var low_setpoint_panel = panel  int
+
+var items_added = loopback  int
+var sensor_bg = loopback  colour
+var temp_sps = loopback  string
+var box_text = loopback  string
+var box_width = loopback  int
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source oxy_alarm then 
+   begin
+
+   set source    input_setpoint = src
+   set filter    input_setpoint.db_addr = lim_eq
+   set limit     input_setpoint.db_addr = db_address(int(e1) + e_offset - 1)
+   set mayexist  input_setpoint
+   set mustexist input_setpoint.db_addr
+   set mustexist input_setpoint.config_number
+   set persist   input_setpoint
+   request       input_setpoint
+
+   set source oxy_alarm = src
+   set filter oxy_alarm.db_addr = lim_eq
+   set limit oxy_alarm.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist oxy_alarm 
+   request oxy_alarm
+
+   set source oxy_level_ip = src
+   set filter oxy_level_ip.db_addr = lim_eq
+   set limit oxy_level_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   set persist oxy_level_ip 
+   request oxy_level_ip
+
+   end
+
+
+! SELECT OBJECT BG COLOUR !
+
+if oxy_alarm.alarm_status == w_note then
+   
+   sensor_bg = flashred
+
+else if oxy_alarm.alarm_status == w_clr then
+
+   sensor_bg = red
+
+else sensor_bg = decoroff
+
+
+! CASE MENU OPTIONS !
+
+if valid temp_menu then
+   begin
+
+   case temp_menu of
+        "Alter High Alarm Level"
+            begin
+            set title high_setpoint_panel = "Alter High Alarm Level"
+            set unpinned high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter Low Alarm Level"
+            begin
+            set title low_setpoint_panel = "Alter Low Alarm Level"
+            set unpinned low_setpoint_panel
+            request low_setpoint_panel
+            end
+
+        default
+            begin
+            end
+
+   set invalid temp_menu
+   end
+
+
+! DRAW SYMBOL !
+
+just=centrecentre
+box_text=" "+int(oxy_level_ip.e_value)+" %"
+box_width=length(box_text)+30
+
+x=0 y=0
+rect(just=centrecentre,fg=sensor_bg,h=18,w=box_width) 
+
+x -= box_width/2 y += 9 add 
+y -= 18 add x += box_width add line(lw=1,fg=decorlight) clear
+
+x = box_width/2 y = -9 add 
+y += 18 add x -= box_width add line(lw=1,fg=decorshadow) clear
+
+x = -(box_width/2)+10 y = 0 text (tfg=black,ch=15,"0")
+x=10 text(tfg=black,box_text)
+x = -(box_width/2)+18 y = -2 text (tfg=black,ch=11,"2")
+
+
+! CONFIGURE MENU !
+
+if valid input_setpoint then
+   temp_sps = "High = "+ int(input_setpoint[1].test_value) +"  Low = " +int(input_setpoint[2].test_value)
+x=0 y=0 w=box_width h=18
+set rect temp_menu
+set title temp_menu = temp_sps
+
+if invalid items_added then
+  begin
+  set add temp_menu   = "Alter High Alarm Level"
+  set add temp_menu   = "Alter Low Alarm Level"
+  items_added = 1
+  end
+
+
+! WRITE INPUT TO SERVER !
+
+if valid high_setpoint_panel and high_setpoint_panel > input_setpoint[2].test_value then
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[1].test_value = high_setpoint_panel
+   request output_setpoint
+   set invalid high_setpoint_panel
+   end
+
+if valid low_setpoint_panel and low_setpoint_panel < input_setpoint[1].test_value then 
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[2].test_value = low_setpoint_panel
+   request output_setpoint
+   set invalid low_setpoint_panel
+   end
+
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = 40 o2_display(1051,heathrow)
+
+
+
+ 
+
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

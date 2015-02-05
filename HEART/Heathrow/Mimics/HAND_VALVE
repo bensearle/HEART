@@ -1,0 +1,167 @@
+! HEATHROW CMS - HAND VALVE
+
+loaded by: FIRE_MAIN, POTABLE_WATER
+!
+
+load hand_valve_help
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+
+
+!
+ ***********************************************************************
+ **  SCOPE_CMD                                                        **
+ ** Write Command to Alarm Banner Command Line                        **
+ ***********************************************************************
+!
+
+object scope_cmd (cmd = string (80))
+
+var top = toplevel  string (80)
+
+begin
+set existing top
+set mimic top = "ALARM_BANNER_UTIL"
+set p1 top = ""
+set p2 top = cmd
+request top
+end
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean to a given server. *
+******************************************************************
+!
+ 
+ object set_b_value(db_addr=db_address,src=source,val=onoff)
+ var op = output  b_db_row_type
+ begin
+ if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+ end
+
+
+
+!
+*****************************************************************
+* HAND VALVE OBJECT                                             *
+* this object is called by the Top Level variable (mimic)       *
+*****************************************************************
+!
+
+object hand_valve(angle,scale,b_offset=int,ident=string,src=source)
+
+var valve_colour = loopback  colour
+var valve_red = input  b_db_row_type
+var valve_menu = menu  string
+
+var helpstr = help string(30)
+
+begin
+just = centrecentre
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source valve_red then
+
+   begin
+   set source valve_red = src
+   set filter valve_red.db_addr = lim_eq
+   set limit  valve_red.db_addr = db_address(int(b1) + b_offset - 1)
+   set persist valve_red
+   request valve_red
+   end
+
+
+! SELECT VALVE COLOUR !
+
+if valve_red.b_value then
+   valve_colour = green
+else
+   valve_colour = white
+
+
+! CASE MENU OPTIONS !
+
+if valid valve_menu then
+   begin
+   case valve_menu of
+        "Dress Valve Opened"
+        begin
+        set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+        end
+
+        "Dress Valve Closed"
+        begin
+        set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+        end
+
+        default begin end
+
+    set invalid valve_menu
+    end
+        
+
+! CONFIGURE MENU !
+
+set title valve_menu = "Hand Valve Menu"
+set remove valve_menu = "Dress Valve Opened"
+set remove valve_menu = "Dress Valve Closed"
+
+if valve_red.b_value then
+   set add valve_menu = "Dress Valve Closed"
+else
+   set add valve_menu = "Dress Valve Opened"
+
+x=0 y=0
+w=40 h=40
+set rect valve_menu
+
+
+! DRAW VALVE AND LABEL !
+
+clear
+tfg = white
+ch = 30
+y = -68  text (ident,ch = 40)
+
+disk(x=0,y=0,w=20,h=20,fg=valve_colour)
+x=0 y=0 add
+x=20 y=12 add
+y=-12 add
+x=-20 y=12 add
+y=-12 add
+x=0 y=0 add
+fill(fg=valve_colour)
+x = 0 y = 0 add y = -35 add x = 20 add x = -20 add line(fg=valve_colour,lw=2) clear
+
+just = centrecentre
+x = 0 y = 0
+w = 40 h = 40
+set text helpstr = "HAND_VALVE_HELP"
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+just=centrecentre
+hand_valve(angle=180,100,"25",heathrow)
+end
+
+mimic = main_object w=300,h=340,just=centrecentre,fg=white,bg=black,resizable

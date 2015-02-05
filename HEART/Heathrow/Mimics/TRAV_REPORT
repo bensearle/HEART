@@ -1,0 +1,159 @@
+load mimic_libutil
+Load XTEL_READ_WRITE_LIB
+
+! state machine descriptions for object log_on !
+! -------------------------------------------------------------------- !
+const find_user_number = 1
+const find_current_fors = 2
+const log_on_to_source = 3
+const state_finished = 4
+
+! state machine descriptions for main object !
+! ------------------------------------------------------------------ !
+const log_on_to_scope = 1
+const do_calcs = 2
+
+! *********************************************************** !
+
+object log_on (server_name = source, users_name = string, password = string, mastered_for = set(area)) = int
+
+var current_fors = input workstations(wrkstn_is_me,current_mastered_areas)
+var workstation_op = output workstations (user_number, login_password, current_mastered_areas)
+var user_ip = input users(user_number)
+var log_on_progress = string
+var state = loopback int
+
+begin
+if invalid state then state = find_user_number
+
+! find the user number from the user name !
+! -------------------------------------------------------------- !
+
+if state == find_user_number then
+   begin
+   
+   if invalid get source user_ip then
+      begin
+      set source user_ip = server_name
+      set mayexist user_ip
+      set filter user_ip.name = lim_eq
+      set limit user_ip.name = users_name
+      request user_ip
+      end
+   
+   if valid user_ip and not get busy user_ip then
+       state = find_current_fors   
+   end
+
+
+! find any currently mastered FORs !
+! --------------------------------------------------------- !
+
+if state == find_current_fors then
+   begin
+   
+   if invalid get source current_fors then
+      begin
+      set source current_fors = server_name
+      set filter current_fors.wrkstn_is_me = lim_eq
+      set limit current_fors.wrkstn_is_me = yes
+      request current_fors
+      end
+
+   if valid current_fors and not get busy current_fors then
+      state = log_on_to_source   
+  end
+
+! log on to Xtel as the specified user, mastering the additional FORs !
+! ---------------------------------------------------------------------------------------------------- !
+
+if state == log_on_to_source then
+   begin
+   
+   if invalid get source workstation_op then
+      begin
+      set source workstation_op = server_name
+      set old_default workstation_op
+      set default workstation_op
+      set old_off workstation_op.user_number
+      set old_off workstation_op.login_password
+      set old_off workstation_op.current_mastered_areas
+      set filter workstation_op.wrkstn_is_me = lim_eq
+      set limit workstation_op.wrkstn_is_me = yes
+      set value workstation_op.user_number = user_ip.user_number
+      set value workstation_op.login_password = password 
+      set value workstation_op.current_mastered_areas = mastered_for + current_fors.current_mastered_areas
+  
+      request workstation_op   
+      end
+
+   if valid workstation_op and get status workstation_op == "" then
+      state = state_finished
+      
+   end
+
+if invalid get status workstation_op then
+   log_on = 0
+else
+   log_on = ((state == state_finished) and (get status workstation_op == ""))
+
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+var state = loopback int
+var logged_on = loopback int
+
+var trav_1_stopped = input b_value_type
+var trav_1_keyswitch = input b_value_type
+var trav_1_availability_op = output b_value_type
+
+var trav_1_availability = onoff
+
+begin
+
+if invalid state then 
+   begin
+   get_b_value(heathro4,b90,trav_1_stopped)
+   get_b_value(heathro4,b91,trav_1_keyswitch)
+
+   ! Logon to the Scope server using user and password details !
+   state = log_on_to_scope
+   end
+
+if state == log_on_to_scope then
+   begin
+   if invalid logged_on then
+      logged_on = 0
+   
+   if not logged_on then
+      logged_on = log_on (heathro4, "reporter", "reporter", set(a1)) 
+
+   if logged_on then
+      state = do_calcs
+   end
+
+if state == do_calcs then
+   begin
+   if (trav_1_stopped.b_value == 1 and trav_1_keyswitch.b_value == 0)
+      then trav_1_availability = off
+   else
+      trav_1_availability = on
+
+   set default trav_1_availability_op
+   set value trav_1_availability_op.b_value = trav_1_availability
+   set_b_value(heathro4,b92,trav_1_availability_op)
+   state = do_calcs
+   end
+
+x = 0 y = 0 text(tfg=white,ch=30,"Trav Stopped Value   " + trav_1_stopped.b_value)
+x = 0 y = 30 text(tfg=white,ch=30,"Trav Keyswitch Value   " + trav_1_keyswitch.b_value)
+x = 0 y = 60 text(tfg=white,ch=30,"Trav Available   " +  trav_1_availability_op.b_value)
+
+
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

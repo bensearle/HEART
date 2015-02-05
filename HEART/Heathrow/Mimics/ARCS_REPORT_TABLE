@@ -1,0 +1,200 @@
+LOAD mimic_libutil
+
+TYPE db_samples_arh = TABLE db_samples(stream_name=STRING(30),
+                                                                   db_addr=DB_ADDRESS,e_value=REAL,
+                                                                   time=TIME("centiseconds"))
+
+TYPE db_samples_row = db_samples_arh(db_addr,e_value)[40]
+
+OBJECT small_box
+BEGIN
+X = -12 Y = 6 ADD Y -= 12 ADD X += 24 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = -12 Y = 6 ADD X += 24 ADD Y -= 12 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+END
+
+OBJECT large_box
+BEGIN
+X = -30 Y = 6 ADD Y -= 12 ADD X += 60 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+X = -30 Y = 6 ADD X += 60 ADD Y -= 12 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+END
+
+!*****  GRAPH OBJECT *****!
+
+OBJECT arcs_table(e_offset=INT,src=SOURCE,plc=STRING(1))
+
+VAR ip = INPUT db_samples_row
+VAR time_text = STRING(20)
+VAR i = INT
+VAR j = INT
+VAR boxes_a  = INT
+VAR boxes_b = INT
+VAR numbers_a = INT
+VAR numbers_b = INT
+VAR boxes_small_a = INT
+VAR boxes_small_b = INT
+
+BEGIN
+
+!***** REQUEST VALUE FROM SERVER *****!
+
+IF INVALID GET SOURCE ip THEN
+
+BEGIN
+
+SET SOURCE ip = arhsource(SOURCE(src))
+SET FILTER ip.stream_name = LIM_EQ
+SET LIMIT ip.stream_name = src + " VALUE"
+SET PRIORITY ip.time = 9
+SET FILTER ip.time = LIM_LE
+SET LIMIT ip.time = MAX TIME
+SET PRIORITY ip.db_addr = 11
+SET FILTER ip.db_addr = LIM_EQ
+SET LIMIT ip.db_addr = db_address("E" + e_offset)
+SET DIR_DEC ip
+SET PERSIST ip
+REQUEST ip
+
+END
+
+!***** Border around Title *****!
+
+X = -129 Y = -189 ADD Y += 40 ADD X += 260 ADD Y -= 40 ADD X -= 260 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+X = -130 Y = -190 ADD Y += 40 ADD X += 260 ADD Y -= 40 ADD X -= 260 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+
+!***** Border around Table *****!
+
+X = -129 Y = -139 ADD Y += 330 ADD X += 260 ADD Y -= 330 ADD X -= 260 ADD
+LINE(LW=1,FG=DECORLIGHT) CLEAR
+X = -130 Y = -140 ADD Y += 330 ADD X += 260 ADD Y -= 330 ADD X -= 260 ADD
+LINE(LW=1,FG=DECORSHADOW) CLEAR
+
+!****** Title *****!
+
+X = 1 Y = -169 TEXT(JUST=CENTRECENTRE,CH=15,FONT=FONT_BOLD,
+                              TFG=DECORLIGHT,"Changeover Time History - PLC "+plc) CLEAR
+X = 0 Y = -170 TEXT(JUST=CENTRECENTRE,CH=15,FONT=FONT_BOLD,
+                              TFG=BLACK,"Changeover Time History - PLC "+plc) CLEAR
+
+!***** Boxes around numbers 1 to 20 *****!
+
+X = -100 Y = -120
+FOR boxes_small_a FROM 1 TO 20 DO
+   BEGIN
+    small_box
+    Y += 15
+   END
+
+!***** Boxes around numbers 21 to 40 *****!
+
+X = 30 Y = -120
+FOR boxes_small_b FROM 1 TO 20 DO
+   BEGIN
+    small_box
+    Y += 15
+   END
+
+!***** Numbers 1 to 20 *****!
+
+X = -100 Y = -120
+FOR numbers_a FROM 1 TO 20 DO
+   BEGIN
+    TEXT(TFG=BLACK,FONT=FONT_BOLD,JUST=CENTRECENTRE,CH=10,numbers_a)
+    Y += 15
+   END
+
+!***** Number 21 to 40 *****!
+
+X = 30 Y = -120
+FOR numbers_b FROM 21 TO 40 DO
+   BEGIN
+    TEXT(TFG=BLACK,FONT=FONT_BOLD,JUST=CENTRECENTRE,CH=10,numbers_b)
+    Y += 15
+   END
+
+X = -50 Y = -120
+FOR boxes_a FROM 1 TO 20 DO
+   BEGIN
+    large_box
+    Y += 15
+   END
+
+X = 80 Y = -120
+FOR boxes_b FROM 1 TO 20 DO
+   BEGIN
+    large_box
+    Y += 15
+   END
+
+X = -50 Y = -120
+FOR i FROM 1 TO 20 DO
+   BEGIN
+    time_text = INT(ip[i].e_value)
+    TEXT(TFG=BLACK,JUST=CENTRECENTRE,CH=10,time_text+" mS")
+    Y += 15
+   END
+
+X = 80 Y = -120
+FOR j FROM 21 TO 40 DO
+   BEGIN
+    time_text = INT(ip[j].e_value)
+    TEXT(TFG=BLACK,JUST=CENTRECENTRE,CH=10,time_text+" mS")
+    Y += 15
+   END
+
+END
+
+OBJECT table_north_plc_a(BG)
+BEGIN
+
+arcs_table(2300,heathrow,"A")
+
+END
+
+MIMIC north_table_plc_a = table_north_plc_a W=300,H=400,JUST=CENTRECENTRE,
+                                        BG=DECOROFF
+
+OBJECT table_north_plc_b(BG)
+BEGIN
+
+arcs_table(2301,heathrow,"B")
+
+END
+
+MIMIC north_table_plc_b = table_north_plc_b W=300,H=400,JUST=CENTRECENTRE,
+                                        BG=DECOROFF
+
+OBJECT table_west_plc_a(BG)
+BEGIN
+
+arcs_table(2310,heathrow,"A")
+
+END
+
+MIMIC west_table_plc_a = table_west_plc_a W=300,H=400,JUST=CENTRECENTRE,
+                                        BG=DECOROFF
+
+OBJECT table_west_plc_b(BG)
+BEGIN
+
+arcs_table(2311,heathrow,"B")
+
+END
+
+MIMIC west_table_plc_b = table_west_plc_b W=300,H=400,JUST=CENTRECENTRE,
+                                        BG=DECOROFF
+
+OBJECT main_object (BG,FG,W,H,TBG,TFG)
+BEGIN
+
+table_west_plc_b
+
+END
+
+MIMIC = main_object W=300,H=400,JUST=CENTRECENTRE,FG=WHITE,
+BG=DECOROFF,RESIZABLE

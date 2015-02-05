@@ -1,0 +1,558 @@
+load mimic_libutil
+load gadgets_libutil
+load fp_generic_server_request
+load browser
+
+object nav_box_obj(title=string,mimic_title=string,src=source)
+var mm = toplevel  string_50
+var fg1=colour
+var fg2=colour
+var num_letters = int
+var width = int
+begin
+	X=-17 Y=-17 W=33 H=34 ANGLE=0 JUST=TOPLEFT FG=grey80 FS=FILLSOLID ROTRECT 
+	if selb then
+	begin
+         		set source mm = src
+         		set mimic mm = mimic_title
+         		set selfreplace mm
+         		request mm
+		fg1=lightgreen4
+		fg2=grey60
+	end
+	else 
+	begin
+		fg1=lightgreen3
+		fg2=decorlight
+	end
+
+	clear
+	X=5 Y=-10 Add
+	X=-10 Y=0 Add
+	X=5 Y=10 Add
+	fg=fg1 FS=FILLSOLID FILL clear
+
+
+ 	Clear
+	X=17 Y=-18 Add
+	X=-17 Y=-18 Add
+	X=-17 Y=18 Add
+	FG=fg2 LS=SOLID LW=1 CS=CAPROUND LINE clear
+	X=-17 Y=18 Add
+	X=17 Y=18 Add
+	X=17 Y=-18 Add
+	FG=grey40 LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	num_letters=nchars(title)
+	width =  (num_letters * 11) +2
+	
+	x=18 y=-18
+	W=width H=34 ANGLE=0 JUST=TOPLEFT FG=grey80 FS=FILLSOLID ROTRECT
+	x=20 y=-8 text(tfg=grey40,title)
+
+	Clear
+	X=18 Y=17 Add
+	X=18 Y=-18 Add
+	X+=width Y=-18 Add
+	FG=grey60 LS=SOLID LW=1 CS=CAPROUND LINE
+	Y=-18 Add
+	Y=16 Add
+	X=18 Y=16 Add
+	FG=decorlight LS=SOLID LW=1 CS=CAPROUND LINE clear
+end
+
+object plc_slot(display_fg=colour)
+begin
+	X=-10 Y=-17 W=10 H=33 ANGLE=0 JUST=TOPLEFT BG=GREY60 FG=GREY FS=FILLFGPATT PATT=STRIPEHOR ROTRECT
+	X=-9 Y=-17 W=7 H=14 ANGLE=0 JUST=TOPLEFT FG=GREY60 FS=FILLSOLID ROTRECT clear
+
+	X=0 Y=-18 Add
+	X=-11 Y=-18 Add
+	X=-11 Y=16 Add
+	FG=grey80 LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-11 Y=16 Add
+	X=0 Y=16 Add
+	X=0 Y=-18 Add
+	FG=grey40 LS=SOLID LW=1 CS=CAPROUND LINE clear
+end
+
+object plc_module(plc_offset=int,b_offset=int,src=source,title=string,no_slots=int,res=int,dty_sty=int)
+var b_inputs = input b_db_row_type
+var plc_inputs = input b_db_row_type[2]
+var display_fg=loopback colour
+var title_tfg=loopback colour
+var comms_failed =yesno
+begin
+   	if invalid get source plc_inputs then
+	  begin
+   		set source b_inputs = src
+   		set filter b_inputs.db_addr = lim_ge
+   		set limit b_inputs.db_addr = db_address("b" + b_offset)
+   		set priority b_inputs.db_addr = 15
+   		set persist b_inputs
+   		set mayexist b_inputs
+   		request b_inputs
+
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address("b" + plc_offset)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+	  end   
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+		comms_failed = yes
+	else
+		comms_failed = no
+
+		title_tfg = black
+
+	if comms_failed==yes then
+	begin
+		display_fg = magenta
+		title_tfg = magenta
+	end
+	else if b_inputs.b_value == on  then
+		display_fg = green
+	else
+	begin	
+		display_fg = yellow
+		title_tfg = black
+	end
+
+	X=-33 Y=-18 W=21 H=34 ANGLE=0 JUST=TOPLEFT FG=GREY60 FS=FILLSOLID ROTRECT Clear
+	X=-12 Y=-18 Add
+	X=-33 Y=-18 Add
+	X=-33 Y=16 Add
+	FG=grey80 LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-33 Y=16 Add
+	X=-12 Y=16 Add
+	X=-12 Y=-18 Add
+	FG=grey40 LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	if no_slots==4 then
+	  begin
+		X=-32 Y=-17 W=66 H=32 FG=grey JUST=TOPLEFT FS=FILLSOLID ANGLE=0 ROTRECT
+		x=0 y=0 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+	  end
+	else
+	  begin
+		X=-32 Y=-17 W=115 H=32 ANGLE=0 JUST=TOPLEFT FG=grey FS=FILLSOLID ROTRECT
+		x=0 y=0 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+		x+=12 plc_slot(display_fg)
+	  end
+		x=-20 y=-36 text(tfg=title_tfg,title)
+
+	x=-18 y=-10 W=2 H=1 ANGLE=0 JUST=TOPLEFT FG=RED3 FS=FILLSOLID ROTRECT
+	x+=14 y=-16 W=2 H=1 ANGLE=0 JUST=TOPLEFT FG=display_fg FS=FILLSOLID ROTRECT
+end
+
+object box_obj(title=string)
+begin
+	X=-17 Y=-17 W=33 H=34 ANGLE=0 JUST=TOPLEFT FG=grey80 FS=FILLSOLID ROTRECT Clear
+	X=17 Y=-18 Add
+	X=-17 Y=-18 Add
+	X=-17 Y=18 Add
+	FG=decorlight LS=SOLID LW=1 CS=CAPROUND LINE clear
+	X=-17 Y=18 Add
+	X=17 Y=18 Add
+	X=17 Y=-18 Add
+	FG=grey40 LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	x=20 y=-8 text(title)
+end
+
+object node(plc_offset=int,b_offset=int,c_offset=int,src=source,title=string,config=yesno,angle)
+var b_inputs = input b_db_row_type
+var plc_inputs = input b_db_row_type[2]
+var alarm_inputs = input alarm_row_type
+var tag_message_ip = input  c_db_row_type
+
+var tag_message_panel = panel  panel_item_row
+var main_menu = menu  string(30)
+
+var display_fg=loopback colour
+var title_tfg=loopback colour
+var comms_failed =yesno
+begin
+   	if invalid get source plc_inputs then
+	  begin
+   		set source b_inputs = src
+   		set filter b_inputs.db_addr = lim_ge
+   		set limit b_inputs.db_addr = db_address("b" + b_offset)
+   		set priority b_inputs.db_addr = 15
+   		set persist b_inputs
+   		set mayexist b_inputs
+   		request b_inputs
+
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address("b" + plc_offset)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+		set source alarm_inputs = src
+		set filter alarm_inputs.db_addr = lim_ge
+		set limit alarm_inputs.db_addr = db_address("b" + b_offset)
+		set priority alarm_inputs.db_addr = 15
+		set persist alarm_inputs
+		set mayexist alarm_inputs
+		request alarm_inputs
+
+		set source tag_message_ip = src
+		set filter tag_message_ip.db_addr = lim_eq
+		set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset - 1)
+		set priority tag_message_ip.db_addr = 15
+		set persist tag_message_ip
+		set mayexist tag_message_ip
+		request tag_message_ip
+	  end   
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+		comms_failed = yes
+	else
+		comms_failed = no
+
+	if comms_failed==yes then
+		display_fg = magenta
+	else if alarm_inputs.alarm_status == w_note then
+		display_fg = flashred
+	else if alarm_inputs.alarm_status == w_clr then
+		display_fg = red
+	else
+		display_fg = gold4
+
+
+	!**** TAG MESSAGE PANEL ****!
+	if valid tag_message_panel then
+	begin
+		set_c_value( db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	end
+
+
+       if c_offset==int or c_offset==0 then
+          begin
+          end
+       else
+          begin
+	!**** MAIN MENU ****!
+	just=centrecentre
+	x = 0 y=0  W=36 H=36
+	set rect main_menu
+	set title main_menu  = "Node Menu"
+	set remove main_menu = "Alter Tagged Message"
+	set remove main_menu = "Clear Tagged Message"
+	set add main_menu="Alter Tagged Message"
+	set add main_menu="Clear Tagged Message"
+
+
+	!**** CONTROL MENU ****!
+	if valid main_menu then
+	begin
+	   case main_menu of
+
+	   "Alter Tagged Message"
+		begin
+			set title tag_message_panel = "Modify Tagged Message"
+			set label tag_message_panel.str = "Tag Message :"
+			set unpinned tag_message_panel
+			request tag_message_panel
+		end
+
+	   "Clear Tagged Message"
+		begin
+			set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+		end
+
+		default
+		 begin
+		 end
+	   set invalid main_menu
+	end
+          end
+
+	!**** TAG MESSAGE BOX ****!
+	just=topleft
+	x=0 y=0  W=22 H=16
+	if selb and tag_message_ip.c_value <> "" then
+	begin
+		message_text_box(tag_message_ip.c_value)
+	end
+
+
+	box_obj(title)
+
+	if config<>yes then
+		display_fg =grey60
+
+	fg = display_fg
+
+	X=-11 Y=-4 W=22 H=16 JUST=TOPLEFT LS=SOLID LW=3 ANGLE=0 ROTBOX
+	Clear
+	X=0 Y=-4 Add
+	X=0 Y=-22 Add
+
+	LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+
+
+	!**** DISPLAY TAG MESSAGE ****!
+	if tag_message_ip.c_value <> "" then
+	begin
+		scale=350
+		just=centrecentre
+		x = 0 y = 0 box(lw=5,fg=yellow,w=150,h=150) clear
+	end
+
+end
+
+object data_switch(plc_offset=int,b_offset=int,src=source,title=string,pos=int)
+var b_inputs = input b_db_row_type
+var plc_inputs = input b_db_row_type[2]
+var display_fg=loopback colour
+var title_tfg=loopback colour
+var comms_failed =yesno
+begin
+   	if invalid get source plc_inputs then
+	  begin
+   		set source b_inputs = src
+   		set filter b_inputs.db_addr = lim_ge
+   		set limit b_inputs.db_addr = db_address("b" + b_offset)
+   		set priority b_inputs.db_addr = 15
+   		set persist b_inputs
+   		set mayexist b_inputs
+   		request b_inputs
+
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address("b" + plc_offset)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+	  end   
+
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on then
+		comms_failed = yes
+	else
+		comms_failed = no
+
+	if invalid b_inputs.b_value then
+		display_fg = gold4
+	else if comms_failed==yes then
+		display_fg = magenta
+	else
+		display_fg = green4
+
+	box_obj(title)
+
+	X=0 Y=9 Add
+	X=0 Y=22 Add
+	FG=display_fg  LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	X=-9 Y=-12 Add
+	X=-9 Y=-22 Add
+	FG=display_fg  LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	X=9 Y=-12 Add
+	X=9 Y=-22 Add
+	FG=display_fg  LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+	X=-12 Y=-16 W=7 H=7 JUST=TOPLEFT FG=grey80 FS=FILLSOLID SA=0 DISK
+	X=-12 Y=-16 W=7 H=7 JUST=TOPLEFT FG=display_fg  LS=SOLID LW=2 SA=0 CIRCLE
+
+	X=6 Y=-16 W=7 H=7 JUST=TOPLEFT FG=grey80 FS=FILLSOLID SA=0 DISK
+	X=6 Y=-16 W=7 H=7 JUST=TOPLEFT FG=display_fg  LS=SOLID LW=2 SA=0 CIRCLE
+
+
+	if b_inputs.b_value==on then
+	begin
+		X=-10 Y=-12 Add
+		X=0 Y=12 Add
+		FG=display_fg  LS=SOLID LW=3 CS=CAPROUND LINE clear
+	end
+	else if b_inputs.b_value==off then
+	begin
+		X=10 Y=-12 Add
+		X=0 Y=12 Add
+		FG=display_fg  LS=SOLID LW=3 CS=CAPROUND LINE clear
+	end
+	else if b_inputs.b_value==on then
+	begin
+	end
+
+end
+
+object link_anim(b_offset=int,src=source)
+var b_inputs = input b_db_row_type
+var display_fg=loopback colour
+var title_tfg=loopback colour
+var comms_failed =yesno
+var line_a_fg = loopback colour
+var line_b_fg = loopback colour
+var line_fg = loopback colour
+begin
+   	if invalid get source b_inputs then
+	  begin
+   		set source b_inputs = src
+   		set filter b_inputs.db_addr = lim_ge
+   		set limit b_inputs.db_addr = db_address("b" + b_offset)
+   		set priority b_inputs.db_addr = 15
+   		set persist b_inputs
+   		set mayexist b_inputs
+   		request b_inputs
+	  end
+
+	if b_inputs.b_value==on then
+	begin
+		line_b_fg = green4
+		line_a_fg = green
+		line_fg = green
+	end
+	else if b_inputs.b_value==off then
+	begin
+		line_b_fg = green
+		line_a_fg = green4
+		line_fg = green
+	end
+	else
+	begin
+		line_b_fg = gold4
+		line_a_fg = gold4
+		line_fg = gold4
+	end
+
+
+	!** schneider node links **!
+
+
+
+		X=0 Y=-162 Add
+		X=0 Y=-125 Add
+		X=-141 Y=-125 Add
+		X=-141 Y=-100 Add
+		FG=line_b_fg LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+		X=5 Y=-162 Add
+		X=5 Y=-120 Add
+		X=-91 Y=-120 Add
+		X=-91 Y=-100 Add
+		FG=line_b_fg LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+		X=-100 Y=-59 Add
+		X=-100 Y=-5 Add
+		X=331 Y=-5 Add
+		FG=line_fg  LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+
+
+	!** siemens node links **!
+
+		X=-215 Y=-162 Add
+		X=-215 Y=-130 Add
+		X=-159 Y=-130 Add
+		X=-159 Y=-100 Add
+		FG=line_a_fg LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+		X=-210 Y=-162 Add
+		X=-210 Y=-135 Add
+		X=-109 Y=-135 Add
+		X=-109 Y=-100 Add
+		FG=line_a_fg LS=SOLID LW=3 CS=CAPROUND LINE clear
+
+
+		X=-150 Y=-59 Add
+		X=-150 Y=154 Add
+		X=330 Y=154 Add
+		FG=line_fg  LS=SOLID LW=3 CS=CAPROUND LINE clear
+end
+
+
+object hv_int_trial
+begin
+	!* data switch box *!
+
+	X=-184 Y=-104 W=171 H=50 ANGLE=0 JUST=TOPLEFT FG=LIGHTGREY FS=FILLSOLID ROTRECT
+	Clear
+	X=-184 Y=-55 Add
+	X=-184 Y=-105 Add
+	X=-14 Y=-105 Add
+	FG=decorlight LS=SOLID LW=1 CS=CAPROUND LINE clear
+	Clear
+	X=-184 Y=-55 Add
+	X=-12 Y=-55 Add
+	X=-12 Y=-104 Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE clear
+
+	X=-64 Y=-97 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Data")
+	X=-70 Y=-78 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Switch")
+
+
+	X=-150 Y=-79 data_switch(39000,39010,heathrow,"- -",1)
+
+
+	X=-20 Y=18 node(39000,39046,1290,heathrow,"1",yes,angle=0)
+	X+=50 Y=-28 node(39000,39047,1291,heathrow,"2",yes,angle=180)
+	X+=50 Y=18 node(int,int,int,source,"",no,angle=0)
+	X+=50 Y=-28 node(int,int,int,source,"",no,angle=180)
+	X+=50 Y=18 node(int,int,int,source,"",no,angle=0)
+	X+=50 Y=-28 node(int,int,int,source,"",no,angle=180)
+	X+=50 Y=18 node(int,int,int,source,"",no,angle=0)
+	X+=50 Y=-28 node(int,int,int,source,"",no,angle=180)
+	clear
+	X=365 Y=-18 text("Schneider Nodes")
+
+	
+
+	X=-100 Y=-79 data_switch(39000,39010,heathrow,"",1)
+	x=0 y=0 link_anim(39010,heathrow)
+
+	scale=400
+		X=-247 Y=-188 plc_module(39000,39010,heathrow,"PLC A",8,int,1)
+		X=39 Y=-172 Add
+		X=-30 Y=-188 plc_module(39000,39011,heathrow,"PLC B",8,int,0)
+	scale=256
+
+	X=-20 Y=176 node(39000,39048,1292,heathrow,"1",yes,angle=0)
+	X+=50 Y=130 node(39000,39049,1293,heathrow,"2",yes,angle=180)
+	X+=50 Y=176 node(int,int,int,source,"",no,angle=0)
+	X+=50 Y=130 node(int,int,int,source,"",no,angle=180)
+	X+=50 Y=176 node(int,int,int,source,"",no,angle=0)
+	X+=50 Y=130 node(int,int,int,source,"",no,angle=180)
+	X+=50 Y=176 node(int,int,int,source,"",no,angle=0)
+	X+=50 Y=130 node(int,int,int,source,"",no,angle=180)
+	clear
+	X=365 Y=148 text("Siemens Nodes")
+
+	x=0 y=0 link_anim(39010,heathrow)
+
+	x=0 y= -300 text(tfg=grey40,just=centrecentre,ch=20,"HV INTELLIGENT INTERFACE TRIAL - OS85")
+end
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	hv_int_trial(scale=256)
+	X=-529 Y=-350 nav_box_obj("HV DEMO","hv_trial",heathrow)
+	x = -570 y = 310 browser(1289,heathrow,1140)
+end
+mimic = MAIN_OBJECT W=1140, H=800, JUST=CENTRECENTRE, FG=WHITE, bg=LIGHTGREEN3, RESIZABLE
+
+

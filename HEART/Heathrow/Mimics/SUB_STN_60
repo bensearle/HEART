@@ -1,0 +1,60 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+!*************** BUSBAR 60 *****************!
+
+object busbar_60
+
+begin
+
+tfg = black x = -160 y = -60 add text ("60",ch = 30) clear
+
+lw=2
+
+
+x = -175 y = -25 add x = 170 add line(lw=4,fg=green4) clear
+
+x = -150  y = -25 add y += 50 add line (fg=green4) clear
+x = -100  y = -25 add y += 50 add line (fg=green4) clear
+x =  -50  y = -25 add y -= 50 add line (fg=green4) clear
+x =    0  y = -25 add y += 50 add line (fg=green4) clear
+x =   50  y = -25 add y -= 50 add line (fg=green4) clear
+x =  100  y = -25 add y += 30 add line (fg=green4) clear
+x =  150  y = -25 add y += 50 add line (fg=green4) clear
+
+scale = 120
+
+x =   -150 y =   0 ocb_mont(2000,2140,60,129,heathro2,1,"btm")
+x =   -100 y =0 ocb_mont(2000,2150,61,130,heathro2,2,"btm")
+x =   -50  y = -50 ocb_mont(2000,2160,62,131,heathro2,3,"top")
+x =     0  y =  0  ocb_mont(2000,2170,63,132,heathro2,4,"btm")
+x =    50  y = -50 ocb_mont(2000,2180,64,133,heathro2,5,"top")
+x =   100  y = 0   ocb_mont(2000,2280,74,143,heathro2,6,"btm")
+x =   150  y = 0   ocb_mont(2000,2190,1250,149,heathro2,7,"btm")
+
+scale = 100
+X =  -150 Y = 45 transformer("LT 1","")
+X =  150   Y = 45 transformer("U/AIR","")
+
+scale = 256
+just=centrecentre
+tfg = black ch = 12
+x = -50 y = -85 add text("61 P4") clear
+x = 50 y = -85 add text("85 P5") clear
+x = 95 y = 30 text("FEGP TX",tfg=black,ch=12,just=centrecentre)
+x = 100 y = 45 text("V Pier",tfg=black,ch=12,just=centrecentre)
+x = -100 y = 30 text("Spare",tfg=black,ch=12,just=centrecentre)
+x = 0 y = 30 text("Spare",tfg=black,ch=12,just=centrecentre)
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+x =0 busbar_60
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

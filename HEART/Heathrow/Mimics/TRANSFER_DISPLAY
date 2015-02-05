@@ -1,0 +1,200 @@
+! HEATHROW CMS - TRANSFER DISPLAY
+
+loaded by: POTABLE_WATER
+!
+
+load transfer_display_help
+
+load mimic_libutil
+
+type e_alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+
+! 
+***********************************************************
+* TRANSFER DISPLAY OBJECT                                 *
+* this object is called by the Top Level variable (mimic) *
+***********************************************************
+!
+
+object transfer_display(just,scale,alm_offset=int,sp_offset=int,src=source)
+
+!ALARM INPUTS
+alarm_inputs[1] = high_sp_alarm
+alarm_inputs[2] = low_sp_alarm
+!
+var alarm_inputs = input e_alarm_row_type[2]
+
+!E INPUTS
+e_inputs[1] = high_sp_ip
+e_inputs[2] = low_sp_ip
+!
+var e_inputs = input e_db_row_type[2]
+
+var high_sp_op = output  e_db_row_type
+var low_sp_op = output  e_db_row_type
+
+var sensor_bg = loopback  colour
+var transfer_sps = loopback  string
+
+var transfer_menu = menu  string
+var high_setpoint_panel = panel  int
+var low_setpoint_panel = panel  int
+
+var items_added = loopback  int
+var stfg = loopback  colour
+
+var helpstr = help string(30)
+
+begin
+
+! INITIALISATION !
+
+REALF = GENERAL4
+
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source e_inputs then 
+   begin
+
+   set source e_inputs = src
+   set filter e_inputs.db_addr = lim_ge
+   set limit e_inputs.db_addr = db_address(int(e1) + sp_offset-1)
+   set priority e_inputs.db_addr = 15
+   set persist e_inputs
+   set mayexist e_inputs
+   request e_inputs
+
+   set source alarm_inputs = src
+   set filter alarm_inputs.db_addr = lim_ge
+   set limit alarm_inputs.db_addr = db_address(int(b1) + alm_offset)
+   set priority alarm_inputs.db_addr = 15
+   set persist alarm_inputs
+   set mayexist alarm_inputs
+   request alarm_inputs
+
+   end
+
+
+! SELECT BG COLOUR !
+
+if alarm_inputs[1].alarm_status  == w_note or
+   alarm_inputs[2].alarm_status  == w_note then
+   begin
+   sensor_bg = flashred
+   stfg = white
+   end
+
+else if alarm_inputs[1].alarm_status  == w_clr or
+        alarm_inputs[2].alarm_status  == w_clr then
+   begin
+   sensor_bg = red
+   stfg = white
+   end
+
+else begin
+     sensor_bg = decoroff
+     stfg = blue
+     end
+
+
+! CASE MENU OPTIONS !
+ 
+if valid transfer_menu then
+   begin
+
+   case transfer_menu of
+        "Alter enable level"
+            begin
+            set title high_setpoint_panel = "Alter enable level"
+            set apply high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter abort Level"
+            begin
+            set title low_setpoint_panel = "Alter abort level"
+            set apply low_setpoint_panel
+            request low_setpoint_panel
+            end
+
+        default
+            begin
+            end
+
+   set invalid transfer_menu
+   end
+
+
+! DRAW SYMBOL !
+
+y = -10 rect(fg=sensor_bg,h=70,w=130) 
+x -= 65 y += 35 add y -= 70 add x += 130 add line(lw=1,fg=decorlight) clear
+x = 65 y = -35 add y += 60 add x -= 130 add line(lw=1,fg=decorshadow) clear
+x = 0 y = -30 text (tfg=stfg,ch=17,"Transfer pumps")
+x = 0 y = -9 text (tfg=stfg,ch=17,"Enable = "+!int!(e_inputs[1].e_value)+"%")
+y=11 text(tfg=stfg,ch=17,"Abort = "+!int!(e_inputs[2].e_value)+"%")
+
+
+! CCONFIGURE MENU !
+
+if valid e_inputs[1] then
+   transfer_sps ="   Enable = "+!int!(e_inputs[1].e_value)+"  Abort = "+!int!(e_inputs[2].e_value)+"  "
+w=130 h=70
+x=10 y=-10
+set rect transfer_menu
+set title transfer_menu = transfer_sps
+
+if invalid items_added then
+   begin
+   set add transfer_menu   = "Alter enable level"
+   set add transfer_menu   = "Alter abort level"
+   items_added = 1
+   end
+
+
+! WRITE DATA TO SERVER !
+
+if (high_setpoint_panel > e_inputs[2].e_value) and
+   valid high_setpoint_panel then
+   begin
+   set source high_sp_op = src
+   set old_value high_sp_op = e_inputs[1]
+   set value high_sp_op = e_inputs[1]
+   set value high_sp_op.e_value = high_setpoint_panel
+   request high_sp_op
+   set invalid high_setpoint_panel
+   end
+
+if (low_setpoint_panel < e_inputs[1].e_value) and
+   valid low_setpoint_panel then 
+   begin
+   set source low_sp_op = src
+   set old_value low_sp_op = e_inputs[2]
+   set value low_sp_op = e_inputs[2]
+   set value low_sp_op.e_value = low_setpoint_panel
+   request low_sp_op
+   set invalid low_setpoint_panel
+   end
+
+just = centrecentre
+x = 0 y = -10
+w = 130 h = 70
+set text helpstr = "TRANSFER_DISPLAY_HELP"
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg,just)
+begin
+scale=250
+just=centrecentre
+x = 200 y = 100
+transfer_display(12018,904,heathrow)
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=black,resizable

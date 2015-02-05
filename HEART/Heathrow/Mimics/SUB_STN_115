@@ -1,0 +1,138 @@
+load hex_ocb
+load hex_meter
+!load transformer!
+load hv_hierarchy
+
+const x_spacing = 70
+const y_vcb = 40
+const y_meter = 140
+
+!*************** BUSBAR 115 *****************!
+
+object busbar_115(bg,fg,w,h,tbg,tfg)
+
+begin
+realf=fixed0 fg=magenta3
+x = -440 y = 0 move x = -60 add line(lw=4)
+fg=red
+x = -10 y = 0 move x = 440 add line(lw=4)
+fg=red
+x = -35 y = -68 move y = 80 add line(lw=3)
+
+x=0 y =30
+tfg = black ch=20
+text ("115",just=bottomcentre)
+
+ch=14
+x = -200 y =-3 text ("BUS",just=bottomcentre,y=y-ch)
+text ("SECTION 1",just=bottomcentre)
+
+x = 120 text ("BUS",just=bottomcentre,y=y-ch)
+text ("SECTION 2",just=bottomcentre)
+
+x = -30 y = 120 text ("S/S146",just=bottomcentre,y=y-ch)
+text ("BUSBAR",just=bottomcentre)
+
+Y = 220 x = -350 text ("CALMU1",just=bottomcentre)
+Y = 220 x = -210 text ("CALMU2",just=bottomcentre)
+Y = 220 x = -140 text ("CALMU3",just=bottomcentre)
+Y = 220 x = 70 text ("CALMU4",just=bottomcentre)
+Y = 220 x = 140 text ("CALMU5",just=bottomcentre)
+Y = 220 x = 280 text ("CALMU6",just=bottomcentre)
+Y = 220 x = 350 text ("CALMU7",just=bottomcentre)
+
+fg=magenta3
+lw=3
+! VCB 1 !
+x = -420 y=0  move y = -y_meter add line
+y = -y_vcb hex_ocb(32005,32270,32035,532,2471,heathrow,1,"top","vcb_1",scale=120)
+y =-y_meter hex_meter(2451,364,heathrow,0,300,"A","SS114 P2","ammeter_1",scale=200)
+
+! VCB 2 !
+x += x_spacing y=0  move y = y_meter add line
+y = y_vcb  hex_ocb(32005,32300,32035,533,2472,heathrow,2,"btm","vcb_2",scale=120)
+y = y_meter hex_meter(2955,365,heathrow,0,100,"A","TX 4","ammeter_2",scale=200)
+
+! VCB 3 !
+x += x_spacing y=0  move y = -y_meter add line
+y = -y_vcb  hex_ocb(32005,32330,32035,534,2473,heathrow,3,"top","vcb_3",scale=120)
+y = -y_meter hex_meter(2452,366,heathrow,0,400,"A","SS53 P3","ammeter_3",scale=200)
+hex_meter(x=x+x_spacing,2450,807,heathrow,9.35,12.65,"kV","VOLTS","voltmeter_3",scale=200,realf=fixed2)
+
+! VCB 4 !
+x += x_spacing y=0  move y = y_meter add line
+y = y_vcb  hex_ocb(32005,32360,32035,535,2474,heathrow,4,"btm","vcb_4",scale=120)
+y = y_meter hex_meter(3005,367,heathrow,0,100,"A","FAN S1","ammeter_4",scale=200)
+
+! VCB 5 !
+x += x_spacing y=0  move y = y_meter add line
+y = y_vcb hex_ocb(32005,32390,32035,536,2475,heathrow,5,"btm","vcb_5",scale=120)
+y = y_meter hex_meter(3055,368,heathrow,0,100,"A","FAN N1","ammeter_5",scale=200)
+
+! VCB 6 !
+x += x_spacing y=0  move y = -y_meter add line
+y = -y_vcb  hex_ocb(32005,32420,32035,537,2476,heathrow,6,"top","vcb_6",scale=120)
+y = -y_meter hex_meter(2453,369,heathrow,0,400,"A","BS 1/2","ammeter_6",scale=200)
+
+! LINK BETWEEN BUS SECTIONS !
+fg=red
+y = -y_vcb-28 move x += x_spacing add line
+
+! VCB 7 !
+y=0  move y = -y_meter add line
+y = -y_vcb  hex_ocb(32005,32450,32035,538,2477,heathrow,7,"top","vcb_7",scale=120)
+y = -y_meter hex_meter(2459,370,heathrow,0,400,"A","BS 2/1","ammeter_7",scale=200)
+
+! VCB 8 !
+x += x_spacing y=0  move y = y_meter add line
+y = y_vcb  hex_ocb(32005,32480,32035,539,2478,heathrow,8,"btm","vcb_8",scale=120)
+y = y_meter hex_meter(3105,371,heathrow,0,100,"A","FAN S2","ammeter_8",scale=200)
+
+! VCB 9 !
+x += x_spacing y=0  move y = y_meter add line
+y = y_vcb  hex_ocb(32005,32510,32035,540,2479,heathrow,9,"btm","vcb_9",scale=120)
+y = y_meter hex_meter(3155,372,heathrow,0,100,"A","FAN N2","ammeter_9",scale=200)
+
+! VCB 10 !
+x += x_spacing y=0  move y = -y_meter add line
+y = -y_vcb  hex_ocb(32005,32540,32035,541,2480,heathrow,10,"top","vcb_10",scale=120)
+y = -y_meter hex_meter(2460,373,heathrow,0,400,"A","SS143 P9","ammeter_10",scale=200)
+hex_meter(x=x-x_spacing,2458,808,heathrow,9.35,12.65,"kV","VOLTS","voltmeter_10",scale=200,realf=fixed2)
+
+! VCB 11 !
+x += x_spacing y=0  move y = y_meter add line
+y = y_vcb  hex_ocb(32005,32570,32035,542,2481,heathrow,11,"btm","vcb_11",scale=120)
+y = y_meter hex_meter(!2411!3205,395,heathrow,0,100,"A","LCL TX","ammeter_11",scale=200)
+
+! VCB 12 !
+x += x_spacing y=0  move y = y_meter add line
+y = y_vcb  hex_ocb(32005,32600,32035,543,2482,heathrow,12,"btm","vcb_12",scale=120)
+y = y_meter hex_meter(3255,396,heathrow,0,100,"A","TX 3","ammeter_12",scale=200)
+
+! VCB 13 !
+x += x_spacing y=0  move y = -y_meter add line
+y = -y_vcb  hex_ocb(32005,32630,32035,544,2483,heathrow,13,"top","vcb_13",scale=120)
+y = -y_meter hex_meter(2461,397,heathrow,0,300,"A","SS114 P7","ammeter_13",scale=200)
+
+end
+
+
+object help_area (h,w,just,angle,help_keytext=string)
+var help_variable = help string
+begin
+set rotrect help_variable
+set key help_variable = help_keytext
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+just=centrecentre
+help_area("mimic_help")
+goto_menu
+command_button(570, heathrow, x=-30, y=170)
+busbar_115
+
+end
+
+mimic = main_object w=970,h=500,just=centrecentre,fg=white,bg=aquamarine3,resizable

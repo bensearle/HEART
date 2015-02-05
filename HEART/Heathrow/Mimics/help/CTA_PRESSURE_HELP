@@ -1,0 +1,15 @@
+helptext pressure_help = "FIREMAIN CTA PRESSURE SENSORS------------
+
+
+This object displays the new Fire Main CTA pressure sensor located 
+adjacent to the passenger subway between carpark 1A and Terminal 1.
+
+
+The pressure can be monitored in psi or bar. To change the displayed 
+pressure use the right hand mouse button over the corresponding units button.
+
+
+There are no controls associated with this object, it is purely for monitoring
+only. However it is possible to set high and low level alarms, and to set / clear tagged 
+messages via the menu controls using the mouse.
+"

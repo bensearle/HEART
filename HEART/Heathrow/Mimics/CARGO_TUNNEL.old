@@ -1,0 +1,211 @@
+! HEATHROW CMS - CARGO TUNNEL
+
+loaded by: HIERARCHY
+!
+
+load mimic_libutil
+load light_ct                       
+load light_sensor
+load sensor_w_high_sp
+load sensor_w_low_sp
+load mmm_selector
+load display_and_alter_analogue
+load analogue_display_only
+load illuminance_display             
+load time_zones_display
+load time_zone_day
+load cargo_sump_pump
+load fan_two_speed_ct
+load fan_three_speed_ct_ef
+load fan_three_speed_ct_sf
+load sump_hi_sensor
+load main_hierarchy
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+goto_menu
+x = 490 y = -350 command_button(399,heathrow)
+x = 0 y = 0 clear
+
+X=-270 Y=-5 Add Y=345  Add LINE(ls=alt3,lw=1,fg=white) clear
+X=260 Y=-5 Add Y=345  Add LINE(ls=alt3,lw=1,fg=white) clear
+
+scale = 200
+
+!**********************BOTTOM ROW OF LIGHTS*********************!
+
+x=-30   y = 350 
+time_zones_display(scale=250,10019,814,4," Lighting Time Zones ","1234",heathrow)
+clear 
+x = -540 y=281 light_ct(10013,10033,"",1,1,heathrow)
+x = -465 y = 257 light_ct(10013,10033,"High Power",2,1,heathrow)
+y = 273 light_ct(10013,10033,"High Power",2,2,heathrow)
+y = 289 light_ct(10013,10033,"High Power",2,3,heathrow)
+y = 305 light_ct(10013,10033,"High Power",2,4,heathrow)
+
+x +=102 y = 273 light_ct(10013,10033,"High Power",3,1,heathrow)
+y = 289 light_ct(10013,10033,"High Power",3,2,heathrow)
+
+x +=102  y = 282 light_ct(10013,10033,"High Power",4,1,heathrow)
+
+x +=102  y = 282 light_ct(10013,10033,"Low Power",5,1,heathrow)
+x +=102  y = 282 light_ct(10013,10033,"Low Power",5,2,heathrow)
+x +=102  y = 282 light_ct(10013,10033,"Low Power",5,3,heathrow)
+x +=102  y = 282 light_ct(10013,10033,"Low Power",5,4,heathrow)
+
+x +=102  y = 282 light_ct(10013,10033,"High Power",4,1,heathrow)
+
+x +=102  y = 273 light_ct(10013,10033,"High Power",3,1,heathrow)
+y = 289 light_ct(10013,10033,"High Power",3,2,heathrow)
+
+x +=102 y = 257 light_ct(10013,10033,"High Power",2,1,heathrow)
+y = 273 light_ct(10013,10033,"High Power",2,2,heathrow)
+y = 289 light_ct(10013,10033,"High Power",2,3,heathrow)
+x = 530 y=281 light_ct(10013,10033,"",1,1,heathrow)
+
+!**********************TOP ROW OF LIGHTS*********************!
+
+x = -540 y=81 light_ct(10013,10033,"",1,1,heathrow)
+x = -465 y = 57 light_ct(10013,10033,"High Power",2,1,heathrow)
+y = 73 light_ct(10013,10033,"High Power",2,2,heathrow)
+y = 89 light_ct(10013,10033,"High Power",2,3,heathrow)
+y = 105 light_ct(10013,10033,"High Power",2,4,heathrow)
+
+x +=102 y = 73 light_ct(10013,10033,"High Power",3,1,heathrow)
+y = 89 light_ct(10013,10033,"High Power",3,2,heathrow)
+
+x +=102  y = 82 light_ct(10013,10033,"High Power",4,1,heathrow)
+
+x +=102  y = 82 light_ct(10013,10033,"Low Power",5,1,heathrow)
+x +=102  y = 82 light_ct(10013,10033,"Low Power",5,2,heathrow)
+x +=102  y = 82 light_ct(10013,10033,"Low Power",5,3,heathrow)
+x +=102  y = 82 light_ct(10013,10033,"Low Power",5,4,heathrow)
+
+x +=102  y = 82 light_ct(10013,10033,"High Power",4,1,heathrow)
+
+x +=102  y = 73 light_ct(10013,10033,"High Power",3,1,heathrow)
+y = 89 light_ct(10013,10033,"High Power",3,2,heathrow)
+
+x +=102 y = 105 light_ct(10013,10033,"High Power",2,3,heathrow)
+y = 89 light_ct(10013,10033,"High Power",2,2,heathrow)
+y = 73 light_ct(10013,10033,"High Power",2,1,heathrow)
+x = 530 y=81 light_ct(10013,10033,"",1,1,heathrow)
+
+!x = -368 y = 130 light_sensor(100,3,heathrow)
+x = 0 y = 130 light_sensor(100,3,heathrow)
+x = 355  y = 130 light_sensor(100,3,heathrow)!
+
+
+scale=260
+x=490 y=-288
+odd_even_display(10013,heathrow)
+
+
+! Visiblilty displays !
+x = -390 
+y = 150 
+analogue_display_only(805,"Vis","C/M",heathrow)
+y = 340
+mmm_selector(10000,10025,"Vis",heathrow)
+y+=22
+sensor_w_low_sp(just=centrecentre,10000,"Vis Calc:",
+                "C/M",10028,803,829,heathrow)
+x = 0 
+y = 150 
+analogue_display_only(807,"Vis","C/M",heathrow)
+y-=25
+display_and_alter_analogue(just=centrecentre,10000,"Vis",837,heathrow)
+x = 380  
+y = 150 
+analogue_display_only(809,"Vis","C/M",heathrow)
+
+
+! Carbon Monoxide displays !
+x = -390 
+y = 210 
+analogue_display_only(808,"CO Calc:","ppm",heathrow)
+x = 0    
+analogue_display_only(806,"CO Calc:","ppm",heathrow)
+x = 380   
+analogue_display_only(804,"CO Calc:","ppm",heathrow)
+y=340
+mmm_selector(10000,10020,"CO",heathrow)
+x+=4 
+y+=22
+sensor_w_high_sp(just=centrecentre,10000,"CO","ppm",10023,802,825,heathrow)
+x=0 
+y=235 
+display_and_alter_analogue(just=centrecentre,10000,"CO",801,heathrow)
+
+
+! Illuminance display !
+x = 380  y = 10   illuminance_display(just=centrecentre,10000,"ILLUM","Lumens/sqft",10030,800,833,heathrow)
+scale = 260
+y+=22
+mmm_selector(10000,10030,"Illum",heathrow)
+
+
+! South Vent Room !
+x=-402 y =-250 
+fan_two_speed_ct(10000,10150,380,heathrow,"Exhaust E1")
+x+=110 
+fan_three_speed_ct_ef(10000,10170,381,heathrow,"Exhaust E2","Exhaust E3")
+
+y = -175
+x = -328 
+fan_three_speed_ct_sf(10000,10290,384,heathrow,"Supply Fan S1","Supply Fan S2","Supply Fan S3")
+
+x = -170 y = -250 cargo_sump_pump(10000,10068,10110,376,heathrow,0)
+x = -170 y = -177 cargo_sump_pump(10000,10068,10120,377,heathrow,0)
+
+! Nadir Pump !
+x = -40 
+y = -210 
+cargo_sump_pump(10000,10108,10100,375,heathrow,0)
+
+! North Vent Room !
+x=186 
+y =-215 
+fan_three_speed_ct_ef(10000,10220,382,heathrow,"Exhaust E4","Exhaust E5")
+
+x+=110 
+fan_two_speed_ct(10000,10270,383,heathrow,"Exhaust E6")
+x = 380 y = -250 cargo_sump_pump(10000,10070,10130,378,heathrow,0)
+x = 380 y = -177 cargo_sump_pump(10000,10070,10140,379,heathrow,0)
+
+scale = 200
+x = -175 y = -325 sump_sensor(10015,heathrow,"Sump Overflow")
+x = -40  y = -275 sump_sensor(10014,heathrow,"Sump Overflow")
+x = 365  y = -325 sump_sensor(10016,heathrow,"Sump Overflow")
+
+x=-30   y = -75 
+time_zones_display(scale=250,10018,810,3," Ventilation Time Zones ","132",heathrow)
+clear
+
+
+scale = 260
+W=340 H=250 X=-460 Y=-370  BOX
+W=120 H=150 X=-100 Y=-320  BOX
+W=340 H=250 X=80 Y=-370  BOX
+x = -115 y = -265 add x = -100 add line(fg=white,lw=1)
+
+x = -440 y = 170 text("South Gradient",ch=17,tfg=white)
+x = -30 y = 170 text("Centre",ch=17,tfg=white)
+x = 320 y = 170 text("North Gradient",ch=17,tfg=white)
+
+x = -400 y = -335 text("South Vent Room",ch=17,tfg=white)
+
+x = 120 y = -335 text("North Vent Room",ch=17,tfg=white)
+
+x = -84 y = -316 text("Nadir Pump",ch=17,tfg=white)
+
+x = -215 y = -300 text("Sump Pump 1",ch=15,tfg=white)
+x = -215 y = -145 text("Sump Pump 2",ch=15,tfg=white)
+
+x = 330 y = -300 text("Sump Pump 3",ch=15,tfg=white)
+x = 330 y = -145 text("Sump Pump 4",ch=15,tfg=white)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

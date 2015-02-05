@@ -1,0 +1,205 @@
+!Function to return value of a B database point!
+object get_b_value(db_addr=db_address, src=source) = onoff
+var ip = input db_elements(db_addr, b_value)
+begin
+	set source ip = src   
+	set filter ip.db_addr = lim_eq   
+	set limit ip.db_addr = db_addr   
+	set persist ip    
+	request ip   
+	get_b_value = ip.b_value   
+end
+
+!Function to return value of an E database point!
+object get_c_value(db_addr=db_address, src=source) = string
+var ip = input db_elements(db_addr, c_value)
+begin
+	set source ip = src   
+	set filter ip.db_addr = lim_eq   
+	set limit ip.db_addr = db_addr   
+	set persist ip    
+	request ip   
+	get_c_value = ip.c_value   
+end
+
+!Function to return value of an E database point!
+object get_e_value(db_addr=db_address, src=source) = real
+var ip = input db_elements(db_addr, e_value)
+begin
+	set source ip = src   
+	set filter ip.db_addr = lim_eq   
+	set limit ip.db_addr = db_addr   
+	set persist ip    
+	request ip   
+	get_e_value = ip.e_value   
+end
+
+!Function to set value of an E database point!
+object set_e_value(db_addr=db_address,src=source,val=real)
+var op = output db_elements(db_addr, e_value)
+begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+end
+
+!Popup box displaying tag message!
+object msg (tag_mess=string,bg,just)
+begin
+	text (tag_mess)
+end
+mimic msg_box = msg bg=decoroff,just=centrecentre,w=300,h=50
+
+!Draw the valve shape!
+object DrawValve(backCol=colour,frontCol=colour,tagMessage=string,angle)
+var message_box = popup msg_box
+begin
+	just=centrecentre
+	
+	!Draw yellow background if tag message present!
+	if tagMessage <> "" then
+	begin
+		x=0 y=0 w=60 h=110
+		fg=yellow
+		rotrect
+		!Popup showing tag message if tag message present!
+		if rotselb then
+		begin
+			set title message_box = "Tag Message"
+			request message_box(tagMessage)
+		end
+	end
+		
+	!Draw bow tie shape!
+	x=0 y=0 add
+	x-=25 y-=50 add
+	x+=50 add
+	x-=50 y+=100 add
+	x+=50 add
+	fg=backCol
+	fill
+	fg=black
+	lw=3
+	polygon
+	
+	!Draw circle shape!
+	x=0 y=0 h=40 w=40 sa=0 aa=360
+	fg=frontCol
+	pie
+	fg=black
+	arc	
+end
+
+Object main_object(w,h,fg,bg)
+var openInput = onoff
+var closedInput = onoff
+var percentOpen = real
+var dressedState = int
+var tagMessage = string
+var valveAlarms = input db_elements(db_addr, alarm_status)[5]
+var valveBackColour = colour
+var valveFrontColour = colour
+var i = int
+var WFN_found = int
+var WFC_found = int
+var my_menu = menu string
+Begin
+	!Opened database read!
+	openInput = get_b_value(B50000, heathrow)
+	!Closed database read!
+	closedInput = get_b_value(B50001, heathrow)
+	!% Open database read!
+	percentOpen = get_e_value(E30000, heathrow)
+	percentOpen = 90 * (percentOpen / 100) !convert % open into an angle between 0 and 90!
+	!Dressed State database read!
+	dressedState = int(get_e_value(E30001, heathrow))
+	!Tag message database read!
+	tagMessage = get_c_value(C3000, heathrow)
+	
+	!Alarms database read!
+	set source valveAlarms = heathrow
+	set filter valveAlarms.db_addr = lim_ge
+	set limit valveAlarms.db_addr = B50000
+	request valveAlarms
+	
+	!Scan for alarms!
+	WFN_found = 0
+	WFC_found = 0
+	for i from 1 to 5 do
+	begin
+		if valveAlarms[i].alarm_status == w_note then
+			WFN_found++
+		if valveAlarms[i].alarm_status == w_clr then
+			WFC_found++
+	end
+	
+	
+	!Right click menu actions!
+	if valid my_menu then
+	begin
+		if my_menu == "Dress to Open" then
+			set_e_value(E30001,heathrow,1)
+		else if my_menu == "Dress to Closed" then
+			set_e_value(E30001,heathrow,2)
+		else if my_menu == "Undress Valve" then
+			set_e_value(E30001,heathrow,0)
+		set invalid my_menu 
+	end
+
+	!remove right click menu items!
+	set remove my_menu = "Dress to Open"
+	set remove my_menu = "Dress to Closed"
+	set remove my_menu = "Undress Valve"
+	
+	!Set the valve colour!
+	case dressedState of
+		0
+		begin
+			if WFN_found > 0 then
+				valveBackColour = flashred
+			else if WFC_found > 0 then
+				valveBackColour = red
+			else if openInput then
+				valveBackColour = green
+			else if closedInput then
+				valveBackColour = white
+			else
+				valveBackColour = lightgrey
+			
+			valveFrontColour = lightgrey
+			set add my_menu = "Dress to Open"
+			set add my_menu = "Dress to Closed"
+		end
+		1
+		begin
+			valveBackColour = green
+			valveFrontColour = blue
+			percentOpen = 90
+			set add my_menu = "Dress to Closed"
+			set add my_menu = "Undress Valve"
+		end
+		2
+		begin
+			valveBackColour = white
+			valveFrontColour = blue
+			percentOpen = 0
+			set add my_menu = "Dress to Open"
+			set add my_menu = "Undress Valve"
+		end
+		default
+		begin
+		end
+	
+	!Draw valve!
+	x=100 y=75 just=centrecentre
+	DrawValve(valveBackColour,valveFrontColour,tagMessage,angle=int(percentOpen))
+	w=110 h=110
+	set rect my_menu 
+End
+
+mimic = main_object w=400,h=300,bg=lightblue,resizable

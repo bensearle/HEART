@@ -1,0 +1,46 @@
+load mimic_libutil
+load fuse_sw
+load oil_switch
+load transformer
+
+object busbar_71
+begin
+lw=2
+tfg = black x = 100 y = -5 add text ("71",ch =25) clear
+x = -25 y = 25 add x = 125 add line(lw=4,fg=red) clear
+
+x = 0 y = -25 add y += 50 add line (fg=red) clear
+
+x =  50 y = 25 add y += 50 add line (fg=red) clear
+x =  100 y = 25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25020,40,1310,heathrow,"c")
+
+x = 50 y = 50 hv_fuse(25022,41,1311,heathrow,"o")
+x = 100 y = 50 hv_fuse(25024,42,1312,heathrow,"c")
+
+scale = 100
+X =  100  Y = 95 add transformer("LT 1","LOCAL")
+
+just = centrecentre
+
+scale=256
+tfg=black ch=12
+x = 15 y = 0 text("1")
+x = 65 y = 50 text("2")
+x = 115 y = 50 text("3")
+x = 0 y = -35 text("47 P1")
+x = 50 y = 80 text("Spare")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -50 y = -40 busbar_71
+
+end
+
+mimic = main_object w=250,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

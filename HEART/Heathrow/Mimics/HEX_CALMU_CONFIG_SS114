@@ -1,0 +1,126 @@
+load new_hex_calmu_libutil 
+
+object cal_config(bg,fg,w,h,tbg,tfg,src=source)
+var sn_array = loopback str_tab[32]
+var sn_panel = panel str_tab
+var i = int
+var duplicate = int
+var init = loopback int
+begin
+if invalid init then 
+   begin
+   set default sn_array[32]
+   init=1
+   end
+
+x = 0 y = 0 clear
+
+X=0 Y=-185 Add Y=240  Add LINE(lw=2,fg=white) clear
+X=-260 Y=-185 Add Y=240  Add LINE(lw=2,fg=white) clear
+X=260 Y=-185 Add Y=240  Add LINE(lw=2,fg=white) clear
+X=-260 Y=-185 Add X=260  Add LINE(lw=2,fg=white) clear
+X=-260 Y=240 Add X=260  Add LINE(lw=2,fg=white) clear
+X=0 Y=-5 Add Y=195  Add LINE(lw=2,fg=white) clear
+
+scale = 200
+
+!**********************BOTTOM ROW OF LIGHTS*********************!
+
+x = 0 y = -244 text(just=centrecentre,"CALMU METER SERIAL NUMBERS",ch=40,tfg=white)
+y=y+30 text (just=centrecentre,"SUB STATION 114",ch=40,tfg=white)
+
+y =-180
+sn_array[1] = request_calmu_sno(src,3300,33600)
+sn_array[2] = request_calmu_sno(src,3350,33601)
+sn_array[3] = request_calmu_sno(src,3400,33602)
+sn_array[4] = request_calmu_sno(src,3450,33603)
+sn_array[5] = request_calmu_sno(src,0,0)
+sn_array[6] = request_calmu_sno(src,0,0)
+sn_array[7] = request_calmu_sno(src,0,0)
+sn_array[8] = request_calmu_sno(src,0,0)
+sn_array[9] = request_calmu_sno(src,0,0)
+sn_array[10] = request_calmu_sno(src,0,0)
+sn_array[11] = request_calmu_sno(src,0,0)
+sn_array[12] = request_calmu_sno(src,0,0)
+sn_array[13] = request_calmu_sno(src,0,0)
+sn_array[14] = request_calmu_sno(src,0,0)
+sn_array[15] = request_calmu_sno(src,0,0)
+sn_array[16] = request_calmu_sno(src,0,0)
+sn_array[17] = request_calmu_sno(src,0,0)
+sn_array[18] = request_calmu_sno(src,0,0)
+sn_array[19] = request_calmu_sno(src,0,0)
+sn_array[20] = request_calmu_sno(src,0,0)
+sn_array[21] = request_calmu_sno(src,0,0)
+sn_array[22] = request_calmu_sno(src,0,0)
+sn_array[23] = request_calmu_sno(src,0,0)
+sn_array[24] = request_calmu_sno(src,0,0)
+sn_array[25] = request_calmu_sno(src,0,0)
+sn_array[26] = request_calmu_sno(src,0,0)
+sn_array[27] = request_calmu_sno(src,0,0)
+sn_array[28] = request_calmu_sno(src,0,0)
+sn_array[29] = request_calmu_sno(src,0,0)
+sn_array[30] = request_calmu_sno(src,0,0)
+sn_array[31] = request_calmu_sno(src,0,0)
+sn_array[32] = request_calmu_sno(src,0,0)
+
+
+duplicate = 0
+if valid sn_panel then
+   begin
+   for i from 1 to 32 do
+      begin
+      if sn_array[i].str == sn_panel.str then
+	 duplicate=1
+      end
+   if (not duplicate) or (sn_Panel.str == "") then
+      write_calmu_sn(src,sn_panel)
+   set invalid sn_panel
+   end
+y = -180
+for i from 1 to 32 do
+   begin
+   if i >= 17 then 
+      begin
+      X = 20 
+      if i == 17 then
+	 y = -180
+      end
+   else
+      x = -250 
+   if selb (w = 320, h = ch) then
+      begin
+      rect (w = 320, h = 20, x = -250, fg = yellow)
+      set unpinned sn_panel
+      set title sn_panel = "Calmu " + i + " Serial Number."
+      set value sn_panel.str = sn_array[i].str
+      set off sn_panel.db_addr
+      set off sn_panel.failure
+      set value sn_panel.db_addr = sn_array[i].db_addr
+      request sn_panel
+      end
+   text("CALMU "+i,ch=20,tfg=white)
+   x+=130
+   if sn_array[i].str <> "busy" then
+      begin
+      if sn_array[i].str == "" then
+	 begin
+	 tfg=white
+         text("<Not Configured>",ch=16)
+	 end
+      else 
+	 begin
+	 if sn_array[i].failure == on then
+	    tfg = flashred
+         else
+	    tfg = white
+         text(sn_array[i].str,ch=20)
+	 end
+      end
+   y += 25
+   end
+if duplicate then
+   text(ch=20,x=-200,y=240,tfg=red, "Error - Cannot configure duplicate serial numbers")
+end
+
+mimic = cal_config w=600,h=530,just=centrecentre,fg=white,bg=GREEN4,resizable
+

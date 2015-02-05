@@ -1,0 +1,587 @@
+load mimic_libutil
+load ocb_alarm_test_fp
+load sub_stn_120
+load sub_stn_128
+load sub_stn_132
+
+
+object call_box(height=int,width=int,rect_bg=colour,title=string)
+begin
+	x=0 y=0 rect(just=centrecentre,w=width,h=height,fg=rect_bg)
+	text(tfg=white,ch=25,title,just=centrecentre) clear
+
+	x=0 y=0
+	x -= width/2 y += height/2 add
+	y -= height add x += width
+	add line (fg=white) clear
+
+	x=0 y=0 
+	x -= width/2 y += height/2 add
+	x += width add y -= height
+	add line (fg=grey40) clear
+end
+
+!****************** SUB 120 ********************!
+
+object sub_symbol_ss120
+
+var call_var = popup  sub_stn_120
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+var return_8 = int
+var rect_bg = loopback colour
+var line_col=colour
+begin
+	line_col=magenta3
+
+	return_1 = fp_sub_alarm(2600,2500,heathro3)
+	return_2 = fp_sub_alarm(2600,2510,heathro3)
+	return_3 = fp_sub_alarm(2600,2520,heathro3)
+	return_5 = fp_sub_alarm(2600,2540,heathro3)
+	return_6 = fp_sub_alarm(2600,2550,heathro3)
+	return_7 = fp_sub_alarm(2600,2560,heathro3)
+	return_8 = fp_sub_alarm(2600,2820,heathro3)
+
+   if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_5 == 1 or return_6 == 1 or return_7 == 1 or return_8 == 1 then
+      begin
+    	rect_bg = magenta
+      end
+   else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_5 == 2 or return_6 == 2 or return_7 == 2 or return_8 == 2 then
+      begin
+      	rect_bg = flashred
+      end
+   else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_5 == 3 or return_6 == 3 or return_7 == 3  or return_8 == 3 then
+      begin
+       	rect_bg = red
+      end
+   else
+      begin
+ 	rect_bg = decoroff
+      end
+
+   clear x = -25 y = 38 add x += 100 add line(fg=line_col,lw=4) clear
+
+   w=65 h=25 x=37 y=25 rect(fg=rect_bg)
+   set title call_var = "Sub Station 120"
+
+   if anyb then
+      begin
+    	request call_var
+      end
+
+   w=65 h=25 x=-77 y=25 rect(fg=rect_bg)
+   set title call_var = "Sub Station 120"
+
+   if anyb then
+      begin
+    	request call_var
+      end
+	
+   x =-44 y = 37 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+   x =68 y = 37 text(tfg=white,ch=25,"120",just=centrecentre) clear
+
+   x = -12 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+   x = -12 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+   x = 102 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+   x = 102 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+  
+   x = 12 y =37  ocb_mont_lib(2600,2540,104,1014,heathro3,5,"sect",angle=90)
+end
+
+
+!****************** SUB 128 ********************!
+
+object sub_symbol_128
+
+var call_var = popup  sub_stn_128
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+var return_8 = int
+var return_9 = int
+var return_10 = int
+var return_11 = int
+var return_12 = int
+var return_13 = int
+var return_14 = int
+var rect_bg = loopback colour
+var line_col=colour
+begin
+	line_col=magenta3
+
+	return_1 = fp_sub_ctrl_alarm(37001,37150,heathrow)
+	return_2 = fp_sub_ctrl_alarm(37001,37170,heathrow)
+	return_3 = fp_sub_ctrl_alarm(37001,37190,heathrow)
+	return_5 = fp_sub_ctrl_alarm(37001,37210,heathrow)
+	return_6 = fp_sub_ctrl_alarm(37001,37230,heathrow)
+	return_7 = fp_sub_ctrl_alarm(37001,37250,heathrow)
+	return_8 = fp_sub_ctrl_alarm(37001,37270,heathrow)
+	return_9 = fp_sub_ctrl_alarm(37001,37290,heathrow)
+	return_10 = fp_sub_ctrl_alarm(37001,37310,heathrow)
+	return_11 = fp_sub_ctrl_alarm(37001,37330,heathrow)
+	return_12 = fp_sub_ctrl_alarm(37001,37350,heathrow)
+	return_13 = fp_sub_ctrl_alarm(37001,37370,heathrow)
+	return_14 = fp_sub_ctrl_alarm(37001,37390,heathrow)
+
+   if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_5 == 1 or return_6 == 1 or return_7 == 1
+	or return_8 == 1 or return_9 == 1 or return_10 == 1 or return_11 == 1 or return_12 == 1 
+	or return_13 == 1 or return_14 == 1 then
+      begin
+    	rect_bg = magenta
+      end
+   else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_5 == 2 or return_6 == 2 or return_7 == 2
+	or return_8 == 2 or return_9 == 2 or return_10 == 2 or return_11 == 2 or return_12 == 2 
+	or return_13 == 2 or return_14 == 2 then
+      begin
+      	rect_bg = flashred
+      end
+   else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_5 == 3 or return_6 == 3 or return_7 == 3
+	or return_8 == 3 or return_9 == 3 or return_10 == 3 or return_11 == 3 or return_12 == 3 
+	or return_13 == 3 or return_14 == 3 then
+      begin
+       	rect_bg = red
+      end
+   else
+      begin
+ 	rect_bg = decoroff
+      end
+
+	just=centrecentre
+
+   	clear x =-80 y = 0 add x += 160 add line(fg=line_col,lw=4) clear
+
+	w=60 h=25 x=-75 y=0 call_box(25,60,rect_bg,"Sub")
+	set title call_var = "Sub Station 128"
+	if anyb then
+	      begin
+	    	request call_var
+	      end
+
+	w=90 h=25 x=90 y=0 call_box(25,90,rect_bg,"128")
+	set title call_var = "Sub Station 128"
+	if anyb then
+	      begin
+	    	request call_var
+	      end
+
+	scale=310
+	x = -22	y = 0	hv_lib_breaker("eclipse",37001,37250,1155,5005,5040,HEATHROW,5,"SECT",30)
+	x = 22	y = 0	hv_lib_breaker("eclipse",37001,37310,1158,5008,5040,HEATHROW,7,"SECT",40)
+end
+
+
+
+!****************** SUB 132 ********************!
+
+object sub_symbol_132
+
+var call_var = popup  sub_stn_132
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+var return_8 = int
+var return_9 = int
+var rect_bg = loopback colour
+var line_col=colour
+begin
+	line_col=magenta3
+
+	return_1 = fp_sub_ctrl_alarm(35501,35620,heathrow)
+	return_2 = fp_sub_ctrl_alarm(35501,35640,heathrow)
+	return_3 = fp_sub_ctrl_alarm(35501,35660,heathrow)
+	return_5 = fp_sub_ctrl_alarm(35501,35680,heathrow)
+	return_6 = fp_sub_ctrl_alarm(35501,35700,heathrow)
+	return_7 = fp_sub_ctrl_alarm(35501,35720,heathrow)
+	return_8 = fp_sub_ctrl_alarm(35501,35740,heathrow)
+	return_9 = fp_sub_ctrl_alarm(35501,35760,heathrow)
+
+   if return_1 == 1 or return_2 == 1 or return_3 == 1 or return_5 == 1 or return_6 == 1 or return_7 == 1
+	or return_8 == 1 or return_9 == 1 then
+      begin
+    	rect_bg = magenta
+      end
+   else if return_1 == 2 or return_2 == 2 or return_3 == 2 or return_5 == 2 or return_6 == 2 or return_7 == 2
+	or return_8 == 2 or return_9 == 2 then
+      begin
+      	rect_bg = flashred
+      end
+   else if return_1 == 3 or return_2 == 3 or return_3 == 3 or return_5 == 3 or return_6 == 3 or return_7 == 3
+	or return_8 == 3 or return_9 == 3 then
+      begin
+       	rect_bg = red
+      end
+   else
+      begin
+ 	rect_bg = decoroff
+      end
+
+   clear x = -25 y = 38 add x += 100 add line(fg=line_col,lw=4) clear
+
+   w=65 h=25 x=37 y=25 rect(fg=rect_bg)
+   set title call_var = "Sub Station 132"
+
+   if anyb then
+      begin
+    	request call_var
+      end
+
+   w=65 h=25 x=-77 y=25 rect(fg=rect_bg)
+   set title call_var = "Sub Station 132"
+
+   if anyb then
+      begin
+    	request call_var
+      end
+	
+   x =-44 y = 37 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+   x =68 y = 37 text(tfg=white,ch=25,"132",just=centrecentre) clear
+
+   x = -12 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+   x = -12 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+   x = 102 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+   x = 102 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+
+   scale=310
+   x = 12 y =37  hv_lib_breaker("eclipse",35500,35680,1203,4303,int,HEATHROW,4,"SECT",INT)
+end
+
+
+!****************** SUB 136 ********************!
+object sub_symbol_136
+
+var mm = toplevel  string_50
+var return_0 = int
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+
+var rect_bg = loopback colour
+var line_col=colour
+
+begin
+	line_col=magenta3
+
+	return_0 = fp_sub_ctrl_alarm(32501, 32600, heathro3)
+	return_1 = fp_sub_ctrl_alarm(32501, 32625, heathro3)
+	return_2 = fp_sub_ctrl_alarm(32501, 32650, heathro3)
+	return_3 = fp_sub_ctrl_alarm(32501, 32697, heathro3)
+	return_4 = fp_sub_ctrl_alarm(32501, 32722, heathro3)
+	return_5 = fp_sub_ctrl_alarm(32501, 32747, heathro3)
+
+	if return_0 == 1 or return_1 == 1 or return_2 == 1 or return_3 == 1 or return_5 == 1
+	then
+	begin
+		rect_bg = magenta
+	end
+	else if return_0 == 2 or return_1 == 2 or return_2 == 2 or return_3 == 2 or return_5 == 2
+	then
+	begin
+		rect_bg = flashred
+	end
+	else if return_0 == 3 or return_1 == 3 or return_2 == 3 or return_3 == 3 or return_5 == 3 
+	then
+	begin
+		rect_bg = red
+	end
+	else
+	begin
+		rect_bg = decoroff
+	end
+	clear x = -25 y = 38 add x += 100 add line(fg=line_col,lw=4) clear
+
+	w=65 h=25 x=37 y=25 rect(fg=rect_bg)
+	
+
+	if anyb then
+	begin
+		set source mm= heathrow
+		set mimic mm= "sub_stn_136"
+		request mm
+	end
+
+	w=65 h=25 x=-77 y=25 rect(fg=rect_bg)
+
+	if anyb then
+	begin
+		set source mm= heathrow
+		set mimic mm= "sub_stn_136"
+		request mm
+	end
+
+	x =-44 y = 37 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+	x =68 y = 37 text(tfg=white,ch=25,"136",just=centrecentre) clear
+	x = -12 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+	x = -12 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+	x = 102 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+	x = 102 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+
+	scale=310
+	 !x = 12 y =37 hv_lib_breaker(	"eclipse",32501,	32650,	2818,	7826,	int,	HEATHRO3,	3,	"SECT",	int)!
+end
+
+
+
+
+!****************** SUB 137 ********************!
+object sub_symbol_137
+
+!var call_var = popup  sub_stn_132!
+var mm = toplevel  string_50
+var return_0 = int
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+var return_8 = int
+var rect_bg = loopback colour
+var line_col=colour
+
+begin
+	line_col=magenta3
+
+	return_0 = fp_sub_ctrl_alarm(12015, 12110, heathro3)
+	return_1 = fp_sub_ctrl_alarm(12015, 12135, heathro3)
+	return_2 = fp_sub_ctrl_alarm(12015, 12160, heathro3)
+	return_3 = fp_sub_ctrl_alarm(12015, 12185, heathro3)
+	return_4 = fp_sub_ctrl_alarm(12015, 12210, heathro3)
+	return_5 = fp_sub_ctrl_alarm(12015, 12235, heathro3)
+	return_6 = fp_sub_ctrl_alarm(12015, 12260, heathro3)
+	return_7 = fp_sub_ctrl_alarm(12015, 12285, heathro3)
+	return_8 = fp_sub_ctrl_alarm(12015, 12310, heathro3)
+	
+		
+	
+	clear x = -25 y = 38 add x += 100 add line(fg=line_col,lw=4) clear
+
+
+	if anyb then
+	begin
+		set source mm= heathro3
+		set mimic mm= "sub_station_137"
+		request mm
+	end
+
+	w=65 h=25 x=-77 y=25 rect(fg=rect_bg)
+	if return_0 == 1 or return_1 == 1 or return_2 == 1 or return_3 == 1 or return_5 == 1 or return_6 == 1 or return_7 == 1
+	or return_8 == 1 then
+	begin
+		rect_bg = magenta
+	end
+	else if return_0 == 2 or return_1 == 2 or return_2 == 2 or return_3 == 2 or return_5 == 2 or return_6 == 2 or return_7 == 2
+	or return_8 == 2 then
+	begin
+		rect_bg = flashred
+	end
+	else if return_0 == 3 or return_1 == 3 or return_2 == 3 or return_3 == 3 or return_5 == 3 or return_6 == 3 or return_7 == 3
+	or return_8 == 3 then
+	begin
+		rect_bg = red
+	end
+	else
+	begin
+		rect_bg = decoroff
+	end
+
+	w=65 h=25 x=37 y=25 rect(fg=rect_bg)
+
+	if anyb then
+	begin
+		set source mm= heathro3
+		set mimic mm= "sub_station_137"
+		request mm
+	end
+
+	x =-44 y = 37 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+	x =68 y = 37 text(tfg=white,ch=25,"137",just=centrecentre) clear
+	x = -12 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+	x = -12 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+	x = 102 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+	x = 102 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+
+	scale=310
+	!x = -22	y = -80	hv_lib_breaker(	"eclipse",	29904,	30071,	2269,	6836,	int,	HEATHRO3,	4,	"SECT",	int)!
+	 x = 12 y =37	hv_lib_breaker(	"eclipse",	12015,	12210,	394,	1920,	1926,	HEATHRO3,	4,	"SECT",	30)
+		
+	end
+
+!****************** SUB 139 ********************!
+object sub_symbol_139
+
+var mm = toplevel  string_50
+var return_0 = int
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var return_6 = int
+var return_7 = int
+
+var rect_bg = loopback colour
+var line_col=colour
+
+begin
+	line_col=magenta3
+
+	return_0 = fp_sub_ctrl_alarm(29901, 29996, heathro3)
+	return_1 = fp_sub_ctrl_alarm(29901, 30021, heathro3)
+	return_2 = fp_sub_ctrl_alarm(29901, 30046, heathro3)
+	return_3 = fp_sub_ctrl_alarm(29901, 30071, heathro3)
+	return_4 = fp_sub_ctrl_alarm(29901, 30118, heathro3)
+	return_5 = fp_sub_ctrl_alarm(29901, 30143, heathro3)
+	return_6 = fp_sub_ctrl_alarm(29901, 30168, heathro3)
+	return_7 = fp_sub_ctrl_alarm(29901, 30193, heathro3)
+
+	if return_0 == 1 or return_1 == 1 or return_2 == 1 or return_3 == 1 or return_5 == 1 or return_6 == 1 or return_7 == 1
+	then
+	begin
+		rect_bg = magenta
+	end
+	else if return_0 == 2 or return_1 == 2 or return_2 == 2 or return_3 == 2 or return_5 == 2 or return_6 == 2 or return_7 == 2
+	then
+	begin
+		rect_bg = flashred
+	end
+	else if return_0 == 3 or return_1 == 3 or return_2 == 3 or return_3 == 3 or return_5 == 3 or return_6 == 3 or return_7 == 3
+	then
+	begin
+		rect_bg = red
+	end
+	else
+	begin
+		rect_bg = decoroff
+	end
+	clear x = -25 y = 38 add x += 100 add line(fg=line_col,lw=4) clear
+
+	w=65 h=25 x=37 y=25 rect(fg=rect_bg)
+	
+
+	if anyb then
+	begin
+		set source mm= heathro3
+		set mimic mm= "sub_station_139"
+		request mm
+	end
+
+	w=65 h=25 x=-77 y=25 rect(fg=rect_bg)
+
+	if anyb then
+	begin
+		set source mm= heathro3
+		set mimic mm= "sub_station_139"
+		request mm
+	end
+
+	x =-44 y = 37 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+	x =68 y = 37 text(tfg=white,ch=25,"139",just=centrecentre) clear
+	x = -12 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+	x = -12 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+	x = 102 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+	x = 102 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+
+	scale=310
+	 x = 12 y =37 hv_lib_breaker(	"eclipse",	29901,	30071,	2269,	6836,	int,	HEATHRO3,	4,	"SECT",	int)
+end
+
+
+!****************** SUB 147 ********************!
+object sub_symbol_147
+
+var mm = toplevel  string_50
+var return_0 = int
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+
+var rect_bg = loopback colour
+var line_col=colour
+
+begin
+	line_col=magenta3
+
+	return_0 = fp_sub_ctrl_alarm(32501, 32600, heathro3)
+	return_1 = fp_sub_ctrl_alarm(32501, 32625, heathro3)
+	return_2 = fp_sub_ctrl_alarm(32501, 32650, heathro3)
+	return_3 = fp_sub_ctrl_alarm(32501, 32697, heathro3)
+	return_4 = fp_sub_ctrl_alarm(32501, 32722, heathro3)
+	return_5 = fp_sub_ctrl_alarm(32501, 32747, heathro3)
+
+	if return_0 == 1 or return_1 == 1 or return_2 == 1 or return_3 == 1 or return_5 == 1
+	then
+	begin
+		rect_bg = magenta
+	end
+	else if return_0 == 2 or return_1 == 2 or return_2 == 2 or return_3 == 2 or return_5 == 2
+	then
+	begin
+		rect_bg = flashred
+	end
+	else if return_0 == 3 or return_1 == 3 or return_2 == 3 or return_3 == 3 or return_5 == 3 
+	then
+	begin
+		rect_bg = red
+	end
+	else
+	begin
+		rect_bg = decoroff
+	end
+	clear x = -25 y = 38 add x += 100 add line(fg=line_col,lw=4) clear
+
+	w=65 h=25 x=37 y=25 rect(fg=rect_bg)
+	
+
+	if anyb then
+	begin
+		set source mm= heathro3
+		set mimic mm= "sub_station_147"
+		request mm
+	end
+
+	w=65 h=25 x=-77 y=25 rect(fg=rect_bg)
+
+	if anyb then
+	begin
+		set source mm= heathro3
+		set mimic mm= "sub_station_147"
+		request mm
+	end
+
+	x =-44 y = 37 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+	x =68 y = 37 text(tfg=white,ch=25,"147",just=centrecentre) clear
+	x = -12 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+	x = -12 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+	x = 102 y = 25 add x -= 65 add y += 25 add line (fg=white) clear
+	x = 102 y = 25 add y += 25 add x -= 65 add line (fg=grey40) clear
+
+	scale=310
+	 x = 12 y =37 hv_lib_breaker(	"eclipse",32501,	32650,	2818,	7826,	int,	HEATHRO3,	3,	"SECT",	int)
+end
+
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+   sub_symbol_137
+
+end
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

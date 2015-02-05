@@ -1,0 +1,256 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!*******HV NORTH INTAKE*********!
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ammeter
+load transformer_meter
+load hv_menu_bar
+load hierarchy
+
+
+!***********************************************************
+* SOUTH INTAKE OBJECT                                      *
+***********************************************************!
+
+object south_intake
+begin
+scale=256 just = centrecentre
+
+x = 25 y = 300 add text(scale=260,ch=21,tfg=gold4,"SOUTH INTAKE") clear
+
+scale = 256 just = centrecentre
+tfg = gold4 ch = 20
+x = -150 y = 25 text("Front")
+x = -135 y = -35 text("Rear")
+
+
+! REAR BAR !
+x = -500 y = -20 add
+x += 1100 add
+line(fg=gold4,lw=4) clear
+
+! FRONT BAR !
+x = -500 y = 50 add
+x += 1100 add
+line(fg=gold4,lw=4) clear
+
+lw=2
+x = -450 y = -20 add y -= 60 add line(fg=gold4) clear
+x = -475 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = -462 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = -400 y = -20 add y -= 60 add line(fg=gold4) clear
+x = -425 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = -412 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = -350 y = -20 add y -= 60 add line(fg=gold4) clear
+x = -375 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = -362 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = -300 y = -20 add y -= 60 add line(fg=gold4) clear
+x = -325 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = -312 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = -75 y = -20 add y -= 60 add line(fg=gold4) clear
+x = -100 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = -88 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = -25 y = -20 add y -= 60 add line(fg=gold4) clear
+x = -50 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = -38 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = 100 y = -20 add y -= 60 add line(fg=gold4) clear
+x = 75 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = 88 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = 150 y = -20 add y -= 60 add line(fg=gold4) clear
+x = 125 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = 138 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = 375 y = -20 add y -= 60 add line(fg=gold4) clear
+x = 350 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = 362 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = 425 y = -20 add y -= 60 add line(fg=gold4) clear
+x = 400 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = 412 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = 475 y = -20 add y -= 60 add line(fg=gold4) clear
+x = 450 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = 462 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = 525 y = -20 add y -= 60 add line(fg=gold4) clear
+x = 500 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = 512 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = 575 y = -20 add y -= 60 add line(fg=gold4) clear
+x = 550 y = 50 add y -= 130 add x += 25 add line(fg=gold4) clear
+x = 562 y = -80 add y -= 30 add line(fg=gold4) clear
+
+x = -200 y = -20 add y += 70 add line(fg=gold4) clear
+
+x = 250 y = -20 add y += 70 add line(fg=gold4) clear
+
+x = 175 y = 50 add y += 110 add line(fg=gold4) clear
+x = 225 y = 50 add y += 110 add x -=50 add line(fg=gold4) clear
+x = 200 y = 160 add y +=25 add line(fg=gold4) clear
+
+x = 275 y = 50 add y += 110 add line(fg=gold4) clear
+x = 325 y = 50 add y += 110 add x -=50 add line(fg=gold4) clear
+x = 300 y = 160 add y +=25 add line(fg=gold4) clear
+
+x = -275 y = 50 add y += 110 add line(fg=gold4) clear
+x = -225 y = 50 add y += 110 add x -=50 add line(fg=gold4) clear
+x = -250 y = 160 add y +=25 add line(fg=gold4) clear
+
+x = -175 y = 50 add y += 110 add line(fg=gold4) clear
+x = -125 y = 50 add y += 110 add x -=50 add line(fg=gold4) clear
+x = -150 y = 160 add y +=25 add line(fg=gold4) clear
+
+scale = 100
+x= -252 y = 205 transformer("Tx 4","SEB")
+x= -152 y = 205 transformer("Tx 3","SEB")
+x= 200 y = 205 transformer("Tx 1","SEB")
+x= 300 y = 205 transformer("Tx 2","SEB")
+
+scale=120
+X=-475 Y=20 ocb(1000,1100,50,75,heathrow,1,"top") clear
+X=-450 Y=-50 ocb(1000,1120,51,76,heathrow,1,"top") clear
+X=-425 Y=20 ocb(1000,1140,52,77,heathrow,2,"top") clear
+X=-400 Y=-50 ocb(1000,1160,53,78,heathrow,2,"top") clear
+X=-375 Y=20 ocb(1000,1180,54,79,heathrow,3,"top") clear
+X=-350 Y=-50 ocb(1000,1200,55,80,heathrow,3,"top") clear
+X=-325 Y=20 ocb(1000,1220,56,81,heathrow,4,"top") clear
+X=-300 Y=-50 ocb(1000,1240,57,82,heathrow,4,"top") clear
+
+X=-225 Y=125 ocb_mont(1000,1700,58,83,heathrow,5,"btm") clear
+X=-275 Y=125 ocb_mont(1000,1710,59,84,heathrow,5,"btm") clear
+
+X=-200 Y=20 ocb(1000,1260,60,85,heathrow,6,"top") clear
+
+X=-175 Y=125 ocb_mont(1000,1720,61,86,heathrow,7,"btm") clear
+X=-125 Y=125 ocb_mont(1000,1730,62,87,heathrow,7,"btm") clear
+
+X=-100 Y=20 ocb(1000,1280,63,88,heathrow,8,"top") clear
+X=-75  Y=-50 ocb(1000,1300,64,89,heathrow,8,"top") clear
+X=-50  Y=20 ocb(1000,1320,65,90,heathrow,9,"top") clear
+X=-25  Y=-50 ocb(1000,1340,66,91,heathrow,9,"top") clear
+
+X=25   Y=50 ocb(1000,1360,67,92,heathrow,10,"sect",angle=-90) clear
+X=25   Y=-20 ocb(1000,1380,68,93,heathrow,11,"sect",angle=-90) clear
+
+X=75   Y=20 ocb(1000,1400,69,94,heathrow,12,"top") clear
+X=100  Y=-50 ocb(1000,1420,70,95,heathrow,12,"top") clear
+X=125  Y=20 ocb(1000,1440,71,96,heathrow,13,"top") clear
+X=150  Y=-50 ocb(1000,1460,72,97,heathrow,13,"top") clear
+
+X=225  Y=125 ocb_mont(1000,1740,73,98,heathrow,14,"btm") clear
+X=175  Y=125 ocb_mont(1000,1750,74,99,heathrow,14,"btm") clear
+
+X=250  Y=20 ocb(1000,1480,75,100,heathrow,15,"top") clear
+
+X=325  Y=125 ocb_mont(1000,1760,76,101,heathrow,16,"btm") clear
+X=275  Y=125 ocb_mont(1000,1770,77,102,heathrow,16,"btm") clear
+
+X=350  Y=20 ocb(1000,1500,78,103,heathrow,17,"top") clear
+X=375  Y=-50 ocb(1000,1520,79,104,heathrow,17,"top") clear
+
+X=400  Y=20 ocb(1000,1540,80,105,heathrow,18,"top") clear
+X=425  Y=-50 ocb(1000,1560,81,106,heathrow,18,"top") clear
+X=450  Y=20 ocb(1000,1580,82,107,heathrow,19,"top") clear
+X=475  Y=-50 ocb(1000,1600,83,108,heathrow,19,"top") clear
+X=500  Y=20 ocb(1000,1620,84,109,heathrow,20,"top") clear
+X=525  Y=-50 ocb(1000,1640,85,110,heathrow,20,"top") clear
+X=550  Y=20 ocb(1000,1660,86,111,heathrow,21,"top") clear
+X=575  Y=-50 ocb(1000,1680,87,112,heathrow,21,"top") clear
+
+scale = 256 just = centrecentre
+tfg = white ch = 12
+x = 512 y = -125 text("23 P0")
+x = 562 y = -125 text("Spare")
+end
+
+object south_intake_mimic
+begin
+
+x = 0 y = -60 south_intake
+
+x = -300 y = 40 h = 180 w = 200 rect(fg=black) clear
+x = 150 y = 40 h = 180 w = 200 rect(fg=black) clear
+
+lw=2
+X = -225 Y = 200 add y += 75 add line(fg=gold4) clear
+X = -275 Y = 200 add y += 75 add x += 50 add line(fg=gold4) clear
+x = -250 y = 275 add y += 50 add line(fg=gold4) clear
+
+X = -125 Y = 200 add y += 75 add line(fg=gold4) clear
+X = -175 Y = 200 add y += 75 add x += 50 add line(fg=gold4) clear
+x = -150 y = 275 add y += 50 add line(fg=gold4) clear
+
+X = 225 Y = 200 add y += 75 add line(fg=gold4) clear
+X = 175 Y = 200 add y += 75 add x += 50 add line(fg=gold4) clear
+x = 200 y = 275 add y += 50 add line(fg=gold4) clear
+
+X = 325 Y = 200 add y += 75 add line(fg=gold4) clear
+X = 275 Y = 200 add y += 75 add x += 50 add line(fg=gold4) clear
+x = 300 y = 275 add y += 50 add line(fg=gold4) clear
+
+scale = 120
+X=-225 Y=240 ocb_mont(1000,1700,58,83,heathrow,5,"btm") clear
+X=-275 Y=240 ocb_mont(1000,1710,59,84,heathrow,5,"btm") clear
+
+X=-175 Y=240 ocb_mont(1000,1720,61,86,heathrow,7,"btm") clear
+X=-125 Y=240 ocb_mont(1000,1730,62,87,heathrow,7,"btm") clear
+
+X=225  Y=240 ocb_mont(1000,1740,73,98,heathrow,14,"btm") clear
+X=175  Y=240 ocb_mont(1000,1750,74,99,heathrow,14,"btm") clear
+
+X=325  Y=240 ocb_mont(1000,1760,76,101,heathrow,16,"btm") clear
+X=275  Y=240 ocb_mont(1000,1770,77,102,heathrow,16,"btm") clear
+
+scale = 100
+x= -252 y = 305 transformer("Tx 4","SEB")
+x= -152 y = 305 transformer("Tx 3","SEB")
+x= 200 y = 305 transformer("Tx 1","SEB")
+x= 300 y = 305 transformer("Tx 2","SEB")
+
+scale = 200
+!y = -245 x = -462 ammeter(50,heathrow,"0-400A","SUB 62")!
+!y = -245 x = -412 ammeter(51,heathrow,"0-400A","SUB 58")!
+!y = -245 x = -362 ammeter(52,heathrow,"0-400A","SUB 85")!
+!y = -245 x = -312 ammeter(53,heathrow,"0-400A","SUB 89")!
+!y = -245 x = -88 ammeter(56,heathrow,"0-400A","SUB 46")!
+!y = -245 x = -38 ammeter(57,heathrow,"0-400A","SUB 61")!
+y = -245 x = 88 ammeter(58,heathrow,"0-400A","SUB 89")
+y = -245 x = 138 ammeter(59,heathrow,"0-400A","M1/11")
+y = -245 x = 362 ammeter(62,heathrow,"0-400A","M1/12")
+y = -245 x = 412 ammeter(63,heathrow,"0-400A","SUB 58")
+y = -245 x = 462 ammeter(64 ,heathrow,"0-400A","SUB 46")
+y = -245 x = 562 ammeter (69 ,heathrow,"0-800A","NI P9")
+
+scale = 240
+x = 140  y = 120 transformer_meter(65,60,heathrow,"SOUTH","1","0-400A")
+x = 370  y = 120 transformer_meter(66,61,heathrow,"SOUTH","2","0-400A")
+x = -90  y = 120 transformer_meter(67,55,heathrow,"SOUTH","3","0-400A")
+x = -320 y = 120 transformer_meter(68,54,heathrow,"SOUTH","4","0-400A")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -50 y = -25 south_intake_mimic
+x = 0 y = 322 menu_bar
+clear
+goto_menu
+x = 500 y = 270 command_button(89,heathrow)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,33 @@
+helptext ANALOGUE_DISPLAY_HELP = "ANALOGUE DISPLAY
+
+----------------
+
+This object displays any analogue value in text format along with any specified unit of measurment. An alarm condition will occur if the value falls out of its user defined high and low limit. If this situation arises then the object will go into alarm, the alarm background colours are as follows:
+
+
+Flashred Background - IN ALARM (WAITING FOR NOTE)
+
+
+Red Background - IN ALARM (WAITING FOR CLEAR)
+
+
+CONTROL MENU
+
+------------
+
+
+Alter High Alarm Level
+
+----------------------
+
+By selecting this control option, a popup box is presented and the required high level alarm can be entered. This level is written to the database and the object will go into alarm when the analogue value reaches this level.
+
+
+Alter Low Alarm Level
+
+---------------------
+
+By selecting this control option, a popup box is presented and the required low level alarm can be entered. This level is written to the database and the object will go into alarm when the analogue value reaches this level.
+
+
+"

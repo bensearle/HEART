@@ -1,0 +1,8 @@
+load mimic_libutil
+load AXA_COMMS_HELP
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

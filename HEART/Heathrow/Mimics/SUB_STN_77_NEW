@@ -1,0 +1,64 @@
+load mimic_libutil
+load oil_switch
+load fuse_sw
+load transformer
+load oil_switch_2
+
+
+!*********** BUSBAR 77 *************!
+
+object busbar_77
+
+begin
+
+tfg = black x = 110 y = -5 add text ("77",ch = 25) clear
+
+x = -50 y = 25 add x = 250 add line(lw=4,fg=yellow) clear
+lw=2
+x = -25 y = 25 add y -= 50 add line (fg=yellow) clear
+x = 25 y = 25 add y -= 65 add line (fg=yellow) clear
+x = 125 y = 25 add y += 50 add line (fg=yellow) clear
+x = 175 y = 25 add y += 50 add line (fg=yellow) clear
+x = 225 y = 25 add y -= 50 add line (fg=yellow) clear
+
+scale = 120
+x = -25 y = 0 oil_switch(25066,143,1333,heathrow,"c")!switch1!
+x = 225 y = 0 oil_switch(25068,144,1334,heathrow,"c")!switch6!
+
+x = 75 y = 25 oil_switch_2(25135,1092,1417,heathrow,"c",angle = 90)!switch3!
+
+x = 25 y = 0   hv_fuse(25070,145,1335,heathrow,"c")!switch2!
+x = 175 y = 50  hv_fuse(25072,146,1336,heathrow,"c")!switch5!
+x = 125 y = 50  hv_fuse(25074,147,1337,heathrow,"c")!switch4!
+
+scale = 100
+X =  125  Y = 95 add transformer("LT 1","LOCAL")
+
+scale = 260
+tfg=black ch=12
+just=centrecentre
+x = -10 y = 0 text("1")
+x = 40 y = 0 text("2")
+x = 75 y = 50 text("3")
+x = 140 y = 50 text("4")
+x = 190 y = 50 text("5")
+x = 240 y = 0 text("6")
+x = 25 y = -80 text("LONGFORD BR")
+x = 25 y = -65 text("CAR")
+x = 25 y = -50 text("PARK")
+x = -25 y = -50 text("SS55")
+x = -25 y = -35 text("P4")
+x = 175 y = 85 text("SS59")
+x = 175 y = 100 text("P1")
+x = 225 y = -35 text("SS124 P1")
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -100 y = -25 busbar_77
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

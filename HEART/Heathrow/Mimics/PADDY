@@ -1,0 +1,12 @@
+Load PADDY_LIB
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+Object main_object(w,h,fg,bg)
+
+begin
+valve(250, 250, B600, B601, B604, E10550, C10550, E10551, heathrow)
+valve(250, 800, B620, B621, B624, E10552, C10551, E10553, heathrow)
+end
+
+mimic = main_object w=1500,h=1200, bg=red, resizable

@@ -1,0 +1,74 @@
+load mimic_libutil
+load lv_generator
+load lv_contactor
+load ocb_barcis
+load ocb_monitored
+load transformer
+
+
+!*********** BUSBAR 3 *************!
+
+object busbar_3
+
+begin
+
+tfg = black x = 60 y = -55 add text ("3",ch = 25) clear
+
+lw = 2
+
+x = 50 y = 50 add
+y += 90 add
+line(fg=red) clear
+
+x = 80 y = 140 add
+y -= 100 add
+line(fg=red) clear
+
+x = 35 y = 140 add
+x += 60 add
+line(fg=red,lw=4) clear
+
+x = -125 y = -25 add x = 75 add line(lw=4,fg=red) clear
+
+x = -100 y = -25 add y += 50 add line (fg=red) clear
+x = -50  y = -25 add y -= 50 add line (fg=red) clear
+x = 0    y = -25 add y -= 50 add line (fg=red) clear
+x = 50   y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+
+x =  -100 y = 0   ocb_mont(1,100,1,1,heathro2,1,"btm")
+x =   -50 y = -50 ocb_mont(1,110,2,2,heathro2,2,"top")
+x =     0 y = -50 ocb_mont(1,120,3,3,heathro2,3,"top")
+x =    50 y = 0   ocb_mont(1,130,4,4,heathro2,4,"btm")
+
+scale = 140
+
+x = 90 y = 45 lv_generator(1,200,6,0,heathro2)
+
+
+scale = 100
+X =  -100 Y = 45 transformer("LT 2","LOCAL")
+X =  50  Y = 45 transformer("LT 1","LOCAL") 
+
+scale = 120
+x = 65 y = 100 lv_changeover(1,190,5,heathro2)
+
+scale = 256
+just=centrecentre
+tfg=black
+ch=12
+x = -50 y = -85 text("SS14 P1")
+x = 0 y = -85 text("NI P5")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = -25 x = 12 busbar_3
+
+end
+
+mimic = main_object w=400,h=300,just=centrecentre,fg=white,bg=aquamarine3,resizable

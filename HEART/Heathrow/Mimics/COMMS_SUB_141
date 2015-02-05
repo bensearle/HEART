@@ -1,0 +1,80 @@
+!**	HEATHROW\COMMS_SUB_141	**!
+!** 	Created by ULTRA - 23 Dec 2008	**!
+!** 	Modified by John S CCS Sept 2010	**!
+
+load modbus_lib
+load browser
+load lv_breaker
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	clear
+	x=161 y=-327 add
+	fg=black ls=solid lw=1 cs=capround line
+			!plc_module(plc_off,b_off,	dty_sty,	plc_res,	c_off,	src,	title=string,no_slots=int,slot_config=string,res2=int,res1=int)!
+	x=-521 y=-280	plc_module(21400,	21843,	21410,	21852,	3218,	heathro4,	"A",10,"0000000090",int,int)
+	x=79 y=-280	plc_module(21401,	21856,	21411,	21865,	3219,	heathro4,	"B",10,"0000000090",int,int)
+
+	X=454 Y=-280 Add X-=10 Add y+=100 add x-=828 add Y=228 Add X=-298 Add line(lw=3,fg=yellow4) clear
+	X=454 Y=-245 Add X-=5 Add y+=70 add x-=828 add Y=153 Add X=-298 Add line(lw=3,fg=yellow4) clear
+
+	X=-146 Y=-280 Add X-=10 Add y+=80 add x-=240 Add Y=253 Add X=-270 Add line(lw=3,fg=green4) clear
+	X=-146 Y=-245 Add X-=5 Add y+=50 add x-=240 Add Y=177 Add X=-270 Add line(lw=3,fg=green4) clear
+
+
+			!node(plc_offset	b_offset,	c_offset,	src,	title,	enable_config=yesno,angle)!
+
+	x=540 y=165 add x=-260 add line(fg=green4, lw=4) clear
+
+	x=-90 y=190 	node(21400,21800,3211,heathro4,"8",no,angle=0)
+	x+=60		node(21400,21806,3212,heathro4,"9",no,angle=0)
+	x+=60		node(21400,21812,3213,heathro4,"10",no,angle=0)
+	x+=60		node(21400,21818,3214,heathro4,"11",no,angle=0)
+	x+=60		node(21400,21824,3215,heathro4,"12",no,angle=0)
+	x+=60		node(21400,21830,3216,heathro4,"13",no,angle=0)
+	x+=60		!node(21400,21836,3217,heathro4,"14",no,angle=0)	 ** Future ** !
+
+	x=-280 y=165	d_switch(21400,21871,3221,heathro4,"sw.1",2,int,int,int)
+
+
+	x=540 y=240 add x=-260 add line(fg=green4, lw=4) clear
+	x=-90 y=265 	!node(21400,21758,3204,heathro4,"1",no,angle=0)	 ** Future ** !
+	x+=60		node(21400,21764,3205,heathro4,"2",no,angle=0)	 
+	x+=60		node(21400,21770,3206,heathro4,"3",no,angle=0)
+	x+=60		node(21400,21776,3207,heathro4,"4",no,angle=0)
+	x+=60		node(21400,21782,3208,heathro4,"5",no,angle=0)
+	x+=60		node(21400,21788,3209,heathro4,"6",no,angle=0)
+	x+=60		node(21400,21794,3210,heathro4,"7",no,angle=0)
+
+	x=-280 y=240 	d_switch(21400,21869,3220,heathro4,"sw.0",2,int,int,int)
+
+
+	just = centrecentre ch=12
+	! * p1 * ! 		!x=-90 y=290 	text("Future")		 ** Future ** !
+	! * p2 * ! 		x=-30 y=290 	text("Inc1") y+=12 text("SS54A")
+	! * p3 * ! 		x=30 y=290  	text("HAFCO") y+=12 text("1A")
+	! * p4 * ! 		x=90 y=290 	text("Future") y+=12 text("SS182")
+	! * p5 * ! 		x=150 y=290 	text("HAFCO") y+=12 text("2A")
+	! * p6 * ! 		x=210 y=290 	text("Loc") y+=12 text("TX1")
+	! * p7 * ! 		x=270 y=290 	text("LHS")
+
+	! * p8 * !		x=-90 y=215 	text("RHS")
+	! * p9 * !		x=-30 y=215 	text("Loc") y+=12 text("TX2")
+	! * p10 * !		x=30 y=215 	text("HAFCO") y+=12 text("1B")
+	! * p11 * ! 	x=90 y=215 	text("Future") y+=12 text("SS191")
+	! * p12 * ! 	x=150 y=215 	text("HAFCO") y+=12 text("2B")
+	! * p13 * ! 	x=210 y=215 	text("Inc2") y+=12 text("SS103")
+	! * p14 * ! 	!x=270 y=215 	text("Future")		 ** Future ** !
+
+	x = -570 y = 310 browser(360,heathro4,1140) clear
+
+	x=418 y=-383 main_title(300,30,"Modbus Communications - Outstation 73",black)
+	X=418 Y=-351 main_sub_call(grey80,300,30,"SUB 141","",blue4,18,yes,"hv_1",heathrow,int,"string",int)
+
+	clear
+	font = font_italic
+	X=210 Y=140 CH=14 text("Note: Node Numbers correspond to Circuit Breaker Panels")
+	X=-240 Y=166 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Right Hand Side")
+	X=-240 Y=243 CH=14 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("Left Hand Side")
+end
+mimic = main_object w=1140, h=800, just=centrecentre, fg=white, bg=lightgrey, resizable

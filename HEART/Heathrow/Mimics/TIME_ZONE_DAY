@@ -1,0 +1,65 @@
+! HEATHROW CMS - TIME ZONE DAY
+
+loaded by: CARGO_TUNNEL, MAIN_TUNNEL
+!
+
+load mimic_libutil
+
+type bd_row_type       =  db_elements(db_addr,b_value)
+
+
+!
+*************************************************************
+* ODD EVEN DAY OBJECT                                       *
+* this object is called from the Top Level variable (mimic) *
+*************************************************************
+!
+
+object odd_even_display(b_offset=int,src=source)
+
+var day_type_ip = input  bd_row_type
+
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source day_type_ip then 
+   begin
+   set source  day_type_ip = src
+   set filter  day_type_ip.db_addr = lim_eq
+   set limit   day_type_ip.db_addr = db_address(int(b1) + b_offset - 1)
+   set persist day_type_ip
+   request     day_type_ip
+   end
+
+
+! DRAW SYMBOL !
+
+just = centrecentre
+x = 0 y = 0 rect(w=100,h=30,fg=decoroff)
+x = -50 y = 15 add y = -15 add x = 50 add line(lw=1,fg=decorlight) clear
+x = 50 y = -15 add y = 15 add x = -50 add line(lw=1,fg=decorshadow) clear
+
+
+if day_type_ip.b_value == on then
+begin
+   x = 0 y = 0 text (ch=20,tfg=black,"Odd Day")
+end
+else
+if day_type_ip.b_value == off then 
+begin
+   x = 0 y = 0 text (ch=20,tfg=black,"Even Day")
+end
+
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+odd_even_display(10013,heathrow)
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

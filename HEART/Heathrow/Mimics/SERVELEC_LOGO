@@ -1,0 +1,94 @@
+load mimic_libutil
+
+object ser_logo
+begin
+just = centrecentre
+rect (h=50, w=190, fg=lightgrey)
+tfg = red
+x = 15
+ch = 20
+font=font_bold 
+y -= 5 add text ("S e r v e l e c")
+ch = 10 
+tfg = white 
+font =font_italic
+y += 15 add text ("Committed To Quality")
+clear
+x = 95 y = -24 add
+y += 49 add
+x -= 189 add line(fg=white) clear
+x -= 1 add
+y -= 50 add
+x += 190 add
+line (fg=black) clear
+fg = white
+x = -60 y = 24 add 
+y -= 40 add
+x -= 2 add
+y += 30 add
+x -= 2 add
+y -= 30 add
+y += 5 add
+x -= 2 add
+y -= 5 add
+x -= 2 add
+y += 20 add
+x += 2 add
+y -= 14 add
+x +=2 add
+
+line
+clear
+y += 15 
+x -= 2 add
+y +=9 add
+x -=2 add
+y -=9 add
+x -=2 add
+y +=9 add
+x -=2 add
+y -=25 add
+x +=2 add
+y -=5 add
+y +=8 add
+x +=2 add
+line
+clear
+x -=4
+y +=2 add
+x +=2 add
+y +=10 add
+line
+clear
+x -=4 
+y +=3 add
+x -=2 add
+y -=23 add
+y +=5 add
+x +=2 add
+y +=18 add
+line
+clear
+x -=6 add
+y -=23 add
+x +=2 add
+y +=30 add
+x -=2 add
+y -=5 add
+x -=10 add
+line
+clear
+y -=2 add
+x +=10 add
+line
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+scale =  500
+ser_logo
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=grey,resizable

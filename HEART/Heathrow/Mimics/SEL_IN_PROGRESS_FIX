@@ -1,0 +1,148 @@
+! HEATHROW CMS - Utility to deselect breaker selection process
+
+loaded by:- West Intake Mimic
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type panel_item_row = table (str=string(30))
+
+!**** SET B VALUE ****!
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+if not get busy op then
+    begin
+    set source op = src
+    set default op
+    set old_default op
+    set value op.db_addr = db_addr
+    set old_value op.db_addr = db_addr
+    set value op.b_value = val
+    set old_off op.b_value
+    request op
+    end
+end
+
+
+!**** OBJECT SELECTION BOX ****!
+object deselect_box (plc_offset=int,b_offset=int,src=source,ident=string)
+
+!**** PLC INPUTS ****
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+!**** B INPUTS ****
+b_inputs[1] = select_in_progress
+!
+var b_inputs = input b_db_row_type
+
+!**** LOOPBACKS ****!
+var box_fg = loopback colour
+var box_bg = loopback colour
+
+!**** PANELS ****!
+var main_menu = menu string(30)
+
+begin
+
+!**** REQUEST DATA FROM SERVER ****!
+
+if invalid get source b_inputs then
+
+   begin
+
+   set source b_inputs = src
+   set filter b_inputs.db_addr = lim_ge
+   set limit b_inputs.db_addr = db_address(int(b1) + b_offset - 1)
+   set priority b_inputs.db_addr = 15
+   set persist b_inputs
+   set mayexist b_inputs
+   request b_inputs
+
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   end
+
+
+!**** MAIN MENU ****!
+just = centrecentre
+y = 10 w=170 h=20 
+if b_inputs.b_value then
+begin
+set rect main_menu
+set remove main_menu = "Fault Reset"
+set add main_menu = "Fault Reset"
+end
+else
+begin
+x=0 y=0 w=0 h=0 set rect main_menu
+end
+
+
+!**** CONTROL MENU ****!
+if valid main_menu then
+   begin
+   case main_menu of
+
+         "Fault Reset"
+         begin
+         set_b_value(db_address(int(b1) + b_offset -1), src, off)
+         end
+
+         default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+
+!**** SELECT BOX BG COLOUR ****!
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+   box_bg = magenta
+
+else
+  box_bg = decoroff
+
+!**** DRAW BOX ****!
+just=centrecentre
+x = 0 y = 0 rect(w=180,h=60,fg=box_bg) clear
+x = -90 y = 30 add y -= 60 add x += 180 add line(lw=1,fg=decorlight) clear
+x = -90 y = 30 add x += 180 add y -= 60 add line(lw=1,fg=decorshadow) clear
+
+!**** SELECT IN PROGRESS TEXT ****!
+if b_inputs.b_value then
+begin
+x = 0 y = 10 add text (ch = 18, tfg = red,"Select In Progress") clear
+end
+
+!**** TITLE ****!
+x = -0 y = -11 text(ch=20,font=font_bold,tfg=grey60,ident)
+x = -4 y = -14 text(ch=20,font=font_bold,tfg=white,ident)
+x = -3 y = -13 text(ch=20,font=font_bold,tfg=blue,ident)
+
+x = -85 y = 20 add y -= 20 add x +=170 add line (lw=1,fg=decorlight)clear 
+x = -85 y = 20 add x += 170 add y -= 20 add line(lw=1,fg=decorshadow) clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y = 0 deselect_box (400,403,heathro4,"West Intake")
+
+end
+
+mimic = main_object w=400,h=400,just=centrecentre,fg=white,bg=gold3,resizable
+

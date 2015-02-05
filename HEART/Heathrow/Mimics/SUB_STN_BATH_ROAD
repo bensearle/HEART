@@ -1,0 +1,39 @@
+load mimic_libutil
+load ocb_barcis
+
+
+!************* SEB BATH ROAD **************!
+
+object busbar_bath_road
+
+begin
+
+lw=2
+x = 0 y = -25 add y -= 50 add line (fg=yellow) clear
+x = 200 y = -25 add y -= 50 add line (fg=yellow) clear
+
+x = -25 y = -25 add x = 225 add line(lw=4,fg=yellow) clear
+
+scale = 120
+x = 0 y = -50 ocb_barcis(8470,291,1403,heathrow,1,"top")
+x = 200 y = -50 ocb_barcis(8480,292,1404,heathrow,2,"top")
+
+scale = 256
+just=centrecentre
+tfg = black ch = 12
+x = 0 y = -85 text("SS55 P1")
+x = 200 y = -85 text("SS55 P6")
+
+tfg=yellow ch=14
+x = 100 y = -15 text("SOUTHERN ELECTRIC SUB, BATH ROAD")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -100 y = 25 busbar_bath_road
+
+end
+
+mimic = main_object w=350,h=200,just=centrecentre,fg=white,bg=aquamarine3,resizable

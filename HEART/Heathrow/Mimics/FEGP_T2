@@ -1,0 +1,237 @@
+! HEATHROW CMS - FEGP T2
+
+loaded by: HIERARCHY
+!
+
+Load BROWSER
+load heathrow_libutil
+load heathrow_fegp_libutil
+
+
+object page
+
+var tmp = onoff
+begin
+
+!*****GENERATOR TO FEEDERS*****!
+Clear
+W=127 H=220 X=-465 Y=-410  BOX(fg=black)!SET 2!
+W=127 H=220 X=-310 Y=-410  BOX(fg=black)!SET 4!
+W=127 H=220 X=65   BOX(fg=black)!SET 1!
+W=127 H=220 X=215  BOX(fg=black)!SET 3!
+W=127 H=220 X=365  BOX(fg=black)!SET 5!
+W=454 H=200 X=-540 Y=-165  BOX(fg=black)
+W=543 H=200 X=-24 Y=-165  BOX(fg=black)
+
+Clear
+lw=2
+X=430 Y=-298  Add Y=-50  Add LINE(fg=green4) Clear
+
+X=-400 Y=-440  Add Y=-100  Add LINE(fg=green4) Clear
+
+X=-250 Y=-440  Add Y=-100  Add  LINE(fg=green4) Clear
+
+X=-150 Y=-60 Add Y=50 Add X=-10 Add X=-10 Add y=-30 Add x += 40 add LINE(fg=green4) Clear
+
+X=-230 Y=-60  Add Y=80  Add X= 30  Add Y=-30  Add X= 30 Add LINE(fg=green4) clear
+
+X=-525 Y= 55  Add Y=300  Add X= -450  Add Y=55  Add X= -525 Add LINE(fg=green4) clear
+
+
+X=-375 Y= 55  Add Y=300  Add X= -300  Add Y=55  Add X= -375 Add LINE(fg=green4) clear
+
+X=-510 Y=-100  Add X=-125 Add LINE(fg=green4,lw=4) Clear
+X= 10 Y= -100  Add Y=-30  Add Y= -50  Add X=10 Add LINE(fg=green4,lw=1) clear
+
+
+X= 0 Y=-100 Add X=485 Add LINE(fg=green4,lw=4) clear
+lw=2
+fg=green4
+x = -485 y = -100 add y = 55 add line clear
+x = -335 y = -100 add y = 55 add line clear
+x = 130 y = -150 add y = 250 add line clear
+x = 230 y = -100 add y = 250 add line clear
+x = 330 y = -100 add y = 250 add line clear
+x = 430 y = -440 add y = 200 add line clear
+x = 280 y = -440 add y = -100 add line clear
+x = 130 y = -440 add y = -100 add line clear
+x = -230 y = -50 add y = -100 add line clear
+x = -150 y = -50 add y = -100 add line clear
+x = 130 y = 150 add y = 300 add X =230 add Y= 300 add Y=150 add line clear
+
+!********************************MOTOR - GENERATORS*************************!
+scale = 200
+
+Y= -290
+x = 130 fegp_mot_gen(6000,6210,207,heathro2)!SET 1! 
+x =-400 fegp_mot_gen(6000,6225,208,heathro2)!SET 2!
+x = 280 fegp_mot_gen(6000,6240,209,heathro2)!SET 3!
+x =-250 fegp_mot_gen(6000,6705,275,heathro2)!SET 4!
+x = 430 fegp_mot_gen(6000,6721,276,heathro2)!SET 5!
+ 
+!************************************FEEDERS********************************!
+scale = 160
+
+Y=-60
+x = -485  tmp=fegp_fcb(6000,6800,260,heathro2,1)
+x = -335  tmp=fegp_fcb(6000,6805,261,heathro2,2)
+x = -230  tmp=fegp_fcb(6000,6810,262,heathro2,3)
+x = -150  tmp=fegp_fcb(6000,6815,263,heathro2,4)
+x = 10  tmp=fegp_fcb(6000,6840,302,heathro2,X)!CROSS FEEDER!
+x = 130 tmp=fegp_fcb(6000,6820,264,heathro2,1)
+x = 230 tmp=fegp_fcb(6000,6825,265,heathro2,2)
+x = 330 tmp=fegp_fcb(6000,6830,266,heathro2,3)
+x = 430 tmp=fegp_fcb(6000,6835,267,heathro2,4)
+
+Y= -381
+x = -400 tmp=fegp_fcb(6000,6750,291,heathro2,1)
+x = -250 tmp=fegp_fcb(6000,6755,292,heathro2,2)
+x = 130  tmp=fegp_fcb(6000,6760,293,heathro2,1)
+x = 280  tmp=fegp_fcb(6000,6765,294,heathro2,2)
+x = 430  tmp=fegp_fcb(6000,6770,295,heathro2,3)
+
+y = -235
+x = -400 tmp=fegp_fcb(6000,6775,296,heathro2,1)
+x = -250 tmp=fegp_fcb(6000,6780,297,heathro2,2)
+x =  130 tmp=fegp_fcb(6000,6785,298,heathro2,1)
+x =  280 tmp=fegp_fcb(6000,6790,299,heathro2,2)
+x =  430 tmp=fegp_fcb(6000,6795,300,heathro2,3)
+
+
+
+
+!*******************************CUBICLES************************************!
+scale = 140
+
+x= -525 y =  90 fegp_cubicle(6000,6545,230,heathro2,"D52R")
+x= -525 y = 130 fegp_cubicle(6000,6555,231,heathro2,"D54")
+x= -525 y = 170 fegp_cubicle(6000,6565,232,heathro2,"D56R")
+x= -525 y = 210 fegp_cubicle(6000,6575,233,heathro2,"D58")
+x= -450 y =  90 fegp_cubicle(6000,6585,234,heathro2,"C51")
+x= -450 y = 130 fegp_cubicle(6000,6595,235,heathro2,"C53")
+x= -450 y = 170 fegp_cubicle(6000,6605,236,heathro2,"C55")
+x= -450 y = 210 fegp_cubicle(6000,6615,237,heathro2,"C57")
+
+x = -300 y =  90 fegp_cubicle(6000,6645,238,heathro2,"D50")
+x = -300 y = 130 fegp_cubicle(6000,6295,214,heathro2,"D48")
+x = -300 y = 170 fegp_cubicle(6000,6285,213,heathro2,"D46")
+x = -300 y = 210 fegp_cubicle(6000,6275,212,heathro2,"D44")
+x = -300 y = 250 fegp_cubicle(6000,6655,269,heathro2,"E42")
+
+x = -375 y =  90 fegp_cubicle(6000,6625,270,heathro2,"C49")
+x = -375 y = 130 fegp_cubicle(6000,6255,210,heathro2,"E36")
+x = -375 y = 170 fegp_cubicle(6000,6265,211,heathro2,"E38")
+x = -375 y = 210 fegp_cubicle(6000,6635,272,heathro2,"E40")
+
+x = 230 y =  90 fegp_cubicle(6000,6305,215,heathro2,"E3")
+y = 130 fegp_cubicle(6000,6315,216,heathro2,"E5")
+y = 170 fegp_cubicle(6000,6325,217,heathro2,"E7")
+y = 210 fegp_cubicle(6000,6685,268,heathro2,"E9R")
+y = 250 fegp_cubicle(6000,6695,271,heathro2,"E9L")
+
+x = 130 y =  90 fegp_cubicle(6000,6665,273,heathro2,"F2")
+y = 130 fegp_cubicle(6000,6335,218,heathro2,"F4")
+y = 170 fegp_cubicle(6000,6345,219,heathro2,"F6")
+y = 210 fegp_cubicle(6000,6355,220,heathro2,"F8") 
+y = 250 fegp_cubicle(6000,6675,274,heathro2,"F10") 
+
+x = 330 y = 90 fegp_cubicle(6000,6365,221,heathro2,"F11")
+y = 130 fegp_cubicle(6000,6375,222,heathro2,"F13")
+y = 170 fegp_cubicle(6000,6385,223,heathro2,"F15")
+y = 210 fegp_cubicle(6000,6395,224,heathro2,"G12")
+y = 250 fegp_cubicle(6000,6405,225,heathro2,"G14")
+
+x = 430 y = 90 fegp_cubicle(6000,6415,226,heathro2,"H30")
+y = 130 fegp_cubicle(6000,6425,227,heathro2,"H32")
+y = 170 fegp_cubicle(6000,6435,228,heathro2,"H34")
+y = 210 fegp_cubicle(6000,6445,229,heathro2,"H36")
+
+!*************************temp sensor********************************!
+scale = 260
+
+x = -500 y = -435 temp_sensor(6032,heathro2)
+x =500 y = -435 temp_sensor(6038,heathro2)
+
+!******************************TEXT**********************************!
+
+JUST = centrecentre
+SCALE = 260
+CH = 15
+x = -65 y = 68 text (tfg=black,ch=18,"CROSS FEEDERS")
+X = -435 y = -400 text (tfg=black,ch=15,"SET 2")
+X = -285 text (tfg=black,ch=15,"SET 4")
+X = 95  text (tfg=black,ch=15,"SET 1")
+X = 240 text (tfg=black,ch=15,"SET 3")
+X = 390 text (tfg=black,ch=15,"SET 5")
+
+!***********************ISOLATORS************************************!
+ SCALE =160
+x=-340 y=300
+isolator(fg=white,b14038,heathrow)
+x= -490 y=300
+isolator(fg=white,b14039,heathrow)
+x= 180 y=300
+isolator(fg=white,b14039,heathrow)
+
+!************OIL SWITCH*******!
+SCALE=140
+Y=5
+x=-485 oil_switch(fg=white,6060,282,517,heathro2,"o")
+x=-335 oil_switch(fg=white,6062,283,518,heathro2,"o")
+x=-230 oil_switch(fg=white,6064,284,519,heathro2,"o")
+x=-150 oil_switch(fg=white,6066,285,520,heathro2,"o")
+x=130  oil_switch(fg=white,6068,286,521,heathro2,"o")
+x=230  oil_switch(fg=white,6070,287,522,heathro2,"o")
+x=330  oil_switch(fg=white,6072,288,523,heathro2,"o")
+x=430  oil_switch(fg=white,6074,289,524,heathro2,"o")
+
+y=-135
+x=-400 oil_switch(fg=white,6050,277,512,heathro2,"o")
+x=-250 oil_switch(fg=white,6052,278,513,heathro2,"o")
+x=130 oil_switch(fg=white,6054,279,514,heathro2,"o")
+x=280 oil_switch(fg=white,6056,280,515,heathro2,"o")
+x=430 oil_switch(fg=white,6058,281,516,heathro2,"o")
+!end!
+scale=128
+y=-337
+x=-400 start_contactor
+x=-250 start_contactor
+x=130 start_contactor
+x=280 start_contactor
+x=430 start_contactor
+
+!******************************TEXT**********************************!
+
+JUST = centrecentre
+
+SCALE = 260
+CH = 15
+!x = -300 y = -435 text (tfg=black,ch=18,"S/S 56 Power House")
+x = 250 y = -435 text (tfg=black,ch=18,"BTD/PIER 1 Power House")!
+x = -325 y = -140 text (tfg=black,ch=18,"S/S 56")
+x = -325 y = -120 text (tfg=black,ch=18,"Power House")
+x = 203 y = -140 text (tfg=black,ch=18,"BTD/PIER 1")
+x = 200 y = -120 text (tfg=black,ch=18,"Power House")
+SCALE= 250
+x = -450 y = -55 text (tfg=black,ch=18,"Fdr1")
+x = -300 y = -55 text (tfg=black,ch=18,"Fdr2")
+x = -195 y = -55 text (tfg=black,ch=18,"Fdr3")
+x = -115 y = -55 text (tfg=black,ch=18,"Fdr4")
+x = 165 y = -55 text (tfg=black,ch=18,"Fdr1")
+x = 265 y = -55 text (tfg=black,ch=18,"Fdr2")
+x = 365 y = -55 text (tfg=black,ch=18,"Fdr3")
+x = 465 y = -55 text (tfg=black,ch=18,"Fdr4")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+scale = 256
+x = 0 y = 0 clear
+y = 20 page
+x = -570 y = 340 browser(1052,heathrow,1140)
+end
+
+mimic = main_object w=1140,h=860,just=centrecentre,fg=white,bg=aquamarine3,resizable

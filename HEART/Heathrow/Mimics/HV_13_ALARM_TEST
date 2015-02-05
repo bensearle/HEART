@@ -1,0 +1,33 @@
+load mimic_libutil
+load ocb_alarm_test
+
+object hv_13_alarm_Status = int
+begin
+if sub_alarm(3000,3570,heathrow) > 0 
+or sub_alarm(3000,3580,heathrow) > 0 
+or sub_alarm(3000,3590,heathrow) > 0 
+or sub_alarm(3000,3600,heathrow) > 0 
+or sub_alarm(3000,3610,heathrow) > 0
+or sub_barcis_alarm(22630,heathrow) > 0 
+or sub_barcis_alarm(22650,heathrow) > 0 
+or sub_barcis_alarm(22610,heathrow) > 0 
+or sub_barcis_alarm(22670,heathrow) > 0 
+or sub_barcis_alarm(22690,heathrow) > 0 
+or sub_barcis_alarm(8430,heathrow) > 0 
+or sub_barcis_alarm(22176,heathrow) > 0 
+or sub_barcis_alarm(22196,heathrow) > 0
+or sub_barcis_alarm(22236,heathrow) > 0 
+or sub_barcis_alarm(22216,heathrow) > 0
+then
+  hv_13_alarm_status = 1
+else
+  hv_13_alarm_status = 0
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

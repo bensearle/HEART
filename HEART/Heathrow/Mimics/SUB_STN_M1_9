@@ -1,0 +1,121 @@
+load mimic_libutil
+load m1_9_ocb
+load ocb_hand_dressed_2
+load ocb_hand_dressed_3
+load spring_fired
+
+!*********** BUSBAR M1/9 *************!
+
+object busbar_m1_9
+begin
+
+just = centrecentre
+
+fg = orange2
+lw = 4
+x = -250 y = 0 add x += 500 add line clear
+x = -250 y = 60 add x += 500 add line clear
+
+x = 0 y = -40 add text(just=centrecentre,tfg=black,ch=25,"M1/9")
+
+x = 255 y = 0 add text(just=centreleft,tfg=orange3,ch=18,"Rear")
+x = 255 y = 60 add text(just=centreleft,tfg=orange3,ch=18,"Front") clear
+
+lw = 2
+x = -180  y = 0 add y -= 60 add x += 40 add y += 55 add line clear
+x = -160 y = -60 add y -= 25 add line clear
+x = -140  y = 5 add y += 55 add line clear
+x = -100  y = 0 add y -= 60 add x += 40 add y += 55 add line clear
+x = -80 y = -60 add y -= 25 add line clear
+x = -60  y = 5 add y += 55 add line clear
+x = 60  y = 0 add y -= 60 add x += 40 add y += 55 add line clear
+x = 80 y = -60 add y -= 25 add line clear
+x = 100  y = 5 add y += 55 add line clear
+x = 140  y = 0 add y -= 60 add x += 40 add y += 55 add line clear
+x = 160 y = -60 add y -= 25 add line clear
+x = 180  y = 5 add y += 55 add line clear
+
+x = -230 y = 60 add y += 15 add line clear
+
+fg = yellow
+x = -230 y = 75 add y += 30 add x += 30 add y -= 30 add line clear
+
+fg = orange2
+x = -200 y = 65 add y += 15 add line clear
+x = -200 y = 55 add y -= 55 add line clear
+
+fg = yellow
+x = -215 y = 105 add y += 10 add line clear
+x = -223 y = 115 add x += 16 add line clear
+x = -220 y = 119 add x += 10 add line clear
+x = -217 y = 123 add x += 4 add line clear
+
+fg = orange2
+x = 231 y = 60 add y += 15 add line clear
+
+fg = yellow
+x = 231 y = 75 add y += 40 add line clear
+x = 223 y = 115 add x += 16 add line clear
+x = 226 y = 119 add x += 10 add line clear
+x = 229 y = 123 add x += 4 add line clear
+
+scale =  120
+x = -180 y = -30 m1_9_ocb(22000,22720,1205,1615,1800,HEATHRO2,9,"TOP",258) 
+x = -140  y = 30   m1_9_ocb(22000,22720,1200,1610,1800,HEATHRO2,9,"TOP",258) 
+
+x = -100  y = -30 m1_9_ocb(22000,22740,1206,1616,1800,HEATHRO2,10,"TOP",259) 
+x = -60   y = 30   m1_9_ocb(22000,22740,1201,1611,1800,HEATHRO2,10,"TOP",259) 
+
+x =   0   y = 60  m1_9_ocb(22000,22760,1202,1612,1800,HEATHRO2,11,"SECT",259)
+
+x = 100 y = 30 m1_9_ocb(22000,22780,1203,1613,1800,HEATHRO2,12,"TOP",261) 
+x = 60   y = -30   m1_9_ocb(22000,22780,1207,1617,1800,HEATHRO2,12,"TOP",261) 
+
+x = 180 y = 30 m1_9_ocb(22000,22800,1208,1618,1800,HEATHRO2,13,"TOP",262) 
+x = 140   y = -30   m1_9_ocb(22000,22800,1204,1614,1800,HEATHRO2,13,"TOP",262) 
+
+scale = 90
+x = -230 y = 85 ocb_hand_2(2684,637,2016,heathrow,heathro2,"btm")
+x = -200 y = 85 ocb_hand_2(2685,638,2017,heathrow,heathro2,"btm")
+x = 231 y = 85 ocb_hand_2(2686,639,2018,heathrow,heathro2,"btm")
+
+scale = 256
+just = centrecentre
+x = -160 y = 90 spring_fired(22000,22820,350,heathro2)
+x = -80 y = 90 spring_fired(22000,22821,351,heathro2)
+x = 80 y = 90 spring_fired(22000,22822,352,heathro2)
+x = 160 y = 90 spring_fired(22000,22823,353,heathro2)
+
+scale = 256
+tfg = black ch = 12
+x = -160 y = -110 text("EI")
+x = -160 y = -95 text("P11")
+x = -80 y = -110 text("EI")
+x = -80 y = -95 text("P12")
+
+x = 80 y = -110 text("EI")
+x = 80 y = -95 text("P17")
+x = 160 y = -110 text("EI")
+x = 160 y = -95 text("P18")
+
+just=centreleft
+x = 200 tfg = black
+y = -130 text(font=font_bold,"BA Panel Numbers")
+y = -110  text("Panel 9 - 132007")
+y = -95  text("Panel 10 - 132008")
+y = -80  text("Panel 11 - 132009")
+y = -65  text("Panel 12 - 132010")
+y = -50  text("Panel 13 - 132011")
+
+x = 200 y = -122 add x += 128 add line(lw=2,fg=decorshadow) clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -20 busbar_m1_9
+
+end
+
+mimic = main_object w=640,h=340,just=centrecentre,fg=white,bg=aquamarine3,resizable

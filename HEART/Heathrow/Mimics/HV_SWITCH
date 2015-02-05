@@ -1,0 +1,913 @@
+!**  	
+Switch Objects for voltage mimics
+created : 24 August 2004	HV Switch - monitoring only
+modified: 08 December 2004 RMU controllable switch added
+**!
+
+load fp_generic_server_request
+type main_menu_row = table (main_menu_items= string(27))
+type confirm_state 	= enum(execute = "execute", cancel = "cancel")
+
+object confirm_sw_popup(ident=string) = yesno
+begin
+	x = 0 y = 0 rect(h=100,w=300,fg=decoroff)
+	x = 10 y = 30 add x = 290 add line(fg=white) clear
+	x = 10 y = 31 add x = 290 add line(fg=grey40) clear
+
+	just=centrecentre
+	x = 150 y = 15	text(tfg=black,ch=17,"Panel "+ident+" control")
+
+  	!  confirm  !
+	fg=decoroff
+	x = 15 y = 75 add y -= 30 add x += 120 add line(fg=white) clear
+	x = 15 y = 75 add x += 120 add y -= 30 add line(fg=grey40) clear
+	x = 75 y = 60 h=29 w=119 rect(fg=decoroff)
+		text(tfg=black,ch=15,"confirm")
+	if anyb then
+	begin
+		x = 15 y = 75 add y -= 30 add x += 120 add line(fg=grey40) clear
+		x = 15 y = 75 add x += 120 add y -= 30 add line(fg=white) clear
+		x = 75 y = 60 h=29 w=119 rect(fg=grey40)
+		text(tfg=black,ch=15,"confirm")
+		confirm_sw_popup = yes
+		exit
+	end
+
+	!  cancel  !
+	fg=decoroff
+	x = 165 y = 75 add y -= 30 add x += 120 add line(fg=white) clear
+	x = 165 y = 75 add x += 120 add y -= 30 add line(fg=grey40) clear
+	x = 225 y = 60 h=29 w=119 rect(fg=decoroff)
+		text(tfg=black,ch=15,"cancel")
+	if anyb then
+	begin
+		x = 165 y = 75 add y -= 30 add x += 120 add line(fg=grey40) clear
+		x = 165 y = 75 add x += 120 add y -= 30 add line(fg=white) clear
+		x = 225 y = 60 h=29 w=119 rect(fg=grey40)
+		text(tfg=black,ch=15,"cancel")
+		confirm_sw_popup = no
+		exit
+	end
+end 
+mimic confirm_sw_popup = confirm_sw_popup w = 300,h = 100
+
+!-----------------------------------------------------------------------------!
+!  control status                                                             !
+!-----------------------------------------------------------------------------!
+
+object control_sw_status(ident=string,control_msg=string(50)) = yesno
+begin
+	x = 0 y = 0
+	rect(h=100,w=300,fg=decoroff)
+	x = 10 y = 30 add x = 290 add line(fg=white) clear
+	x = 10 y = 31 add x = 290 add line(fg=grey40) clear
+	just=centrecentre
+	x = 150 y = 15	text(tfg=black,ch=17,"Panel "+ident+" control")
+	y += 30	text(tfg=red,ch=17,control_msg)
+
+	!  ok  !
+	fg=decoroff
+	x = 90 y = 90 add y -= 30 add x += 120 add line(fg=white) clear
+	x = 90 y = 90 add x += 120 add y -= 30 add line(fg=grey40) clear
+	x = 150 y = 75 h=29 w=119 rect(fg=decoroff)
+		text(tfg=black,ch=15,"ok")
+	if anyb then
+	begin
+		x = 90 y = 90 add y -= 30 add x += 120 add line(fg=grey40) clear
+		x = 90 y = 90 add x += 120 add y -= 30 add line(fg=white) clear
+		x = 150 y = 75 h=29 w=119 rect(fg=grey40)
+		text(tfg=black,ch=15,"ok")
+		control_sw_status = yes
+		exit
+	end
+end
+mimic control_sw_status = control_sw_status w = 300,h = 100
+
+!** closed Oil Type **!
+object closed_sw(sw_fg = colour,angle)
+begin
+
+	lw=6 just=centrecentre
+	x = 0 y = -40 add y= 40 add line(fg=sw_fg) clear
+	lw = 10
+			
+         x = 0 y = -20 disk(h=16,w=16,fg=sw_fg) clear
+         x = 0 y = 20 disk(h=16,w=16,fg=sw_fg) clear
+end
+
+!** tripped Oil Type **!
+object open_sw(sw_fg = colour,angle)
+begin
+clear
+         lw=6 just=centrecentre
+         x=0 y=-40 add y+=20 add line(fg=sw_fg) clear
+         x=0 y=40 add y-=20 add line(fg=sw_fg) clear
+	x=-15 y=0 add x+=30 add line(fg=sw_fg) clear
+         x = 0 y = -20 disk(h=16,w=16,fg=sw_fg) clear
+         x = 0 y = 20 disk(h=16,w=16,fg=sw_fg) clear
+
+end
+
+!**  unknown **!
+object unknown_sw(sw_fg=colour,angle)
+begin
+         !Question Mark, No inputs back !
+         lw=6 fg=sw_fg
+         y = -40 add y += 20 add x -= 7 add x += 14 add line clear
+         y += 60 x -= 7 add y -= 20 add x -= 7 add x += 14 add line clear
+	x= 0 y=0 text (tfg=sw_fg, just=centrecentre,ch=18,"#")
+end
+
+!**  earth on **!
+object earth_on_sw(sw_fg=colour,angle)
+begin
+	just=centrecentre
+	lw=6 fg=sw_fg
+	x=0 y=40 add y -= 31 add line clear
+	x=0 disk (w=10,h=10)
+	x=0 y=11 add y=4 add line clear
+ 	x=0 y=35         disk (w=10,h=10)
+
+	lw=3
+       	x=-15 y=4 add x+=30 add line clear
+       	x=-10 y=-4 add x+=20 add line clear
+       	x=-3 y=-12 add x+=6 add line clear
+end
+
+
+!**  earth off **!
+object earth_off_sw(sw_fg=colour,angle)
+begin
+	just=centrecentre
+	lw=4 fg=sw_fg
+	x=0 y=11		disk (w=10,h=10) clear
+	x=0 y=11 add y=4 add line clear
+ 	x=0 y=35         disk (w=10,h=10)
+
+	lw=3
+       	x=-15 y=4 add x+=30 add line clear
+       	x=-10 y=-4 add x+=20 add line clear
+       	x=-3 y=-12 add x+=6 add line clear
+end
+
+object hv_switch_obj(sw_type=string,plc_offset=int,b_offset=int,c_offset=int,e_offset=int,src=source,ident=string,position=string(4),num_alarms=int,cont_offset=int,cont_code=int,spec_addr=int,res1=int,angle)
+var plc_inputs 	= input b_bool_type[2]
+var b_inputs	= input b_bool_type[7]
+var alarm_inputs	= input alarm_row_type[15]
+var special_comms_ip = input b_bool_type
+var manual_dress	= input e_db_row_type
+var tag_message	= input c_db_row_type
+
+var plc_a_comms_flt 	= onoff
+var plc_b_comms_flt 	= onoff
+var sw_ptw_ip	 	= onoff	!1!
+var sw_open_ip	 	= onoff	!2!
+var sw_closed_ip	 	= onoff	!3!
+var earthed_ip	 	= onoff	!4!
+var earth_rdy_ip	 	= onoff	!5!
+var control_fail_ip	 	= onoff 	!6!
+
+! CONTROL CODES !
+var control_data		= input		e_db_row_type[4]
+var popup_box		= popup		confirm_sw_popup
+var failure_box		= popup		control_sw_status
+var local_control_in_progress 	= popup		control_sw_status
+var control_code		= int
+var checkback_code	= int
+var execute_code		= int
+var plc_execute_code	= int
+var close_code		= int
+var open_code		= int
+var control_text		= string(10)
+var in_progress		= yesno
+var ctrl_switch		= yesno
+var confirm		= loopback	yesno
+var accept		= loopback 	yesno
+var close_control		= loopback	yesno
+var open_control		= loopback	yesno
+var plc_executed		= loopback	yesno
+
+var alarm1_al		=alarm_status !1		open!
+var alarm2_al		=alarm_status !2		closed!
+var alarm3_al		=alarm_status !3		earthed!
+var alarm4_al		=alarm_status !4		earth rdy or alternate alarm!
+var alarm5_al		=alarm_status !5		cont fail or alternate alarm!
+var alarm6_al		=alarm_status !6		cont res or alternate alarm!
+var special_alarm 		=onoff ! unique address used to animate hv switch magenta !
+! additional alarms !
+var alarm7_al		=alarm_status
+var alarm8_al		=alarm_status 
+var alarm9_al		=alarm_status
+var alarm10_al		=alarm_status
+var alarm11_al		=alarm_status
+var sw_foreground		= loopback	colour
+var sw_background		= loopback	colour
+
+! menus !
+var main_menu		= menu		string(40)
+var tag_message_panel 	= panel		panel_item_row
+var number_alarms		= int
+begin
+	! determine number of alarms being monitored !
+	! additional alarms !
+	if invalid num_alarms then 
+		number_alarms = 0
+	else
+		number_alarms=num_alarms
+
+	! obtain database values !
+
+         if invalid get source plc_inputs then 
+         begin
+   	! get plc inputs !
+   	set source plc_inputs = src
+   	set filter plc_inputs.db_addr = lim_ge
+   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+   	set priority plc_inputs.db_addr = 15
+   	set persist plc_inputs
+   	set mayexist plc_inputs
+   	request plc_inputs
+
+
+	if spec_addr <> int and spec_addr <>0 then
+	begin
+		set source special_comms_ip = src
+		set filter special_comms_ip.db_addr = lim_ge
+		set limit special_comms_ip.db_addr = db_address(int(b1) + spec_addr - 1)
+		set priority special_comms_ip.db_addr = 15
+		set persist special_comms_ip
+		set mayexist special_comms_ip
+		request special_comms_ip
+	end
+
+   	! get bool inputs !
+   	set source b_inputs = src
+   	set filter b_inputs.db_addr = lim_ge
+   	set limit b_inputs.db_addr = db_address(int(b1) + b_offset -1)
+   	set priority b_inputs.db_addr = 15
+   	set persist b_inputs
+   	set mayexist b_inputs
+   	request b_inputs
+
+   	! get alarm inputs !
+   	set source alarm_inputs = src
+   	set filter alarm_inputs.db_addr = lim_ge
+   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset)
+   	set priority alarm_inputs.db_addr = 15
+   	set persist alarm_inputs
+   	set max_rows alarm_inputs  = num_alarms + 6
+   	set mayexist alarm_inputs
+   	request alarm_inputs
+
+
+   	! get manual dress status !
+   	set source manual_dress = src
+   	set filter manual_dress.db_addr = lim_eq
+   	set limit manual_dress.db_addr = db_address(int(e1) + e_offset - 1)
+   	set persist manual_dress 
+   	request manual_dress
+
+		if cont_code <> int and cont_code <> 0 then
+		begin
+		   	set source control_data = src
+		   	set filter control_data.db_addr = lim_ge
+		   	set limit control_data.db_addr = db_address(int(e1) + cont_offset-1)
+		   	set persist control_data 
+		   	request control_data
+		end
+
+   	! get tag message !
+   	set source tag_message = src
+   	set filter tag_message.db_addr = lim_eq
+   	set limit tag_message.db_addr = db_address(int(c1) + c_offset -1)
+   	set persist tag_message
+   	request tag_message
+
+         end
+	
+	! variable assignment to database addresses !
+
+	! controllable switch addresses !
+
+	if cont_offset<>int and cont_code<>int then
+	begin
+		open_code = cont_code 
+		close_code = cont_code +  1
+
+		ctrl_switch = yes
+		control_code	= int(control_data[1].e_value)
+		checkback_code	= int(control_data[2].e_value)
+		execute_code	= int(control_data[3].e_value)
+		plc_execute_code	= int(control_data[4].e_value)
+	end
+	else ctrl_switch = no
+
+	! comms inputs !
+
+	plc_a_comms_flt = plc_inputs[1].b_value
+	plc_b_comms_flt = plc_inputs[2].b_value
+
+	! switch inputs !
+
+	sw_ptw_ip	 	= b_inputs[1].b_value
+	sw_open_ip	 	= b_inputs[2].b_value
+	sw_closed_ip	 	= b_inputs[3].b_value
+	earthed_ip		= b_inputs[4].b_value
+
+	if sw_type=="RMU control" then
+	begin
+		earth_rdy_ip	= b_inputs[5].b_value
+		control_fail_ip	= b_inputs[6].b_value
+	end
+
+	! alarm status !
+
+	if invalid alarm_inputs[1].alarm_status then alarm1_al = alarm_clear else
+		alarm1_al = alarm_inputs[1].alarm_status
+	if invalid alarm_inputs[2].alarm_status then alarm2_al = alarm_clear else
+		alarm2_al = alarm_inputs[2].alarm_status
+	if invalid alarm_inputs[3].alarm_status then alarm3_al = alarm_clear else
+		alarm3_al = alarm_inputs[3].alarm_status
+	if invalid alarm_inputs[4].alarm_status then alarm4_al = alarm_clear else
+		alarm4_al = alarm_inputs[4].alarm_status
+	if invalid alarm_inputs[5].alarm_status then alarm5_al = alarm_clear else
+		alarm5_al = alarm_inputs[5].alarm_status
+	if invalid alarm_inputs[6].alarm_status then alarm6_al = alarm_clear else
+		alarm6_al = alarm_inputs[6].alarm_status
+
+	if num_alarms>=1 then alarm7_al = alarm_inputs[7].alarm_status else
+		alarm7_al = alarm_clear
+	if num_alarms>=2 then alarm8_al = alarm_inputs[8].alarm_status else
+		alarm8_al = alarm_clear
+	if num_alarms>=3 then alarm9_al = alarm_inputs[9].alarm_status else
+		alarm9_al = alarm_clear
+	if num_alarms>=4 then alarm10_al = alarm_inputs[10].alarm_status else
+		alarm10_al = alarm_clear
+	if num_alarms>=5 then alarm11_al = alarm_inputs[11].alarm_status else
+		alarm11_al = alarm_clear
+
+
+	! check on additional comms fail address !
+
+	if invalid special_comms_ip.b_value then special_alarm = off else
+		special_alarm = special_comms_ip.b_value
+
+
+
+	! colour selection !
+
+	! foreground !
+
+	if plc_a_comms_flt == on and plc_b_comms_flt == on then
+		sw_foreground = magenta
+	else if special_alarm == on then
+		sw_foreground = magenta
+	else if
+		alarm1_al		== w_note or
+		alarm2_al		== w_note or
+		alarm3_al		== w_note or
+		alarm4_al		== w_note or
+		alarm5_al		== w_note or
+		alarm6_al		== w_note or
+		alarm7_al		== w_note or
+		alarm8_al		== w_note or
+		alarm9_al		== w_note or
+		alarm10_al		== w_note or
+		alarm11_al		== w_note then
+			sw_foreground = flashred
+	else if
+		alarm1_al		== w_clr 	or
+		alarm2_al		== w_clr 	or
+		alarm3_al		== w_clr 	or
+		alarm4_al		== w_clr 	or
+		alarm5_al		== w_clr 	or
+		alarm6_al		== w_clr 	or
+		alarm7_al		== w_clr 	or
+		alarm8_al		== w_clr 	or
+		alarm9_al		== w_clr 	or
+		alarm10_al		== w_clr 	or
+		alarm11_al		== w_clr 	then
+			sw_foreground = red
+
+	else if int(manual_dress.e_value) >=1 and int(manual_dress.e_value) <= 4 then
+	   begin
+		case int(manual_dress.e_value) of
+		1,2,3,4
+			sw_foreground = white
+		default
+		   begin
+		   end
+	   end
+	else
+		sw_foreground = green4
+
+
+	! background !
+
+	if b_inputs[1].b_value then
+		sw_background = orange
+
+	else if int(manual_dress.e_value) >= 1 and int(manual_dress.e_value) <= 4 then
+	   begin
+		case int(manual_dress.e_value) of
+		1  ! dressed to off !
+			if sw_closed_ip == off and sw_open_ip == on then
+			   	sw_background = flashblue
+			else
+			   	sw_background = blue
+		2  ! dressed to on !
+			if sw_closed_ip == on and sw_open_ip == off then
+			   	sw_background = flashblue
+			else
+			   	sw_background = blue
+		3  ! dressed to earthed !
+			if earthed_ip == on then
+			   	sw_background = flashblue
+			else
+			   	sw_background = blue
+		4  ! dressed to earth off !
+			if earth_rdy_ip == on and sw_type == "RMU control" then
+			   	sw_background = flashblue
+			else
+			   	sw_background = blue
+
+		default
+		   begin
+		   end
+	   end
+	else if tag_message.c_value <> "" then
+		sw_background = yellow
+	else
+		sw_background = decoroff
+
+	! main symbol !
+
+	x = 0 y = 0
+	just = centrecentre
+
+	if position == "sect" then
+	   begin
+		if ctrl_switch == yes then
+		   begin
+  			IF control_code == cont_code OR control_code == cont_code + 1 then
+    		   		rect(w=90,h=50,fg=flashgreen)
+		   end
+ 		if manual_dress.e_value > 0 and tag_message.c_value <> "" then
+  		   begin
+    		 	rect(w=88,h=48,fg=yellow) 
+  		   end
+  		else if sw_ptw_ip == on and tag_message.c_value <> "" then
+  		      begin
+    			rect(w=88,h=48,fg=yellow) 
+ 		      end
+
+  		if manual_dress.e_value > 0 and sw_ptw_ip == on then
+  		   begin
+    			if tag_message.c_value <> "" then
+      			   	rect(w=92,h=52,fg=yellow) 
+    			rect(w=86,h=46,fg=blue) 
+  		   end
+  		rotrect(w=80,h=40,fg=sw_background) clear
+  		w=80 h=40 set rect main_menu clear
+	   end
+	else
+	   begin
+		if ctrl_switch == yes then
+		   begin
+  			IF control_code == cont_code OR control_code == cont_code + 1 then
+    		   		rect(w=50,h=90,fg=flashgreen)
+		   end
+  		if manual_dress.e_value > 0 and tag_message.c_value <> "" then
+ 		   begin
+    			rect(w=48,h=88,fg=yellow) 
+  		   end
+  		else if sw_ptw_ip == on and tag_message.c_value <> "" then
+  		      begin
+    			rect(w=48,h=88,fg=yellow) 
+  		      end
+
+  		if manual_dress.e_value > 0 and sw_ptw_ip == on then
+  		   begin
+    			if tag_message.c_value <> "" then
+      			   	rect(w=52,h=92,fg=yellow) 
+
+    				rect(w=46,h=86,fg=blue) 
+  	  	   end
+  		x = 0 y = 0 w = 40 h = 80 rotrect(fg=sw_background) clear
+  		x = 0 y = 0 w = 40 h = 80 set rect main_menu clear
+	   end
+
+	! tag message box !
+	if selb and tag_message.c_value <> "" then
+	begin
+  	   message_text_box(tag_message.c_value)
+	end
+
+	! object frame !
+	if position == "sect" then
+	   begin
+  	   	x -= 40 y += 20 add y -= 40 add
+  	   	x += 80 add line(fg=decorlight) clear
+		x=40 y=-20 add y += 40 add
+   	   	x -= 80 add line(fg=decorshadow) clear
+  	   	fg = sw_foreground 	clear
+	   end
+	else
+	   begin
+  		x -= 20 y += 40 add y -= 80 add
+  		x += 40 add line(fg=decorlight) clear
+  		x=20  y=-40 add y+= 80 add
+  		x -= 40 add line(fg=decorshadow) clear
+  		fg = sw_foreground	clear
+	end
+
+
+	! menu !
+
+	set title main_menu = "Switch "+ident
+
+	set empty main_menu
+	set remove main_menu = "Alter tag message"
+	set remove main_menu = "Clear tag message"
+	set remove main_menu = "Alter permit to work"
+	set remove main_menu = "Undress Switch"
+	set remove main_menu = "Dress to Open"
+	set remove main_menu = "Dress to Closed"
+	set remove main_menu = "Dress to Feeder Earth On"
+	set remove main_menu = "Dress to Feeder Earth Off"
+	set remove main_menu = "Switch to Off"
+	set remove main_menu = "Switch to On"
+	set remove main_menu = "Control Cancel"
+	set add main_menu = "Alter tag message"
+	set add main_menu = "Clear tag message"
+	set add main_menu = "Alter permit to work"
+
+	! draw object based on input states !
+
+	x=0 y=0  ! earthed !
+	if (earthed_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 3 then
+	   begin
+  	    	if position == "sect" then
+  		   earth_on_sw(sw_foreground,angle=90)
+  		else if position == "btm" then
+    		   earth_on_sw(sw_foreground)
+  		else 
+    		   earth_on_sw(sw_foreground,angle=180)
+
+  		set add main_menu = "Dress to Open"
+
+		if sw_type == "RMU control" then
+  			set add main_menu = "Dress to Feeder Earth Off"
+
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "Undress Switch"
+	   end
+		! earth ready !
+	else if sw_type=="RMU control" and ((earth_rdy_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 4) then
+	   begin
+  	    	if position == "sect" then
+  		   earth_off_sw(sw_foreground,angle=90)
+  		else if position == "btm" then
+    		   earth_off_sw(sw_foreground)
+  		else 
+    		   earth_off_sw(sw_foreground,angle=180)
+
+  		set add main_menu = "Dress to Open"
+  		set add main_menu = "Dress to Feeder Earth On"
+
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "Undress Switch"
+	   end
+     		! open !
+	else if (sw_open_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 1 or (sw_closed_ip == off and sw_type=="no_open" and manual_dress.e_value == 0) then
+	   begin
+  	    	if position == "sect" then
+  		   open_sw(sw_foreground,angle=90)
+  		else
+    		    open_sw(sw_foreground)
+  	                
+		if (sw_open_ip == on and sw_closed_ip == on and manual_dress.e_value == 0) then 
+		   set add main_menu = "Dress to Closed"
+
+  		set add main_menu = "Dress to Closed"
+  		set add main_menu = "Dress to Feeder Earth On"
+
+ 		IF manual_dress.e_value == 0 and ctrl_switch == yes  then
+  		   begin
+    		   	set add main_menu = "Switch to Off"
+    		   	set add main_menu = "Switch to On"
+  		   end
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "Undress Switch"
+	   end
+     	else if	! closed !
+	   (sw_closed_ip == on and manual_dress.e_value == 0) or manual_dress.e_value == 2  then
+	   begin
+  		if position == "sect" then
+	    	   closed_sw(sw_foreground,angle=90)
+  		else
+    		   closed_sw(sw_foreground)
+
+  		set add main_menu = "Dress to Open"
+
+
+		if sw_type == "RMU control" then
+  			set add main_menu = "Dress to Feeder Earth Off"
+
+ 		IF manual_dress.e_value == 0 and ctrl_switch == yes  then
+  		   begin
+    		   	set add main_menu = "Switch to Off"
+    		   	set add main_menu = "Switch to On"
+  		   end
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "Undress Switch"
+	   end
+     	else 
+	   begin
+  		if position == "sect" then
+	    	   unknown_sw(sw_foreground,angle=90)
+  		else
+    		  unknown_sw(sw_foreground)
+
+  		if manual_dress.e_value > 0 then
+    		   set add main_menu = "Undress Switch"
+
+		set add main_menu = "Dress to Open"
+	   end
+
+	! main menu selection !
+
+         if valid main_menu then
+            begin
+	  case main_menu of
+	
+	  "Alter tag message"
+	  begin
+	     set title tag_message_panel 	= "modify tag message"	
+	     set label tag_message_panel.str	= "tag message :"
+	     set unpinned tag_message_panel
+	     request tag_message_panel
+	  end
+
+	  "Clear tag message"
+	     set_c_value(db_address(int(c1) +c_offset - 1),src,"")
+
+	  "Alter permit to work"
+	  begin
+	     if sw_ptw_ip == on then
+	        set_b_value(db_address(int(b1) + b_offset -1),src,off)
+	     else
+	        set_b_value(db_address(int(b1) + b_offset -1),src,on)
+	  end	
+
+	  "Undress Switch"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+	  "Dress to Open"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+	  "Dress to Closed"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+	  "Dress to Feeder Earth On"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+	  "Dress to Feeder Earth Off"
+	     set_e_value(db_address(int(e1) + e_offset - 1),src, 4)
+
+	"Switch to On"
+	   begin
+	      IF control_code == 0 then
+	  	begin
+	    	   close_control = yes
+	    	   set_e_value(db_address(int(e1) + cont_offset-1),src, close_code)
+	  	end	
+	      else
+    	   	in_progress = yes
+  	   end	
+
+	"Switch to Off"
+  	   begin
+     	      IF control_code == 0 then
+  		begin
+    	   	   open_control = yes
+    	   	   set_e_value(db_address(int(e1) + cont_offset-1),src, open_code)
+  		end	
+	      else
+    	   	in_progress = yes
+  	   end	
+
+  	"Control Cancel"
+    	   begin
+    		set_e_value(db_address(int(e1) + cont_offset-1),src, 9999)
+		set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+		set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+                            set_b_value(db_address(int(b1) + b_offset + 5), src ,on)
+  	   	set_b_value(db_address(int(b1) + b_offset + 5), src ,off)
+    	   end	
+   	default
+   	   begin
+   	   end
+
+	set invalid main_menu
+            end
+
+
+	! tag message panel !
+
+	if valid tag_message_panel then
+	   begin
+    	   	set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+    	   	set invalid tag_message_panel
+  	   end
+
+	! CONTROL object only !
+	if ctrl_switch==yes then
+	begin
+
+		! control code resets !
+
+		if control_code == cont_code or control_code == cont_code + 1 then
+	   	begin
+			if control_code == plc_execute_code then
+		   		plc_executed = yes
+
+			if plc_executed == yes and plc_execute_code <> 0 then
+		   	begin
+				set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+				set_e_value(db_address(int(e1) + cont_offset+1),src, 0)
+				plc_executed = no
+		   	end
+	   	end
+		else plc_executed = no
+
+
+		! text for control popup panels !
+
+		if open_control then
+	   		control_text = ident+" open"
+		else if close_control then
+	   		control_text = ident+" close"
+		else
+   			control_text = " "
+
+
+		! control popup panels !
+									! control failed !
+		if control_fail_ip == on then
+		begin
+			if  open_control==yes then
+			begin
+  	   			if invalid failure_box and accept == no then
+  	      			begin
+    				     set title failure_box = " "
+    				     set unpinned failure_box
+    				     request failure_box(control_text,"control failed")
+  	      			end
+			end
+			if  close_control==yes then
+			begin
+  	   			if invalid failure_box and accept == no then
+  	      			begin
+    				     set title failure_box = " "
+    				     set unpinned failure_box
+    				     request failure_box(control_text,"control failed")
+  	      			end
+			end
+	  	end
+									! control in progress !
+		else if in_progress == yes then
+		begin
+   	 		set title local_control_in_progress = " "
+   	 		set unpinned local_control_in_progress
+   			request local_control_in_progress(control_text,"control in progress")
+   	 		in_progress = no
+		end
+									! control confirm / cancel !
+		else if invalid popup_box and control_code > 0 and execute_code == 0 and control_code == checkback_code then
+	   	begin  
+  	      		if control_code == open_code or control_code == close_code then
+  	         		begin
+     				if open_control == yes then
+     		   		begin
+      		   			set title popup_box = control_text
+      					set unpinned popup_box
+      					request popup_box(control_text)
+     				end 
+     				else if  close_control == yes then
+       				begin
+         					set title popup_box = control_text
+         					set unpinned popup_box
+         					request popup_box(control_text)
+       				end 
+     	         		end
+	   	end
+
+
+		if popup_box == yes and confirm == no then
+	   	begin
+  	     		if control_code == checkback_code then
+  	     		begin
+    				if control_code == open_code or control_code == close_code then 
+    				begin
+      					if open_control == yes then
+      					begin
+     			   			set_e_value(db_address(int(e1) + cont_offset+1),src, open_code)
+        						open_control = no
+        						confirm = yes
+      					end
+      					else if close_control == yes then
+      					begin
+        						set_e_value(db_address(int(e1) + cont_offset+1),src, close_code)
+        						close_control = no
+        						confirm = yes
+      					end
+    					else close_control = no
+	
+					confirm = yes
+    		 		end
+  	         		end
+		end
+
+		if popup_box == no and confirm == no then
+		begin
+  			if open_control == yes then
+			begin
+				set_e_value(db_address(int(e1) + cont_offset-1),src, 9999)
+				set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+				set_e_value(db_address(int(e1) + cont_offset+1),src, 0) 
+				set_b_value(db_address(int(b1) + b_offset + 5), src ,on)
+				set_b_value(db_address(int(b1) + b_offset + 5), src ,off)
+				close_control = no
+				open_control = no
+				confirm = yes
+			end
+			else if close_control == yes then
+			begin
+				set_e_value(db_address(int(e1) + cont_offset-1),src, 9999)  
+				set_e_value(db_address(int(e1) + cont_offset-1),src, 0)
+				set_e_value(db_address(int(e1) + cont_offset+1),src, 0) 
+				set_b_value(db_address(int(b1) + b_offset + 5), src ,on)
+				set_b_value(db_address(int(b1) + b_offset + 5), src ,off)
+				close_control = no
+				open_control = no
+				confirm = yes
+			end
+		end
+
+		if execute_code == 0 then
+		begin
+			confirm = no
+			set invalid popup_box
+		end
+
+		! cancel control !
+
+		if (control_code == open_code or control_code == close_code) and control_code > 0 then
+			set add main_menu = "Control Cancel"
+		
+
+		! control fail !
+
+		if invalid accept then
+			accept = no
+
+		if failure_box == yes and accept == no then
+		begin
+			set_b_value(db_address(int(b1) + b_offset + 5), src ,on)
+			set_b_value(db_address(int(b1) + b_offset + 5), src ,off)
+			accept = yes
+		end
+
+		if control_fail_ip == off then
+		begin
+			set invalid failure_box
+			accept = no
+		end
+	end
+
+	! object label !
+
+	if position == "sect" then
+	   begin
+  	         	x = 0 y = 28 text(just=centrecentre,tfg=black,ch=25,ident)
+	   end
+	else
+	   begin
+  	   	x = 28 y = 0 text(just=centreleft,tfg=black,ch=25,ident)
+	   end
+end
+
+! main object !
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=140
+!
+x=50 y=0 hv_switch_obj("RMU monitor",8000,8040,400,2352,heathro3,"1","top",1,int,10,int,int)
+x=50 y=100 hv_switch_obj("RMU control",8000,8040,400,2352,heathro3,"1","top",1,2360,10,int,int)
+!
+end
+mimic = main_object w=250,h=500,just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+
+
+
+

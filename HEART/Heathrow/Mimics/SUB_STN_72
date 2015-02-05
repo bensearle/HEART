@@ -1,0 +1,61 @@
+load mimic_libutil
+load oil_switch
+load fuse_sw
+load transformer
+load ocb_monitored
+
+!************* BUSBAR 72 **************!
+
+object busbar_72
+
+begin
+
+tfg = black x = 100 y = -5 add text ("72",ch = 25) clear
+x = -100 y = 25 add x = 100 add line(lw=4,fg=blue) clear
+!x = 27 y=25 add x = -100 add line(lw=4,fg=blue) clear!
+
+lw=2
+x = -75 y =  25 add y += 50 add line (fg=blue) clear
+x = -25 y =  25 add y -= 50 add line (fg=blue) clear
+!x =   25 y =  25 add y += 50 add line (lw=4,fg=blue) clear
+
+x = 23 y = 75 add x += 29 add line(lw=4,fg=blue) clear
+x =  50 y =  25 add y += 50 add line (lw=4,fg=blue) clear!
+x = 25 y =  25 add y += 50 add line (fg=blue) clear
+x = 75 y =  25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+x = -75 y = 50   hv_fuse(25046,133,1323,heathrow,"c")
+x =  -25 y = -0 oil_switch(25042,131,1321,heathrow,"c")
+!x =  25  y = 50 oil_switch(25125,293,1405,heathrow,"c")
+
+x = 50 y = 50 oil_switch(25126,294,1406,heathrow,"c")!
+!x = 25 y = 50 hv_fuse(25048,134,1324,heathrow,"c")!
+x = 25 y = 50 ocb_mont(0,0,134,1324,heathrow,3,"btm")
+!x = 75 y = 50 oil_switch(25044,132,1322,heathrow,"c")!
+x = 75 y = 50 ocb_mont(0,0,132,1322,heathrow,4,"btm")
+
+scale = 100
+X =  25  Y = 95 add transformer("LT 1","LOCAL")
+X =  75  Y = 95 add transformer("TX 2","LOCAL")
+
+scale = 260 
+tfg=black ch=12
+just=centrecentre
+x = -60 y = 50 text("1")
+x = -10 y = 0  text("2")
+X =  -75 Y = 85 text("SPARE")
+x = -25 y = -35 text("SS44 P2")
+x = 75 y = 125 text("EBS")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 0 y = -25 busbar_72
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

@@ -1,0 +1,41 @@
+helptext OVERFLOW_PUMP_HELP = "OVERFLOW PUMP
+
+-------------
+
+This object has two possible states it can display, either running or not running. This is represented by:
+
+
+Green Foreground - RUNNING
+
+
+White Foregroud - NOT RUNNING
+
+
+
+CONTROL MENU
+
+------------
+
+
+Alter Tag Message
+
+-----------------
+
+It is possible to apply a tagged message to the object, this would be used if, for instance, the pump was out of service or perhaps the pump had been isolated for any reason. This message can be up to 20 characters long.
+
+
+CLEAR TAG MESSAGE
+
+-----------------
+
+The message can be cleared from this object using this option.
+
+
+Tag messages are represented by a change in background colour, this is as follows:
+
+
+Yellow Background - TAG MESSAGE APPLIED
+
+
+Grey Background - NO TAG MESSAGE
+"

@@ -1,0 +1,46 @@
+load mimic_libutil
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+type e_db_row_type =  db_elements(db_addr,e_value)
+type r_test_row =  db_alarm_config (db_addr,config_number,test_value)
+type r_test_table =  r_test_row[6]
+
+
+object temp_analogue_display(just,scale,unit=string,e_offset=int,src=source)
+
+var saved = loopback  int
+var input_alarm_table = input  r_test_table
+var output_alarm_table = output  r_test_table
+
+begin
+
+   set source  input_alarm_table = src
+   set filter  input_alarm_table.db_addr = lim_eq
+   set limit   input_alarm_table.db_addr = db_address(int(e1) + e_offset - 1)
+   set mayexist input_alarm_table
+   set mustexist input_alarm_table.db_addr
+   set mustexist input_alarm_table.config_number
+   request     input_alarm_table
+
+   text(tfg=white,ch = 30,input_alarm_table[2].test_value)
+   if valid input_alarm_table and invalid saved then
+      begin
+      set source output_alarm_table = src
+      set old_value output_alarm_table = input_alarm_table
+      set value output_alarm_table = input_alarm_table
+      set value output_alarm_table[2].test_value = 99
+      request output_alarm_table
+      set default saved
+      end
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg,just)
+begin
+scale=250
+just=centrecentre
+y=50
+temp_analogue_display("C",2000,heathrow)
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=black,resizable

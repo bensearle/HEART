@@ -1,0 +1,399 @@
+! HEATHROW CMS - KEY 2
+
+loaded by: HIERARCHY
+!
+
+load mimic_libutil
+
+load main_hierarchy
+
+type pmv_state_type=enum(pmv_open="Open",
+                         pmv_closed="Closed",
+                         pmv_travel="Travel",
+                         pmv_error="Error")
+
+
+!
+************************************************************
+* PMV DISPLAY ONLY OBJECT                                  *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object pmv_display(remote=yesno,valve_state=pmv_state_type,ident=string)
+begin
+just=centrecentre
+if remote then 
+  fg=lightblue
+else
+  fg=decoroff
+rect (w=70,h=110)
+x -= 35 y += 55 add
+y -= 110 add
+x += 70 add line (fg=decorlight) clear 
+y += 1 add
+y += 109 add
+x -= 70 add line (fg=decorshadow) clear
+x += 35 y -= 55
+clear
+
+text(x=0,y=-37,tfg=black,ch=18,ident)
+
+case valve_state of
+    pmv_open
+    begin
+    fg=green4
+    lw=2
+    y += 10 x += 6
+    x -= 12 add
+    x += 12 add 
+    y += 10 x -=6 add
+    y -= 10 x -=6 add
+    fill clear
+    x += 6 add
+    y -= 20 add
+    line clear
+    x += 6 add
+    x -= 12 add 
+    y -= 11 x +=6 add
+    y += 11 x +=6 add
+    fill clear
+    lw=4
+    x -= 6 y += 9 
+    circle (w=42,h=42)
+    y -= 40
+    y += 78  
+    text(ch=16,tfg=black,"OPEN")
+
+    end
+
+    pmv_closed
+    begin
+    fg=white
+    x += 10 y += 6
+    lw=2
+    y -= 12 add
+    y += 12 add 
+    x += 10 y -=6 add
+    x -= 10 y -=6 add
+    fill clear
+    y += 6 add
+    x -= 20 add
+    line clear
+    y += 6 add
+    y -= 12 add 
+    x -= 11 y +=6 add
+    x += 11 y +=6 add
+    fill clear
+    lw=4
+    y -= 7 x += 10 
+    circle (w=42,h=42)
+    y -= 40
+    y += 78  
+    text(ch=16,tfg=black,"CLOSED")
+
+    end
+
+    pmv_travel
+    begin
+    fg=red   
+    lw = 1
+    x += 13 y -= 13 
+    x -= 8 add
+    x += 8 y += 8 add 
+    y -= 8 add 
+    x -= 8 add fill clear
+    lw=2
+    x += 4 y += 4 add
+    x -= 18 y += 18 add line clear
+    lw =2
+    x -= 4 y-= 5 add
+    y += 9 add 
+    x += 9 add 
+    y -= 11 x -= 11 add
+    fill clear
+    y -= 3 x += 15 
+    lw=4
+    circle (w=42,h=42)
+    y -= 40
+         
+    y += 78  
+    text(ch=16,tfg=black,"TRAVEL")
+    end
+
+    pmv_error
+    begin
+    fg=flashred
+    lw=4
+    x += 10 y += 6
+    y -= 7 x -= 10 
+    circle (w=42,h=42)
+    ch = 30 
+    text ("?")
+    y -= 40
+    y += 78  
+    text(ch=16,tfg=black,"ERROR")
+    end
+
+    default
+    begin
+    end
+
+
+end
+
+
+!
+************************************************************
+* PMV VARIABLE DISPLAY ONLY OBJECT                         *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object pmv_var_display(remote=yesno,valve_state=pmv_state_type,ident=string)
+begin
+just=centrecentre
+if remote then
+  fg=lightblue
+else
+  fg=decoroff
+rect (w=70,h=110)
+x -= 35 y += 55 add
+y -= 110 add
+x += 70 add line (fg=decorlight) clear 
+y += 1 add
+y += 109 add
+x -= 70 add line (fg=decorshadow) clear
+x += 35 y -= 55
+clear
+
+
+text(x=0,y=-37,tfg=black,ch=15,ident)
+
+case valve_state of
+    pmv_open
+    begin
+    fg=green4
+    lw=2
+    y += 10 x += 6
+    x -= 12 add
+    x += 12 add 
+    y += 10 x -=6 add
+    y -= 10 x -=6 add
+    fill clear
+    x += 6 add
+    y -= 20 add
+    line clear
+    x += 6 add
+    x -= 12 add 
+    y -= 11 x +=6 add
+    y += 11 x +=6 add
+    fill clear
+    lw=4
+    x -= 6 y += 9 
+    circle (w=42,h=42)
+    y -= 40
+
+    tfg=black
+    ch =16
+    y += 72 
+    text ("OPENED")
+    ch = 18
+    y += 15 
+    text ("100 %")
+
+    end
+
+    pmv_closed
+    begin
+    fg=green4   
+    x += 10 y += 6
+    lw=2
+    y -= 12 add
+    y += 12 add 
+    x += 10 y -=6 add
+    x -= 10 y -=6 add
+    fill clear
+    y += 6 add
+    x -= 20 add
+    line clear
+    y += 6 add
+    y -= 12 add 
+    x -= 11 y +=6 add
+    x += 11 y +=6 add
+    fill clear
+    lw=4
+    y -= 7 x += 10 
+    circle (w=42,h=42)
+    y -= 40
+
+
+    tfg=black
+    ch =16
+    y += 72 
+    text ("CLOSED")
+    ch = 18
+    y += 15 
+    text ("0 %")
+
+    end
+
+    pmv_travel
+    begin
+    fg=green4
+    lw = 1
+    x += 13 y -= 13 
+    x -= 8 add
+    x += 8 y += 8 add 
+    y -= 8 add 
+    x -= 8 add fill clear
+    lw=2
+    x += 4 y += 4 add
+    x -= 18 y += 18 add line clear
+    lw =2
+    x -= 4 y-= 5 add
+    y += 9 add 
+    x += 9 add 
+    y -= 11 x -= 11 add
+    fill clear
+    y -= 3 x += 15 
+    lw=4
+    circle (w=42,h=42)
+    y -= 40
+
+    ch = 18
+    y +=78 
+    text ("65 %")   
+    end
+
+    pmv_error
+    begin
+    fg=flashred
+    lw=4
+    x += 10 y += 6
+    y -= 7 x -= 10 
+    circle (w=42,h=42)
+    ch = 30 
+    text ("?")
+    y -= 40
+    y += 78  
+    text(ch=16,tfg=black,"ERROR")
+
+    end
+
+    default
+    begin
+    end
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var tmp = onoff
+begin
+goto_menu
+x = 400
+y = 325
+command_button(270,heathrow)
+clear
+scale = 280
+
+tfg = decoroff
+ch = 20 
+x = -330 
+y = -360 
+text ("Potable Motorised Valve (Two Position, PLC Control)")
+ch = 14 
+y = -320
+x = 50  text ("State 1 :-  "+pmv_open)
+y += 17 text ("State 2 :-  "+pmv_closed)
+y += 17 text ("State 3 :-  "+pmv_travel)
+y += 17 text ("State 4 :-  "+pmv_error)
+
+x=-330
+y=-190
+text("State 1")
+x+=90
+text("State 2")
+x+=90
+text("State 3")
+x+=90
+text("State 4")
+
+x = -300 
+y = -260
+pmv_display(no,pmv_open,"KEY")
+x+=90
+pmv_display(no,pmv_closed,"KEY")
+x+=90
+pmv_display(no,pmv_travel,"KEY")
+x+=90
+pmv_display(no,pmv_error,"KEY")
+
+
+
+x = -330 y = -90
+ch=20
+text ("Potable Motorised Valve (Two Position, SCOPE/Operator Control)")
+ch = 14 
+y = -50 
+x = 50  text ("State 1 :-  "+pmv_open)
+y += 17 text ("State 2 :-  "+pmv_closed)
+y += 17 text ("State 3 :-  "+pmv_travel)
+y += 17 text ("State 4 :-  "+pmv_error)
+
+x=-330
+y=80
+text("State 1")
+x+=90
+text("State 2")
+x+=90
+text("State 3")
+x+=90
+text("State 4")
+
+y = 10
+x = -300 
+pmv_display(yes,pmv_open,"KEY")
+x+=90
+pmv_display(yes,pmv_closed,"KEY")
+x+=90
+pmv_display(yes,pmv_travel,"KEY")
+x+=90
+pmv_display(yes,pmv_error,"KEY")
+
+
+ch = 20
+x = -330 y =160
+text ("Motorised Valve (Variable and Remote Control)")
+ch=14
+y=200
+x = 50  text ("State 1 :-  "+pmv_open)
+y += 17 text ("State 2 :-  "+pmv_closed)
+y += 17 text ("State 3 :-  Variable Position")
+y += 17 text ("State 4 :-  "+pmv_error)
+
+x=-330
+y=330
+text("State 1")
+x+=90
+text("State 2")
+x+=90
+text("State 3")
+x+=90
+text("State 4")
+
+y = 260
+x = -300 
+pmv_var_display(no,pmv_open,"KEY")
+x+=90
+pmv_var_display(no,pmv_closed,"KEY")
+x+=90
+pmv_var_display(no,pmv_travel,"KEY")
+x+=90
+pmv_var_display(no,pmv_error,"KEY")
+
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

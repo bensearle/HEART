@@ -1,0 +1,581 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!**********Hv Ring 5************!
+
+
+load mimic_libutil
+load ocb
+load ocb_monitored
+load hex_ocb
+load nse_ocb_4
+load hv_5_sub_stations
+load hv_cable_ident
+!load hv_5b_sub_stations!
+Load BROWSER
+
+!************* SUB 62 ***************!
+
+object hv_5_sub_62
+
+var call_var = toplevel  string
+
+begin
+
+x = 75 y = 38 add x += 350 add line(fg=green4,lw=4) clear
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "sub_stn_62"
+
+w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+w=250 h=25 x=125 y=25 rect(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+w=150 h=25 x=425 y=25 rect(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 250 y = 38 text(tfg=white,ch=25,"Sub 62",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+x = 375 y = 25 add x -= 250 add y += 25 add line (fg=white) clear
+x = 375 y = 25 add y += 25 add x -= 250 add line (fg=grey40) clear
+x = 575 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 575 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 0 y = 25 add y -= 50 add line(fg=green4) clear
+x = 50 y = 25 add y -= 50 add line(fg=green4) clear
+x = 150 y = 25 add y -= 50 add line(fg=green4) clear
+x = 200 y = 25 add y -= 50 add line(fg=green4) clear
+x = 300 y = 25 add y -= 50 add line(fg=green4) clear
+x = 350 y = 25 add y -= 25 add line(fg=green4) clear
+x = 350 y = 0 add y -= 25 add line(fg=green4) clear
+x = 450 y = 25 add y -= 50 add line(fg=blue) clear
+x = 500 y = 25 add y -= 50 add line(fg=green4) clear
+x = 550 y = 25 add y -= 50 add line(fg=green4) clear
+
+scale = 120
+x = 0 y = 0 ocb(6000,6100,300,575,heathrow,1,"top")
+x = 50 y = 0 ocb(6000,6120,301,576,heathrow,2,"top")
+x = 100 y = 38 ocb(6000,6140,302,577,heathrow,3,"sect",angle=90)
+x = 104 y = 52 add text ("/4",ch = 30) clear
+x = 150 y = 0 ocb_mont(6000,6160,303,578,heathrow,5,"top")
+x = 200 y = 0 ocb_mont(6000,6180,304,579,heathrow,6,"top")
+x = 300 y = 0 ocb(6000,6220,306,581,heathrow,8,"top")
+x = 350 y = 0 ocb(6000,6260,313,588,heathrow,15,"top")
+x = 400  y = 38 ocb(6000,6280,314,589,heathrow,17,"sect",angle=90)
+x = 369 y = 52 add text ("16/",ch = 30) clear
+x = 450  y = 0  ocb(6000,6300,315,590,heathrow,18,"top")
+x = 500 y = 0 ocb(6000,6340,322,597,heathrow,25,"top")
+x = 550 y = 0 ocb_mont(6000,6360,323,598,heathrow,26,"top")
+
+end
+
+
+!************* SUB 85 ***************!
+
+object sub_85
+
+begin
+
+sub_symbol_85
+
+
+lw=2
+x = 0 y = 25 add y -= 50 add line(fg=green4) clear
+!x = 50 y = 25 add y -= 50 add line(fg=green4) clear!
+x = 100 y = 25 add y -= 50 add line(fg=green4) clear
+
+scale = 120
+
+x = 0   y = 0 ocb_mont(2500,2290,75,144,heathro2,1,"top")
+!x = 50  y = 0 ocb_mont(2500,2310,77,146,heathro2,3,"top")!
+x = 100 y = 0 ocb_mont(2500,2330,79,148,heathro2,5,"top")
+
+end
+
+
+!************* SUB 60 ***************!
+
+object sub_60
+
+begin
+
+sub_symbol_60
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=green4) clear
+x = 100 y = 25 add y -= 50 add line (fg=green4) clear
+
+scale = 120
+x = 0  y = 0 ocb_mont(2000,2160,62,131,heathro2,3,"top")
+x = 100 y = 0 ocb_mont(2000,2180,64,133,heathro2,5,"top")
+
+end
+
+
+!************* SUB 61 ***************!
+
+object sub_61
+
+begin
+
+sub_symbol_61
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=green4) clear
+x = 50 y = 25 add y -= 50 add line (fg=green4) clear
+x = 100 y = 25 add y -= 50 add line (fg=green4) clear
+
+scale = 120
+
+x = 0   y = 0 ocb_mont(2500,2750,99,190,heathro2,3,"top")
+x = 50  y = 0 ocb_mont(2500,2760,100,191,heathro2,4,"top")
+x = 100 y = 0 ocb_mont(1500,1730,103,88,heathro2,7,"top")
+
+end
+
+
+!************* SUB 90 ***************!
+
+!object sub_90
+
+begin
+
+sub_symbol_90
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=green4) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25108,274,1386,heathrow,"c")
+scale = 256
+x = 10 y = -5 add text(ch=12,tfg=black,"1") clear
+
+end!
+
+
+
+!************* SUB 93 ***************!
+
+object sub_93
+
+begin
+
+x = -25 sub_symbol_93
+
+lw=2
+x = -25 y = 25 add y -= 50 add line (fg=green4) clear
+x = 75 y = 25 add y -= 50 add line (fg=green4) clear
+x = 125 y = 100 add y -= 50 add line (fg=green4) clear
+
+scale = 120
+x = -25 y = 0 oil_switch(25128,281,1410,heathrow,"c")
+x = 75 y = 0 oil_switch(25132,298,1414,heathrow,"c")
+x = 125 y = 75 oil_switch_3(25133,324,1415,heathrow,"o",angle = 180)
+scale = 256
+x = -15 y = -5 add text(ch=12,tfg=black,"1") clear
+x = 85 y = -5 add text(ch=12,tfg=black,"7") clear
+x = 135 y = 70 add text(ch=12,tfg=black,"9") clear
+
+end
+
+
+!************* SUB 104 ***************!
+
+object sub_104
+
+begin
+
+sub_symbol_104
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=green4) clear
+x = 100 y = 25 add y -= 50 add line (fg=green4) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(6000,6510,1001,2011,heathrow,1,"top")
+x = 100 y = 0 ocb_mont(6000,6550,1005,2015,heathrow,7,"top")
+
+end
+
+!************* SUB 105 ***************!
+
+object sub_105
+
+begin
+
+sub_symbol_105
+
+lw=2
+x = 0 y = 25 add y -= 50 add line (fg=green4) clear
+x = 100 y = 25 add y -= 50 add line (fg=green4) clear
+
+scale = 120
+x = 0 y = 0  ss105_breaker(680,545,13,115,160,HEATHRO3,4,"top",20,scale=120)
+x = 100 y = 0 ss105_breaker(680,590,18,130,160,HEATHRO3,8,"top",40,scale=120)
+
+end
+
+
+!************* SUB 116 ***************!
+
+object sub_116
+
+begin
+
+sub_symbol_116
+
+lw=2
+x = -25 y = 25 add y -= 50 add line (fg=green4) clear
+x = 125 y = 25 add y -= 52 add line (fg=blue) clear
+x = 175 y = 25 add y -= 25 add line (fg=blue) clear
+x = 175 y = 0 add y -= 25 add line (fg=green4) clear
+
+scale = 120
+
+x = -25   y = 0 hex_ocb(31005,31300,31035,521,2422,heathrow,2,"top","vcb_2")
+x = 125  y = 0 hex_ocb(31005,31540,31035,529,2430,heathrow,10,"top","vcb_10")
+x = 175 y = 0 hex_ocb(31005,31570,31035,530,2431,heathrow,11,"top","vcb_11")
+end
+
+
+!************* SOUTH INTAKE ***************!
+
+object hv_5_south_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathro2
+set selfreplace call_var
+set mimic call_var = "south_intake_2"
+
+
+w=300 h=25 x=-125 y=25 rect(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"South Intake",just=centrecentre) clear
+x = 175 y = 25 add x -= 300 add y += 25 add line (fg=white) clear
+x = 175 y = 25 add y += 25 add x -= 300 add line (fg=grey40) clear
+
+lw=2
+x = -100 y = -25 add y += 50 add line(fg=green4) clear
+x = -50 y = -25 add y += 50 add line(fg=green4) clear
+x = 0 y = -25 add y += 50 add line(fg=green4) clear
+x = 50 y = -25 add y += 50 add line(fg=green4) clear
+x = 100 y = -25 add y += 50 add line(fg=green4) clear
+x = 150 y = -25 add y += 50 add line(fg=green4) clear
+
+scale = 120
+X = -100 Y = 0 NSE_OCB_4(21000,21110,705,1707,1700,HEATHRO2,5,"TOP",108)
+x = -50 y = 0 NSE_OCB_4(21000,21130,706,1708,1700,HEATHRO2,6,"TOP",110)
+X = 0 Y = 0 NSE_OCB_4(21000,21170,708,1710,1700,HEATHRO2,8,"TOP",114)
+X = 50 Y = 0 NSE_OCB_4(21000,21370,718,1720,1700,HEATHRO2,18,"TOP",136)
+X = 100 Y = 0 NSE_OCB_4(21000,21390,719,1721,1700,HEATHRO2,19,"TOP",138)
+X = 150 Y = 0 NSE_OCB_4(21000,21430,721,1723,1700,HEATHRO2,21,"TOP",142)
+
+
+end
+
+
+
+!************* WEST INTAKE ***************!
+
+object hv_5_west_intake
+var call_var = toplevel  string
+begin
+	set source call_var = heathrow
+	set selfreplace call_var
+	set mimic call_var = "west_intake"
+
+	w=120 h=25 x=-25 y=25 rect(fg=decoroff)
+	if anyb then
+	  begin
+	    request call_var
+	  end
+
+	scale=256
+	x = 35 y = 38 text(tfg=white,ch=20,"West Int.Old",just=centrecentre) clear
+	x = 95 y = 25 add x -= 120 add y += 25 add line (fg=white) clear
+	x = 95 y = 25 add y += 25 add x -= 120 add line (fg=grey40) clear
+	scale = 120
+	x = 0 y = 0 ocb(int,3800,110,320,heathrow,1,"top")  ! tag and dress only	!
+end
+
+!************* WEST INTAKE NEW ***************!
+
+object hv_5_west_intake_new
+var call_var = toplevel  string
+begin
+	scale=256
+	x=200 y=38  x -= 140 add x += 80 add line (lw=3,fg=blue)  clear
+
+	set source call_var = heathrow
+	set selfreplace call_var
+	set mimic call_var = "west_intake"
+
+	w=208 h=25 x=41 y=25 rect(fg=decoroff)
+
+	if anyb then
+	  begin
+	    request call_var
+	  end
+
+	scale=256
+	x = 145 y = 38 text(tfg=white,ch=18,"West Intake New",just=centrecentre) clear
+	
+	x = 250 y = 25 add x -= 209 add y += 25 add line (fg=white) clear
+	x = 250 y = 25 add y += 25 add x -= 209 add line (fg=grey40) clear
+
+	scale = 120
+	x =70 y = 0 	ocb(3000,3100,150,275,heathrow,10,"top")
+	x +=50 y = 0 	ocb(3000,3460,170,295,heathrow,11,"top")
+	x +=50 y = 0 	ocb(3000,3820,111,321,heathrow,14,"top")	! tag and dress only	!
+	x +=50 y = 0 	ocb(3000,3200,156,281,heathrow,17,"top")
+end
+
+
+object hv_5_object
+begin
+	clear
+	lw=2
+
+	!SS62-P1 TO SI-P19!
+	x = -100 y = 175 add
+	y -= 15 add
+	x -= 45 add
+	y += 125 add
+	x += 710 add
+	y -= 270 add
+	x -= 115 add
+	y += 15 add
+	line(fg=green4) clear
+	x = 00 y = 285 cable_ident("green","maggot","5.7") clear
+
+
+	!SS62-P2 TO SS105-P8!
+	x = -49 y = 185 add
+	y -= 210 add
+	x += 180 add
+	y -= 145 add
+	x += 369 add
+	y += 45 add
+	line(fg=green4) clear
+	!x = 00 y = 130 cable_ident("green","maggot","7.0") clear!
+
+
+	!SS62-P26 TO NEW WI-P11 !
+	x = -380 y=225 add
+	y = 135 add
+	x += 830 add
+	y += 50 add
+	line(fg=green4) clear
+	x = -90 y = 135 cable_ident("green","maggot","5.7") clear
+
+
+	!SS62-P6 TO SS93-P1!
+	x = 100 y = 175 add
+	y -= 170 add
+	x -= 475 add
+	y -= 135 add
+	x += 50 add
+	y += 15 add
+	line(fg=green4) clear
+	x = -240 y = 5 cable_ident("green","maggot","4.1") clear
+
+	!SS62-P8 TO SI-P21!
+	x = 200 y = 175 add
+	y -= 195 add
+	x += 301 add
+	y = 50 add
+	line(fg=green4) clear
+	x = 245 y -= 70 cable_ident("green","maggot","5.7") clear
+
+
+	!SS62-P15 TO SI-P5!
+	x = 250 y = 175 add
+	y -= 30 add
+	x-=38 add
+	y -= 140 add
+	x = 250 add
+	y += 25 add
+	line(fg=green4) clear
+	x = 231 y = 5 cable_ident(scale=190,"green","maggot","7.0") clear
+
+	!SS62-P18 TO NEW WI-P10 !
+	x = 350 y = 175 add
+	y -= 55 add
+	x += 180 add
+	y += 215 add
+	x -= 1080 add
+	y -= 180 add
+	x += 120 add
+	y +=85 add
+	line(fg=blue) clear
+	x = 0 y = 335 cable_ident("blue","maggot","5.7") clear
+
+
+!NEW WI-P14 TO OLD WI-P1 !
+	x = -330 y = 225 add
+	y -= 100 add
+	x -=160 add
+	y -=110 add
+	x+=40 add
+	y+=85 add
+	line(fg=blue) clear
+	x = 0 y = 335 cable_ident("blue","maggot","5.7") clear
+
+	!SS62-P25 TO 116I-P11!
+	x = 400 y = 175 add
+	y -= 15 add
+	x += 105 add
+	y += 150 add
+	x -= 1070 add
+	y -= 595 add
+	x += 290 add
+	y += 15 add	
+	line(fg=blue) clear
+	x = 00 y = 310 cable_ident("green","maggot","5.7") clear
+
+
+	!SS62-P5 TO SS104-P7!
+	x = 50 y = 175 add
+	y -= 15 add
+	x += 35 add
+	y -= 295 add
+	x = 49 add
+	y += 15 add
+	line(fg=green4) clear
+	x = 67 y = -135 cable_ident(scale=180,"green","maggot","4.8") clear
+	
+	!SS104-P1 TO SS93-P7!
+	x = -50 y = -125 add
+	y -= 15 add
+	x -= 175 add
+	y += 15 add
+	line(fg=green4) clear
+	x = -90 y = -140 cable_ident("green","maggot","4.8") clear
+
+	!SS105-P4 TO SI-P6!
+	x = 400 y = -125 add
+	y -= 15 add
+	x -= 100 add
+	y += 165 add
+	line(fg=green4) clear
+	x = 325 y = -140 cable_ident("green","maggot","7.0") clear
+
+	!NEW WI-P17 TO SS116-P10!
+	x = -280 y = 225 add
+	y -= 80 add
+	x -= 270 add
+	y -= 315 add
+	x += 324 add
+	y -= 130 add
+	x -= 100 add
+	y += 30 add
+	line(fg=blue)clear
+	x = -380 y = -170 cable_ident("blue","maggot","5.7") clear
+
+
+	!SS116-P2 TO SS61-P1!
+	x = -475 y = -275 add
+	y -= 45 add
+	x += 325 add
+	y += 45 add
+	line(fg=green4) clear
+	x = -310 y = -320 cable_ident("green","maggot","4.1") clear
+
+	!SS61-P4 TO SS60-P3!
+	x = -100 y = -275 add
+	y -= 30 add
+	x += 150 add
+	y += 35 add
+	line(fg=green4) clear
+	x = 0 y = -305 cable_ident("green","maggot","4.1") clear
+
+	!SS61-P7 TO SI-P18!
+	x = -50 y = -275 add
+	y -= 60 add
+	x += 600 add
+	y += 330 add
+	x -= 150 add
+	y += 30 add
+	line(fg=green4) clear
+	x = 50 y = -335 cable_ident("green","maggot","4.1") clear
+
+	!SS60-P5 TO SS85-P5!
+	x = 150 y = -275 add
+	y -= 45 add
+	x += 350 add
+	y += 45 add
+	line(fg=green4) clear
+	x = 200 y = -320 cable_ident("green","maggot","4.1") clear
+
+	!SS85-P1 TO SI-P8!
+	x = 400 y = -275 add
+	y -= 15 add
+	x -= 50 add
+	y += 315 add
+	line(fg=green4) clear
+	x = 375 y = -290 cable_ident("green","maggot","4.1") clear
+
+!SS85-P3 TO SS90-P1!
+!x = 450 y = -275 add
+y -= 30 add
+x -= 200 add
+y += 30 add
+line(fg=green4) clear!
+
+
+	X = -450 Y = -250 SUB_116
+	X = -150 Y = -250 SUB_61
+	X = 50 Y = -250 SUB_60
+!X = 250 Y = -250 SUB_90!
+	X = 400 Y = -250 SUB_85
+
+	X = -300 Y = -100 SUB_93
+	X = -50 Y = -100 SUB_104
+	x = 400 y = -100 sub_105
+
+X = -450 Y = 50 HV_5_WEST_INTAKE
+
+	X=-500 Y=200 HV_5_WEST_INTAKE_NEW
+	X = 350 Y = 50 HV_5_SOUTH_INTAKE
+	X = -100 Y = 200 HV_5_SUB_62
+
+
+END
+
+
+OBJECT MAIN_OBJECT (BG,FG,W,H,TBG,TFG)
+BEGIN
+Y = -45 HV_5_OBJECT
+x = -570 y = 310 browser(1065,heathrow,1140)
+
+
+END
+MIMIC = MAIN_OBJECT
+W=1140,H=800,JUST=CENTRECENTRE,FG=LIGHTBLUE3,BG=AQUAMARINE3,RESIZABLE
+

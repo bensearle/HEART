@@ -1,0 +1,54 @@
+load mimic_libutil
+load ocb
+load ocb_monitored
+load transformer
+load ocb_barcis
+load ocb_hand_dressed
+
+!******************* BUSBAR 104 ******************!
+
+object busbar_104
+begin
+
+scale = 260
+tfg = white x = 130 y = -50 add text ("104",ch = 25,just = centrecentre) clear
+
+x = 0 y = 0 add x = 260 add line(fg=lightblue3,lw=4) clear
+lw=2
+x = 30 y = 0 add y -= 30 add line (fg=lightblue3) clear
+x = 80 y = 0 add y += 50 add line (fg=lightblue3) clear
+x = 180 y = 0 add y += 50 add line (fg=lightblue3) clear
+x = 230 y = 0 add y -= 50 add line (fg=lightblue3) clear
+
+scale = 120
+x = 30 y = -25 ocb_hand(26011,2011,heathrow,1,"top")
+x = 80 y = 25 ocb_hand(26012,2012,heathrow,2,"btm")
+angle = -90
+x = 130 y = 0 ocb_hand(26013,2013,heathrow,3,"sect")
+angle = 0
+x = 180 y = 25 ocb_hand(260014,2014,heathrow,4,"btm")
+x = 230 y = -25 ocb_hand(26015,2015,heathrow,5,"top")
+
+scale = 100
+x = 80 y = 70 add transformer("T 1","")
+x = 180 y = 70 add transformer("T 2","")
+
+scale = 260
+just = centrecentre
+tfg=white
+ch=12
+x = 30 y = -55 text ("Spare",just=centrecentre)
+x = 80 y = 100 text ("1600 KVA",just=centrecentre)
+x = 180 y = 100 text ("1600 KVA",just=centrecentre)
+clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -130 y = -20 busbar_104
+
+end
+
+mimic = main_object w=370,h=250,just=centrecentre,fg=white,bg=black,resizable

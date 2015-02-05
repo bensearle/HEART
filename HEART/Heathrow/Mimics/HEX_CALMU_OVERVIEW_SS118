@@ -1,0 +1,24 @@
+load hex_calmu_meter
+Load HEX_CALMU_OVERVIEW_SS118_HELP
+Load BROWSER
+
+object main_object(w,h,fg,bg)
+begin
+
+X=-250 Y=-75  
+CALMU_METER(heathro3,200,720,E762,2100,2132,1,118,820,100,-100)
+X=50 Y=-75  
+CALMU_METER(heathro3,200,770,E812,2101,2133,2,118,820,100,-100)
+
+!
+Y = -290 x =  -300 text ("TRANSFORMER 5",just=bottomcentre)
+Y = -290 x =  00 text ("VENT FAN 1",just=bottomcentre)
+Y = -290 x =  300 text ("VENT FAN 2",just=bottomcentre)
+Y = -95 x =  -300 text ("TRANSFORMER 6",just=bottomcentre)
+!
+clear
+x = -570 y = 310 browser(1059,heathrow,1140)
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

@@ -1,0 +1,597 @@
+load mimic_libutil
+load hv_overview_ocb_alarm_test
+
+
+
+!********** NORTH INTAKE TEST *************!
+
+object north_intake_test = int
+begin
+
+north_intake_test =
+   (ocb_note_clr_alarm(100,heathrow) |
+   ocb_note_clr_alarm(120,heathrow) |
+   ocb_note_clr_alarm(140,heathrow) |
+   ocb_note_clr_alarm(160,heathrow) |
+   ocb_note_clr_alarm(180,heathrow) |
+   ocb_note_clr_alarm(200,heathrow) |
+   ocb_note_clr_alarm(220,heathrow) |
+   ocb_note_clr_alarm(240,heathrow) |
+   ocb_note_clr_alarm(260,heathrow) |
+   ocb_note_clr_alarm(280,heathrow) |
+   ocb_note_clr_alarm(300,heathrow) |
+   ocb_note_clr_alarm(320,heathrow) |
+   ocb_note_clr_alarm(340,heathrow) |
+   ocb_note_clr_alarm(360,heathrow) |
+   ocb_note_clr_alarm(380,heathrow) |
+   ocb_note_clr_alarm(400,heathrow) |
+   ocb_note_clr_alarm(420,heathrow) |
+   ocb_note_clr_alarm(440,heathrow) |
+   ocb_note_clr_alarm(450,heathrow) |
+   ocb_note_clr_alarm(460,heathrow) |
+   ocb_note_clr_alarm(470,heathrow))
+
+if north_intake_test == 3
+then
+   north_intake_test = 1 ! OCB WAITING FOR NOTE !
+
+end
+
+object north_intake_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var intake_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "north_intake"
+   end
+
+intake_test = north_intake_test
+if intake_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if intake_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 100 h = 28 rect(fg=button_bg_colour)
+x = -50 y = 14 add x += 100 add y -= 28 add line(lw=1,fg=decorshadow) clear
+x = 50 y = -14 add x -= 100 add y += 28 add line(lw=1,fg=decorlight) clear
+
+x = -40 y = -7 command_button("North Intake","",80,"",ch=11)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!********** SOUTH INTAKE TEST *************!
+
+object south_intake_test = int
+begin
+
+south_intake_test =
+(ocb_note_clr_alarm(1100,heathrow) |
+ocb_note_clr_alarm(1120,heathrow) |
+ocb_note_clr_alarm(1140,heathrow) |
+ocb_note_clr_alarm(1160,heathrow) |
+ocb_note_clr_alarm(1180,heathrow) |
+ocb_note_clr_alarm(1200,heathrow) |
+ocb_note_clr_alarm(1220,heathrow) |
+ocb_note_clr_alarm(1240,heathrow) |
+ocb_note_clr_alarm(1260,heathrow) |
+ocb_note_clr_alarm(1280,heathrow) |
+ocb_note_clr_alarm(1300,heathrow) |
+ocb_note_clr_alarm(1320,heathrow) |
+ocb_note_clr_alarm(1340,heathrow) |
+ocb_note_clr_alarm(1360,heathrow) |
+ocb_note_clr_alarm(1380,heathrow) |
+ocb_note_clr_alarm(1400,heathrow) |
+ocb_note_clr_alarm(1420,heathrow) |
+ocb_note_clr_alarm(1440,heathrow) |
+ocb_note_clr_alarm(1460,heathrow) |
+ocb_note_clr_alarm(1480,heathrow) |
+ocb_note_clr_alarm(1500,heathrow) |
+ocb_note_clr_alarm(1520,heathrow) |
+ocb_note_clr_alarm(1540,heathrow) |
+ocb_note_clr_alarm(1560,heathrow) |
+ocb_note_clr_alarm(1580,heathrow) |
+ocb_note_clr_alarm(1600,heathrow) |
+ocb_note_clr_alarm(1620,heathrow) |
+ocb_note_clr_alarm(1640,heathrow) |
+ocb_note_clr_alarm(1660,heathrow) |
+ocb_note_clr_alarm(1680,heathrow) |
+ocb_note_clr_alarm(1700,heathrow) |
+ocb_note_clr_alarm(1710,heathrow) |
+ocb_note_clr_alarm(1720,heathrow) |
+ocb_note_clr_alarm(1730,heathrow) |
+ocb_note_clr_alarm(1740,heathrow) |
+ocb_note_clr_alarm(1750,heathrow) |
+ocb_note_clr_alarm(1760,heathrow) |
+ocb_note_clr_alarm(1770,heathrow) )
+
+if south_intake_test == 3
+then
+   south_intake_test = 1
+end
+
+object south_intake_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var intake_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "south_intake"
+   end
+
+intake_test = south_intake_test
+if intake_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if intake_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 100 h = 28 rect(fg=button_bg_colour)
+x = -50 y = 14 add x += 100 add y -= 28 add line(lw=1,fg=decorshadow) clear
+x = 50 y = -14 add x -= 100 add y += 28 add line(lw=1,fg=decorlight) clear
+
+x = -40 y = -7 command_button("South Intake","",80,"",ch=11)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!********** EAST INTAKE TEST *************!
+
+object east_intake_test = int
+begin
+
+east_intake_test =
+(ocb_note_clr_alarm(2100,heathrow) |
+ocb_note_clr_alarm(2120,heathrow) |
+ocb_note_clr_alarm(2140,heathrow) |
+ocb_note_clr_alarm(2160,heathrow) |
+ocb_note_clr_alarm(2180,heathrow) |
+ocb_note_clr_alarm(2200,heathrow) |
+ocb_note_clr_alarm(2220,heathrow) |
+ocb_note_clr_alarm(2240,heathrow) |
+ocb_note_clr_alarm(2260,heathrow) |
+ocb_note_clr_alarm(2280,heathrow) |
+ocb_note_clr_alarm(2300,heathrow) |
+ocb_note_clr_alarm(2320,heathrow) |
+ocb_note_clr_alarm(2340,heathrow) |
+ocb_note_clr_alarm(2360,heathrow) |
+ocb_note_clr_alarm(2380,heathrow) |
+ocb_note_clr_alarm(2400,heathrow) |
+ocb_note_clr_alarm(2420,heathrow) |
+ocb_note_clr_alarm(2440,heathrow) |
+ocb_note_clr_alarm(2460,heathrow) |
+ocb_note_clr_alarm(2480,heathrow) |
+ocb_note_clr_alarm(2500,heathrow) |
+ocb_note_clr_alarm(2520,heathrow) |
+ocb_note_clr_alarm(2540,heathrow) |
+ocb_note_clr_alarm(2550,heathrow) |
+ocb_note_clr_alarm(2560,heathrow) |
+ocb_note_clr_alarm(2570,heathrow) )
+
+if east_intake_test == 3
+then
+     east_intake_test = 1 ! OCB WAITING FOR NOTE !
+
+end
+
+object east_intake_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var intake_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "east_intake"
+   end
+
+intake_test = east_intake_test
+if intake_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if intake_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 100 h = 28 rect(fg=button_bg_colour)
+x = -50 y = 14 add x += 100 add y -= 28 add line(lw=1,fg=decorshadow) clear
+x = 50 y = -14 add x -= 100 add y += 28 add line(lw=1,fg=decorlight) clear
+
+x = -40 y = -7 command_button("East Intake","",80,"",ch=11)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+!********** WEST INTAKE TEST *************!
+
+object west_intake_test = int
+begin
+
+west_intake_test =
+(ocb_note_clr_alarm(3100,heathrow) |
+ocb_note_clr_alarm(3120,heathrow) |
+ocb_note_clr_alarm(3140,heathrow) |
+ocb_note_clr_alarm(3160,heathrow) |
+ocb_note_clr_alarm(3180,heathrow) |
+ocb_note_clr_alarm(3200,heathrow) |
+ocb_note_clr_alarm(3220,heathrow) |
+ocb_note_clr_alarm(3240,heathrow) |
+ocb_note_clr_alarm(3260,heathrow) |
+ocb_note_clr_alarm(3300,heathrow) |
+ocb_note_clr_alarm(3320,heathrow) |
+ocb_note_clr_alarm(3340,heathrow) |
+ocb_note_clr_alarm(3360,heathrow) |
+ocb_note_clr_alarm(3380,heathrow) |
+ocb_note_clr_alarm(3400,heathrow) |
+ocb_note_clr_alarm(3420,heathrow) |
+ocb_note_clr_alarm(3440,heathrow) |
+ocb_note_clr_alarm(3460,heathrow) |
+ocb_note_clr_alarm(3480,heathrow) |
+ocb_note_clr_alarm(3500,heathrow) |
+ocb_note_clr_alarm(3510,heathrow) )
+
+if west_intake_test == 3
+then
+     west_intake_test = 1 ! OCB WAITING FOR NOTE !
+
+end
+
+object west_intake_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var intake_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "west_intake"
+   end
+
+intake_test = west_intake_test
+if intake_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if intake_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 100 h = 28 rect(fg=button_bg_colour)
+x = -50 y = 14 add x += 100 add y -= 28 add line(lw=1,fg=decorshadow) clear
+x = 50 y = -14 add x -= 100 add y += 28 add line(lw=1,fg=decorlight) clear
+
+x = -40 y = -7 command_button("West Intake","",80,"",ch=11)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+
+!********** SUB 23 TEST *************!
+
+object sub_stn_23_test = int
+begin
+
+sub_stn_23_test =
+(ocb_note_clr_alarm(4100,heathrow) |
+ocb_note_clr_alarm(4120,heathrow) |
+ocb_note_clr_alarm(4140,heathrow) |
+ocb_note_clr_alarm(4160,heathrow) |
+ocb_note_clr_alarm(4180,heathrow) |
+ocb_note_clr_alarm(4200,heathrow) |
+ocb_note_clr_alarm(4220,heathrow) |
+ocb_note_clr_alarm(4240,heathrow) |
+ocb_note_clr_alarm(4260,heathrow) |
+ocb_note_clr_alarm(4280,heathrow) |
+ocb_note_clr_alarm(4290,heathrow) |
+ocb_note_clr_alarm(4300,heathrow) |
+ocb_note_clr_alarm(4310,heathrow) |
+ocb_note_clr_alarm(4320,heathrow) |
+ocb_note_clr_alarm(4330,heathrow) |
+ocb_note_clr_alarm(4340,heathrow) |
+ocb_note_clr_alarm(4350,heathrow) |
+ocb_note_clr_alarm(4360,heathrow) |
+ocb_note_clr_alarm(4370,heathrow) |
+ocb_note_clr_alarm(4380,heathrow) |
+ocb_note_clr_alarm(4390,heathrow) )
+
+if sub_stn_23_test == 3
+then
+     sub_stn_23_test = 1 ! OCB WAITING FOR NOTE !
+
+end
+
+object sub_stn_23_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var sub_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "sub_stn_23"
+   end
+
+sub_test = sub_stn_23_test
+if sub_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if sub_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 64 h = 28 rect(fg=button_bg_colour)
+x = -32 y = 14 add x += 64 add y -= 28 add line(lw=1,fg=decorshadow) clear
+x = 32 y = -14 add x -= 64 add y += 28 add line(lw=1,fg=decorlight) clear
+
+x = -24 y = -7 command_button("Sub 23","",48,"",ch=11)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+
+!********** SUB 32 TEST *************!
+
+object sub_stn_32_test = int
+begin
+
+sub_stn_32_test =
+(ocb_note_clr_alarm(5100,heathrow) |
+ocb_note_clr_alarm(5120,heathrow) |
+ocb_note_clr_alarm(5140,heathrow) |
+ocb_note_clr_alarm(5160,heathrow) |
+ocb_note_clr_alarm(5180,heathrow) |
+ocb_note_clr_alarm(5200,heathrow) |
+ocb_note_clr_alarm(5220,heathrow) |
+ocb_note_clr_alarm(5240,heathrow) |
+ocb_note_clr_alarm(5260,heathrow) |
+ocb_note_clr_alarm(5280,heathrow) |
+ocb_note_clr_alarm(5290,heathrow) |
+ocb_note_clr_alarm(5300,heathrow) |
+ocb_note_clr_alarm(5310,heathrow) |
+ocb_note_clr_alarm(5320,heathrow) |
+ocb_note_clr_alarm(5330,heathrow) |
+ocb_note_clr_alarm(5340,heathrow) |
+ocb_note_clr_alarm(5350,heathrow) |
+ocb_note_clr_alarm(5360,heathrow) |
+ocb_note_clr_alarm(5370,heathrow) )
+
+if sub_stn_32_test == 3
+then
+     sub_stn_32_test = 1 ! OCB WAITING FOR NOTE !
+
+end
+
+object sub_stn_32_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var sub_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "sub_stn_32"
+   end
+
+sub_test = sub_stn_32_test
+if sub_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if sub_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 64 h = 28 rect(fg=button_bg_colour)
+x = -32 y = 14 add x += 64 add y -= 28 add line(lw=1,fg=decorshadow) clear
+x = 32 y = -14 add x -= 64 add y += 28 add line(lw=1,fg=decorlight) clear
+
+x = -24 y = -7 command_button("Sub 32","",48,"",ch=11)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+
+
+!********** SUB 62 TEST *************!
+
+object sub_stn_62_test = int
+begin
+
+sub_stn_62_test =
+(ocb_note_clr_alarm(6100,heathrow) |
+ocb_note_clr_alarm(6120,heathrow) |
+ocb_note_clr_alarm(6140,heathrow) |
+ocb_note_clr_alarm(6160,heathrow) |
+ocb_note_clr_alarm(6180,heathrow) |
+ocb_note_clr_alarm(6200,heathrow) |
+ocb_note_clr_alarm(6220,heathrow) |
+ocb_note_clr_alarm(6240,heathrow) |
+ocb_note_clr_alarm(6260,heathrow) |
+ocb_note_clr_alarm(6280,heathrow) |
+ocb_note_clr_alarm(6300,heathrow) |
+ocb_note_clr_alarm(6320,heathrow) |
+ocb_note_clr_alarm(6340,heathrow) |
+ocb_note_clr_alarm(6360,heathrow) |
+ocb_note_clr_alarm(6380,heathrow) |
+ocb_note_clr_alarm(6390,heathrow) |
+ocb_note_clr_alarm(6400,heathrow) |
+ocb_note_clr_alarm(6410,heathrow) |
+ocb_note_clr_alarm(6420,heathrow) |
+ocb_note_clr_alarm(6430,heathrow) |
+ocb_note_clr_alarm(6440,heathrow) |
+ocb_note_clr_alarm(6450,heathrow) |
+ocb_note_clr_alarm(6460,heathrow) |
+ocb_note_clr_alarm(6470,heathrow))
+
+if sub_stn_62_test == 3
+then
+     sub_stn_62_test = 1 ! OCB WAITING FOR NOTE !
+
+end
+
+object sub_stn_62_button
+
+var button_bg_colour = loopback colour
+var call_var = toplevel string
+var sub_test = int
+
+begin
+
+if invalid call_var then
+   begin
+   set source call_var = heathrow
+   set selfreplace call_var
+   set mimic call_var = "sub_stn_62"
+   end
+
+sub_test = sub_stn_62_test
+if sub_test == 1 then
+   begin
+   button_bg_colour = flashred
+   end
+
+else if sub_test == 2 then
+   begin
+   button_bg_colour = red
+   end
+
+else
+   begin
+   button_bg_colour = decoroff
+   end
+
+just = centrecentre
+x = 0 y = 0 w = 64 h = 28 rect(fg=button_bg_colour)
+x = -32 y = 14 add x += 64 add y -= 28 add line(lw=1,fg=decorshadow) clear
+x = 32 y = -14 add x -= 64 add y += 28 add line(lw=1,fg=decorlight) clear
+
+x = -24 y = -7 command_button("Sub 62","",48,"",ch=11)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+sub_stn_62_button
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

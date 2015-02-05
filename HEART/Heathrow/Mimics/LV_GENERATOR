@@ -1,0 +1,959 @@
+! HEATHROW CMS - LV GENERATOR (controllable)
+
+loaded by: EAST_INTAKE, HV_10, HV_13, HV_14, HV_15, HV_3,HV_4,
+           HV_6, HV_8, NORTH_INTAKE, SOUTH_INTAKE, SUB_STN_23, 
+           SUB_STN_32, SUB_STN_64, WEST_INTAKE
+!
+ 
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type c_db_row_type = db_elements(db_addr,c_value)
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+type panel_item_row = table (str=string(30))
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+!
+************************************************************
+* LV GENERATOR OBJECT USING OFFSET AND 
+  ANIMATING ON NOT IN AUTO SIGNAL              *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+object lv_gen_auto(fg,bg,plc_offset=int,b_offset=int,c_offset=int,e_offset=int,src=source)
+
+! VARIABLE DECLARATION !
+! PLC INPUTS
+var plc_inputs[1] = plca_comms_status
+var plc_inputs[2] = plcb_comms_status
+!
+var plc_inputs = input b_db_row_type[2]
+
+! B INPUTS!
+var b_inputs = input b_db_row_type[11]
+
+! ALARM INPUTS!
+var alarm_inputs = input alarm_row_type[11]
+
+!CHARACTER INPUTS!
+VAR tag_message = input  c_db_row_type
+
+var ptw_ip	 	= onoff	!1!
+var com_al_ip		= onoff	!2!
+var com_warn_ip		= onoff 	!3!
+var fire_al_ip 		= onoff	!4!
+var low_fuel_ip		= onoff	!5!
+var start_fail_ip		= onoff	!6!
+var start_ip		= onoff 	!7!
+var stop_ip		= onoff 	!8!
+var phase_mon_ip		= onoff 	!9!
+var not_auto_ip		= onoff 	!10!
+var running_ip		= onoff 	!11!
+
+
+
+var com_al		= alarm_status !2!
+var com_warn_al		= alarm_status !3!
+var fire_al 		= alarm_status !4!
+var low_fuel_al		= alarm_status !5!
+var start_fail_al		= alarm_status !6!
+var phase_mon_al		= alarm_status !9!
+var not_auto_al		= alarm_status !10!
+var running_al		= alarm_status !11!
+
+
+! LOOPBACKS !
+VAR lvg_fg = loopback  colour
+VAR lvg_bg = loopback  colour
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+begin
+	! INITIALISATION !
+	! REQUEST DATA FROM SERVER !
+
+	if invalid get source plc_inputs then 
+
+	begin
+
+		! GET PLC INPUTS !
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+	   	! GET OCB INPUTS !
+	   	set source b_inputs = src
+	   	set filter b_inputs.db_addr = lim_ge
+	   	set limit b_inputs.db_addr = db_address(int(b1) + b_offset -1)
+	   	set priority b_inputs.db_addr = 15
+	   	set persist b_inputs
+	   	set mayexist b_inputs
+	   	request b_inputs
+
+	   	! GET OCB ALARM INPUTS !
+	   	set source alarm_inputs = src
+	   	set filter alarm_inputs.db_addr = lim_ge
+	   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+	   	set priority alarm_inputs.db_addr = 15
+	   	set persist alarm_inputs
+   		set mayexist alarm_inputs
+   		request alarm_inputs
+
+
+	   	! GET OCB TAG MESSAGE !
+	   	set source tag_message = src
+	   	set filter tag_message.db_addr = lim_eq
+	   	set limit tag_message.db_addr = db_address(int(c1) + c_offset -1)
+	   	set persist tag_message
+	   	request tag_message
+	end
+
+
+	ptw_ip	 	= b_inputs[1].b_value
+	com_al_ip	= b_inputs[2].b_value
+	com_warn_ip	= b_inputs[3].b_value
+	fire_al_ip 		= b_inputs[4].b_value
+	low_fuel_ip	= b_inputs[5].b_value
+	start_fail_ip	= b_inputs[6].b_value
+	start_ip		= b_inputs[7].b_value
+	stop_ip		= b_inputs[8].b_value
+	phase_mon_ip	= b_inputs[9].b_value
+	not_auto_ip	= b_inputs[10].b_value
+	running_ip	= b_inputs[11].b_value
+
+
+	com_al		= alarm_inputs[2].alarm_status !2!
+	com_warn_al	= alarm_inputs[3].alarm_status !3!
+	fire_al 		= alarm_inputs[4].alarm_status !4!
+	low_fuel_al	= alarm_inputs[5].alarm_status !5!
+	start_fail_al	= alarm_inputs[6].alarm_status !6!
+	phase_mon_al	= alarm_inputs[9].alarm_status !9!
+	not_auto_al	= alarm_inputs[10].alarm_status !10!
+	running_al	= alarm_inputs[11].alarm_status !11!
+
+
+	! SELECT GENERATOR BG COLOUR ! 
+	if not_auto_ip == on then
+		lvg_bg = pink
+	else
+		lvg_bg = lightblue     
+
+	! SELECT GENERATOR FG COLOUR !
+
+	if plc_inputs[1].b_value == on and plc_inputs[1].b_value == on then
+		lvg_fg = magenta
+
+	else if 	com_al		== w_note or
+	com_warn_al		== w_note or
+	fire_al 			== w_note or  
+	low_fuel_al		== w_note or
+	start_fail_al		== w_note or
+	phase_mon_al		== w_note or
+	not_auto_al		== w_note or
+	running_al		== w_note  then
+		lvg_fg = flashred
+
+	else if 	com_al		== w_clr or
+	com_warn_al		== w_clr or
+	fire_al 			== w_clr or  
+	low_fuel_al		== w_clr or
+	start_fail_al		== w_clr or
+	phase_mon_al		== w_clr or
+	not_auto_al		== w_clr or
+	running_al		== w_clr then
+		lvg_fg = red
+   
+	else if phase_mon_ip == on or running_ip == on then
+		lvg_fg = green4
+
+	else if phase_mon_ip == off or running_ip == off then
+		lvg_fg = white
+	else 
+		lvg_fg = decoroff
+
+
+	! TAG MESSAGE PANEL !
+	if valid tag_message_panel then
+	begin
+		set_c_value(db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	end
+
+	! MAIN MENU !
+
+	just = centrecentre
+	w=90 h=70 	
+	set rect main_menu
+	set title main_menu  = "LV Generator Main Menu"
+	set remove main_menu = "Alter Tagged Message"
+	set remove main_menu = "Clear Tagged Message"
+	set remove main_menu = "Alter Transfer of Service"
+	set remove main_menu = "Start Generator"
+	set remove main_menu = "Stop Generator"
+
+
+	! CONTROL MENU !
+
+	if valid main_menu then
+	begin
+	case main_menu of
+		"Alter Tagged Message"
+		begin
+			set title tag_message_panel = "Modify Tag Message"
+			set label tag_message_panel.str = "Tag Message :"
+			set unpinned tag_message_panel
+			request tag_message_panel
+         		end
+
+		"Clear Tagged Message"
+		begin
+			set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+		end
+
+		"Alter Transfer of Service"
+		begin
+		if ptw_ip == on then
+			begin
+				set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+			end
+		else if ptw_ip == off then
+			begin
+				set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+			end
+		end
+
+		"Start Generator"
+		begin
+			set_b_value(db_address(int(b1) + b_offset + 5), src, on)
+			set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+		end
+
+		"Stop Generator"
+		begin
+			set_b_value(db_address(int(b1) + b_offset + 6), src, on)
+			set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+		end
+
+		default
+		begin
+		end
+
+	    set invalid main_menu
+	end
+
+
+	! TAG MESSAGE BOX !
+
+	w=62 h=72
+	if selb and tag_message.c_value <> "" then
+	begin
+		message_text_box(tag_message.c_value)
+	end
+
+
+	! MAIN MENU OPTIONS !
+
+	set add main_menu = "Alter Tagged Message"
+	set add main_menu = "Clear Tagged Message"
+	set add main_menu = "Alter Transfer of Service"
+
+
+	! DRAW GENERATOR !
+
+	bg=lvg_fg
+	fg=lvg_bg
+	just = centrecentre
+	rect(h=70,w=60,fg=lvg_bg)
+	x -= 30 y += 35 add
+	y -= 70 add
+	x += 60 add line(fg=decorlight) clear
+	x = 30 add
+	y += 70 add
+	x -= 60 add line(fg=decorshadow) clear
+	fg = lvg_fg
+	x = 6 y = 10	arc(sa=0,aa=180,W=10,H=15,lw=2)
+	x -= 11		arc(sa=180,aa=180,W=10,H=15,lw=2)
+	x=0 y=10 	circle(lw=2,h=36,w=36)
+	tfg = black
+	ch = 20
+	y -= 30 add text ("R C") clear
+	X=-2 Y=6 Add
+	X=2 Y=15 Add line(lw=2) clear
+
+	set add main_menu = "Start Generator"
+	set add main_menu = "Stop Generator"
+
+	!* Tag and Permit *! 
+	x=0 y=0 w=64 h=74 lw=4
+	if tag_message.c_value <> "" and ptw_ip == on then
+	begin
+		box(w=66, h=76, fg= yellow)
+		box(w=62, h=72, fg= orange)
+	end
+	else if tag_message.c_value <> "" then
+		box(w=62, h=72, fg= yellow)
+	else if ptw_ip == on then
+		box(w=62, h=72, fg= orange)
+end
+
+
+!
+************************************************************
+* LV GENERATOR OBJECT USING OFFSET              *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+object lv_gen_offset(fg,bg,plc_offset=int,b_offset=int,c_offset=int,
+                          e_offset=int,src=source)
+
+! VARIABLE DECLARATION !
+! PLC INPUTS
+var plc_inputs[1] = plca_comms_status
+var plc_inputs[2] = plcb_comms_status
+!
+var plc_inputs = input b_db_row_type[2]
+
+! B INPUTS!
+var b_inputs = input b_db_row_type[10]
+
+! ALARM INPUTS!
+var alarm_inputs = input alarm_row_type[10]
+
+!CHARACTER INPUTS!
+VAR tag_message = input  c_db_row_type
+
+var ptw_ip	 	= onoff	!1!
+var com_al_ip		= onoff	!2!
+var com_warn_ip		= onoff 	!3!
+var fire_al_ip 		= onoff	!4!
+var low_fuel_ip		= onoff	!5!
+var start_fail_ip		= onoff	!6!
+var start_ip		= onoff 	!7!
+var stop_ip		= onoff 	!8!
+var phase_mon_ip		= onoff 	!9!
+var not_auto_ip		= onoff 	!10!
+
+
+
+var com_al		= alarm_status !2!
+var com_warn_al		= alarm_status !3!
+var fire_al 		= alarm_status !4!
+var low_fuel_al		= alarm_status !5!
+var start_fail_al		= alarm_status !6!
+var phase_mon_al		= alarm_status !9!
+var not_auto_al		= alarm_status !10!
+
+
+! LOOPBACKS !
+VAR lvg_fg = loopback  colour
+VAR lvg_bg = loopback  colour
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+begin
+	! INITIALISATION !
+	! REQUEST DATA FROM SERVER !
+
+	if invalid get source plc_inputs then 
+
+	begin
+
+		! GET PLC INPUTS !
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+
+	   	! GET OCB INPUTS !
+	   	set source b_inputs = src
+	   	set filter b_inputs.db_addr = lim_ge
+	   	set limit b_inputs.db_addr = db_address(int(b1) + b_offset -1)
+	   	set priority b_inputs.db_addr = 15
+	   	set persist b_inputs
+	   	set mayexist b_inputs
+	   	request b_inputs
+
+	   	! GET OCB ALARM INPUTS !
+	   	set source alarm_inputs = src
+	   	set filter alarm_inputs.db_addr = lim_ge
+	   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset -1)
+	   	set priority alarm_inputs.db_addr = 15
+	   	set persist alarm_inputs
+   		set mayexist alarm_inputs
+   		request alarm_inputs
+
+
+	   	! GET OCB TAG MESSAGE !
+	   	set source tag_message = src
+	   	set filter tag_message.db_addr = lim_eq
+	   	set limit tag_message.db_addr = db_address(int(c1) + c_offset -1)
+	   	set persist tag_message
+	   	request tag_message
+	end
+
+
+	ptw_ip	 	= b_inputs[1].b_value
+	com_al_ip	= b_inputs[2].b_value
+	com_warn_ip	= b_inputs[3].b_value
+	fire_al_ip 		= b_inputs[4].b_value
+	low_fuel_ip	= b_inputs[5].b_value
+	start_fail_ip	= b_inputs[6].b_value
+	start_ip		= b_inputs[7].b_value
+	stop_ip		= b_inputs[8].b_value
+	phase_mon_ip	= b_inputs[9].b_value
+	not_auto_ip	= b_inputs[10].b_value
+
+
+	com_al		= alarm_inputs[2].alarm_status !2!
+	com_warn_al	= alarm_inputs[3].alarm_status !3!
+	fire_al 		= alarm_inputs[4].alarm_status !4!
+	low_fuel_al	= alarm_inputs[5].alarm_status !5!
+	start_fail_al	= alarm_inputs[6].alarm_status !6!
+	phase_mon_al	= alarm_inputs[9].alarm_status !9!
+	not_auto_al	= alarm_inputs[10].alarm_status !10!
+
+
+	! SELECT GENERATOR BG COLOUR ! 
+
+	if ptw_ip == on then
+		lvg_bg = orange
+	else if tag_message.c_value <> "" then 
+		lvg_bg = yellow
+	else
+		lvg_bg = lightblue     
+
+	! SELECT GENERATOR FG COLOUR !
+
+	if plc_inputs[1].b_value == on and plc_inputs[1].b_value == on then
+		lvg_fg = magenta
+
+	else if 	com_al		== w_note or
+	com_warn_al		== w_note or
+	fire_al 			== w_note or  
+	low_fuel_al		== w_note or
+	start_fail_al		== w_note or
+	phase_mon_al		== w_note or
+	not_auto_al		== w_note  then
+		lvg_fg = flashred
+
+	else if 	com_al		== w_clr or
+	com_warn_al		== w_clr or
+	fire_al 			== w_clr or  
+	low_fuel_al		== w_clr or
+	start_fail_al		== w_clr or
+	phase_mon_al		== w_clr or
+	not_auto_al		== w_clr then
+		lvg_fg = red
+   
+	else if phase_mon_ip == on then
+		lvg_fg = green4
+
+	else if phase_mon_ip == off then
+		lvg_fg = white
+	else 
+		lvg_fg = decoroff
+
+
+	! TAG MESSAGE PANEL !
+	if valid tag_message_panel then
+	begin
+		set_c_value(db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+		set invalid tag_message_panel
+	end
+
+	! MAIN MENU !
+
+	just = centrecentre
+	w=90 h=70 	
+	set rect main_menu
+	set title main_menu  = "LV Generator Main Menu"
+	set remove main_menu = "Alter Tagged Message"
+	set remove main_menu = "Clear Tagged Message"
+	set remove main_menu = "Alter Transfer of Service"
+	set remove main_menu = "Start Generator"
+	set remove main_menu = "Stop Generator"
+
+
+	! CONTROL MENU !
+
+	if valid main_menu then
+	begin
+	case main_menu of
+		"Alter Tagged Message"
+		begin
+			set title tag_message_panel = "Modify Tag Message"
+			set label tag_message_panel.str = "Tag Message :"
+			set unpinned tag_message_panel
+			request tag_message_panel
+         		end
+
+		"Clear Tagged Message"
+		begin
+			set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+		end
+
+		"Alter Transfer of Service"
+		begin
+		if ptw_ip == on then
+			begin
+				set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+			end
+		else if ptw_ip == off then
+			begin
+				set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+			end
+		end
+
+		"Start Generator"
+		begin
+			set_b_value(db_address(int(b1) + b_offset + 5), src, on)
+			set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+		end
+
+		"Stop Generator"
+		begin
+			set_b_value(db_address(int(b1) + b_offset + 6), src, on)
+			set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+		end
+
+		default
+		begin
+		end
+
+	    set invalid main_menu
+	end
+
+
+	! TAG MESSAGE BOX !
+
+	w=60 h=70
+	if selb and tag_message.c_value <> "" then
+	begin
+		message_text_box(tag_message.c_value)
+	end
+
+
+	! MAIN MENU OPTIONS !
+
+	set add main_menu = "Alter Tagged Message"
+	set add main_menu = "Clear Tagged Message"
+	set add main_menu = "Alter Transfer of Service"
+
+
+	! DRAW GENERATOR !
+
+	bg=lvg_fg
+	fg=lvg_bg
+	just = centrecentre
+	rect(h=70,w=60,fg=lvg_bg)
+	x -= 30 y += 35 add
+	y -= 70 add
+	x += 60 add line(fg=decorlight) clear
+	x = 30 add
+	y += 70 add
+	x -= 60 add line(fg=decorshadow) clear
+	fg = lvg_fg
+	x = 6 y = 10
+	arc(sa=0,aa=180,W=10,H=15,lw=2)
+	x -= 11
+	arc(sa=180,aa=180,W=10,H=15,lw=2)
+	x=0 y=10
+	circle(lw=2,h=35,w=35)
+	tfg = black
+	ch = 20
+	y -= 30 add text ("R C")
+
+	clear
+
+
+	set add main_menu = "Start Generator"
+	set add main_menu = "Stop Generator"
+end
+
+
+
+
+
+
+
+
+
+!
+************************************************************
+* LV GENERATOR OBJECT                                      *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object lv_generator(fg,bg,plc_offset=int,b_offset=int,c_offset=int,
+                          e_offset=int,src=source)
+
+!PLC INPUTS!
+VAR plc_a_comms_fail_ip = input  b_db_row_type
+VAR plc_b_comms_fail_ip = input  b_db_row_type
+
+
+!INPUTS!
+VAR transfer_of_service_ip = input  b_db_row_type
+VAR phase_monitor_ip = input  b_db_row_type
+VAR start_gen = input  b_db_row_type
+
+!ALARMS!
+VAR phase_monitor_discr = input  alarm_row_type
+VAR start_gen_discr = input  alarm_row_type
+VAR start_fail = input  alarm_row_type
+VAR overload = input  alarm_row_type
+VAR oil_low = input  alarm_row_type
+VAR water_hot = input  alarm_row_type
+VAR common_alarm = input alarm_row_type
+
+!CHARACTER INPUTS!
+VAR tag_message_ip = input  c_db_row_type
+
+! LOOPBACKS !
+VAR lvg_fg = loopback  colour
+VAR lvg_bg = loopback  colour
+
+! PANELS !
+VAR tag_message_panel = panel  panel_item_row
+VAR main_menu = menu  string(30)
+
+
+begin
+
+! INITIALISATION !
+! REQUEST DATA FROM SERVER !
+
+if invalid get source plc_a_comms_fail_ip then 
+
+   begin
+
+   set source plc_a_comms_fail_ip = src
+   set filter plc_a_comms_fail_ip.db_addr = lim_eq
+   set limit plc_a_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset -1)
+   set persist plc_a_comms_fail_ip 
+   request plc_a_comms_fail_ip
+
+   set source plc_b_comms_fail_ip = src
+   set filter plc_b_comms_fail_ip.db_addr = lim_eq
+   set limit plc_b_comms_fail_ip.db_addr = db_address(int(b1) + plc_offset)
+   set persist plc_b_comms_fail_ip 
+   request plc_b_comms_fail_ip
+
+   set source transfer_of_service_ip = src
+   set filter transfer_of_service_ip.db_addr = lim_eq
+   set limit transfer_of_service_ip.db_addr = db_address(int(b1) + b_offset -1)
+   set persist transfer_of_service_ip 
+   request transfer_of_service_ip
+
+   set source phase_monitor_ip = src
+   set filter phase_monitor_ip.db_addr = lim_eq
+   set limit phase_monitor_ip.db_addr = db_address(int(b1) + b_offset -10)
+   set persist phase_monitor_ip 
+   request phase_monitor_ip
+
+   set source start_gen = src
+   set filter start_gen.db_addr = lim_eq
+   set limit start_gen.db_addr = db_address(int(b1) + b_offset + 6)
+   set persist start_gen 
+   request start_gen
+
+   set source start_fail = src
+   set filter start_fail.db_addr = lim_eq
+   set limit start_fail.db_addr = db_address(int(b1) + b_offset +4)
+   set persist start_fail 
+   request start_fail 
+ 
+   set source overload = src
+   set filter overload.db_addr = lim_eq
+   set limit overload.db_addr = db_address(int(b1) + b_offset + 3)
+   set persist overload 
+   request overload
+
+   set source oil_low = src
+   set filter oil_low.db_addr = lim_eq
+   set limit oil_low.db_addr = db_address(int(b1) + b_offset + 1 )
+   set persist oil_low 
+   request oil_low
+
+   set source water_hot = src
+   set filter water_hot.db_addr = lim_eq
+   set limit water_hot.db_addr = db_address(int(b1) + b_offset + 2)
+   set persist water_hot 
+   request water_hot
+
+   set source common_alarm = src
+   set filter common_alarm.db_addr = lim_eq
+   set limit common_alarm.db_addr = db_address(int(b1) + b_offset )
+   set persist common_alarm
+   request common_alarm
+
+
+!REQUEST TEXT FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+
+
+   end
+
+
+! SELECT GENERATOR BG COLOUR ! 
+
+if transfer_of_service_ip.b_value then
+   lvg_bg = orange
+ 
+else if tag_message_ip.c_value <> "" then 
+   lvg_bg = yellow
+ 
+else
+   lvg_bg = lightblue     
+
+
+! SELECT GENERATOR FG COLOUR !
+
+if plc_a_comms_fail_ip.b_value and plc_b_comms_fail_ip.b_value then
+   lvg_fg = magenta
+
+else if start_fail.alarm_status          == w_note or
+        overload.alarm_status            == w_note or
+        oil_low.alarm_status             == w_note or
+        common_alarm.alarm_status        == w_note or  
+        water_hot.alarm_status           == w_note then
+        lvg_fg = flashred
+  
+else if start_fail.alarm_status          == w_clr or
+        overload.alarm_status            == w_clr or
+        oil_low.alarm_status             == w_clr or
+        common_alarm.alarm_status        == w_clr or  
+        water_hot.alarm_status           == w_clr then
+   lvg_fg = red
+   
+else if phase_monitor_ip.b_value then
+   lvg_fg = green4
+
+else if phase_monitor_ip.b_value == off then
+   lvg_fg = white
+
+else 
+   lvg_fg = decoroff
+
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! MAIN MENU !
+
+just = centrecentre
+w=90 h=70 
+set rect main_menu
+set title main_menu  = "LV Generator Main Menu"
+set remove main_menu = "Alter Tagged Message"
+set remove main_menu = "Clear Tagged Message"
+set remove main_menu = "Alter Transfer of Service"
+set remove main_menu = "Start Generator"
+set remove main_menu = "Stop Generator"
+
+
+! CONTROL MENU !
+
+if valid main_menu then
+   begin
+   case main_menu of
+      "Alter Tagged Message"
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tagged Message"
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+      "Alter Transfer of Service"
+         begin
+         if transfer_of_service_ip.b_value then
+            begin
+            set_b_value(db_address(int(b1) + b_offset - 1), src, off)
+            end
+         else if transfer_of_service_ip.b_value == off then
+            begin
+            set_b_value(db_address(int(b1) + b_offset - 1), src, on)
+            end
+         end
+
+      "Start Generator"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 5), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 6), src, off)
+         end
+
+      "Stop Generator"
+         begin
+         set_b_value(db_address(int(b1) + b_offset + 6), src, on)
+         set_b_value(db_address(int(b1) + b_offset + 5), src, off)
+         end
+
+      default
+         begin
+         end
+
+   set invalid main_menu
+   end
+
+
+! TAG MESSAGE BOX !
+
+w=60 h=70
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+   end
+
+
+! MAIN MENU OPTIONS !
+
+set add main_menu = "Alter Tagged Message"
+set add main_menu = "Clear Tagged Message"
+set add main_menu = "Alter Transfer of Service"
+
+
+! DRAW GENERATOR !
+
+bg=lvg_fg
+fg=lvg_bg
+just = centrecentre
+rect(h=70,w=60,fg=lvg_bg)
+x -= 30 y += 35 add
+y -= 70 add
+x += 60 add line(fg=decorlight) clear
+x = 30 add
+y += 70 add
+x -= 60 add line(fg=decorshadow) clear
+fg = lvg_fg
+x = 6 y = 10
+arc(sa=0,aa=180,W=10,H=15,lw=2)
+x -= 11
+arc(sa=180,aa=180,W=10,H=15,lw=2)
+x=0 y=10
+circle(lw=2,h=35,w=35)
+tfg = black
+ch = 20
+y -= 30 add text ("R C")
+
+clear
+
+!if phase_monitor_ip.b_value then!
+ set add main_menu = "Start Generator"!was stop!
+!else !
+ set add main_menu = "Stop Generator"!was start!
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale = 270
+x = 50
+lv_generator(1,1190,6,0,heathro2)
+
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,bg=decoroff,resizable
+

@@ -1,0 +1,149 @@
+load mimic_libutil
+load ocb_alarm_test
+load new_sub_stn_57
+load new_sub_stn_56
+load new_sub_stn_87
+
+object alarm_sub_57
+
+var call_var = popup new_sub_stn_57
+
+begin
+
+if sub_alarm(7000,7930,heathrow) == 1 
+or sub_alarm(7000,7940,heathrow) == 1 
+or sub_alarm(7000,7950,heathrow) == 1 
+or sub_alarm(7000,7960,heathrow) == 1
+or sub_alarm(7000,7970,heathrow) == 1
+or sub_alarm(7000,8360,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_alarm(7000,7930,heathrow) == 2
+or sub_alarm(7000,7940,heathrow) == 2 
+or sub_alarm(7000,7950,heathrow) == 2
+or sub_alarm(7000,7960,heathrow) == 2
+or sub_alarm(7000,7970,heathrow) == 2
+or sub_alarm(7000,8360,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_alarm(7000,7930,heathrow) == 3
+or sub_alarm(7000,7940,heathrow) == 3
+or sub_alarm(7000,7950,heathrow) == 3
+or sub_alarm(7000,7960,heathrow) == 3
+or sub_alarm(7000,7970,heathrow) == 3
+or sub_alarm(7000,8360,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 57",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+object alarm_sub_56
+
+var call_var = popup new_sub_stn_56
+
+begin
+if sub_alarm(23700,973,heathrow) == 1 
+or sub_alarm(23700,974,heathrow) == 1 
+or sub_alarm(23700,975,heathrow) == 1 
+or sub_alarm(23700,976,heathrow) == 1
+or sub_alarm(23700,977,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_alarm(23700,973,heathrow) == 2
+or sub_alarm(23700,974,heathrow) == 2 
+or sub_alarm(23700,975,heathrow) == 2
+or sub_alarm(23700,976,heathrow) == 2
+or sub_alarm(23700,977,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_alarm(23700,973,heathrow) == 3
+or sub_alarm(23700,974,heathrow) == 3
+or sub_alarm(23700,975,heathrow) == 3
+or sub_alarm(23700,976,heathrow) == 3
+or sub_alarm(23700,977,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 56",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+object alarm_sub_87
+
+var call_var = popup new_sub_stn_87
+
+begin
+
+if sub_alarm(7000,8330,heathrow) == 1 
+or sub_alarm(7000,8340,heathrow) == 1 
+or sub_alarm(7000,8350,heathrow) == 1 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=magenta)
+end
+else if sub_alarm(7000,8330,heathrow) == 2
+or sub_alarm(7000,8340,heathrow) == 2 
+or sub_alarm(7000,8350,heathrow) == 2 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=flashred)
+end
+else if sub_alarm(7000,8330,heathrow) == 3
+or sub_alarm(7000,8340,heathrow) == 3
+or sub_alarm(7000,8350,heathrow) == 3 then
+begin
+  W=100 H=25 X=-25 Y=25 RECT(fg=red)
+end
+else
+begin
+  w=100 h=25 x=-25 y=25 rect(fg=decoroff)
+end
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 25 y = 38 text(tfg=white,ch=25,"Sub 87",just=centrecentre) clear
+
+x = 75 y = 25 add x -= 100 add y += 25 add line (fg=white) clear
+x = 75 y = 25 add y += 25 add x -= 100 add line (fg=grey40) clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

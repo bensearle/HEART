@@ -1,0 +1,212 @@
+!**	HEATHROW\HV_15		**!
+!** 	Modified by ULTRA - 23 Oct 2008	**!
+!** 	Retagged mimic message tag to C1083 on HW server 	**!
+!** 							**!
+
+  ! Control and Monitoring System !
+!-------------------------------!
+
+!***********Hv Ring 9**********!
+
+load mimic_libutil
+load ocb
+load hex_ocb
+load hv_15_sub_stations_b
+load browser
+load bsp_breakers
+load hv_cable_ident
+load hv_lib
+
+
+
+!************* SUB 51 ***************!
+
+object sub_51
+begin
+	sub_symbol_51
+
+	lw=2
+	x = 0 y = 25 add y -= 50 add line (fg=blue) clear
+	x = 50 y = 25 add y -= 50 add line (fg=blue) clear
+
+	scale = 120
+	x = 0 y = 0 ocb_mont(7000,7670,457,707,heathrow,4,"top")
+	x = 50 y = 0 ocb_mont(7000,7690,459,709,heathrow,6,"top")
+	clear
+end
+
+!************** SUB 129 ****************!
+
+object sub_129
+begin
+	x=10 y=-70 sub_symbol_129
+	lw=2
+	x = 20 y = -45 add y -= 50 add line(fg=blue) clear
+	x = 70 y = -45 add y -= 50 add line(fg=blue) clear
+
+	x = 20 y = -70 ocb_mont_lib(3000,3100,130,600,heathro4,1,"top")
+	x = 70 y = -70 ocb_mont_lib(3000,3130,133,603,heathro4,4,"top")
+end
+
+
+!************** SUB 138 ****************!
+
+object sub_138
+begin
+	x=10 y=-70 sub_symbol_138
+	lw=2
+	x = -45 y = -83 add y -= 30 add line(fg=blue) clear
+
+	x = 65 y = -83 add y -= 30 add line(fg=blue) clear
+
+	scale=120
+	x = -45 y = -110 breaker("eclipse",29000,29100,1841,6151,	int,HEATHRO2,1,"TOP",int)
+	x = 65 y = -110 breaker("eclipse",29000,29220,1847,6157,	int,HEATHRO2,8,"TOP",int)
+end
+
+
+object subs_layout
+begin
+
+end
+
+
+!************** SUB 121 **************!
+
+object  hv_15_sub_121
+var call_var = toplevel string
+
+begin
+	set source call_var = heathro3
+	set selfreplace call_var
+	set mimic call_Var = "Sub_Station_121"
+
+	W=200 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+	if anyb then
+	  begin
+	    request call_var
+	  end
+
+	x = 75 y = 38 text(tfg=white,ch=25,"Sub 121",just=centrecentre) clear
+
+	x = 175 y = 25 add x -= 200 add y += 25 add line (fg=white) clear
+	x = 175 y = 25 add y += 25 add x -= 200 add line (fg=grey40) clear
+
+	lw=2
+	x = 50  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = 100  y = -25 add y = 25 add line (fg=magenta3) clear
+
+	scale = 330
+	x = 50 y=-1	HV_LIB_BREAKER("TYPE3",6000,6400,317,2117,2180,HEATHRO3,18,"TOP",160)
+	x =100 y=-1	HV_LIB_BREAKER("TYPE3",6000,6420,318,2118,2180,HEATHRO3,19,"TOP",170)
+end
+
+!************* WEST INTAKE NEW ***************!
+
+object hv_15_west_intake_new
+var call_var = toplevel  string
+begin
+	scale=256
+	x=120 y=38  x -= 140 add x += 280 add line (lw=3,fg=blue)  clear
+	x=380 y=38  x -= 140 add x += 70 add line (lw=3,fg=blue) clear
+
+	set source call_var = heathrow
+	set selfreplace call_var
+	set mimic call_var = "west_intake"
+
+	w=208 h=25 x=41 y=25 rect(fg=decoroff)
+
+	if anyb then
+	  begin
+	    request call_var
+	  end
+
+
+	w=28 h=25 x=-39 y=25 rect(fg=grey80)
+	x = -10 y = 25 add x -= 30 add y += 25 add line (fg=white) clear
+	x = -10 y = 25 add y += 25 add x -= 30 add line (fg=grey40) clear
+
+	w=28 h=25 x=300 y=25 rect(fg=grey80)
+	x = 330 y = 25 add x -= 30 add y += 25 add line (fg=white) clear
+	x = 330 y = 25 add y += 25 add x -= 30 add line (fg=grey40) clear
+
+	scale=256
+	x = 145 y = 38 text(tfg=white,ch=18,"West Intake",just=centrecentre) clear
+	
+	x = 250 y = 25 add x -= 209 add y += 25 add line (fg=white) clear
+	x = 250 y = 25 add y += 25 add x -= 209 add line (fg=grey40) clear
+
+	lw=2
+	x = -25 y = 25 add y -= 50 add line(fg=blue) clear
+
+	x = 315 y = 25 add y -= 50 add line(fg=blue) clear
+
+	scale = 120
+	x = -25 y = 0 	ocb(3000,3300,161,286,heathrow,2,"top")
+	x = 15 y = 38 	ocb(3000,3280,160,285,heathrow,9,"sect",ANGLE=90)
+	x =70 y = 0 	
+	x +=50 y = 0 	ocb(3000,3420,168,293,heathrow,12,"top")
+	x +=50 y = 0 	ocb(3000,3220,157,282,heathrow,15,"top")
+	x +=50 y = 0 	
+	x += 55 y = 38 	ocb(3000,3400,167,292,heathrow,18,"sect",ANGLE=90)
+	x +=40 y = 0 	ocb(3000,3260,159,284,heathrow,25,"top")
+end
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	lw=2
+
+	!** SS51-6 TO SS138-1 **!
+	x = -225 y = -70 add y -= 25 add line(fg=blue)  add
+	x +=180 add y += 25 add
+	line(fg=blue) clear
+
+	!** SS138-8 TO SS129-1 **!
+	x = 65 y = -70 add y -= 25 add line(fg=blue)  add
+	x +=221 add y += 25 add
+	line(fg=blue) clear
+
+	!** SS51-4 TO NEW WI-2 **!
+	x = -275 y = -70 add y -= 25 add line(fg=blue)  add
+	x -= 73 add y += 200 add
+	x+=197 add y+=80 add
+	line(fg=blue) clear
+
+
+	!** SS129-4 TO NEW WI-25 **!
+	x = 336 y = -70 add y -= 25 add line(fg=blue)  add
+	x += 60 add y += 140 add
+	X-=206 add y+=170 add
+	line(fg=blue) clear
+
+	!** SS121-18 TO NEW WI-15 **!
+	x = -25 y = -325 add y -= 50 add line(fg=blue)  add
+	x +=480 add y +=500 add
+	x-=411 add y+=125 add
+	line(fg=blue) clear
+
+	!** SS121-19 TO NEW WI-12 **!
+	x = 25 y = -325 add y -= 25 add line(fg=blue)  add
+	x += 404 add y += 452 add
+	x-=435 add y+=125 add
+	line(fg=blue) clear
+
+
+	! * Substations * !
+	clear
+
+	X=266 Y=19 sub_129
+	X=-275 Y=-50 sub_51
+	X=-75 Y=-300 hv_15_sub_121
+	X=-126 Y=201 hv_15_west_intake_new
+	clear
+
+X=0 Y=58 sub_138
+
+	! * browser * !
+	x = -570 y = 315 browser (1083,heathrow,1140)
+end
+mimic = main_object w=1140,h=800, just=centrecentre,fg=white,bg=aquamarine3,resizable
+
+
+

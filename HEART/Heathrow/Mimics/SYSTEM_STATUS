@@ -1,0 +1,10 @@
+load mimic_libutil
+load p1_duty_status
+load nse_duty_status
+load p2_duty_status
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=black,resizable

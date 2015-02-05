@@ -1,0 +1,259 @@
+load mimic_libutil
+load xtel_read_write_library
+load main_hierarchy
+load wrkstn_libutil
+!load OS_LIB!
+Load arh_server_status_popup
+
+!------------------------------XARCHIVE TYPE DEFINITIONS ------------------------------------------------!
+
+TYPE arh_machine = ENUM (MACHINE_A = "A",MACHINE_B = "B" )
+TYPE dir_num = INT (1, 255)
+TYPE opt_name_type = STRING (30)
+TYPE name_type = STRING (30)
+
+type status = table(
+       name =string(30),
+       value = int,
+       s_value = string_50)
+
+TYPE offline_dirs = table (
+	 where = arh_machine,
+	 dir_num = dir_num,
+	 dir_name = opt_name_type,
+	 free_space = int,
+
+ total_space = int,
+	 in_use = yesno,
+	 restore_only = yesno )
+
+!------------------------ OFFLINE STATUS OBJECT -------------------
+         this object retrieves the percentage free space in the archivers offline dirs 
+-----------------------------------------------------------------------------------------!
+object arh_offline_percent_free(src = string, machine = string) = int
+
+var ip = input offline_dirs[10]
+var row = int
+var percent_full = int
+var total_space = int
+var free_space = int
+
+begin
+   if src <> get source ip then
+      begin
+      set reset ip
+      end
+
+   if valid get source ip then
+      begin
+     if get limit ip.where <> arh_machine(machine) then
+         begin
+         set reset ip
+         end
+      end
+      
+   if invalid get source ip then
+      begin
+      set source ip = src
+      set filter ip.restore_only = lim_eq
+      set limit ip.restore_only = no 
+     set filter ip.dir_num = lim_ge_le2
+      set limit ip.dir_num = 1 
+      set limit2 ip.dir_num = 10
+      set persist ip
+      set filter ip.where = lim_eq
+      set limit ip.where = arh_machine(machine)
+      request ip
+      end
+
+   if valid ip and not get busy ip then
+      begin   
+      total_space = 0
+      free_space = 0
+      for row from 1 to lastrow ip do
+         begin
+         total_space = total_space + ip[row].total_space / 1024
+         free_space = free_space + ip[row].free_space / 1024
+         end
+      percent_full = int(100.0 - ((real(free_space) / real(total_space)) * 100))
+      end
+   else
+      begin
+      percent_full = 0
+      end
+
+   arh_offline_percent_free = percent_full
+end
+
+!***************************************************************************************************************************!
+object arh_server_popup_box(h,w,fg,bg, JUST=TOPLEFT, scale, src1 = string, machine1 = string, src2 = string, machine2 = string, title_string=string)
+
+var call_var = popup arh_server_status_popup
+var online_13 = int
+var online_24 = int
+var offline_13 = int
+var offline_24 = int
+
+begin
+   set title call_var = title_string
+   X=0 Y=0 LS=SOLID LW=1 ANGLE=0 ROTBOX
+   if anyb then
+   begin
+    request call_var(online_13, online_24, offline_13, offline_24)
+   end
+end
+
+
+!
+********************ARCHIVER OBJECT *********************************************
+*               this object is called from the Top Level variable (mimic)                                                     *
+************************************************************************************************!
+object get_arch_status (src=source,arhsrc=arhsource,just,header_text=STRING,description_text=STRING, machine = string)
+
+!var status_alarm_point          = input  alarm_row_type
+var status_point                = input  b_bool_type!
+var arch_string =string
+var percentage_string           = string
+var offline_percentage_space    = int
+VAR a_foreground                        = loopback      colour
+VAR a_text_foreground           = loopback      colour
+VAR a_status_text                       = string(15)
+
+var fpc                  = input status(name,value,s_value)
+VAR ip                   =input status (name,value,s_value)
+var ws_info = ws_info_row
+begin 
+
+! INITIALISATION REQUEST DATA FROM SERVER !
+if (invalid ip) and (get busy ip==0) then
+begin
+set source ip=arhsrc
+set filter ip.name=lim_eq
+set limit ip.name = "dual_mode"
+set source fpc = arhsrc
+set filter fpc.name=lim_eq
+set limit fpc.name = "free_percent"
+set persist ip
+set persist fpc
+request ip
+request fpc
+end
+if valid fpc then
+begin
+percentage_string=fpc.s_value
+end
+offline_percentage_space = arh_offline_percent_free(arhsrc, machine)
+
+! SELECT STATUS !
+ws_info = get_ws_info(src)
+if valid ws_info and ws_info.user_name <> "" then
+   begin
+   if (int(percentage_string) <=15) and (valid fpc) then
+      begin
+      a_foreground = ORANGE
+      a_status_text = "A FULL"
+      a_text_foreground = BLACK
+      end
+   else if (offline_percentage_space >=85) and valid fpc then
+      begin
+      a_foreground = ORANGE
+      a_status_text = "D FULL"
+      a_text_foreground = BLACK
+      end
+   else if get busy ip == 0 and valid ip then
+      begin
+      arch_string = ip.s_value
+      if (getword(2,arch_string) == "SINGLE") and (getchar(nchars(getword(1,arch_string)),arch_string)== machine) then 
+	 begin
+	 a_foreground = GREEN
+	 a_status_text = "SINGLE"
+	 a_text_foreground = BLACK
+	 end
+      else if (getword(2,arch_string) == "DUTY") and (getchar(nchars(getword(1,arch_string)),arch_string)== machine) then
+	 begin
+	 a_foreground = GREEN
+	 a_status_text = "DUTY"
+	 a_text_foreground = BLACK
+	 end
+    else if (getword(2,arch_string) == "DUTY") and (getchar(nchars(getword(1,arch_string)),arch_string)<> machine) then
+	 begin
+	 a_foreground = YELLOW
+	 a_status_text = "STNBY"
+	 a_text_foreground = BLACK
+	 end
+      else
+	 begin
+	 a_foreground = red
+	 a_status_text = "FAILED"
+	 a_text_foreground = BLACK
+	 end
+      end
+   else if invalid ip and get busy ip == 0 then 
+      begin
+      a_foreground = red
+      a_status_text = "FAILED"
+      a_text_foreground = BLACK
+     end
+   else
+      begin
+      a_foreground = GOLD4
+      a_status_text = "#"
+      a_text_foreground = BLACK
+      end
+   end
+!else
+   begin
+   a_foreground = GOLD4
+   a_status_text = "#"  
+   a_text_foreground = BLACK
+   end!
+!------------------------------------------------------------------------DRAW MAIN SYMBOL-----------------------------------------------------------!
+scale=260
+JUST=CENTRECENTRE
+FG = decoroff
+
+W=100 H=100 ANGLE=0 FG=a_foreground ROTRECT
+
+TFG = BLACK
+
+x = 0 
+y = 0 
+y = 20 add rect(fg=decoroff,w=50,h=24) clear
+X -= 25 Y = 32 ADD
+X += 50 ADD
+Y -= 24 ADD
+LINE(FG=WHITE) CLEAR
+ADD
+X -= 50 ADD
+Y += 24 ADD
+LINE(FG=grey40) CLEAR
+
+x = 0 y = 20 ADD TEXT(CH=12,font=font_bold,TFG=a_text_foreground,a_status_text) CLEAR
+
+X = -30 Y = -17 ADD
+X += 60 ADD
+LINE(FG=WHITE) CLEAR
+
+X = -30 Y = -18 ADD
+X += 60 ADD
+LINE(FG=grey40) CLEAR
+
+X = 0 Y = -25 TEXT(CH=17,TFG=BLACK,header_text) CLEAR
+X = 0 Y = -6 TEXT(CH=14,font=font_bold,TFG=BLACK,description_text) CLEAR
+y=0 BOX(h=100,w=100,fg=BLACK,lw=2)
+end
+
+
+object arh_server_status(fg,bg,just=topleft)
+begin
+X=244 Y=5 W=208 H=107 arh_server_popup_box("heathrow","heathrow","HEATHROWARH","HEATHROWARH","Archive Server Status (2 and 4)")
+X=7 Y=5 W=208 H=107 arh_server_popup_box("heathrow","heathrow","HEATHROWARH","HEATHROWARH","Archive Server Status (1 and 3)")
+
+X=60 Y=59 get_arch_status(HEATHROW,arhsource("arh13"),"Archiver","13A","a")
+X=163 get_arch_status(heathro2,arhsource("arh13"),"Archiver","13B","b")
+X=298 get_arch_status(heathro2,arhsource("arh24"),"Archiver","24A","a")
+X=400 get_arch_status(heathro2,arhsource("arh24"),"Archiver","24B","b")
+end
+
+
+mimic = arh_server_status w=460, h=120, SCALE=200, JUST=TOPLEFT, RESIZABLE

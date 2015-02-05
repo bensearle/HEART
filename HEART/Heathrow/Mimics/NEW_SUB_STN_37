@@ -1,0 +1,65 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+load intruder_display
+
+
+!***************** BUSBAR 37 *****************!
+
+object busbar_37
+begin
+tfg = black x = -150 y = -55 add text ("37",ch =25) clear
+lw=2
+
+x = -175 y = -25 add x = 175 add line(lw=4,fg=red) clear
+
+x = -150  y = -25 add y += 50 add line (fg=red) clear
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y -= 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y += 50 add line (fg=red) clear
+x =  100  y = -25 add y += 50 add line (fg=red) clear
+x =  150  y = -25 add y += 50 add line (fg=red) clear
+
+scale = 120
+x = -150  y = 0    ocb_mont(10000,10050,900,530,heathro2,1,"btm")
+x = -100  y = 0    ocb_mont(10000,10060,901,531,heathro2,2,"btm")
+x = -50   y = -50  ocb_mont(10000,10070,902,532,heathro2,3,"top")
+x = 0     y = -50  ocb_mont(10000,10080,903,533,heathro2,4,"top")
+x = 50    y = 0    ocb_mont(10000,10090,904,534,heathro2,5,"btm")
+x = 100   y = 0    ocb_mont(10000,10100,905,535,heathro2,6,"btm")
+x = 150   y = 0    ocb_mont(10000,10110,906,536,heathro2,7,"btm")
+
+scale = 180
+
+x = 150
+y = -50 int_sensor(10031,heathro2,"INT")
+y = -70 int_sensor(10030,heathro2,"CO2")
+
+
+scale = 100
+
+x = -150  y = 45  transformer("BA","FEGP")
+x = -100  y = 45  transformer("LT 2","LOCAL")
+x = 50    y = 45  transformer("LT 1","LOCAL")
+
+scale = 256
+just = centrecentre
+tfg = black
+ch = 12
+x = -150 y = 75  text("HAL")
+x = -150 y = 90  text("FEGP")
+x = -50  y = -85 text("36 P4")
+x = 0    y = -85 text("NI P13")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+busbar_37
+
+end
+
+mimic = main_object w=500,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

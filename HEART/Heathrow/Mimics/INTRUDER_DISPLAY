@@ -1,0 +1,83 @@
+! HEATHROW CMS - INTRUDER DISPLAY
+
+loaded by: HV INTAKES
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+
+
+! 
+**************************************************************
+* SUMP HI SENSOR OBJECT                                      *
+* this object is called by the Top Level variable (mimic)    *
+**************************************************************
+!
+
+object int_sensor(offset=int,src=source,ident=string)
+
+var int_sensor_alarm = input  alarm_row_type
+var sensor_bg = loopback  colour
+var box_width = loopback  int
+var box_text = loopback  string
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source int_sensor_alarm then 
+   begin
+
+   set source int_sensor_alarm = src
+   set filter int_sensor_alarm.db_addr = lim_eq
+   set limit int_sensor_alarm.db_addr = db_address(int(b1) + offset - 1)
+   set persist int_sensor_alarm 
+   request int_sensor_alarm
+
+   end
+
+
+! SELECT BG COLOUR !
+
+if int_sensor_alarm.alarm_status == w_note then
+   
+   sensor_bg = flashYELLOW
+
+else if int_sensor_alarm.alarm_status == w_clr then
+
+   sensor_bg = red
+
+else sensor_bg = decoroff
+
+
+! DRAW SYMBOL !
+
+just = centrecentre
+box_text = ident
+box_width = length(box_text)+36
+rect(fg=sensor_bg,h=20,w=box_width) 
+x = -box_width/2 y += 10 add 
+y -= 20 add 
+x += box_width add 
+line(lw=1,fg=decorlight) clear
+x = box_width/2 y = -10 add 
+y += 20 add 
+x -= box_width add 
+line(lw=1,fg=decorshadow) clear
+x = 0 y = 0 text (tfg=black,ch=17,ident)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=200
+int_sensor(1009,heathrow,"INT")
+y +=30
+int_sensor(1011,heathrow,"CO2")
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=lightblue,resizable

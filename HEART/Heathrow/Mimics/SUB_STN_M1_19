@@ -1,0 +1,50 @@
+load mimic_libutil
+load ocb
+
+
+!************* BUSBAR M1/19 *************!
+
+object busbar_m1_19
+begin
+
+lw=2
+tfg = white
+x = -22 y = 35 add text("SOUTH",ch = 17) clear
+x = -23 y = 50 add text("INTAKE",ch = 17) clear
+x = 65
+X =-50 Y =0  Add X =50 Add LINE(fg=orange,lw=4) clear  !main bar!
+x =-52 y =5 add x =-48 y =-6 add line(fg=orange,lw=1) clear !joined left daig!
+x =-55 y =5 add x =-51 y =-6 add line(fg=orange,lw=1) clear  !outer left diag!
+x =52 y =-6 add x =48 y =5 add line(fg=orange,lw=1) clear  !joined right diag!
+x =55 y =-6 add x =51 y =5 add line(fg=orange,lw=1) clear!outer right diag!
+x =25 y = 30 add y =-70 add line(fg=orange,lw=2)
+clear
+x =-93 y=-8 text("Rear",tfg=orange)
+
+X = -50 Y = 30  Add X = 50  Add LINE(fg=orange,lw=4) clear  !main bar!
+x=-52 y=35 add x=-48 y=24 add line(fg=orange,lw=1) clear !joined left daig!
+x=-55 y=35 add x=-51 y=24 add line(fg=orange,lw=1) clear  !outer left diag!
+x=52 y=24 add x=48 y=35 add line(fg=orange,lw=1) clear  !joined right diag!
+x=55 y=24 add x=51 y=35 add line(fg=orange,lw=1) clear  !outer right diag!
+x=-25 y=0 add y=-70 add line(fg=orange,lw=2)
+clear
+x=-95 y=22 text("Front",tfg=orange)
+
+x = -25 y = -70 add x +=50 add line(fg=orange)
+clear
+x = 0 y = -70 add y -=10 add line(fg=orange)
+
+x = -25 y = -35 ocb(1000,1600,83,183,heathrow,19,"top",scale=120)
+x =  25 y = -35 ocb(1000,1580,82,182,heathrow,19,"top",scale=120)
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+busbar_m1_19
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

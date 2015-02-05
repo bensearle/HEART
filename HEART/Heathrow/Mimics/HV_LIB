@@ -1,0 +1,209 @@
+Load OCB_MONITORED
+Load TRANSFORMER
+Load LV_GENERATOR
+Load LV_CONTACTOR
+Load HV_TRANSFORMER_METER
+LOAD PULSEBUTTON
+LOAD CIRCUIT_BREAKERS
+LOAD NSE_TRANSFORMER
+LOAD TRANSFORMER_TYPES
+LOAD ALARM_INDICATION
+LOAD BUS_EARTH_SWITCH
+LOAD FP_OCB_MONITORED
+LOAD HV_LIB_HELP
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+
+object hv_lib_ocb_mont(plc_offset=int,b_offset=int,c_offset=int,e_offset=int,src=source,ident=int,top_btm_sect=string,angle)
+var helpstr = help string(30)
+begin
+clear
+scale=120
+x=0 y=0 ocb_mont(plc_offset,b_offset,c_offset,e_offset,src,ident,top_btm_sect)
+   scale=256
+   just=centrecentre
+   x=0 y=0  W=30 H=38
+   set text helpstr = "OCB_MONITORED_lib_help"
+end
+
+object hv_lib_transformer(lline_1=string,lline_2=string)
+var helpstr = help string(30)
+begin
+clear
+scale=100
+x=0 y=0 transformer(lline_1,lline_2)
+   scale=256
+   just=centrecentre
+   x=0 y=0 W=100 H=100
+   set text helpstr = "TRANSFORMER_lib_help"
+end
+
+object hv_lib_lv_generator(plc_offset=int,b_offset=int,c_offset=int,e_offset=int,src=source)
+var helpstr = help string(30)
+begin
+clear
+scale=140
+x=0 y=0 lv_generator(plc_offset,b_offset,c_offset,e_offset,src)
+   scale=256
+   just=centrecentre
+   x=0 y=0 W=31 H=37
+   set text helpstr = "LV_GENERATOR_lib_help"
+end
+
+object hv_lib_lv_gen_offset(plc_offset=int,b_offset=int,c_offset=int,e_offset=int,src=source)
+var helpstr = help string(30)
+begin
+clear
+scale=140
+x=0 y=0 lv_gen_offset(plc_offset,b_offset,c_offset,e_offset,src)
+   scale=256
+   just=centrecentre
+   x=0 y=0 W=31 H=37
+   set text helpstr = "LV_GENERATOR_lib_help"
+end
+
+
+object hv_lib_lv_contactor(plc_offset=int,b_offset=int,c_offset=int,src=source)
+var helpstr = help string(30)
+begin
+clear
+scale=120
+x=0 y=0 lv_changeover(plc_offset,b_offset,c_offset,src)
+   scale=256
+   just=centrecentre
+   x=0 y=0 W=54 H=47
+   set text helpstr = "LV_CONTACTOR_lib_help"
+end
+
+object hv_lib_lv_contactor_offset(plc_offset=int,b_offset=int,c_offset=int,src=source)
+var helpstr = help string(30)
+begin
+clear
+scale=120
+x=0 y=0 lv_changeover_offset(plc_offset,b_offset,c_offset,src)
+   scale=256
+   just=centrecentre
+   x=0 y=0 W=54 H=47
+   set text helpstr = "LV_CONTACTOR_lib_help"
+end
+
+
+
+object hv_lib_meter(plc_comms=int,c_offset=int,e_offset=int,b_over=int,b_under=int,src=source,size=string,metname=string)
+var helpstr = help string(30)
+begin
+clear
+scale=110
+x=0 y=0 hv_meter(plc_comms,c_offset,e_offset,b_over,b_under,src,size,metname)
+   scale=256
+   just=centrecentre
+   x=0 y=0 W=32 H=67
+   set text helpstr = "HV_TRANSFORMER_METER_lib_help"
+end
+
+OBJECT hv_lib_tap_change(plc_offset=INT,b_number=INT,e_number=INT,c_offset=INT,src=SOURCE,btm_text=STRING(8),top_text=STRING(8),ident=INT,col_1=string,col_2=string)
+var helpstr = help string(30)
+begin
+scale=80
+x = 50 y = 0 tap_change(plc_offset,b_number,e_number,c_offset,src,btm_text,top_text,ident,col_1,col_2)
+   scale=256
+   just=centrecentre
+   x=0 y=0 W=48 H=17
+   set text helpstr = "TRANSFORMER_TYPES_lib_help"
+end
+
+object hv_lib_transformer_select(transformer_type=string,plc_offset=INT,pos1_number=INT,b_offset=INT,c_offset=INT,e_offset=INT,src=SOURCE,btm_text=STRING(8),top_text=STRING(8),ident=INT,cont_code=INT,col_1=string,col_2=string)
+var helpstr = help string(30)
+begin
+clear
+scale=80
+x = 0 y = 0 transformer_select(transformer_type,plc_offset,pos1_number,b_offset,c_offset,e_offset,src,btm_text,top_text,ident,cont_code,col_1,col_2)
+   scale=256
+   just=centrecentre
+   x=0 y=0 W=48 H=17
+   set text helpstr = "TRANSFORMER_TYPES_lib_help"
+end
+
+
+object hv_lib_breaker(breaker_type=string,plc_offset=INT,b_offset=INT,c_offset=INT,e_offset=INT,cont_offset=INT,src=SOURCE,ident=INT,position=STRING(4),cont_code=INT,angle)
+var helpstr = help string(30)
+begin
+scale=100
+x=0 y=0 breaker(breaker_type,plc_offset,b_offset,c_offset,e_offset,cont_offset,src,ident,position,cont_code)
+   scale=256
+   just=centrecentre
+   x=0 y=0  W=48 H=17
+   set text helpstr = "CIRCUIT_BREAKERS_lib_help"
+end
+
+
+object hv_lib_Alarm_Indication_TYPES(Alarm_Type=string,plc_offset=INT,b_number=INT,src=SOURCE)
+begin
+scale=120
+x = 0 y = 0 Alarm_Indication_TYPES(Alarm_Type,plc_offset,b_number,src)
+end
+
+
+object hv_lib_pulsebutton(MAIN_TITLE=string,e_offset=int,src=source,c_offset=int,e_verify=int)
+var helpstr = help string(30)
+begin
+scale=250
+x = 0 y = 0 kwh_detail(MAIN_TITLE,e_offset,src,c_offset,e_verify)
+   scale=256
+   just=centrecentre
+   x=0 y=0  W=48 H=17
+   set text helpstr = "PULSEBUTTON_lib_help"
+end
+
+object hv_lib_earth_switch(plc_comms=int,b_offset=int,c_offset=int,src=source,position=STRING(4))
+begin
+scale=250
+x = 0 y = 0 earth_switch(plc_comms,b_offset,c_offset,src,position)
+!** note HELPTEXT already exists for this object **!
+end
+
+Object ocb_mont_lib(plc_offset=int,b_offset=int,c_offset=int,e_offset=int,
+                src=source,ident = int,top_btm_sect=string(4),angle)
+var helpstr = help string(30)
+Begin
+	clear
+	scale=120
+	X=0 Y=0 fp_ocb_mont(plc_offset,b_offset,c_offset,e_offset,src,ident,top_btm_sect)
+   scale=256
+   just=centrecentre
+   x=0 y=0  W=30 H=38
+   set text helpstr = "OCB_MONITORED_lib_help"
+End
+
+object transformer_lib(lline_1=string,lline_2=string)
+var helpstr = help string(30)
+begin
+	clear
+	scale=110
+	x=0 y=0 transformer(lline_1,lline_2)
+   scale=256
+   just=centrecentre
+   x=0 y=0 W=40 H=43
+   set text helpstr = "TRANSFORMER_lib_help"
+end
+
+object test_object
+begin
+!hv_lib_pulsebutton("PULSE MONITOR P2 Local Tx kWh v Time",954,heathro3,840,981)!
+!hv_lib_Alarm_Indication_TYPES("CB_TYPE4",20000,20035,HEATHRO2)!
+!hv_lib_earth_switch(5515,5860,158,heathro3,"TOP")!
+!hv_lib_meter(5515,992,750,0,0,heathro3,"100A","TEST 1")!
+!hv_lib_breaker("TYPE3",680,545,13,115,160,HEATHRO3,4,"TOP",20)!
+!kwh_detail("PULSE MONITOR P1 kWh v Time",2062,heathro2,1210,e1498,e1499)!
+
+!
+x=0 y=0 transformer_lib("Tx 1","500KVA")
+X=0 Y=-200 ocb_mont_lib(3000,3110,131,601,heathro4,2,"btm")
+y+=60 
+X=-15 Y=-18 W=31 H=37 FG=BLACK JUST=TOPLEFT FS=FILLSOLID ANGLE=0 ROTRECT
+x=0 y=0 hv_lib_lv_generator(int,int,int,int,heathro3)
+!
+
+
+end
+

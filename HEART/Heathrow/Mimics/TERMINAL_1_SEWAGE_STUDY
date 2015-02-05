@@ -1,0 +1,402 @@
+load mimic_libutil
+Load BROWSER
+load TERMINAL_1_SEWAGE_STUDY_HELP
+load mh8f3_sewage_trend
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type e_test_row =  db_alarm_config(db_addr,config_number,test_value)
+
+type e_test_table =  e_test_row[6]
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+!**** TITLE ****!
+
+object title_box
+begin
+
+just=centrecentre
+x = 0 y = 0 rect(w=280,h=40,fg=decoroff) clear
+x = -140 y = 20 add y -= 40 add x += 280 add line(lw=3,fg=decorlight) clear
+x = -140 y = 20 add x += 280 add y -= 40 add line(lw=3,fg=decorshadow) clear
+x = -1 y = -1 box(w=282,h=42,fg=black) clear
+x = -0 y = 1 text(ch=20,font=font_bold,tfg=grey60,"Terminal 1 Sewage Study")
+x = -4 y = -4 text(ch=20,font=font_bold,tfg=white,"Terminal 1 Sewage Study")
+x = -3 y = -3 text(ch=20,font=font_bold,tfg=blue,"Terminal 1 Sewage Study")
+end
+
+!**** SEWAGE PIT OBJECT ****!
+
+object sewage_pit
+begin
+
+just=centrecentre
+fg=black
+lw=1
+
+x = -100 y = -100 add
+x -= 10 add y += 200 add
+x += 30 y += 30 add
+x += 200 add x += 30 y -= 30 add y -= 200 add
+x -= 10 add y += 195 add 
+x -= 25 y += 25 add
+x -= 190 add
+x -= 25 y -= 25 add y -= 195 add
+fill(fg=decorshadow,fs=fillpatt,patt=halftone) clear
+
+x = -100 y = -100 add
+x -= 10 add y += 200 add
+x += 30 y += 30 add
+x += 200 add x += 30 y -= 30 add y -= 200 add
+x -= 10 add y += 195 add 
+x -= 25 y += 25 add
+x -= 190 add
+x -= 25 y -= 25 add y -= 195 add
+line(fg=black,lw=1) clear
+end
+
+!**** SEWAGE RIPPLE ****!
+
+object ripple(fg)
+begin
+x = -120 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+end
+
+!**** SETPOINT POINTER ****!
+
+object setpoint_pointer(ident=string(4))
+begin
+x = -50 y = 0 add x += 50 add line(fg=red,lw=2) clear
+x = 0 y = 0 add x -= 15 y -= 10 add y +=10 add fill(fg=red) clear
+x = -50 y = -15 add text(ch=12,tfg=white,ident) clear
+end
+
+!**** DRAW SEWAGE LEVEL MH8F3 ****!
+
+object sewage_level_mh8f3
+
+var sewage_pit_level_ip = input e_db_row_type
+var pit_level = loopback int
+var high_setpoint_level = loopback int
+var low_setpoint_level = loopback int
+var pit_colour = loopback colour
+var pit_colour_2 = loopback colour
+var input_setpoint = input e_test_table
+
+!**** ALARM INPUTS ****!
+
+var pit_level_alarm = input alarm_row_type
+
+begin
+
+set source  sewage_pit_level_ip = heathrow
+set filter  sewage_pit_level_ip.db_addr = lim_eq
+set limit   sewage_pit_level_ip.db_addr = db_address(int(e1) + 439)
+set persist sewage_pit_level_ip
+request     sewage_pit_level_ip
+
+set source    input_setpoint = heathrow
+set filter    input_setpoint.db_addr = lim_eq
+set limit     input_setpoint.db_addr = db_address(int(e1) + 439)
+set mayexist  input_setpoint
+set mustexist input_setpoint.db_addr
+set mustexist input_setpoint.config_number
+set persist   input_setpoint
+request       input_setpoint 
+
+set source pit_level_alarm = heathrow
+set filter pit_level_alarm.db_addr = lim_eq
+set limit pit_level_alarm.db_addr = db_address(int(e1) + 439)
+set persist pit_level_alarm 
+request pit_level_alarm
+
+
+!**** SET PIT LEVEL ****!
+
+pit_level = (int(sewage_pit_level_ip.e_value) * 2)
+
+if pit_level > 200 then
+  begin
+  pit_level = 200
+  end
+
+if pit_level <= 0 then
+  begin
+  pit_level = 0
+  end
+
+if pit_level_alarm.alarm_status == w_note then
+  begin
+  pit_colour = flashred
+  pit_colour_2 = flashred
+  end
+
+else if pit_level_alarm.alarm_status == w_clr then
+  begin
+  pit_colour = red
+  pit_colour_2 = red
+  end
+
+else
+  begin
+  pit_colour = gold3
+  pit_colour_2 = gold2
+  end
+
+x = 0 y = 0 rect(just=bottomcentre,w=248,h=pit_level,fg=pit_colour) clear
+x = 0 y = -pit_level ripple(fg=pit_colour_2)
+x = -125 y = 1 add y -= 22 add y += 22 x += 22 add fill(fg=grey40) clear
+x = 125 y = 1 add y -= 22 add y += 22 x -= 22 add fill(fg=grey40) clear
+
+!**** DISPLAY LEVEL % READING ****!
+x = 0 y = -150 add text(realf=fixed1,just=centrecentre,ch=25,tfg=white,sewage_pit_level_ip.e_value+" %") clear
+
+!**** DISPLAY HIGH AND LOW SETPOINT POINTERS ****!
+high_setpoint_level = (int(input_setpoint[1].test_value) * 2)
+low_setpoint_level = (int(input_setpoint[2].test_value) * 2)
+
+x = -130 y = -high_setpoint_level setpoint_pointer("High")
+x = -130 y = -low_setpoint_level setpoint_pointer("Low")
+
+end
+
+!**** DRAW SEWAGE LEVEL PC 28 ****!
+
+object sewage_level_pc28
+
+var sewage_pit_level_ip = input e_db_row_type
+var pit_level = loopback int
+var high_setpoint_level = loopback int
+var low_setpoint_level = loopback int
+var pit_colour = loopback colour
+var pit_colour_2 = loopback colour
+var input_setpoint = input e_test_table
+
+!**** ALARM INPUTS ****!
+
+var pit_level_alarm = input alarm_row_type
+
+begin
+
+set source  sewage_pit_level_ip = heathrow
+set filter  sewage_pit_level_ip.db_addr = lim_eq
+set limit   sewage_pit_level_ip.db_addr = db_address(int(e1) + 440)
+set persist sewage_pit_level_ip
+request     sewage_pit_level_ip
+
+set source    input_setpoint = heathrow
+set filter    input_setpoint.db_addr = lim_eq
+set limit     input_setpoint.db_addr = db_address(int(e1) + 440)
+set mayexist  input_setpoint
+set mustexist input_setpoint.db_addr
+set mustexist input_setpoint.config_number
+set persist   input_setpoint
+request       input_setpoint 
+
+set source pit_level_alarm = heathrow
+set filter pit_level_alarm.db_addr = lim_eq
+set limit pit_level_alarm.db_addr = db_address(int(e1) + 440)
+set persist pit_level_alarm 
+request pit_level_alarm
+
+
+!**** SET PIT LEVEL ****!
+
+pit_level = (int(sewage_pit_level_ip.e_value) * 2)
+
+if pit_level > 200 then
+  begin
+  pit_level = 200
+  end
+
+if pit_level <= 0 then
+  begin
+  pit_level = 0
+  end
+
+if pit_level_alarm.alarm_status == w_note then
+  begin
+  pit_colour = flashred
+  pit_colour_2 = flashred
+  end
+
+else if pit_level_alarm.alarm_status == w_clr then
+  begin
+  pit_colour = red
+  pit_colour_2 = red
+  end
+
+else
+  begin
+  pit_colour = gold3
+  pit_colour_2 = gold2
+  end
+
+x = 0 y = 0 rect(just=bottomcentre,w=248,h=pit_level,fg=pit_colour) clear
+x = 0 y = -pit_level ripple(fg=pit_colour_2)
+x = -125 y = 1 add y -= 22 add y += 22 x += 22 add fill(fg=grey40) clear
+x = 125 y = 1 add y -= 22 add y += 22 x -= 22 add fill(fg=grey40) clear
+
+!**** DISPLAY LEVEL % READING ****!
+x = 0 y = -150 add text(realf=fixed1,just=centrecentre,ch=25,tfg=white,sewage_pit_level_ip.e_value+" %") clear
+
+!**** DISPLAY HIGH AND LOW SETPOINT POINTERS ****!
+high_setpoint_level = (int(input_setpoint[1].test_value) * 2)
+low_setpoint_level = (int(input_setpoint[2].test_value) * 2)
+
+x = -130 y = -high_setpoint_level setpoint_pointer("High")
+x = -130 y = -low_setpoint_level setpoint_pointer("Low")
+
+end
+
+!*** AREA LABEL OBJECT ***!
+object area_label(x_len=int,y_len=int,msg=string)
+begin
+   x=1 y=2 rect(fg=black,w=x_len,h=y_len)
+   x= -1 y=-1 rect(fg=White,w=x_len,h=y_len)
+   x= 0 y= 0 rect(fg=decoroff,w=x_len,h=y_len)
+
+   x= 9 y= 6 text(tfg=grey60,ch=20,msg) clear
+   x= 11 y= 8 text(tfg=white,ch=20,msg) clear
+   x= 10 y= 7  text(tfg=black,ch=20,msg) clear
+
+   x=2 y=2   disk(w=4, h=4, fg=white)
+   x=3 y=3   disk(w=4, h=4, fg=grey60)
+   x= (x_len-6) y=2   disk(w=4, h=4, fg=white)
+   x=(x_len-5) y=3   disk(w=4, h=4, fg=grey60)
+   x= (x_len-6) y=(y_len-6)   disk(w=4, h=4, fg=white)
+   x=(x_len-5) y=(y_len-5)   disk(w=4, h=4, fg=grey60)
+   x= 2 y=(y_len-6)   disk(w=4, h=4, fg=white)
+   x= 3 y=(y_len-5)   disk(w=4, h=4, fg=grey60)
+end
+
+!**** HIGH AND LOW LEVEL SETPOINT ****!
+object high_low_setpoint_box(e_offset=int,src=source)
+
+var input_setpoint = input e_test_table
+var output_setpoint = output e_test_table
+var high_setpoint_panel = panel int
+var low_setpoint_panel = panel int
+var main_menu = menu string
+
+begin
+
+set source    input_setpoint = src
+set filter    input_setpoint.db_addr = lim_eq
+set limit     input_setpoint.db_addr = db_address(int(e1) + e_offset - 1)
+set mayexist  input_setpoint
+set mustexist input_setpoint.db_addr
+set mustexist input_setpoint.config_number
+set persist   input_setpoint
+request       input_setpoint
+
+!**** MAIN MENU ****!
+just = centrecentre
+x = 0 y = 0
+w=100 h=100
+set rect main_menu
+set title main_menu="Menu"
+set remove main_menu="Alter High Alarm Level"
+set remove main_menu="Alter Low Alarm Level"
+set add main_menu="Alter High Alarm Level"
+set add main_menu="Alter Low Alarm Level"
+
+!**** CONTROL MENU ****!
+if valid main_menu then
+   begin
+   case main_menu of
+        "Alter High Alarm Level"
+            begin
+            set title high_setpoint_panel = "Alter High Alarm Level"
+            set unpinned high_setpoint_panel
+            request high_setpoint_panel
+            end
+
+        "Alter Low Alarm Level"
+            begin
+            set title low_setpoint_panel = "Alter Low Alarm Level"
+            set unpinned low_setpoint_panel
+            request low_setpoint_panel
+            end
+        
+        default
+            begin
+            end
+
+   set invalid main_menu
+   end
+
+!**** DRAW SETPOINT BOX ****!
+just=centrecentre
+x = 0 y = 0 rect(w=160,h=50,fg=decoroff) clear
+x = -80 y = 25 add y -= 50 add x += 160 add line(fg=decorlight) clear
+x = -80 y = 25 add x += 160 add y -= 50 add line(fg=decorshadow) clear
+x = -75 y = -12 text(ch=12,just=centreleft,font=font_bold,tfg=black,"High Level Alarm = ")
+x = -75 y = 12 text(ch=12,just=centreleft,font=font_bold,tfg=black,"Low Level Alarm = ")
+x = 75 y = -12 text(ch=12,just=centreright,font=font_bold,tfg=blue,int(input_setpoint[1].test_value)+" %")
+x = 75 y = 12 text(ch=12,just=centreright,font=font_bold,tfg=blue,int(input_setpoint[2].test_value)+" %")
+
+!**** WRITE INPUT TO SERVER ****!
+if valid high_setpoint_panel and high_setpoint_panel > input_setpoint[2].test_value then
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[1].test_value = high_setpoint_panel
+   request output_setpoint
+   set invalid high_setpoint_panel
+   end
+
+if valid low_setpoint_panel and low_setpoint_panel < input_setpoint[1].test_value then 
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[2].test_value = low_setpoint_panel
+   request output_setpoint
+   set invalid low_setpoint_panel
+   end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+just=centrecentre
+x =-482 y =00 sewage_trend(w=400,h=200,font=font_bold,ch=12,tfg=black,fg=white,bg=black,
+        heathrow,1209,e440,yes,yes,yes,display_datetime,blue,blue,
+        red,blue,green,cyan,flashred,"%")
+x =82 y =00 sewage_trend(w=400,h=200,font=font_bold,ch=12,tfg=black,fg=white,bg=black,
+        heathrow,1209,e441,yes,yes,yes,display_datetime,blue,blue,
+        red,blue,green,cyan,flashred,"%")
+x = 0 y = -370 title_box
+x = -300 y = -100 sewage_level_mh8f3
+x = 300 y = -100 sewage_level_pc28
+x = -320 y = -220 sewage_pit
+x = 280 y = -220 sewage_pit
+x = -342 y = -350 area_label(85,32,"MH8F3")
+x = 262 y = -350 area_label(68,32,"PC28")
+x = -86 y =- 220 high_low_setpoint_box(440,heathrow)
+x = 86 y = -220 high_low_setpoint_box(441,heathrow)
+x = -570 y = 310 browser(1080,heathrow,1140)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=grey40,resizable

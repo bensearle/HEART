@@ -1,0 +1,31 @@
+Load BROWSER
+load hex_calmu_meter
+load hex_calmu_config_ss112
+Load HEX_CALMU_OVERVIEW_SS116_HELP
+
+object main_object(w,h,fg,bg)
+begin
+
+X=-400 Y=-280  CALMU_METER(heathro2,200,4000,E4042,13200,13232,1,112,4900,100,-100)
+X=-108 Y=-280  CALMU_METER(heathro2,200,4050,E4092,13201,13233,2,112,4900,100,-100)
+X=194 Y=-280 CALMU_METER(heathro2,200,4100,E4142,13202,13234,3,112,4900,100,-100)
+
+X=-400 Y=-80  CALMU_METER(heathro2,200,4150,E4192,13203,13235,4,112,4900,100,-100)
+X=-108 Y=-80  CALMU_METER(heathro2,200,4200,E4242,13204,13236,5,112,4900,100,-100)
+X=194 Y=-80  CALMU_METER(heathro2,200,4250,E4292,13205,13237,6,112,4900,100,-100)
+
+Y = -290
+x = -300 text ("MODULE 1 TRANSFORMER A",just=bottomcentre)
+x =  0 text ("MODULE 2 TRANSFORMER A",just=bottomcentre)
+x = 300 text ("MODULE 3 TRANSFORMER A",just=bottomcentre)
+Y = -90
+x = -300 text ("MODULE 1 TRANSFORMER B",just=bottomcentre)
+x =    0 text ("MODULE 2 TRANSFORMER B",just=bottomcentre)
+x =  300 text ("MODULE 3 TRANSFORMER B",just=bottomcentre) clear
+
+x = -570 y = 310 browser(1050,heathrow,1140)
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

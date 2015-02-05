@@ -1,0 +1,319 @@
+!**	HEATHROW\SUB_STN_152			**!
+!** 	Modified by ULTRA - 04 Apr 2007	**!
+!** 	Updated panel designations		**!
+!**					**!
+
+!********* SUBSTATION 152		********!
+!********* 				********!
+load dual_bus_objects
+load transformer
+load transformer_types
+load browser
+load lv_breaker
+load generic_bar_meter
+load sub_stn_152_help
+load alarm_indication
+
+object sub152_left_section
+begin
+	! ** Connecting Lines ** !
+	just = centrecentre
+	scale = 256
+	x = -420 y = 0 add x += 810 add line(fg=white,lw=3) clear
+	lw=3
+
+	! *** PANEL 1 *** !		x = -540 y = 0	!add y += 100 add line(fg=white)! clear
+	! *** PANEL 2 *** !		x =-490 y = 0 	!add y += 100 add line(fg=white)! clear
+	! *** PANEL 3 *** !		x =-440 y = 0 	!add y += 100 add line(fg=white)! clear
+	! *** PANEL 4 *** !		x =-390 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 5 *** !		x =-340 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 6 *** !		x =-290 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 7 *** !		x =-240 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 8 *** !		x =-190 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 9 *** !		x =-140 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL10 *** !		x =-90 y = 0 	add y += 130 add line(fg=white) clear
+	! *** PANEL11 *** !		x =-40 y = 0 	add y += 130 add line(fg=white) clear
+	! *** PANEL12 *** !		x =10 y = 0 	add y -= 100 add line(fg=white) clear
+	! *** PANEL13 *** !		x =60 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL14 *** !		x =110 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL15 *** !		x =160 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL16 *** !		x =210 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL17 *** !		x =260 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL18 *** !		x =310 y = 0 	add y += 140 add line(fg=white) clear
+	
+	! ** show link to right hand section** !
+	! *** PANEL19 *** !		
+				x =360 y = 0 add 	y -= 155 add
+				x +=100 add	y+=335 add
+				x -=900 add	y+= 155
+				add line(lw=4,fg=white) clear
+				
+	! *** Circuit Breakers *** !
+	scale=120
+		! *** modbus circuit breaker	(COMMS,CB OFFSET,TAG,DRESS,CTRL CODE REG,SERVER,IDENT,"POSITION",CTRL CODE,int,string,int,int )!
+	
+	! *** PANEL 1 *** ! 		x = -540 y=21	!modbus_cb(42100,43150,42200,1551,6297,6445,heathrow,1,"btm",10,int,string,int,int)!
+	! *** PANEL 2 *** ! 		x =-490 y=21	!modbus_cb(42100,43151,42220,1552,6298,6445,heathrow,2,"btm",20,int,string,int,int)!
+	! *** PANEL 3 *** ! 		x =-440 y=21	!modbus_cb(42100,43152,42240,1553,6299,6445,heathrow,3,"btm",30,int,string,int,int)!
+	! *** PANEL 4 *** ! 		x =-390 y=21	modbus_cb(42100,43153,42260,1554,6300,6445,heathrow,4,"btm",40,int,string,int,int)
+	! *** PANEL 5 *** ! 		x =-340 y=21	modbus_cb(42100,43154,42280,1555,6301,6445,heathrow,5,"btm",50,int,string,int,int)
+	! *** PANEL 6 *** !		x =-290 y=21	modbus_cb(42100,43155,42300,1556,6302,6445,heathrow,6,"btm",60,int,string,int,int)
+	! *** PANEL 7 *** ! 		x =-240 y=21	modbus_cb(42100,43156,42320,1557,6303,6445,heathrow,7,"btm",70,int,string,int,int)
+	! *** PANEL 8 *** ! 		x =-190 y=21	modbus_cb(42100,43157,42340,1558,6304,6445,heathrow,8,"btm",80,int,string,int,int)
+	! *** PANEL 9 *** ! 		x =-140 y=21	modbus_cb(42100,43158,42360,1559,6305,6445,heathrow,9,"btm",90,int,string,int,int)
+	! *** PANEL 10 *** !	x =-90 y=21	modbus_cb(42100,43159,42380,1560,6306,6445,heathrow,10,"btm",100,int,string,int,int)
+	! *** PANEL 11 *** !	x =-40 y=21	modbus_cb(42100,43160,42400,1561,6307,6445,heathrow,11,"btm",110,int,string,int,int)
+	! *** PANEL 12 *** !	x =10 y= -21	modbus_cb(42100,43161,42420,1562,6308,6445,heathrow,12,"top",120,int,string,int,int)
+	! *** PANEL 13 *** !	x =60 y=21	modbus_cb(42100,43162,42440,1563,6309,6445,heathrow,13,"btm",130,int,string,int,int)
+	! *** PANEL 14 *** !	x =110 y=21	modbus_cb(42100,43163,42460,1564,6310,6445,heathrow,14,"btm",140,int,string,int,int)
+	! *** PANEL 15 *** !	x =160 y=21	modbus_cb(42100,43164,42480,1565,6311,6445,heathrow,15,"btm",150,int,string,int,int)
+	! *** PANEL 16 *** !	x =210 y=21	modbus_cb(42100,43165,42500,1566,6312,6445,heathrow,16,"btm",160,int,string,int,int)
+	! *** PANEL 17 *** ! 	x =260 y=21	modbus_cb(42100,43166,42520,1567,6313,6445,heathrow,17,"btm",170,int,string,int,int)
+	! *** PANEL 18 *** ! 	x =310 y=21	modbus_cb(42100,43167,42540,1568,6314,6445,heathrow,18,"btm",180,int,string,int,int)
+	! *** PANEL 19 *** ! 	x =360 y= -21	modbus_cb(42100,43168,42560,1569,6315,6445,heathrow,19,"top",190,int,string,int,int)
+
+	! *** Meters *** !
+
+				! generic_bar_meter_obj(plc_comms,c_offset,e_offset,b_over,b_under,src,units,metname,range_lo,range_hi,dec_places,bar_colour,range_dec_places,res_int1,res_str1) !
+	scale=150
+	! *** PANEL 1 *** ! 		x = -540 Y=90 	!generic_bar_meter_obj(42100,1590,6340,43150,int,heathrow,"A","PANEL 1",0,400,0,yellow,0,int,"MODBUS")!	
+	! *** PANEL 2 *** ! 		x =-490 Y=90 	!generic_bar_meter_obj(42100,1591,6341,43151,int,heathrow,"A","PANEL 2",0,400,0,yellow,0,int,"MODBUS")!
+	! *** PANEL 3 *** ! 		x =-440 Y=90 	!generic_bar_meter_obj(42100,1592,6342,43152,int,heathrow,"A","PANEL 3",0,400,0,yellow,0,int,"MODBUS")!
+	! *** PANEL 4 *** ! 		x =-390 Y=90 	generic_bar_meter_obj(42100,1593,6343,43153,int,heathrow,"A","LOC TX1",0,150,0,yellow,0,int,"MODBUS")
+	! *** PANEL 5 *** ! 		x =-340 Y=90 	generic_bar_meter_obj(42100,1594,6344,43154,int,heathrow,"A","SUB 182",0,400,0,yellow,0,int,"MODBUS")
+	! *** PANEL 6 *** ! 		x =-290 Y=90 	generic_bar_meter_obj(42100,1595,6345,43155,int,heathrow,"A","SUB 156",0,400,0,yellow,0,int,"MODBUS")
+	! *** PANEL 7 *** ! 		x =-240 Y=90 	generic_bar_meter_obj(42100,1596,6346,43156,int,heathrow,"A","SUB 171",0,400,0,yellow,0,int,"MODBUS")
+	! *** PANEL 8 *** ! 		x =-190 Y=90 	generic_bar_meter_obj(42100,1597,6347,43157,int,heathrow,"A","SUB 169",0,400,0,yellow,0,int,"MODBUS")
+	! *** PANEL 9 *** ! 		x =-140 Y=90 	generic_bar_meter_obj(42100,1598,6348,43158,int,heathrow,"A","T5A-TX31",0,150,0,yellow,0,int,"MODBUS")
+	! *** PANEL 10 *** ! 	x =-90 Y=90 	generic_bar_meter_obj(42100,1599,6349,43159,int,heathrow,"A","T5A-TX26",0,150,0,yellow,0,int,"MODBUS")
+	! *** PANEL 11 *** ! 	x =-40 Y=90 	generic_bar_meter_obj(42100,1600,6350,43160,int,heathrow,"A","T5A-TX24",0,150,0,yellow,0,int,"MODBUS")
+	
+	! *** PANEL 12 *** ! 	x=-50	Y=-90 	generic_bar_meter_obj(42100,1601,6351,43161,int,heathrow,"A","INCOMER1",0,2000,0,yellow,0,int,"MODBUS")
+	! *** PANEL 12 *** ! 	x=70	Y=-90 	generic_bar_meter_obj(42100,1629,6379,43161,int,heathrow,"kV","INCOMER1",0,13,1,blue,0,int,"MODBUS")
+	
+	! *** PANEL 13 *** ! 	x =60 Y=90 	generic_bar_meter_obj(42100,1602,6352,43162,int,heathrow,"A","T5A-TX34",0,150,0,yellow,0,int,"MODBUS")
+	! *** PANEL 14 *** ! 	x =110 Y=90 	generic_bar_meter_obj(42100,1603,6353,43163,int,heathrow,"A","T5A-TX19",0,150,0,yellow,0,int,"MODBUS")
+	! *** PANEL 15 *** ! 	x =160 Y=90 	generic_bar_meter_obj(42100,1604,6354,43164,int,heathrow,"A","SUB 162",0,400,0,yellow,0,int,"MODBUS")
+	! *** PANEL 16 *** ! 	x =210 Y=90 	generic_bar_meter_obj(42100,1605,6355,43165,int,heathrow,"A","SUB 187",0,400,0,yellow,0,int,"MODBUS")
+	! *** PANEL 17 *** ! 	x =260 Y=90 	generic_bar_meter_obj(42100,1606,6356,43166,int,heathrow,"A","SUB 164",0,600,0,yellow,0,int,"MODBUS")
+	! *** PANEL 18 *** ! 	x =310 Y=90	generic_bar_meter_obj(42100,1607,6357,43167,int,heathrow,"A","EC TX6",0,150,0,yellow,0,int,"MODBUS")
+	! *** PANEL 19 *** ! 	x =310 Y=-90 	generic_bar_meter_obj(42100,1608,6358,43168,int,heathrow,"A","LHS BUS",0,2000,0,yellow,0,int,"MODBUS")
+
+	! ** Transformers ** !
+	scale = 80 
+	! *** PANEL 4 *** !		!X=-390 Y=157 transformer("LT 1","LOC")!
+	! *** PANEL 9 *** ! 		!x =-140 Y=157 transformer("TX31","T5A")!
+	! *** PANEL 10 *** ! 	!x =-90 Y=157 transformer("TX27","T5A") temp Sub U !
+	! *** PANEL 11 *** ! 	!x =-40 Y=157 transformer("TX24","T5A") temp Sub K !
+	! *** PANEL 13 *** ! 	!x = 60  Y=157 transformer("TX34","T5A")!
+	! *** PANEL 14 *** ! 	!x = 110 Y=157 transformer("TX19","T5A")!
+	! *** PANEL 18 *** ! 	!x = 310  Y=157 transformer("TX6","EC")!
+
+	scale = 130 
+	! *** PANEL 12 *** !	x=10 y=-90 TRANSFORMER_SELECT("modbus",42100,6421,43019,1695,6445,heathrow,"43189","INC. TX1",1,410,"black","white") CLEAR
+
+
+	! MAX DEMAND meters !
+	! LHS !
+	scale = 250
+	! *** PANEL 4 *** !		X=-390 Y=154 text_meter(42100,6384,heathrow,"MVA","",green4,1)
+	! *** PANEL 5 *** !		X=-340 Y=154 text_meter(42100,6385,heathrow,"MVA","",green4,1)
+	! *** PANEL 6 *** !		X=-290 Y=154 text_meter(42100,6386,heathrow,"MVA","",green4,1)
+	! *** PANEL 7 *** !		X=-240 Y=154 text_meter(42100,6387,heathrow,"MVA","",green4,1)
+	! *** PANEL 8 *** !		X=-190 Y=154 text_meter(42100,6388,heathrow,"MVA","",green4,1)
+	! *** PANEL 9 *** !		X=-140 Y=154 text_meter(42100,6389,heathrow,"MVA","",green4,1)
+	! *** PANEL 10 *** !	X=-90 Y=154 text_meter(42100,6390,heathrow,"MVA","",green4,1)
+	! *** PANEL 11 *** !	X=-40 Y=154 text_meter(42100,6391,heathrow,"MVA","",green4,1)
+
+	! *** PANEL 12 *** !	X=-50 Y=-154 text_meter(42100,6392,heathrow,"MVA","",green4,1)
+
+	! *** PANEL 13 *** !	X=60 Y=154 text_meter(42100,6393,heathrow,"MVA","",green4,1)
+	! *** PANEL 14 *** !	X=110 Y=154 text_meter(42100,6394,heathrow,"MVA","",green4,1)
+	! *** PANEL 15 *** !	X=160 Y=154 text_meter(42100,6395,heathrow,"MVA","",green4,1)
+	! *** PANEL 16 *** !	X=210 Y=154 text_meter(42100,6396,heathrow,"MVA","",green4,1)
+	! *** PANEL 17 *** !	X=260 Y=154 text_meter(42100,6397,heathrow,"MVA","",green4,1)
+	! *** PANEL 18 *** !	X=310 Y=154 text_meter(42100,6398,heathrow,"MVA","",green4,1)
+	! *** PANEL 19 *** !	X=310 Y=-154 text_meter(42100,6399,heathrow,"MVA","",green4,1)
+
+
+end
+
+object sub152_right_section
+begin
+! ** right hand section ** !
+
+	! ** Connecting Lines ** !
+	just = centrecentre
+	scale = 256
+	x = -570 y = 0 add x += 920 add line(fg=white,lw=3) clear
+	lw=3
+
+	! *** PANEL 20 *** !	x = -540 y = 0	
+	! *** PANEL 21 *** !	x =-490 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 22 *** !	x =-440 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 23 *** !	x =-390 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 24*** !		x =-340 y = 0 	add y -= 100 add line(fg=white) clear
+	! *** PANEL 25 *** !	x =-290 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 26 *** !	x =-240 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 27 *** !	x =-190 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 28 *** !	x =-140 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 29 *** !	x =-90 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 30 *** !	x =-40 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 31 *** !	x =10 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 32 *** !	x =60 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 33 *** !	x =110 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 34 *** !	x =160 y = 0 	add y += 100 add line(fg=white) clear
+	! *** PANEL 35 *** !	x =210 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 36 *** !	x =260 y = 0 	add y += 140 add line(fg=white) clear
+	! *** PANEL 37 *** !	x =310 y = 0 	!add y += 140 add line(fg=white) clear!
+	! *** PANEL 38 *** !	x =360 y = 0 	!add y += 100 add line(fg=white) clear!
+	! *** PANEL 39 *** !	x =410 y = 0 	!add y += 100 add line(fg=white) clear!
+	
+	! *** Circuit Breakers *** !
+	scale=120
+	! *** PANEL 20 *** ! 	x = -540 y=-21	modbus_cb(42100,43169,42580,1570,6316,6445,heathrow,20,"top",200,int,string,int,int)
+	! *** PANEL 21 *** ! 	x =-490 y=21	modbus_cb(42100,43170,42600,1571,6317,6445,heathrow,21,"btm",210,int,string,int,int)
+	! *** PANEL 22 *** ! 	x =-440 y=21	modbus_cb(42100,43171,42620,1572,6318,6445,heathrow,22,"btm",220,int,string,int,int)
+	! *** PANEL 23 *** ! 	x =-390 y=21	modbus_cb(42100,43172,42640,1573,6319,6445,heathrow,23,"btm",230,int,string,int,int)
+	! *** PANEL 24 *** ! 	x =-340 y=-21	modbus_cb(42100,43173,42660,1574,6320,6445,heathrow,24,"top",240,int,string,int,int)
+	! *** PANEL 25 *** !	x =-290 y=21	modbus_cb(42100,43174,42680,1575,6321,6445,heathrow,25,"btm",250,int,string,int,int)
+	! *** PANEL 26 *** ! 	x =-240 y=21	modbus_cb(42100,43175,42700,1576,6322,6445,heathrow,26,"btm",260,int,string,int,int)
+	! *** PANEL 27 *** ! 	x =-190 y=21	modbus_cb(42100,43176,42720,1577,6323,6445,heathrow,27,"btm",270,int,string,int,int)
+	! *** PANEL 28 *** ! 	x =-140 y=21	modbus_cb(42100,43177,42740,1578,6324,6445,heathrow,28,"btm",280,int,string,int,int)
+	! *** PANEL 29 *** !	x =-90 y=21	modbus_cb(42100,43178,42760,1579,6325,6445,heathrow,29,"btm",290,int,string,int,int)
+	! *** PANEL 30 *** !	x =-40 y=21	modbus_cb(42100,43179,42780,1580,6326,6445,heathrow,30,"btm",300,int,string,int,int)
+	! *** PANEL 31 *** !	x =10 y=21	modbus_cb(42100,43180,42800,1581,6327,6445,heathrow,31,"btm",310,int,string,int,int)
+	! *** PANEL 32 *** !	x =60 y=21	modbus_cb(42100,43181,42820,1582,6328,6445,heathrow,32,"btm",320,int,string,int,int)
+	! *** PANEL 33 *** !	x =110 y=21	modbus_cb(42100,43182,42840,1583,6329,6445,heathrow,33,"btm",330,int,string,int,int)
+	! *** PANEL 34 *** !	x =160 y=21	modbus_cb(42100,43183,42860,1584,6330,6445,heathrow,34,"btm",340,int,string,int,int)
+	! *** PANEL 35 *** !	x =210 y=21	modbus_cb(42100,43184,42880,1585,6331,6445,heathrow,35,"btm",350,int,string,int,int)
+	! *** PANEL 36 *** ! 	x =260 y=21	modbus_cb(42100,43185,42900,1586,6332,6445,heathrow,36,"btm",360,int,string,int,int)
+	! *** PANEL 37 *** ! 	x =310 y=21	!modbus_cb(42100,43186,42920,1587,6333,6445,heathrow,37,"btm",370,int,string,int,int)!
+	! *** PANEL 38 *** ! 	x =360 y=21	!modbus_cb(42100,43187,42940,1588,6334,6445,heathrow,38,"btm",380,int,string,int,int)!
+	! *** PANEL 39 *** ! 	x =410 y=21	!modbus_cb(42100,43188,42960,1589,6335,6445,heathrow,39,"btm",390,int,string,int,int)!
+
+	! *** Meters *** !
+
+				! generic_bar_meter_obj(plc_comms,c_offset,e_offset,b_over,b_under,src,units,metname,range_lo,range_hi,dec_places,bar_colour,range_dec_places,res_int1,res_str1) !
+	scale=150
+	! *** PANEL 20 *** ! 	x = -590 Y=-61 	generic_bar_meter_obj(42100,1609,6359,43169,int,heathrow,"A","RHS BUS",0,2000,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 21 *** ! 	x =-490 Y=91 	generic_bar_meter_obj(42100,1610,6360,43170,int,heathrow,"A","T5A-TX7",0,150,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 22 *** ! 	x =-440 Y=91 	generic_bar_meter_obj(42100,1611,6361,43171,int,heathrow,"A","T5A-TX4",0,150,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 23 *** ! 	x =-390 Y=91 	generic_bar_meter_obj(42100,1612,6362,43172,int,heathrow,"A","T5A-TX15",0,150,0,yellow,0,int,"MODBUS") 		
+
+	! *** PANEL 24 *** ! 	x=-400	Y=-61 	generic_bar_meter_obj(42100,1613,6363,43173,int,heathrow,"A","INCOMER2",0,2000,0,yellow,0,int,"MODBUS") 
+	! *** PANEL 24 *** ! 	x=-280	Y=-61 	generic_bar_meter_obj(42100,1630,6380,43173,int,heathrow,"kV","INCOMER2",0,13,1,blue,0,int,"MODBUS")
+
+	! *** PANEL 25 *** ! 	x =-290 Y=91 	generic_bar_meter_obj(42100,1614,6364,43174,int,heathrow,"A","T5A-TX18",0,150,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 26 *** ! 	x =-240 Y=91 	generic_bar_meter_obj(42100,1615,6365,43175,int,heathrow,"A","SUB 165",0,400,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 27 *** ! 	x =-190 Y=91 	generic_bar_meter_obj(42100,1616,6366,43176,int,heathrow,"A","T5A-TX1",0,150,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 28 *** ! 	x =-140 Y=91 	generic_bar_meter_obj(42100,1617,6367,43177,int,heathrow,"A","T5A-TX10",0,150,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 29 *** ! 	x =-90 Y=91 	generic_bar_meter_obj(42100,1618,6368,43178,int,heathrow,"A","SUB 182",0,400,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 30 *** ! 	x =-40 Y=91 	generic_bar_meter_obj(42100,1619,6369,43179,int,heathrow,"A","T5A-TX22",0,150,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 31 *** ! 	x =10 Y=91 	generic_bar_meter_obj(42100,1620,6370,43180,int,heathrow,"A","SUB 156",0,400,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 32 *** ! 	x =60 Y=91 	generic_bar_meter_obj(42100,1621,6371,43181,int,heathrow,"A","SUB 175",0,400,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 33 *** ! 	x =110 Y=91 	generic_bar_meter_obj(42100,1622,6372,43182,int,heathrow,"A","SUB 165",0,400,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 34 *** ! 	x =160 Y=91 	generic_bar_meter_obj(42100,1623,6373,43183,int,heathrow,"A","SUB 188",0,150,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 35 *** ! 	x =210 Y=91 	generic_bar_meter_obj(42100,1624,6374,43184,int,heathrow,"A","LOC TX2",0,150,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 36 *** ! 	x =260 Y=91 	generic_bar_meter_obj(42100,1625,6375,43185,int,heathrow,"A","BSP-TX2",0,150,0,yellow,0,int,"MODBUS") 		
+	! *** PANEL 37 *** ! 	x =310 Y=91 	!generic_bar_meter_obj(42100,1626,6376,43186,int,heathrow,"A","PANEL37",0,150,0,yellow,0,int,"MODBUS") !	
+	! *** PANEL 38 *** ! 	x =360 Y=91 	!generic_bar_meter_obj(42100,1627,6377,43187,int,heathrow,"A","PANEL38",0,400,0,yellow,0,int,"MODBUS")!		
+	! *** PANEL 39 *** ! 	x =410 Y=91 	!generic_bar_meter_obj(42100,1628,6378,43188,int,heathrow,"A","PANEL39",0,400,0,yellow,0,int,"MODBUS")! 		
+
+	! MAX DEMAND meters !
+	! LHS !
+	scale = 250
+	! *** PANEL 20 *** !		x=-590 Y=-125 text_meter(42100,6400,heathrow,"MVA","",green4,1)
+	! *** PANEL 21 *** !		x=-490 Y=155 text_meter(42100,6401,heathrow,"MVA","",green4,1)
+	! *** PANEL 22 *** !		x=-440 Y=155 text_meter(42100,6402,heathrow,"MVA","",green4,1)
+	! *** PANEL 23 *** !		x=-390 Y=155 text_meter(42100,6403,heathrow,"MVA","",green4,1)
+	! *** PANEL 24 *** !		x=-400 Y=-125 text_meter(42100,6404,heathrow,"MVA","",green4,1)
+	! *** PANEL 25 *** !		x=-290 Y=155 text_meter(42100,6405,heathrow,"MVA","",green4,1)
+	! *** PANEL 26 *** !		x=-240 Y=155 text_meter(42100,6406,heathrow,"MVA","",green4,1)
+	! *** PANEL 27 *** !		x=-190 Y=155 text_meter(42100,6407,heathrow,"MVA","",green4,1)
+	! *** PANEL 28 *** !		x=-140 Y=155 text_meter(42100,6408,heathrow,"MVA","",green4,1)
+	! *** PANEL 29 *** !		x=-90 Y=155 text_meter(42100,6409,heathrow,"MVA","",green4,1)
+	! *** PANEL 30 *** !		x=-40 Y=155 text_meter(42100,6410,heathrow,"MVA","",green4,1)
+	! *** PANEL 31 *** !		x= 10 Y=155 text_meter(42100,6411,heathrow,"MVA","",green4,1)
+	! *** PANEL 32 *** !		x= 60 Y=155 text_meter(42100,6412,heathrow,"MVA","",green4,1)
+	! *** PANEL 33 *** !		x= 110 Y=155 text_meter(42100,6413,heathrow,"MVA","",green4,1)
+	! *** PANEL 34 *** !		x= 160 Y=155 text_meter(42100,6414,heathrow,"MVA","",green4,1)
+	! *** PANEL 35 *** !		x= 210 Y=155 text_meter(42100,6415,heathrow,"MVA","",green4,1)
+	! *** PANEL 36 *** !		x= 260 Y=155 text_meter(42100,6416,heathrow,"MVA","",green4,1)
+	! *** PANEL 37 *** !		!x= 310 Y=155 text_meter(42100,6417,heathrow,"MVA","",green4,1)!
+	! *** PANEL 38 *** !		!x= 360 Y=155 text_meter(42100,6418,heathrow,"MVA","",green4,1)!
+	! *** PANEL 39 *** !		!x= 410 Y=155 text_meter(42100,6419,heathrow,"MVA","",green4,1)!
+
+
+
+	! ** Transformers ** !
+	scale = 80
+	! *** PANEL 21 *** !	!X= -490 Y=157 transformer("TX 7","T5A")!
+	! *** PANEL 22 *** !	!X= -440 Y=157 transformer("TX 4","T5A")!
+	! *** PANEL 23 *** !	!X= -390 Y=157 transformer("TX15","T5A")!
+	! *** PANEL 25 *** !	!X= -290 Y=157 transformer("TX18","T5A")!
+	! *** PANEL 27 *** !	!X= -190 Y=157 transformer("TX 1","T5A")!
+	! *** PANEL 28 *** !	!X= -140 Y=157 transformer("TX10","T5A")!
+	! *** PANEL 30 *** !	!X= -40 Y=157 transformer("TX22","T5A")!
+	! *** PANEL 35 *** !	!X= 210 Y=157 transformer("TX 3","HOT")!
+	! *** PANEL 36 *** !	!X= 260 Y=157 transformer("LT 2","LOC")!
+	! *** PANEL 37 *** !	!X= 310 Y=157 transformer("TX 1","BSP")!
+
+	scale = 130 
+	! *** PANEL 24 *** !	x=-340 y=-90 TRANSFORMER_SELECT("modbus",42100,6424,43069,1696,6445,heathrow,"43190","INC. TX2",2,420,"black","white") CLEAR
+end
+
+object alarms_zone_box(ident1=string,ident2=string)
+begin
+	! ** draw a box for alarm indication ** !
+	X=0 Y=0 W=50 H=96 FG=decoroff just=centrecentre FS=FILLSOLID ANGLE=0 ROTRECT Clear
+	X=-25 Y=48 Add X=-25 Y=-48 Add X=26 Y=-48 Add
+	FG=white LS=SOLID LW=1 CS=CAPROUND LINE clear
+	X=-25 Y=48 Add X=26 Y=48 Add X=26 Y=-48 Add
+	FG=BLACK LS=SOLID LW=1 CS=CAPROUND LINE Clear
+
+	X=0 Y=-43 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT(ident1)
+	X=0 Y= 43 CH=10 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=centrecentre TEXT(ident2)
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+var helpstr	= help string(30)
+var modbus_btn_col = colour
+Begin
+   	scale = 256
+   	just = centrecentre
+   	x = 20 y = 20 w =1140 h = 800
+   	set text helpstr = "sub_stn_152_help"
+
+	x=0 y=-220 sub152_left_section
+	
+		x=100 y=115 sub152_right_section
+	
+
+	scale=256
+	x = -570 y = 310 browser(1550,heathrow,1140)
+
+	X=-411 Y=-245 text("LEFT HAND SECTION",ch=16,tfg=BLUE)
+	
+		X=249 Y=90 CH=16 TFG=BLUE text("RIGHT HAND SECTION ")
+	
+ 
+
+	X=-482 Y=-373 CH=23 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("SUB STATION 152")
+
+	! ** Get Alarm Status Colour - this checks MCM timeout status for PLC A and B - by entering 4 on the parameters only 1 call to database is required ** !
+	! * if in alarm, a reset of the plc is required * !
+	modbus_btn_col=lv_alarm_test(42178,4,heathrow)
+	X=520 Y=-386 main_sub_call(grey80,100,25,"Modbus","",white,16,yes,"comms_sub_152",heathrow,int,"string",int,fg=modbus_btn_col)
+
+	! LHS BUS ZONE ALARMS !
+	X=258 Y=-311 alarms_zone_box("LHS","BUS Zone")
+	X=258 Y=-311 Alarms_Indicator("6",42100,42980,HEATHROW,scale=120)
+
+	! RHS BUS ZONE ALARMS !
+	X=-540 Y=53 alarms_zone_box("RHS","BUS Zone")
+	X=-540 Y=53 Alarms_Indicator("6",42100,42986,HEATHROW,scale=120)
+
+end
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable

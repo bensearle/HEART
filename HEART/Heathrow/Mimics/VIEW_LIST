@@ -1,0 +1,26 @@
+ALARM_VIEW Alarm View 
+BARGRAPH_VIEW Bargraph View 
+COMMS_LOG_VIEW Comms Log 
+COMMS_STAT_VIEW Comms Statistics 
+COMMS_VIEW Comms View 
+CONFIRM_ENTRY_VIEW Confirm Entry View 
+DB_MAPPING_VIEW Database Mapping View
+DATABASE_VIEW Database View 
+LINE_VIEW Line View 
+MASTER_UTIL Mastership 
+MIMIC_DIRECTORY_UTIL Mimic Directory 
+NEWS_UTIL News 
+OUTSTATION_GROUP_VIEW Outstation Group View 
+OS_MAPPING_VIEW Outstation Mapping View
+PRE_CONFIGURED_TEXT_VIEW Pre-Configured Text View 
+TEMP_DB_SCAN_VIEW Temporary DB Scan View 
+TEMP_OS_GROUP_VIEW Temporary OS Group View 
+TEMP_OS_SCAN_VIEW Temporary OS Scan View 
+TREND_VIEW Trend View 
+PERMISSIONS_VIEW User Permissions View       
+ACTIVITY_VIEW Activity View
+ALARM_HISTORY_VIEW Alarm History View
+ARCHIVER_STATUS_VIEW Archiver Status View
+COMSTATS_HISTORY_VIEW Comms Stats History View
+SYSTEM_MESSAGE_VIEW System Message View
+VALUE_HISTORY_VIEW Value History View

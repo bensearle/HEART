@@ -1,0 +1,28 @@
+Load replib
+Load COMMS_REPORT_PAGE_2
+const comms_report_name = "COMMS_REPORT"
+object main_object(bg,fg,w,h)
+var getting_data = loopback yesno
+var start_print = loopback int
+
+begin
+y=0 header(h=30, 2, comms_report_name)
+y=h-30 footer(h=30, 2, comms_report_name)
+y=60
+
+if invalid start_print then
+   begin
+   printfile_start(comms_report_name)
+   start_print = 1
+   end
+      
+getting_data = commstat_report(MONTHLY,"current")   
+if getting_data == no then
+   begin
+   debug("CLOSING")
+   printfile_page(1)
+   printfile_end
+   exit
+   end
+end
+mimic = main_object w=PAGE_WIDTH,h=PAGE_HEIGHT

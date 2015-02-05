@@ -1,0 +1,14 @@
+load mimic_libutil
+load TREND_TEST_HELP
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+lw=3 
+
+X=-333 Y=-200 W=300 H=150  TREND (HEATHROW,E1,P1H,100.000,0.000,YES,YES,YES,DISPLAY_DATETIME,RED,BLUE,red,FLASHRED,FLASHGREEN,GOLD,CYAN,"North OCB 1")
+
+
+end
+
+mimic = main_object w=1200,h=800,just=centrecentre,fg=black,bg=aquamarine3,resizable

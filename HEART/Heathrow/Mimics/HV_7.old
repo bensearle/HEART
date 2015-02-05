@@ -1,0 +1,511 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!**********Hv Ring 7************!
+
+
+load mimic_libutil
+load ocb
+load hv_7_sub_stations
+load hv_menu_bar
+load hv_hierarchy
+
+
+!*********** SUB 106 ***********!
+
+object sub_106
+
+begin
+
+sub_symbol_106
+
+lw=2
+x = 0 y = 25 add y = -25 add line (fg=gold4) clear
+x = 50 y = 25 add y = -25 add line (fg=gold4) clear
+
+scale = 120
+x = 0 y = 0 ocb_hand(26051,616,2051,heathrow,heathro2,1,"top")
+x = 50 y = 0 ocb_hand(26052,617,2052,heathrow,heathro2,2,"top")
+
+end
+
+
+!*********** SUB 107 ***********!
+
+object sub_107
+
+begin
+
+sub_symbol_107
+
+lw=2
+x = 0 y = 25 add y = -25 add line (fg=gold4) clear
+x = 50 y = 25 add y = -25 add line (fg=gold4) clear
+
+scale = 120
+x = 0 y = 0 ocb_hand(26055,619,2055,heathrow,heathro2,1,"top")
+x = 50 y = 0 ocb_hand(26056,620,2056,heathrow,heathro2,2,"top")
+
+end
+
+
+!*********** SUB 23 ***********!
+
+object sub_23
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "sub_stn_23"
+
+
+W=250 H=25 X=-75 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 55 y = 38 text(tfg=white,ch=25,"Sub 23",just=centrecentre) clear
+
+x = 175 y = 25 add x -= 250 add y += 25 add line (fg=white) clear
+x = 175 y = 25 add y += 25 add x -= 250 add line (fg=grey40) clear
+
+lw=2
+x = -50 y = 25 add y = -25 add line (fg=gold4) clear
+x = 0  y = 25 add y = -25 add line (fg=gold4) clear
+x = 50  y = 25 add y = -25 add line (fg=gold4) clear
+x = 100  y = 25 add y = -25 add line (fg=gold4) clear
+x = 150  y = 25 add y = -25 add line (fg=gold4) clear
+
+scale = 120
+x = -50 y = 0 ocb_mont(4000,4390,273,395,heathrow,0,"top")
+x = 0 y = 0 ocb(4000,4100,202,377,heathrow,3,"top")
+x = 50 y = 0 ocb(4000,4120,204,379,heathrow,5,"top")
+x = 100 y = 0 ocb(4000,4160,207,382,heathrow,8,"top")
+x = 150 y = 0 ocb_mont(4000,4340,210,385,heathrow,11,"top")
+end
+
+
+!*********** SUB 32 ***********!
+
+object sub_32
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "sub_stn_32"
+
+W=150 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"Sub 32",just=centrecentre) clear
+
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 0  y = 25 add y = -25 add line(fg=gold4) clear
+x = 50  y = 25 add y = -25 add line(fg=gold4) clear
+x = 100 y = 25 add y = -25 add line(fg=gold4) clear
+
+scale = 120
+x = 0 y = 0 ocb(5000,5220,264,489,heathrow,15,"top")
+x = 50 y = 0 ocb(5000,5240,265,490,heathrow,16,"top")
+x = 100 y = 0 ocb(5000,5260,266,491,heathrow,17,"top")
+
+end
+
+
+!*********** SUB 58 ***********!
+
+object sub_58
+
+begin
+
+sub_symbol_58
+
+lw=2
+x = 0  y = 25 add y = -25 add line (fg=gold4) clear
+x = 50  y = 25 add y = -25 add line (fg=gold4) clear
+
+
+scale = 120
+!x = 0 y = 0 ocb_barcis(23860,978,1253,heathrow,1,"top")
+x = 50 y = 0 ocb_barcis(23880,979,1254,heathrow,2,"top")!
+
+x = 0  y = 0 ocb_mont(7000,7100,239,500,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(7000,7110,240,501,heathro2,2,"top")
+
+end
+
+
+!*********** SUB 34 ***********!
+
+object sub_34
+
+begin
+
+sub_symbol_34
+
+lw=2
+x = 0  y = 25 add y = -25 add line (fg=gold4) clear
+x = 50  y = 25 add y = -25 add line (fg=gold4) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(7000,7440,434,684,heathrow,1,"top")
+x = 50 y = 0  ocb_mont(7000,7450,435,685,heathrow,2,"top")
+
+end
+
+
+!*********** SUB 33 ***********!
+
+object sub_33
+
+begin
+
+sub_symbol_33
+
+lw=2
+x = 0 y = 25 add y = -25 add line (fg=gold4) clear
+x = 50 y = 25 add y = -25 add line (fg=gold4) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(7000,7410,431,681,heathrow,2,"top")
+x = 50 y = 0 ocb_mont(7000,7420,432,682,heathrow,3,"top")
+
+end
+
+
+!*********** SUB 28 ***********!
+
+object sub_28
+
+begin
+
+sub_symbol_28
+
+lw=2
+x = 0 y = 25 add y = -25 add line (fg=gold4) clear
+x = 50 y = 25 add y = -25 add line (fg=gold4) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(7000,7150,405,655,heathrow,1,"top")
+x = 50 y = 0 ocb_mont(7000,7160,406,656,heathrow,2,"top")
+
+end
+
+
+!*********** SUB 27 ***********!
+
+object sub_27
+
+begin
+
+sub_symbol_27
+
+lw=2
+x = 0  y = 25 add y = -25 add line (fg=gold4) clear
+x = 50  y = 25 add y = -25 add line (fg=gold4) clear
+
+scale = 120
+x = 0  y = 0 ocb_mont(7000,7110,401,651,heathrow,2,"top")
+x = 50  y = 0 ocb_mont(7000,7140,404,654,heathrow,5,"top")
+
+end
+
+
+!*********** SUB 46 ***********!
+
+object sub_46
+
+begin
+
+sub_symbol_46
+
+lw=2
+x = 0 y = 25 add y = -25 add line (fg=gold4) clear
+x = 50 y = 25 add y = -25 add line (fg=gold4) clear
+
+
+scale = 120
+!x = 0 y = 0 ocb_barcis(24136,988,1263,heathrow,1,"top")
+x = 50 y = 0 ocb_barcis(24156,989,1264,heathrow,2,"top")!
+
+x = 0  y = 0 ocb_mont(6000,6150,201,455,heathro2,1,"top")
+x = 50 y = 0 ocb_mont(6000,6160,202,456,heathro2,2,"top")
+
+end
+
+
+!*********** SUB 89 ***********!
+
+object sub_89
+
+begin
+
+sub_symbol_89
+
+lw=2
+x = 0 y = 25 add y = -25 add line (fg=gold4) clear
+x = 50 y = 25 add y = -25 add line (fg=gold4) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(7000,8190,561,1353,heathrow,1,"top")
+x = 50 y = 0 ocb_mont(7000,8200,562,1354,heathrow,2,"top")
+
+end
+
+
+!*********** SUB 95 ***********!
+
+object sub_95
+
+begin
+
+sub_symbol_95
+
+lw=2
+x = 0 y = 25 add y = -25 add line (fg=gold4) clear
+x = 50 y = 25 add y = -25 add line (fg=gold4) clear
+
+scale = 120
+x = 0 y = 0 oil_switch(25127,295,1407,heathrow,"o")
+x = 50 y = 0 oil_switch(25117,283,1395,heathrow,"c")
+
+scale = 256 just = centrecentre
+tfg = black ch = 12
+x = 15 y = 0 text("0")
+x = 65 y = 0 text("1")
+
+end
+
+
+!*********** HV 7 SOUTH INTAKE ***********!
+
+object hv_7_south_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var = "south_intake"
+
+W=400 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 175 y = 38 text(tfg=white,ch=25,"South Intake",just=centrecentre) clear
+
+x = 375 y = 25 add x -= 400 add y += 25 add line (fg=white) clear
+x = 375 y = 25 add y += 25 add x -= 400 add line (fg=grey40) clear
+
+tfg=gold4 font=font_bold
+x = 385 y = -5 add text("Rear")
+x = -65 y = -35 add text ("Front") clear
+
+lw=2
+x = 0 y = 25 add y = -75 add line(fg=gold4) clear
+x = 50 y = 25 add y = -55 add x -= 50 add line(fg=gold4) clear
+x = 100 y = 25 add y = -75 add line(fg=gold4) clear
+x = 150 y = 25 add y = -55 add x -= 50 add line(fg=gold4) clear
+x = 200 y = 25 add y = -75 add line(fg=gold4) clear
+x = 250 y = 25 add y = -55 add x -= 50 add line(fg=gold4) clear
+x = 300 y = 25 add y = -75 add line(fg=gold4) clear
+x = 350 y = 25 add y = -55 add x -= 50 add line(fg=gold4) clear
+
+scale=120
+
+X=0   Y=-25 ocb(1000,1400,69,94,heathrow,12,"top") clear
+X=50  Y=0 ocb(1000,1420,70,95,heathrow,12,"top") clear
+
+X=200  Y=-25 ocb(1000,1580,82,107,heathrow,19,"top") clear
+X=250  Y=-0 ocb(1000,1600,83,108,heathrow,19,"top") clear
+
+x = 100 y = -25 ocb(1000,1540,80,105,heathrow,18,"top") clear
+x = 150 y = 0  ocb(1000,1560,81,106,heathrow,18,"top") clear
+
+x = 300 y = -25 ocb(1000,1620,84,109,heathrow,20,"top") clear
+x = 350 y = 0 ocb(1000,1640,85,110,heathrow,20,"top") clear
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+goto_menu
+x = 500 y = 270 command_button(226,heathrow)
+clear
+
+just=centrecentre
+
+x = -250 y = -300 sub_23
+x = 150 y = -300 sub_32
+
+x = -300 y = -150 sub_58
+x = -125 y = -150 sub_34
+x = 50 y = -150 sub_33
+x = 225 y = -150 sub_89
+
+x = -475 y = 0 sub_28
+x = -300 y = 0 sub_95
+x = -125 y = 0 sub_107
+x = 50 y = 0 sub_106
+x = 225 y = 0 sub_27
+x = 400 y = 0 sub_46
+
+x = -100 y = 200 hv_7_south_intake
+
+x = 0 y = 322 menu_bar
+
+clear
+
+
+lw=2
+! SS23-8 TO SS28-2 !
+x = -150 y = -325
+add y -= 30
+add x -= 275
+add y += 330
+add line(fg=gold4) clear
+
+! SS23-3 TO SS27-2 !
+x = -250 y = -325
+add y -= 15
+add x -= 100
+add y += 255
+add x += 575
+add y += 60
+add line(fg=gold4) clear
+
+! SS23-5 TO SS32-15 !
+x = -200 y = -325
+add y -= 15
+add x += 350
+add y += 15
+add line(fg=gold4) clear
+
+! SS32-16 TO SS33-2 !
+x = 200 y = -325
+add y -= 30
+add x += 125
+add y += 120
+add x -= 275
+add y += 60
+add line(fg=gold4) clear
+
+! SS32-17 TO SS89-1 !
+x = 250 y = -325
+add y -= 15
+add x += 100
+add y += 135
+add x -= 125
+add y += 30
+add line(fg=gold4) clear
+
+! SS33-3 TO SS34-2 !
+x = 100 y = -175
+add y -= 15
+add x -= 175
+add y += 15
+add line(fg=gold4) clear
+
+! SS34-1 TO SS58-1 !
+x = -125 y = -175
+add y -= 15
+add x -= 175
+add y += 15
+add line(fg=gold4) clear
+
+! SS95-1 TO SS28-3 !
+X = -250 Y = -25
+add y -= 15
+add x -= 225
+add y += 15
+add line(fg=gold4) clear
+
+! SS106-1 TO SS23-11 !
+x = 50 y = -25
+add y -= 45
+add x -= 425
+add y -= 300
+add x += 275
+add y += 45
+add line(fg=gold4) clear
+
+! SS106-2 TO SS107-1 !
+x = 100 y = -25
+add y -= 15
+add x -= 225 
+add y += 15
+add line(fg=gold4) clear
+
+! SS107-2 TO SS95-0 !
+x = -75 y = -25
+add y -= 30
+add x -= 225
+add y += 30 
+add line(fg=gold4) clear
+
+! SI-18 TO SS58-2 !
+x = 0 y = 150
+add y -= 70
+add x -= 525
+add y -= 300
+add x += 275
+add y += 45 
+add line(fg=gold4) clear
+
+! SI-12 SS89-2 !
+x = -100 y = 150
+add y -= 50
+add x += 625
+add y -= 290
+add x -= 250
+add y += 15
+add line(fg=gold4) clear
+
+! SI-19 TO SS46-2 !
+x = 100 y = 150
+add y -= 30
+add x += 400
+add y -= 160
+add x -= 50
+add y += 15
+add line(fg=gold4) clear
+
+! SS46-1 TO SS27-5 !
+x = 275 y = -25
+add y -= 15
+add x += 125
+add y += 15
+add line(fg=gold4) clear
+
+!SI-P20 to SS23-P0!
+x = 200 y = 125
+add y -= 65
+add x -= 750
+add y -=385
+add x +=250
+add line (fg=gold4) clear
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=lightgreen3,resizable

@@ -1,0 +1,46 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!************ BUSBAR M1/15 *************!
+
+object busbar_m1_15
+
+begin
+
+tfg = black x = 0 y = 25 add text ("M1/15",ch = 25) clear
+x = -75 y = 25 add x += 150 add line(lw=4,fg=orange) clear
+
+lw=2
+x = -50 y =  25 add y += 50 add line (fg=orange) clear
+x = 50  y = -25 add y += 50 add line (fg=orange) clear
+x = 0   y =  -25   add y += 50 add line (fg=orange) clear
+
+scale = 120
+
+x = -50  y = 50  ocb_mont(7000,7140,243,504,heathro2,1,"btm")
+x = 0    y = 0   ocb_mont(7000,7150,244,505,heathro2,2,"top")
+x =  50  y = 0   ocb_mont(7000,7160,245,506,heathro2,3,"top")
+
+
+scale = 100
+x = -50 y = 95 transformer("LT 1","LOCAL")
+
+scale = 256 just = centrecentre
+tfg = black ch = 12
+x = 0 y = -50 text("POT ")
+x = 0 y = -35 text("ENDED")
+x = 50 y = -50 text("M1/13")
+x = 50 y = -35 text("P8")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y = -25 busbar_m1_15
+
+end
+
+mimic = main_object w=250,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

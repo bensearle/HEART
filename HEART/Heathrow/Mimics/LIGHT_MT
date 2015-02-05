@@ -1,0 +1,207 @@
+! HEATHROW CMS - LIGHT MT (low power)
+
+loaded by: MAIN_TUNNEL
+!
+
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+
+!
+************************************************************
+* LIGHT MT OBJECT                                          *
+* this object is called by the Top Level variable (mimic)  *
+************************************************************
+!
+
+object light_mt(lights_on_offset=int,odd_offset=int,plc_offset=int,light_no=int,zone=string(2),src=source)
+
+var odd_day_ip = input  b_db_row_type
+var s_e_ip = input  b_db_row_type
+var s_w_ip = input  b_db_row_type
+var n_e_ip = input  b_db_row_type
+var n_w_ip = input  b_db_row_type
+var all_lights_on = input  b_db_row_type
+
+var odd_day = loopback  int
+var light_status = loopback  onoff
+var light_bg = loopback  colour
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source odd_day_ip then 
+   begin
+
+   set source  odd_day_ip = src
+   set filter  odd_day_ip.db_addr = lim_eq
+   set limit   odd_day_ip.db_addr = db_address(int(b1) + odd_offset-1)
+   set persist odd_day_ip 
+   request     odd_day_ip
+
+   set source  s_e_ip = src
+   set filter  s_e_ip.db_addr = lim_eq
+   set limit   s_e_ip.db_addr = db_address(int(b1) + plc_offset-1)
+   set persist s_e_ip 
+   request     s_e_ip
+
+   set source  s_w_ip = src
+   set filter  s_w_ip.db_addr = lim_eq
+   set limit   s_w_ip.db_addr = db_address(int(b1) + plc_offset)
+   set persist s_w_ip 
+   request     s_w_ip
+
+   set source  n_e_ip = src
+   set filter  n_e_ip.db_addr = lim_eq
+   set limit   n_e_ip.db_addr = db_address(int(b1) + plc_offset+1)
+   set persist n_e_ip 
+   request     n_e_ip
+
+   set source  n_w_ip = src
+   set filter  n_w_ip.db_addr = lim_eq
+   set limit   n_w_ip.db_addr = db_address(int(b1) + plc_offset+2)
+   set persist n_w_ip 
+   request     n_w_ip
+
+   set source  all_lights_on = src
+   set filter  all_lights_on.db_addr = lim_eq
+   set limit   all_lights_on.db_addr = db_address(int(b1) + lights_on_offset-1)
+   set persist all_lights_on 
+   request     all_lights_on
+   end
+
+   
+! CONFIGURE DAY !
+
+if odd_day_ip.b_value then 
+  odd_day=1
+else 
+  odd_day=0
+
+
+! CONFIGURE LIGHT !
+
+if all_lights_on.b_value then
+  light_status=on
+else
+  begin
+
+  if (light_no == 1) or (light_no == 3) then
+    begin
+    if odd_day then 
+      begin
+      if (zone=="se") and s_e_ip.b_value then 
+        light_status=on
+      end
+    else
+      light_status=off
+    end  
+
+  if (light_no == 1) or (light_no == 3) then
+    begin
+    if odd_day then 
+      begin
+      if (zone=="sw") and s_w_ip.b_value then 
+        light_status=on
+      end
+    else
+      light_status=off
+    end  
+
+  if light_no==5 then
+    begin
+    if odd_day then
+      begin
+      if (zone=="ne") and n_e_ip.b_value then
+        light_status=on
+      end
+    else
+      light_status=off
+    end
+
+  if light_no==5 then
+    begin
+    if odd_day then
+      begin
+      if (zone=="nw") and n_w_ip.b_value then
+        light_status=on
+      end
+    else
+      light_status=off
+    end
+
+  if (light_no==4) or (light_no==6) then
+    begin
+    if odd_day==off then
+      begin
+      if (zone=="ne") and n_e_ip.b_value then
+        light_status=on
+      end
+    else
+      light_status=off
+    end
+
+  if (light_no==4) or (light_no==6) then
+    begin
+    if odd_day==off then
+      begin
+      if (zone=="nw") and n_w_ip.b_value then
+        light_status=on
+      end
+    else
+      light_status=off
+    end
+
+  if light_no==2 then
+    begin
+    if not odd_day then
+      begin
+      if (zone=="se") and s_e_ip.b_value then
+        light_status=on
+      end
+    else
+      light_status=off
+    end
+
+  if light_no==2 then
+    begin
+    if not odd_day then
+      begin
+      if (zone=="sw") and s_w_ip.b_value then
+        light_status=on
+      end
+    else
+      light_status=off
+    end
+
+end
+
+if light_status then
+  light_bg = yellow
+else 
+  light_bg = decoroff
+
+  
+! DRAW LIGHT !
+
+just = centrecentre
+rect(fg=light_bg,h=14,w=100) 
+x -= 50 y += 7 add y -= 14 add x += 100 add line(lw=1,fg=decorlight) clear
+x = 50 y = -7 add y += 14 add x -= 100 add line(lw=1,fg=decorshadow) clear
+x = 0 y = -1 text (tfg=black,ch=15,"Low Power")
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+y=-20
+scale=260
+light_mt(9073,9064,9069,4,"ne",heathrow)
+y+=55
+light_mt(9073,9064,9069,5,"ne",heathrow)
+end
+
+mimic = main_object w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

@@ -1,0 +1,48 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+!******************* BUSBAR 109 ******************!
+
+object busbar_109
+begin
+
+scale = 260
+tfg = black x = 240 y = 0 add text ("109",ch = 25,just = centrecentre) clear
+
+x = 0 y = 0 add x = 210 add line(fg=blue,lw=4) clear
+lw=2
+x = 30 y = 0 add y -= 50 add line (fg=blue) clear
+x = 80 y = 0 add y += 50 add line (fg=blue) clear
+x = 130 y = 0 add y -= 50 add line (fg=blue) clear
+x = 180 y = 0 add y -= 50 add line (fg=blue) clear
+
+scale = 120
+x = 30 y = -25 ocb_mont(3000,9000,306,258,heathro2,1,"top")
+x = 80 y = 25 ocb_mont(3000,9010,307,259,heathro2,2,"btm")
+x = 130 y = -25 ocb_mont(3000,9020,308,260,heathro2,3,"top")
+x = 180 y = -25 ocb_mont(3000,9030,309,261,heathro2,4,"top")
+
+scale = 100
+x = 80 y = 70 add transformer("T 1","")
+
+scale = 260
+just = centrecentre
+tfg=black
+ch=12
+x = 30 y = -65 text ("SI P7",just=centrecentre)
+x = 130 y = -65 text ("WI",just=centrecentre)
+x = 182 y = -65 text ("SPARE")
+clear
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -130 y = -20 busbar_109
+
+end
+
+mimic = main_object w=370,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

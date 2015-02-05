@@ -1,0 +1,673 @@
+load mimic_libutil
+load fp_generic_server_request
+
+!**** monitored only generic circuit breaker object 	****!
+!**** this object is called by the hv library hv_lib 	****!
+
+object fp_breaker_mont(plc_offset=int,b_offset=int,c_offset=int,e_offset=int,
+                src=source,ident = int,top_btm_sect=string(4),angle)
+
+!**** plc inputs
+plc_inputs[1] = plc_a_comms_fail_ip
+plc_inputs[2] = plc_b_comms_fail_ip
+!
+var plc_inputs = input b_bool_type[2]
+ 
+!**** b inputs
+b_inputs[1] = breaker_permit_to_work_ip
+b_inputs[2] = breaker_earth_switch_ip
+b_inputs[3] = breaker_closed_ip
+b_inputs[4] = breaker_open_ip
+b_inputs[5] = breaker_low_gas_ip
+b_inputs[6] = breaker_trip_overcurrent_/prot_operated_ip
+b_inputs[7] = breaker_tripped_earth_fault_ip
+b_inputs[8] = breaker_watchdog_ip
+b_inputs[9] = spare
+b_inputs[10] = spare!
+
+var b_inputs = input b_bool_type[10]
+
+!**** alarm inputs
+alarm_inputs[1] = breaker_earth_switch_al
+alarm_inputs[3] = breaker_open_al
+alarm_inputs[4] = breaker_low_gas_al
+alarm_inputs[5] = breaker_trip_overcurrent_/prot_operated_ip
+alarm_inputs[6] = breaker_tripped_earth_fault_ip
+!
+var alarm_inputs = input alarm_row_type[6]
+
+var manually_dress_ip = input  e_db_row_type
+
+var tag_message_ip = input  c_db_row_type
+
+!**** loopbacks ****!
+
+var breaker_bg = loopback  colour
+var breaker_fg = loopback  colour
+
+!**** panels and menus ****!
+var main_menu = menu  string(30)
+var tag_message_panel = panel  panel_item_row
+
+begin
+   !****  initialisation ****!
+
+   if invalid get source plc_inputs then 
+   begin
+
+   	set source plc_inputs = src
+   	set filter plc_inputs.db_addr = lim_ge
+   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+   	set priority plc_inputs.db_addr = 15
+   	set persist plc_inputs
+   	set mayexist plc_inputs
+   	request plc_inputs
+
+   	set source alarm_inputs = src
+   	set filter alarm_inputs.db_addr = lim_ge
+   	set limit alarm_inputs.db_addr = db_address(int(b1) + b_offset)
+   	set priority alarm_inputs.db_addr = 15
+   	set persist alarm_inputs
+   	set mayexist alarm_inputs
+   	request alarm_inputs
+
+   	set source b_inputs = src
+   	set filter b_inputs.db_addr = lim_ge
+   	set limit b_inputs.db_addr = db_address(int(b1) + b_offset - 1)
+  	set priority b_inputs.db_addr = 15
+  	set persist b_inputs
+  	set mayexist b_inputs
+   	request b_inputs
+
+   	set source tag_message_ip = src
+   	set filter tag_message_ip.db_addr = lim_eq
+   	set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   	set persist tag_message_ip
+   	request tag_message_ip
+
+   	set source manually_dress_ip = src
+   	set filter manually_dress_ip.db_addr = lim_eq
+   	set limit manually_dress_ip.db_addr = db_address(int(e1) + e_offset - 1)
+   	set persist manually_dress_ip 
+   	request manually_dress_ip
+	
+   end
+
+   !**** breaker background colour ****!
+   if b_inputs[1].b_value==on then
+   	breaker_bg = orange
+
+   else if int(manually_dress_ip.e_value) >= 1 and 
+        int(manually_dress_ip.e_value) <= 7 then
+   begin
+   	case int(manually_dress_ip.e_value) of
+      1  	!**** dressed to on ****!
+      if b_inputs[3].b_value==on and b_inputs[4].b_value == off then
+         breaker_bg = flashblue
+      else
+         breaker_bg = blue
+             
+      2 	!**** dressed to off ****!   
+      if b_inputs[3].b_value == off and b_inputs[4].b_value==on then
+         breaker_bg = flashblue
+      else
+         breaker_bg = blue
+      
+      3 	!**** dressed to racked out ****!   
+      if b_inputs[3].b_value == off and b_inputs[4].b_value == off then
+         breaker_bg = flashblue
+      else
+         breaker_bg = blue
+          
+      4 	!**** feeder earth off ****!   
+      breaker_bg = blue
+
+      5 	!**** feeder earth on****!   
+      breaker_bg = blue
+      
+      6 		!**** bus section earth off ****!   
+      breaker_bg = blue
+
+      7 		!**** bus section  earth on****!   
+      breaker_bg = blue
+
+      default
+      begin
+      end
+   end
+   
+   else if tag_message_ip.c_value <> "" then
+   	breaker_bg = yellow
+   else
+   	breaker_bg = decoroff
+
+   !**** breaker foreground colour****!
+   if plc_inputs[1].b_value==on and plc_inputs[2].b_value==on then
+  	breaker_fg = magenta
+
+   else if alarm_inputs[1].alarm_status == w_note or
+        alarm_inputs[3].alarm_status == w_note or
+        alarm_inputs[4].alarm_status == w_note or
+        alarm_inputs[5].alarm_status == w_note or
+        alarm_inputs[6].alarm_status == w_note then
+
+         	breaker_fg = flashred
+
+   else if alarm_inputs[1].alarm_status == w_clr or
+        alarm_inputs[3].alarm_status == w_clr or
+        alarm_inputs[4].alarm_status == w_clr or
+        alarm_inputs[5].alarm_status == w_clr or
+        alarm_inputs[6].alarm_status == w_clr then         
+         	
+	breaker_fg = red
+
+   else if int(manually_dress_ip.e_value) >= 1 and 
+        int(manually_dress_ip.e_value) <= 7 then
+   begin
+      case int(manually_dress_ip.e_value) of 
+      	1
+      	breaker_fg = white
+      	2
+      	breaker_fg = white     
+      	3
+      	breaker_fg = white 
+      	4  
+      	begin
+      	   if b_inputs[4].b_value==on and b_inputs[3].b_value==on then !**** if both open and closed are on****!   
+      	   	breaker_fg = black
+      	   else
+      	   	breaker_fg = white
+      	end
+      	5
+      	breaker_fg = white 
+      	6
+      	breaker_fg = white 
+      	7
+      	breaker_fg = white 
+
+    	default
+    	   begin
+    	   end
+      end       
+   else
+    	breaker_fg = green4
+
+
+   !**** main menu operation ****!   
+   if valid main_menu then
+   begin
+ 
+      case main_menu of
+      	"Alter Tag Message"
+         	   begin
+         		set title tag_message_panel = "Modify Alter Tag Message"
+         		set label tag_message_panel.str = "Alter Tag Message :"
+         		set unpinned tag_message_panel
+         		request tag_message_panel
+            	   end
+
+      	"Clear Tag Message"
+         	   begin
+         		set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         	   end
+
+      	"Alter Permit To work"
+         	   begin
+         	      if b_inputs[1].b_value==on then
+            	         begin
+            		set_b_value(db_address(int(b1) + b_offset -1), src, off)
+                       end
+         	      else
+            		set_b_value(db_address(int(b1) + b_offset -1), src, on)
+         	   end
+                        
+      	"Undress breaker"
+         		set_e_value(db_address(int(e1) + e_offset - 1),src, 0)
+
+      	"Dress to On"
+         		set_e_value(db_address(int(e1) + e_offset - 1),src, 1)
+
+      	"Dress to Off"
+          		set_e_value(db_address(int(e1) + e_offset - 1),src, 2)
+
+      	"Dress to Racked out"
+         		set_e_value(db_address(int(e1) + e_offset - 1),src, 3)
+
+      	"Dress to Feeder Earth Off"
+         		set_e_value(db_address(int(e1) + e_offset - 1),src, 4)
+
+      	"Dress to Feeder Earth On"
+         		set_e_value(db_address(int(e1) + e_offset - 1),src, 5)
+
+      	"Dress to Bus-Bar Earth Off"
+         		set_e_value(db_address(int(e1) + e_offset - 1),src, 6)
+
+      	"Dress to Bus-Bar Earth On"
+         		set_e_value(db_address(int(e1) + e_offset - 1),src, 7)
+
+      	default
+         	   begin
+         	   end
+
+         set invalid main_menu
+      end
+
+   !**** tag message****!   
+   if valid tag_message_panel then
+   begin
+   	set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   	set invalid tag_message_panel
+   end
+
+   !**** main menu list****!   
+   just = centrecentre
+   w = 70 h = 80
+   x=0 y=0
+   set rect main_menu 
+   if top_btm_sect == "sect" then
+   	set title main_menu = "Bus Section Breaker"
+   else
+    	set title main_menu = "Monitored breaker  "+ident
+
+   	set remove main_menu = "Alter Tag Message"
+   	set remove main_menu = "Clear Tag Message"
+   	set remove main_menu = "Alter Permit To work"
+   	set remove main_menu = "Dress to On"
+   	set remove main_menu = "Dress to Off"
+   	set remove main_menu = "Dress to Racked out"
+	set remove main_menu = "Dress to Feeder Earth Off"
+	set remove main_menu = "Dress to Feeder Earth On"
+	set remove main_menu = "Dress to Bus-Bar Earth Off"
+	set remove main_menu = "Dress to Bus-Bar Earth On"
+	set remove main_menu = "Undress breaker"
+	set add main_menu = "Alter Tag Message"
+	set add main_menu = "Clear Tag Message"
+	set add main_menu = "Alter Permit To work"
+
+   ! **** tag message box **** !
+   if selb and tag_message_ip.c_value <> "" then
+      begin
+   	message_text_box(tag_message_ip.c_value)
+      end
+
+   ! **** draw main symbol **** !
+   x = 0 y = 0
+   just = centrecentre
+   rotrect (w=66,h=80,fg=breaker_bg)
+   clear
+   x -= 33 y += 40 add
+   y -= 80 add
+   x += 66 add line (fg=decorlight) clear 
+   y += 1 add
+   y += 79 add
+   x -= 66 add line (fg=decorshadow) clear
+   x += 33 y -= 40 clear
+   fg = breaker_fg
+   ch = 18
+   if manually_dress_ip.e_value > 0 and tag_message_ip.c_value <> "" then
+      begin
+  	lw=6
+  	clear
+  	x = 0 y = 0
+  	x -= 33 y += 40 add
+  	y -= 80 add
+  	x += 66 add
+  	y += 80 add
+  	x -= 66 add line (fg=yellow)
+  	clear
+      end
+
+   if top_btm_sect == "top" then
+      begin
+    	x = 40 y = 0 add text(ch=28,tfg=black,just=centreleft,ident)
+      end
+   else if top_btm_sect == "btm" then
+      begin
+    	x = 40 y = 0 add text(ch=28,tfg=black,just=centreleft,ident)
+      end
+   else
+      begin
+    	x = 50 y = 0 add text (ch=28,tfg=black,just=centrecentre, ident)
+      end
+
+   x = 0 y = 0 clear
+   tfg = black
+
+   if int(manually_dress_ip.e_value) >= 1 then
+      case int(manually_dress_ip.e_value) of
+      	1 	!**** if dressed on:****!   
+      	   begin
+      	   	lw=6
+      	   	y = 75
+      	   	y -= 50 x -= 25 add
+      	   	y -= 50 x += 50 add line clear
+      	   	y += 50 add
+      	   	x -= 50 y -= 50 add line clear
+      	   	x += 25 y += 25 add clear
+      	  	x = 0 y = 40 add
+      	   	x = 0 y = -40 add line clear
+      	   	set add main_menu = "Dress to Off"
+      	   	set add main_menu = "Undress breaker"
+      	   end
+	
+      	2 	!**** if dressed off:****!   
+      	   begin
+      	   	lw=6
+      	   	y = -20
+      	   	y += 40 x -= 20 add
+      	   	y -= 40 x += 40 add line clear
+      	   	y += 40 add
+      	   	x -= 40 y -= 40 add line clear
+      	   	x += 20 y += 20 add
+      	   	x = 0 y = 0 circle(h=56 ,w=56) clear
+      	   	x = 0 y = 27 add
+      	   	x = 0 y = 40 add line clear
+      	   	x = 0 y = -27 add
+      	   	x = 0 y = -40 add line clear
+      	   	set add main_menu = "Dress to On"
+      	   	set add main_menu = "Dress to Racked out"
+      	   	set add main_menu = "Undress breaker"
+      	   end
+
+	      3 	!**** if dreesed racked out: **** !
+	         begin
+	           	lw=6
+	        	y = -40 add
+	         	y += 20 add
+	         	x -= 7 add
+	         	x += 14 add line clear
+	         	y += 60 x -= 7 add
+	         	y -= 20 add
+	         	x -= 7 add
+	         	x += 14 add line clear
+	         	set add main_menu = "Dress to Off"
+	
+	         	if top_btm_sect <> "sect" then
+	            	begin
+	            		set add main_menu = "Dress to Feeder Earth Off"
+	            		set add main_menu = "Dress to Bus-Bar Earth Off"
+	            	end
+	         	set add main_menu = "Undress breaker"
+	         end
+	
+	      4  	!**** if dressed to feeder earth off: **** !
+	      begin
+	            if top_btm_sect == "top" then
+	            begin
+	            		lw=2
+	         		y -= 40 add
+            			y += 5 add line clear
+            			y += 4 add
+            			circle (w=10,h=10) clear
+            			y += 20 
+            			circle (w=10,h=10)
+            			lw=2
+            			y += 3 add
+            			y += 6 add line 
+            			x -= 15 add
+            			x += 30 add line clear
+            			x -= 5 y += 10 add
+            			x -= 20 add line clear
+            			x += 6 y += 9 add
+            			x += 8 add line clear
+           	            end
+           	            else if top_btm_sect == "btm" then
+           		begin
+            			lw=2     
+            			y += 40 add
+            			y -= 5 add line clear
+            			y -= 3 add
+            			circle (w=10,h=10) clear
+            			y -= 20 
+            			circle (w=10,h=10)
+            			lw=2
+            			y -= 3 add
+            			y -= 7 add line 
+            			x += 15 add
+            			x -= 30 add line clear
+            			x += 5 y -= 10 add
+            			x += 20 add line clear
+            			x -= 6 y -= 9 add
+            			x -= 8 add line clear
+	      	 end
+
+            		set add main_menu = "Dress to Racked out"
+            		set add main_menu = "Dress to Feeder Earth On"
+           		set add main_menu = "Undress breaker"
+	      end
+
+	      5	!**** if dressed to feeder earth on:****!   
+	         begin
+	         	if top_btm_sect == "top" then
+	         	begin
+	         		lw=2
+	         		y -= 40 add
+	         		y += 8 add line clear
+	         		disk (w=10,h=10)
+	         		lw=6
+	         		x += 2
+	         		y += 1 add
+	         		y += 20 add line clear
+	         		x -= 2
+	         		disk (w=10,h=10)
+	         		lw=2
+	         		y += 3 add
+	         		y += 6 add line 
+	         		x -= 15 add
+	         		x += 30 add line clear
+	         		x -= 5 y += 10 add
+	         		x -= 20 add line clear
+	         		x += 6 y += 9 add
+	         		x += 8 add line clear
+	         	end
+         		else
+         		   begin
+         			lw=2
+         			y += 40 add
+         			y -= 8 add line clear
+         			disk (w=10,h=10)
+         			lw=6
+         			x += 2
+         			y -= 1 add
+         			y -= 20 add line clear
+         			disk (w=10,h=10)
+         			x -= 2
+         			lw=2
+         			y -= 3 add
+         			y -= 6 add line 
+         			x += 15 add
+         			x -= 30 add line clear
+         			x += 5 y -= 10 add
+         			x += 20 add line clear
+         			x -= 6 y -= 9 add
+         			x -= 8 add line clear
+         		   end
+
+	         	set add main_menu = "Dress to Feeder Earth Off"
+	         	set add main_menu = "Undress breaker"
+	         end
+
+	      6 	!**** if dressed to bus section earth off:****!   
+	         begin
+	         	if top_btm_sect == "top" then
+	         	begin
+		         	lw=2     
+         			y += 40 add
+         			y -= 5 add line clear
+         			y -= 3 add
+         			circle (w=10,h=10) clear
+         			y -= 20 
+         			circle (w=10,h=10)
+         			lw=2
+         			y -= 3 add
+         			y -= 7 add line 
+         			x += 15 add
+         			x -= 30 add line clear
+         			x += 5 y -= 10 add
+         			x += 20 add line clear
+         			x -= 6 y -= 9 add
+         			x -= 8 add line clear
+         			end
+         			else
+         			begin
+            			lw=2
+            			y -= 40 add
+            			y += 5 add line clear
+            			y += 4 add
+            			circle (w=10,h=10) clear
+            			y += 20 
+            			circle (w=10,h=10)
+            			lw=2
+            			y += 3 add
+            			y += 6 add line 
+            			x -= 15 add
+            			x += 30 add line clear
+            			x -= 5 y += 10 add
+            			x -= 20 add line clear
+            			x += 6 y += 9 add
+            			x += 8 add line clear
+	         	end
+
+	         	set add main_menu = "Dress to Racked out"
+	         	set add main_menu = "Dress to Bus-Bar Earth On"
+	         	set add main_menu = "Undress breaker"
+	         end
+
+	      7 	!**** if dressed to bus section earth on:****!   
+	         begin
+	         	if top_btm_sect == "top" then
+	         	begin
+		         	lw=2
+         			y += 40 add
+         			y -= 8 add line clear
+         			disk (w=10,h=10)
+         			lw=6
+         			x += 2
+         			y -= 1 add
+         			y -= 20 add line clear
+         			disk (w=10,h=10)
+         			x -= 2
+         			lw=2
+         			y -= 3 add
+         			y -= 6 add line 
+         			x += 15 add
+         			x -= 30 add line clear
+         			x += 5 y -= 10 add
+         			x += 20 add line clear
+         			x -= 6 y -= 9 add
+         			x -= 8 add line clear
+	         	end
+         		else
+		   begin
+		         	lw=2
+         			y -= 40 add
+         			y += 8 add line clear
+         			disk (w=10,h=10)
+         			lw=6
+         			x += 2
+         			y += 1 add
+         			y += 20 add line clear
+         			x -= 2
+         			disk (w=10,h=10)
+         			lw=2
+         			y += 3 add
+         			y += 6 add line 
+         			x -= 15 add
+         			x += 30 add line clear
+         			x -= 5 y += 10 add
+         			x -= 20 add line clear
+         			x += 6 y += 9 add
+         			x += 8 add line clear
+		   end
+
+		         	set add main_menu = "Dress to Bus-Bar Earth Off"
+         			set add main_menu = "Undress breaker"
+         end
+
+      default
+      begin
+      end
+   
+else if b_inputs[4].b_value==on then
+   begin
+   	lw=6
+   	y = -20
+   	y += 40 x -= 20 add
+   	y -= 40 x += 40 add line clear
+   	y += 40 add
+   	x -= 40 y -= 40 add line clear
+   	x += 20 y += 20 add
+   	x = 0 y = 0 circle(h=56 ,w=56) clear
+   	x = 0 y = 27 add
+   	x = 0 y = 40 add line clear
+   	x = 0 y = -27 add
+   	x = 0 y = -40 add line clear
+   	set add main_menu = "Dress to On"
+   	set add main_menu = "Dress to Racked out"
+   end
+
+else if b_inputs[3].b_value==on then
+   begin
+   	lw=6
+   	y = 75
+   	y -= 50 x -= 25 add
+   	y -= 50 x += 50 add line clear
+   	y += 50 add
+   	x -= 50 y -= 50 add line clear
+   	x += 25 y += 25 add clear
+   	x = 0 y = 40 add
+   	x = 0 y = -40 add line clear
+   	set add main_menu = "Dress to Off"
+   end
+
+else ! **** racked out **** !
+      begin
+             	lw=6
+         	y = -40 add
+         	y += 20 add
+         	x -= 7 add
+         	x += 14 add line clear
+         	y += 60 x -= 7 add
+         	y -= 20 add
+         	x -= 7 add
+         	x += 14 add line clear
+   
+      	set add main_menu = "Dress to Off"
+	if top_btm_sect <> "sect" then
+            	begin
+            	set add main_menu = "Dress to Feeder Earth Off"
+            	set add main_menu = "Dress to Bus-Bar Earth Off"
+            	end
+
+      end
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+scale = 420
+angle = 0
+
+x=-300 y=0 fp_breaker_mont(1,100,1,25,heathrow,9,"top")
+x=-100 y=0 fp_breaker_mont(1,100,1,25,heathrow,88,"btm")
+
+angle = 90
+x=100 y=0 fp_breaker_mont(1,100,1,25,heathrow,8,"sect")
+x= 300 y=0 fp_breaker_mont(1,120,1,25,heathrow,21,"sect")
+
+scale = 120
+angle = 0
+lw=2 just = centrecentre
+
+x = -300 y = 260 add y -= 120 add line(fg=orange) clear
+x=-300 y=200 fp_breaker_mont(1,100,1,25,heathrow,9,"top")
+x = -100 y = 260 add y -= 120 add line(fg=orange) clear
+x=-100 y=200 fp_breaker_mont(1,100,1,25,heathrow,88,"btm")
+
+angle = 90
+x=100 y=200 fp_breaker_mont(1,100,1,25,heathrow,9,"sect")
+x= 300 y=200 fp_breaker_mont(1,120,1,25,heathrow,21,"sect")
+
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,bg=white,resizable

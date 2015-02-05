@@ -1,0 +1,23 @@
+
+helptext sub_stn_132_help =
+ "
+ **** SUB STATION 132 POPUP MIMIC ****
+ ------------------------------------------------- -------------------------------------------------
+Terminal 3 HV/LV Reinforcement
+ ------------------------------------------------- -------------------------------------------------
+
+This Mimic displays circuit breaker status, current and voltage for Panels on Substation 132.
+
+
+The Circuit Breakers are monitoring only.
+The Analogue meters display high and low alarms together with under/over/invalid ranges.
+
+
+References:
+------------------	
+Operation and Maintenance Manual 	- Section 7.0 page 30
+
+Keypages from the Mimic Menu Object -  for information on mimic objects used (HV Area)
+ ------------------
+
+ "

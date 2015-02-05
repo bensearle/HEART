@@ -1,0 +1,340 @@
+! HEATHRW CMS - Circuit breaker Meter 
+ load ammeter
+
+loaded by: SUB_STN_103, SUB_STN_105
+!
+
+!load BREAKER_METER_HELP!
+type e_test_row =  db_alarm_config(db_addr, config_number, test_value)
+type e_test_table =  e_test_row[6]
+
+type c_db_row_type =  db_elements(db_addr,c_value)
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+
+!******************************************************************!
+
+helptext hex_meter_object_help = "\t\tHEX METER - GENERIC HELP\n
+There is no help for this particular meter.\n
+This is the generic help for a meter on the Heathrow Express substations (sub 114, 115 and 116).\n
+The following parameters are required:
+address		e.g. 2400 = E2400
+tag_address	e.g. 334 = C334
+src		e.g. HEATHRO3
+min_range	bottom value on bargraph
+max_range	top value on bargraph
+units		e.g. kV
+meter_name	displayed at the top of the meter
+help_name	identification string for meter specific help
+	       (replaces this help)
+realf		e.g. fixed2 displays 2 decimal places
+
+"
+
+!
+************************************************************
+* METER OBJECT                                           *
+* this object is called by the Top Level variable (mimic). *
+************************************************************
+!
+
+object breaker_meter(address=int,tag_address=string,src=source,min_range=real,max_range=real, units=string(8), meter_name=string, help_name=string(30),realf)
+
+var help_area = help string_30
+
+var meter_ip = input db_elements (e_value, alarm_status)
+var tag_message_ip = input db_elements (c_value)
+var input_setpoint = input  e_test_table
+
+var output_setpoint = output  e_test_table
+
+var main_menu = menu  string
+var high_setpoint_panel = panel real
+var low_setpoint_panel = panel real
+var tag_message_panel = panel string
+
+var slope = real
+var offset = real
+
+begin
+! INITIALISATION !
+! REQUEST ENGINEERINGS FROM SCOPE !
+
+if invalid get source meter_ip then 
+   begin
+
+   set source meter_ip = src
+   set filter meter_ip.db_addr = lim_eq
+   set limit meter_ip.db_addr = db_address("E"+address)
+   set persist meter_ip 
+   request meter_ip
+
+   set source    input_setpoint = src
+   set filter    input_setpoint.db_addr = lim_eq
+   set limit     input_setpoint.db_addr = db_address("E"+address)
+   set mayexist  input_setpoint
+   set mustexist input_setpoint.db_addr
+   set mustexist input_setpoint.config_number
+   set persist   input_setpoint
+   request       input_setpoint
+
+!REQUEST TAG MESSAGE FROM SCOPE!
+
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address("C"+tag_address)
+   set persist tag_message_ip
+   request tag_message_ip
+
+   end
+
+! DRAW METER BACKGROUND !
+
+if tag_message_ip.c_value <> "" then
+   fg = yellow     !yellow2!
+else
+   fg = decoroff
+
+just = centrecentre
+h = 160 w = 80
+x = 0 y = 0 rect
+x = -w/2 y = h/2 
+move y -= h add x += w add line(fg=fg-1,lw=2)
+move y += h add x -= w add line(fg=fg+2,lw=2)
+
+h -= 50 w -= 10 fg = decoroff
+x = 0 y = 0 rect
+x = -w/2 y = h/2 
+move y -= h add x += w add line(fg=fg-1) 
+move y += h add x -= w add line(fg=fg+2)
+
+! DISPLAY Y AXIS !
+h = 96 ch = 12
+if valid meter_ip.e_value then
+   tfg = black
+else
+   tfg = grey60
+fg = tfg
+
+x = -2  y=h/2 move
+
+aa = 4 !aa = number of divisions on the y axis, sa = counter for loop!
+for sa from 0 to aa do
+   begin
+   y = h/2 - h * sa/aa
+   text (min_range + (max_range-min_range) * sa/aa, just=centreright, x=x-2) 
+   rect (h=1, w=6, just=centreleft)
+   end
+add line(lw=2)
+
+! display title & units !
+x = 0 ch = 16
+y = -68 text(meter_name, tfg=blue)
+y = 68 text(meter_ip.e_value+" "+ units)
+
+! SELECT BAR COLOUR !
+if meter_ip.e_value < 0 then
+   fg = green
+else
+   if units == "kV" then
+      fg = blue
+   else
+      fg = yellow
+
+! CALCULATE BAR SCALING !
+! use formula y = mx + c where
+	m = (48 - -48)/(min_range - max_range)	: stored in slope
+	c = 48 - m * min_range			: stored in offset
+!
+slope = 96/(min_range - max_range)
+offset = 48 - slope * min_range
+
+! DRAW BAR !
+x = 16
+if offset >= 48 then
+   y = 48
+else
+   y = int(offset)
+move
+
+if valid meter_ip.e_value then
+   y = int(slope * meter_ip.e_value + offset)
+if y > 48 then y = 48
+if y < -48 then y = -48
+
+! IF ALARM HAS BEEN ACCEPTED DRAW BAR IN RED !
+if meter_ip.alarm_status == w_clr then
+   fg = red
+
+! IF ALARM IS UNACCEPTED DRAW FULL HEIGHT FLASHING BAR!
+if meter_ip.alarm_status == w_note then
+   begin
+   y = 48 move y = - 48 add
+   fg = flashred
+   end
+
+add line(lw=20)  ! THE BAR !!!
+
+! BEZEL !
+fg = decoroff
+x = 5 y = h/2 w = 20
+move y -= h add x += w add line(fg=fg+2)
+move y += h add x -= w add line(fg=fg-1)
+
+! CONFIGURE MENU !
+
+x=0 y=0 w=80 h=160 just = centrecentre
+set rect main_menu
+if valid input_setpoint then
+   set title main_menu = "High = "+ input_setpoint[1].test_value +"  Low = " +input_setpoint[2].test_value
+set empty main_menu
+set add main_menu = "Alter High Alarm Level"
+set add main_menu = "Alter Low Alarm Level"
+set add main_menu = "Alter Tag Message"
+set add main_menu = "Clear Tag Message"
+
+! RESPOND TO MENU SELECTIONS !
+
+if valid main_menu then
+   begin
+
+   case main_menu of
+     "Alter High Alarm Level"
+        begin
+        set title high_setpoint_panel = "Alter High Alarm Level"
+        set realf high_setpoint_panel  = realf
+        set value high_setpoint_panel  = input_setpoint[1].test_value
+        set unpinned high_setpoint_panel
+        request high_setpoint_panel
+        end
+
+     "Alter Low Alarm Level"
+        begin
+        set title low_setpoint_panel = "Alter Low Alarm Level"
+        set realf low_setpoint_panel  = realf
+         set value low_setpoint_panel  = input_setpoint[2].test_value
+        set unpinned low_setpoint_panel
+        request low_setpoint_panel
+        end
+
+      "Alter Tag Message"
+         begin
+	 set reset tag_message_panel
+         set title tag_message_panel = "Modify Tag Message for " + meter_name
+         set label tag_message_panel = "Tag message:"
+	 set apply tag_message_panel
+	 set width tag_message_panel = 40
+         set value tag_message_panel = tag_message_ip.c_value
+         set unpinned tag_message_panel
+         request tag_message_panel
+         end
+
+      "Clear Tag Message"
+         begin
+         set_c_value(db_address("C"+tag_address), src, "")
+         end
+
+        default
+            begin
+            end
+
+   set invalid main_menu
+   end
+
+! WRITE NEW ALARM LEVELS TO SERVER !
+! The new high setpoint must be above the current low setpoint !
+! The new low setpoint must be below the current high setpoint !
+
+if valid high_setpoint_panel and high_setpoint_panel > input_setpoint[2].test_value then
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[1].test_value = high_setpoint_panel
+   request output_setpoint
+   set invalid high_setpoint_panel
+   end
+
+if valid low_setpoint_panel and low_setpoint_panel < input_setpoint[1].test_value then 
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[2].test_value = low_setpoint_panel
+   request output_setpoint
+   set invalid low_setpoint_panel
+   end
+
+! WRITE NEW TAG MESSAGE TO SCOPE !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address("C"+tag_address),src,tag_message_panel)
+   set invalid tag_message_panel
+   end
+
+! DISPLAY TAG MESSAGE PANEL IF SELB PRESSED!
+
+if selb and tag_message_ip.c_value <> "" and not get busy tag_message_panel then
+   begin
+   set reset tag_message_panel
+   set width tag_message_panel = 40
+   set noedit tag_message_panel
+   set title tag_message_panel = "Tag Message for " + meter_name
+   set value tag_message_panel = tag_message_ip.c_value
+   set label tag_message_panel = "Tag Message: "
+   set pinned tag_message_panel
+   request tag_message_panel
+   end
+
+! HELP !
+if help_name <> "" then
+   set text help_area = help_name
+else
+   set text help_area = "hex_meter_object_help"
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+scale=200
+realf = fixed0
+! breaker_meter(address,tag_address,src,min_range,max_range, units=string(8), meter_name, help_name=string(30),realf)!
+x = -150 breaker_meter(100,10,heathro3,0,400,"A","Meter 1","")
+x = -60 breaker_meter(100,10,heathro3,-400,400,"V","Meter 2","")
+x = 20 breaker_meter(100,10,heathro3,0,800,"A","Meter 3","")
+realf = fixed2 
+x = 110 breaker_meter(100,10,heathro3,9.35,12.65,"kV","Meter 4","")
+
+
+! Exit button !
+scale = 256
+x=10 y = 150  h = 20  w= 120 fg = red2
+rect (fg=fg-1) x ++ y++ h -- w--
+rect (fg=fg+2) h-- w--
+rect(fg= fg +selb) tfg = white
+text ("Exit")
+if selb then exit
+end
+
+mimic = main_object w=400,h=400,just=centrecentre,fg=white,bg=aquamarine3,resizable

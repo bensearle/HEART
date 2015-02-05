@@ -1,0 +1,440 @@
+load mimic_libutil
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type e_test_row =  db_alarm_config(db_addr,config_number,test_value)
+
+type e_test_table =  e_test_row[6]
+
+type e_db_row_type =  db_elements(db_addr,e_value)
+
+type alarm_row_type =  db_elements(db_addr,alarm_status)
+
+!**** TITLE ****!
+
+object title_box
+begin
+
+just=centrecentre
+x = 0 y = 0 rect(w=280,h=40,fg=decoroff) clear
+x = -140 y = 20 add y -= 40 add x += 280 add line(lw=3,fg=decorlight) clear
+x = -140 y = 20 add x += 280 add y -= 40 add line(lw=3,fg=decorshadow) clear
+x = -1 y = -1 box(w=282,h=42,fg=black) clear
+x = -0 y = 1 text(ch=20,font=font_bold,tfg=grey60,"Firemain Lagoon Level")
+x = -4 y = -4 text(ch=20,font=font_bold,tfg=white,"Firemain Lagoon Level")
+x = -3 y = -3 text(ch=20,font=font_bold,tfg=blue,"Firemain Lagoon Level")
+end
+
+
+!**** FIREMAIN LAGOON WALL  **** !
+
+object firemain_lagoon_wall
+
+begin
+Clear
+
+X=248 Y=93 Add
+X=248 Y=89 Add
+X=248 Y=89 Add
+X=240 Y=84 Add
+X=236 Y=80 Add
+X=229 Y=80 Add
+X=218 Y=80 Add
+X=205 Y=78 Add
+X=197 Y=78 Add
+X=189 Y=78 Add
+X=180 Y=79 Add
+X=177 Y=79 Add
+X=164 Y=75 Add
+X=164 Y=75 Add
+X=153 Y=78 Add
+X=147 Y=80 Add
+X=139 Y=77 Add
+X=133 Y=77 Add
+X=133 Y=77 Add
+X=121 Y=76 Add
+X=121 Y=76 Add
+X=113 Y=79 Add
+X=109 Y=79 Add
+X=106 Y=78 Add
+X=106 Y=78 Add
+X=94 Y=81 Add
+X=86 Y=81 Add
+X=86 Y=81 Add
+X=81 Y=79 Add
+X=74 Y=82 Add
+X=65 Y=82 Add
+X=62 Y=81 Add
+X=52 Y=79 Add
+X=47 Y=81 Add
+X=40 Y=81 Add
+X=40 Y=81 Add
+X=35 Y=81 Add
+X=35 Y=81 Add
+X=35 Y=81 Add
+X=23 Y=77 Add
+X=18 Y=75 Add
+X=12 Y=78 Add
+X=6 Y=80 Add
+X=-7 Y=74 Add
+X=-7 Y=74 Add
+X=-16 Y=76 Add
+X=-16 Y=76 Add
+X=-22 Y=72 Add
+X=-26 Y=72 Add
+X=-29 Y=70 Add
+X=-35 Y=69 Add
+X=-41 Y=74 Add
+X=-41 Y=74 Add
+X=-52 Y=73 Add
+X=-56 Y=64 Add
+X=-56 Y=64 Add
+X=-56 Y=64 Add
+X=-70 Y=53 Add
+X=-70 Y=53 Add
+X=-74 Y=50 Add
+X=-74 Y=50 Add
+X=-74 Y=50 Add
+X=-74 Y=50 Add
+X=-92 Y=22 Add
+X=-98 Y=14 Add
+X=-104 Y=11 Add
+X=-104 Y=11 Add
+X=-104 Y=11 Add
+X=-104 Y=11 Add
+X=-118 Y=-7 Add
+X=-124 Y=-13 Add
+X=-134 Y=-18 Add
+X=-144 Y=-12 Add
+X=-151 Y=-23 Add
+X=-151 Y=-23 Add
+X=-163 Y=-37 Add
+X=-175 Y=-46 Add
+X=-181 Y=-50 Add
+X=-184 Y=-59 Add
+X=-187 Y=-67 Add
+X=-195 Y=-77 Add
+X=-207 Y=-85 Add
+X=-212 Y=-86 Add
+X=-215 Y=-84 Add
+X=-217 Y=-84 Add
+X=-217 Y=93 Add
+!fill(fg=gold4,fs=fillpatt,patt=waves) clear!
+fg = gold4 fs =fillsolid fill
+Clear
+X=248 Y=93 Add
+X=248 Y=89 Add
+X=248 Y=89 Add
+X=240 Y=84 Add
+X=236 Y=80 Add
+X=229 Y=80 Add
+X=218 Y=80 Add
+X=205 Y=78 Add
+X=197 Y=78 Add
+X=189 Y=78 Add
+X=180 Y=79 Add
+X=177 Y=79 Add
+X=164 Y=75 Add
+X=164 Y=75 Add
+X=153 Y=78 Add
+X=147 Y=80 Add
+X=139 Y=77 Add
+X=133 Y=77 Add
+X=133 Y=77 Add
+X=121 Y=76 Add
+X=121 Y=76 Add
+X=113 Y=79 Add
+X=109 Y=79 Add
+X=106 Y=78 Add
+X=106 Y=78 Add
+X=94 Y=81 Add
+X=86 Y=81 Add
+X=86 Y=81 Add
+X=81 Y=79 Add
+X=74 Y=82 Add
+X=65 Y=82 Add
+X=62 Y=81 Add
+X=52 Y=79 Add
+X=47 Y=81 Add
+X=40 Y=81 Add
+X=40 Y=81 Add
+X=35 Y=81 Add
+X=35 Y=81 Add
+X=35 Y=81 Add
+X=23 Y=77 Add
+X=18 Y=75 Add
+X=12 Y=78 Add
+X=6 Y=80 Add
+X=-7 Y=74 Add
+X=-7 Y=74 Add
+X=-16 Y=76 Add
+X=-16 Y=76 Add
+X=-22 Y=72 Add
+X=-26 Y=72 Add
+X=-29 Y=70 Add
+X=-35 Y=69 Add
+X=-41 Y=74 Add
+X=-41 Y=74 Add
+X=-52 Y=73 Add
+X=-56 Y=64 Add
+X=-56 Y=64 Add
+X=-56 Y=64 Add
+X=-70 Y=53 Add
+X=-70 Y=53 Add
+X=-74 Y=50 Add
+X=-74 Y=50 Add
+X=-74 Y=50 Add
+X=-74 Y=50 Add
+X=-92 Y=22 Add
+X=-98 Y=14 Add
+X=-104 Y=11 Add
+X=-104 Y=11 Add
+X=-104 Y=11 Add
+X=-104 Y=11 Add
+X=-118 Y=-7 Add
+X=-124 Y=-13 Add
+X=-134 Y=-18 Add
+X=-144 Y=-12 Add
+X=-151 Y=-23 Add
+X=-151 Y=-23 Add
+X=-163 Y=-37 Add
+X=-175 Y=-46 Add
+X=-181 Y=-50 Add
+X=-184 Y=-59 Add
+X=-187 Y=-67 Add
+X=-195 Y=-77 Add
+X=-207 Y=-85 Add
+X=-212 Y=-86 Add
+X=-215 Y=-84 Add
+X=-217 Y=-84 Add
+X=-217 Y=93 Add
+X= 248 Y=93 Add
+
+line(fg=black,lw=1) clear
+
+X=-236 Y=-140 W=21 H=233 ANGLE=0 JUST=TOPLEFT FG=darkgrey FS=FILLFGPATT PATT=BRICK ROTRECT
+X=-236 Y=-140 W=21 H=233 ANGLE=0 JUST=TOPLEFT FG=BLACK LS=SOLID LW=1 ROTBOX
+
+end
+
+!**** LAGOON RIPPLE ****!
+
+object ripple(fg)
+begin
+x = -224 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+!x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear!
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+x += 15 y = -8 add arc(sa=0,aa=180,w=15,h=8,lw=3) clear
+end
+
+!**** SETPOINT POINTER ****!
+
+object setpoint_pointer(ident=string(4))
+begin
+x = -50 y = 0 add x += 50 add line(fg=red,lw=2) clear
+x = 0 y = 0 add x -= 15 y -= 10 add y +=10 add fill(fg=red) clear
+x = -50 y = -15 add text(ch=12,tfg=white,ident) clear
+end
+
+
+!**** DRAW FIREMAIN LAGOON  LEVEL  ****!
+
+object firemain_lagoon
+
+var firemain_lagoon_level_ip = input e_db_row_type
+var lagoon_level = loopback int
+var high_setpoint_level = loopback int
+var low_setpoint_level = loopback int
+var lagoon_colour = loopback colour
+var lagoon_colour_2 = loopback colour
+var input_setpoint = input e_test_table
+var lagoon_level_alarm = input alarm_row_type
+
+begin
+
+set source firemain_lagoon_level_ip = heathrow
+set filter  firemain_lagoon_level_ip.db_addr = lim_eq
+set limit   firemain_lagoon_level_ip.db_addr = db_address(int(e1) +4223)
+set persist firemain_lagoon_level_ip
+request     firemain_lagoon_level_ip
+
+set source    input_setpoint = heathrow
+set filter    input_setpoint.db_addr = lim_eq
+set limit     input_setpoint.db_addr = db_address(int(e1) +4223)
+set mayexist  input_setpoint
+set mustexist input_setpoint.db_addr
+set mustexist input_setpoint.config_number
+set persist   input_setpoint
+request       input_setpoint 
+
+set source lagoon_level_alarm = heathrow
+set filter lagoon_level_alarm.db_addr = lim_eq
+set limit lagoon_level_alarm.db_addr = db_address(int(e1) +4223)
+set persist lagoon_level_alarm 
+request lagoon_level_alarm
+
+
+!**** SET PIT LEVEL ****!
+
+lagoon_level = int(int(firemain_lagoon_level_ip.e_value) * 1.72)
+
+if lagoon_level > 200 then
+  begin
+  lagoon_level = 200
+  end
+
+if lagoon_level <= 0 then
+  begin
+  lagoon_level = 0
+  end
+
+if lagoon_level_alarm.alarm_status == w_note then
+  begin
+  lagoon_colour = flashred
+  lagoon_colour_2 = flashred
+  end
+
+else if lagoon_level_alarm.alarm_status == w_clr then
+  begin
+  lagoon_colour = red
+  lagoon_colour_2 = red
+  end
+
+else
+  begin
+  lagoon_colour =blue4
+  lagoon_colour_2 = blue3
+  end
+
+x = 0 y = 0 rect(just=bottomcentre,w=451,h=lagoon_level,fg=lagoon_colour) clear
+x = 0 y = -lagoon_level ripple(fg=lagoon_colour_2)
+
+
+!**** DISPLAY LEVEL % READING ****!
+x = 0 y = -150 add text(realf=fixed1,just=centrecentre,ch=25,tfg=white,firemain_lagoon_level_ip.e_value+" %") clear
+
+end
+
+!**** HIGH AND LOW LEVEL SETPOINT ****!
+object high_low_setpoint_box(e_offset=int,src=source)
+
+var firemain_lagoon_level_ip = input e_db_row_type
+var input_setpoint = input e_test_table
+var output_setpoint = output e_test_table
+var high_setpoint_panel = panel int
+var low_setpoint_panel = panel int
+var main_menu = menu string
+var of_level_tfg = loopback colour
+var oi_level_tfg = loopback colour
+var high_level_tfg = loopback colour
+
+begin
+
+set source firemain_lagoon_level_ip = heathrow
+set filter  firemain_lagoon_level_ip.db_addr = lim_eq
+set limit   firemain_lagoon_level_ip.db_addr = db_address(int(e1) +4223)
+set persist firemain_lagoon_level_ip
+request     firemain_lagoon_level_ip
+
+set source    input_setpoint = src
+set filter    input_setpoint.db_addr = lim_eq
+set limit     input_setpoint.db_addr = db_address(int(e1) + e_offset - 1)
+set mayexist  input_setpoint
+set mustexist input_setpoint.db_addr
+set mustexist input_setpoint.config_number
+set persist   input_setpoint
+request       input_setpoint
+
+if firemain_lagoon_level_ip.e_value >= input_setpoint[1].test_value  then
+    
+    of_level_tfg = red
+    else
+    of_level_tfg= black
+
+
+if firemain_lagoon_level_ip.e_value >= input_setpoint[2].test_value then
+   oi_level_tfg = red
+else
+   oi_level_tfg = black
+
+if firemain_lagoon_level_ip.e_value >= input_setpoint[3].test_value then
+    high_level_tfg = red
+else
+    high_level_tfg = black
+
+!**** DRAW SETPOINT BOX ****!
+
+just=centrecentre
+x = 0 y = 2 rect(w=240,h=52,fg=decoroff) clear
+x = -120 y = 28 add y -= 52 add x += 240 add line(fg=decorlight) clear
+x = -120 y = 28 add x += 240 add y -= 52 add line(fg=darkgrey) clear
+x = -28 y = 20 text(ch=12,just=centreleft,font=font_bold,tfg= high_level_tfg,"High Level Alarm = ")
+x = -110 y = 2 text(ch=12,just=centreleft,font=font_bold,tfg=oi_level_tfg,"Overflow Imminent Level Alarm = ")
+x = -54 y = -16 text(ch=12,just=centreleft,font=font_bold,tfg=  of_level_tfg,"Overflow Level Alarm = ")
+x = 110 y = -16 text(ch=12,just=centreright,font=font_bold,tfg=blue,int(input_setpoint[1].test_value)+" %")
+x = 110 y = 2 text(ch=12,just=centreright,font=font_bold,tfg=blue,int(input_setpoint[2].test_value)+" %")
+x = 110 y = 20 text(ch=12,just=centreright,font=font_bold,tfg=blue,int(input_setpoint[3].test_value)+" %")
+
+!**** WRITE INPUT TO SERVER ****!
+if valid high_setpoint_panel and high_setpoint_panel > input_setpoint[2].test_value then
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[1].test_value = high_setpoint_panel
+   request output_setpoint
+   set invalid high_setpoint_panel
+   end
+
+if valid low_setpoint_panel and low_setpoint_panel < input_setpoint[1].test_value then 
+   begin
+   set source output_setpoint = src
+   set old_value output_setpoint = input_setpoint
+   set value output_setpoint = input_setpoint
+   set value output_setpoint[2].test_value = low_setpoint_panel
+   request output_setpoint
+   set invalid low_setpoint_panel
+   end
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+just=centrecentre
+
+
+x = 0 y = -120 title_box
+x=15 y=94 firemain_lagoon
+x =-2 y = 2  firemain_lagoon_wall
+x =0 y = 123 high_low_setpoint_box(4224,heathrow)
+
+end
+
+mimic = main_object w=480,h=320,top=2,just=centrecentre,fg=white,bg=grey,resizable

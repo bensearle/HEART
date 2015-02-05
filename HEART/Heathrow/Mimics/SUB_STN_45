@@ -1,0 +1,57 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+load ocb_hand_dressed
+
+
+!********************* BUSBAR 45 *********************!
+
+object busbar_45
+begin
+lw = 2
+
+tfg = black x = 170 y = -55 add text ("45",ch = 25) clear
+just=centrecentre
+tfg=black
+ch=12
+X = 172 Y = 72 text("Premium")
+x = 172 y = 87 text("Products")
+x = -75 y = -85 text("SS8 P1")
+x = -25 y = -85 text("SS9 P4")
+
+x = -100 y = -25 add x = 200 add line(lw=4,fg=red) clear
+
+x =  -75 y = -25 add y -= 50 add line (fg=red) clear
+x =  -25 y = -25 add y -= 50 add line (fg=red) clear
+x =   25 y = -25 add y += 80 add line (fg=red) clear
+x =   75 y = -25 add y += 80 add line (fg=red) clear
+x =  125 y = -25 add y += 80 add line (fg=red) clear
+x =  175 y = -25 add y += 55 add line (fg=red) clear
+
+scale = 120
+
+x = -75 y = -50 ocb_mont(2500,2640,88,179,heathro2,1,"top")
+x = -25 y = -50 ocb_mont(2500,2650,89,180,heathro2,2,"top")
+x =  25 y = 0   ocb_mont(2500,2660,90,181,heathro2,3,"btm")
+x =  75 y = 0   ocb_mont(2500,2670,91,182,heathro2,4,"btm")
+x =  125 y = 0  ocb_mont(2500,2680,92,183,heathro2,5,"btm")
+X =  175 Y = 0 ocb_mont(2500,2880,301,526,heathro2,6,"btm")
+
+
+scale = 100
+
+X =  25  y = 45 add transformer("LT 1","LOCAL")
+X =  75  Y = 45 add transformer("LT 2","LOCAL")
+X =  125 Y = 45 add transformer("VIP","SUITE") 
+x =  175 y = 45 add transformer("TX 4","")
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = -50 busbar_45
+
+end
+
+mimic = main_object w=400,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

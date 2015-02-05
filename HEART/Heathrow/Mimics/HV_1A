@@ -1,0 +1,208 @@
+! Control and Monitoring System !
+!-------------------------------!
+
+!***********HV Ring 1***********!
+
+
+load mimic_libutil
+load ss103_breaker
+load ocb
+load ocb_monitored
+load transformer
+load busbar_98
+load hv_1_sub_stations
+load hv_menu_bar
+load hv_cable_ident
+load hv_hierarchy
+!load ss103_breaker!
+
+
+!********************** SUB 54 ********************!
+
+object sub_54
+
+begin
+
+sub_symbol_54
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=blue) clear
+x = 50 y = -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(4000,4160,154,306,heathro2,5,"top")
+x = 50 y = 0 ocb_mont(4000,4180,156,308,heathro2,7,"top")
+
+scale = 260
+just = centrecentre
+tfg=white
+ch=12
+
+end
+
+
+!****************** SUB 82 *******************!
+
+object sub_82
+
+begin
+
+sub_symbol_82
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=blue) clear
+x = 50 y = -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb_mont(4000,4230,161,313,heathro2,2,"top")
+x = 50 y = 0 ocb_mont(4000,4250,163,315,heathro2,4,"top")
+
+end
+
+
+!****************** SUB 98 *******************!
+
+object sub_98
+
+begin
+
+sub_symbol_98
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=blue) clear
+x = 50 y = -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb_hand(26002,601,2002,heathrow,heathro2,2,"top")
+x = 50 y = 0 ocb_hand(26004,603,2004,heathrow,heathro2,4,"top")
+
+end
+
+!****************** SUB 103 *******************!
+
+object sub_103
+
+begin
+
+sub_symbol_103
+
+lw = 2
+x = 0 y = -25 add y += 50 add line (fg=blue) clear
+x = 50 y = -25 add y += 50 add line (fg=blue) clear
+
+scale = 120
+!x = 0 y = 0 ocb_hand(4361,221,317,heathro2,heathro2,2,"top")!
+!x = 50 y = 0 ocb_hand(4364,224,320,heathro2,heathro2,5,"top")!
+
+! Panel 2 CB !
+x = 0 y = 0 ss103_breaker(1000,1010,37,301,HEATHRO3,2,"top",0,scale=120)
+
+! CB Panel 5  !
+x = 50 y = 0 ss103_breaker(1000,1040,40,303,HEATHRO3,5,"top",0,scale=120)
+
+end
+
+
+!****************** WEST INTAKE *******************!
+
+object hv_1_west_intake
+
+var call_var = toplevel string
+
+begin
+set source call_var = heathrow
+set selfreplace call_var
+set mimic call_var="west_intake"
+
+W=150 H=25 X=-25 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 50 y = 38 text(tfg=white,ch=25,"West Intake",just=centrecentre) clear
+
+x = 125 y = 25 add x -= 150 add y += 25 add line (fg=white) clear
+x = 125 y = 25 add y += 25 add x -= 150 add line (fg=grey40) clear
+
+lw=2
+x = 0  y = 25 add y = -25 add line (fg=blue) clear
+x = 50  y = 25 add y = -25 add line (fg=blue) clear
+
+scale = 120
+x = 0 y = 0 ocb(3000,3140,152,277,heathrow,3,"top")
+x = 50 y = 0 ocb(3000,3340,163,288,heathrow,14,"top")
+
+end
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+goto_menu
+x = 500 y = 270 command_button(220,heathrow)
+clear
+
+lw = 2
+
+! SS98-2 TO WI-14 !
+x = 200 y = -50 add
+y -= 15 add
+x -= 200 add
+y += 265 add
+line(fg=blue) clear
+x = 100 y = -65 cable_ident("blue","maggot","A252") clear
+
+! SS82-2 TO SS98-4 !
+x = 200 y = -225 add
+y -= 15 add
+x += 250 add
+y += 175 add
+x -= 200 add
+y += 15 add
+line(fg=blue) clear
+x = 350 y = -240 cable_ident("blue","long","A170 185/3c") clear
+
+
+! SS82-4 TO SS54-7 !
+x = 250 y = -225 add
+y -= 30 add
+x -= 500 add
+y += 30 add
+line(fg=blue) clear
+x = -10 y = -255 cable_ident("blue","short","A133 .3/3c") clear
+
+! WI-3 TO 103-2 !
+x = -50 y = 125 add
+y -= 15 add
+x -= 320 add
+y -= 175 add
+x += 70 add
+y += 15 add
+line(fg=blue) clear
+x = -200 y = 110 cable_ident("blue","short","A333") clear
+
+! 103-5 TO 54-5 !
+x = -250 y = -50 add
+y -= 50 add
+x -= 120 add
+y -= 155 add
+x += 70 add
+y += 30 add
+line(fg=blue) clear
+x = -310 y = -100 cable_ident("blue","short","A132 .3") clear
+
+x= - 300 y = -25 sub_103
+x = -300 y = -200 sub_54
+x = 200 y = -200 sub_82
+x = -50 y = 150 hv_1_west_intake
+x = 200 y = -25 sub_98
+
+x = 0 y = 322 menu_bar
+
+end
+
+mimic = main_object w=1140,h=800,just=centrecentre,fg=white,bg=aquamarine3,resizable
+

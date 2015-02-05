@@ -1,0 +1,20 @@
+helptext fegp_t5_help =
+ "
+ **** FEGP T5 MIMIC ****
+ ------------------------------------------------- -------------------------------------------------
+Fixed Electrical Ground Power Mimic for Terminal 5
+ ------------------------------------------------- -------------------------------------------------
+
+The Circuit Breakers are Monitoring only. 
+
+References:
+------------------
+Operation and Maintenance Manual 	- 
+
+Keypages from the Mimic Menu Object -  for information on mimic objects used (HV Area)
+ ------------------
+
+ "
+
+
+

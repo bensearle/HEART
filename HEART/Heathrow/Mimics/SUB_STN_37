@@ -1,0 +1,61 @@
+load mimic_libutil
+load ocb_monitored
+load transformer
+
+
+!***************** BUSBAR 37 *****************!
+
+object busbar_37
+begin
+tfg = black x = -200 y = -55 add text ("37",ch =25) clear
+lw=2
+
+
+x = -225 y = -25 add x = 125 add line(lw=4,fg=red) clear
+
+x = -200  y = -25 add y += 75 add line (fg=red) clear
+x = -150  y = -25 add y += 75 add line (fg=red) clear
+x = -100  y = -25 add y += 50 add line (fg=red) clear
+x =  -50  y = -25 add y += 50 add line (fg=red) clear
+x =    0  y = -25 add y -= 50 add line (fg=red) clear
+x =   50  y = -25 add y -= 50 add line (fg=red) clear
+x =  100  y = -25 add y += 50 add line (fg=red) clear
+x = -154 y = 40 disk(fg=red,w=10,h=10) clear
+x = -204 y = 40 disk(fg=red,w=10,h=10) clear
+
+scale = 120
+x =   -200 y =  0    ocb_mont(10000,10050,900,530,heathro2,1,"btm")
+x =   -150 y =  0    ocb_mont(10000,10060,901,531,heathro2,2,"btm")
+x =   -100 y =  0    ocb_mont(10000,10070,902,532,heathro2,3,"btm")
+x =   -50  y =  0    ocb_mont(10000,10080,903,533,heathro2,4,"btm")
+x =     0  y =  -50  ocb_mont(10000,10090,904,534,heathro2,5,"top")
+x =    50  y =  -50  ocb_mont(10000,10100,905,535,heathro2,6,"top")
+x =    100 y =  0    ocb_mont(10000,10110,906,536,heathro2,7,"btm")
+
+scale = 100
+
+X =  -100  Y = 45 transformer("Tx 1","FEGP")
+X =  -50   Y = 45 transformer("LT 2","LOCAL")
+X =   100  Y = 45 transformer("LT 1","LOCAL")
+
+scale = 256 just = centrecentre
+tfg = black ch = 12
+x = -100 y = 75 text("FEGP")
+!x = -175 y = 75 text("T1")!
+!x = -175 y = 90 text("TRANSFERS")!
+x = 0 y = -85 text("36 P4")
+x = 50 y = -85 text("NI P13")
+x = -205 y = 75 text("Pot")
+x = -205 y = 90 text("Ended")
+x = -150 y = 75 text("Pot")
+x = -150 y = 90 text("Ended")
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+x = 50 busbar_37
+
+end
+
+mimic = main_object w=450,h=250,just=centrecentre,fg=white,bg=aquamarine3,resizable

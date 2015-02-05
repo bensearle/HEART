@@ -1,0 +1,98 @@
+helptext PMV_WITH_ENABLE_HELP = "MOTORISED VALVE
+
+---------------
+
+This object has four possible states it can display, either open, closed, in travel or in alarm. These are represented by:
+
+
+Green Foreground - OPEN
+
+
+White Foregroud - CLOSED
+
+
+Red Foreground - TRAVEL
+
+
+Flashred Foreground - IN ALARM (This may be a common alarm for the valve or a Failed to Open or Failed to Close Alarm)
+
+
+
+CONTROL MENU
+
+------------
+
+
+Alter Tag Message
+
+-----------------
+
+It is possible to apply a tagged message to the object, this would be used if, for instance, the valve was out of service or perhaps the valve had been isolated for any reason. This message can be up to 20 characters long.
+
+
+Clear Tag Message
+
+-----------------
+
+The message can be cleared from this object using this option.
+
+
+Tag messages are represented by a change in background colour, this is as follows:
+
+
+Yellow Background - TAG MESSAGE APPLIED
+
+
+Grey Background - NO TAG MESSAGE
+
+
+Alter Transfer of Service
+
+-------------------------
+
+This control option changes the appearance of the object background colour, this is used to highlight a Transfer of Service, the colours are as follows:
+
+
+Orange Background - TRANSFER OF SERVICE APPLIED
+
+
+Grey Background - TRANSFER OF SERVICE REMOVED
+
+
+Enable Remote Control
+
+---------------------
+
+If the background colour is Grey then the local control is Enabled, i.e. the PLC is controlling the plant. To aquire Remote Control the Enable Remote Control must be selected.
+
+
+Enable Local Control
+
+---------------------
+
+If the background colour is Lightblue then the Remote control is Enabled, i.e. the operator is controlling the plant. To aquire Local Control the Enable Local Control must be selected.
+
+
+Lightblue Background - REMOTE CONTROL ENABLED
+
+
+Grey Background - LOCAL CONTROL ENABLED
+
+
+Open Value
+
+----------
+
+If the valve is in Remote Control then the appropiate control option is presented to the user. Open Valve will send a open control to the PLC.
+
+
+Close Valve
+
+-----------
+
+If the valve is in Remote Control then the appropiate control option is presented to the user. Close Valve will send a close control to the PLC.
+
+
+NB, Only the appropiate controls are contained in the Menus, i.e. it is only possible to open the valve if the valve is closed. Similarly it is only possible to Enable Remote Control if the PLC is in Local Control.
+
+"

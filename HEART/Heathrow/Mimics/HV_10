@@ -1,0 +1,983 @@
+!*** Updated By: CCS 				***!
+!*** Name: Hasan Shah				***!
+!*** Date: 13/08/2013				***!
+!*** Changes: Removed Sub 23, Connected Sub 32 P21	***!
+!*** to Sub 143 P10				***!
+
+
+!****************/-----------------------\*****************!
+!****************|  MODIFIED BY FIRSTCO  |*****************!
+!****************\-----------------------/*****************!
+!** Server: Heathrow                                     **!
+!** Mimic Name: HV_10                                    **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 2.0 (A1 PROJECT FINAL VERSION)      **!
+!** Date: 15/05/12                                       **!
+!** Changes made:                                        **!
+!**  - No change from FAT (renumbering only)             **!
+!**                                                      **!
+!** Modified By: Jim Taylor                              **!
+!** Firstco Version: 1.0 (For RTU29-04 FAT)              **!
+!** Date: 02/04/12                                       **!
+!** Changes made:                                        **!
+!**  - Sub 53 re-mapped from old OS08 (heathrow) to new  **!
+!**    OS29 (heathro2).                                  **!
+!**  - These changes have been made as part of the A1    **!
+!**    Centre decommissioning project.                   **!
+!**********************************************************!
+
+!*****************************************************************************************************************************!
+!***	HV10 Mimic									***!
+!***											***!
+!***	Designed By: Carl Cheetham (P. Ducker Systems Limited)				***!
+!***	Designed On: 18/05/2006								***!
+!***											***!
+!***	Based on the HV_9 mimic, sub-stations split between new HV9 & HV10 mimics		***!
+!***	as per C. Springhalls instructions, permit No. 02260.					***!
+!***											***!
+!***	Modifications:									***!
+!***											***!
+!***	Carl Cheetham	18/05/06		New mimic.					***!
+!*****************************************************************************************************************************!
+
+
+
+
+
+!*****************************************!
+!*** LOAD LIBRARY FILES ETC ***!
+!*****************************************!
+load mimic_libutil
+load ocb
+load hex_ocb
+load ocb_118
+load hv_9_sub_stations
+load hv_9_sub_stations_b
+Load BROWSER
+load bsp_breakers
+load hv_cable_ident
+load hv_lib
+load nse_ocb_4
+
+
+
+
+
+
+!*****************************!
+!*** SUB-FUNCTIONS ***!
+!*****************************!
+
+!*** SUB 32 ***!
+object hv9_sub_32
+var call_var = toplevel string
+var rect_bg = loopback colour
+var line_col=colour
+begin
+	just=centrecentre
+	rect_bg=decoroff
+	
+
+   	clear x =-25 y = 0 add x += 75 add line(fg=green4,lw=4) clear
+   	clear x =-52 y = -18 add y += 5 add line(fg=green4,lw=2) clear
+
+   	clear x =50 y = 0 add x += 25 add line(fg=red,lw=4) clear
+   	clear x = 102 y = -18 add y += 5 add line(fg=red,lw=2) clear
+
+   	clear x = 151 y = -18 add y += 5 add line(fg=red,lw=2) clear
+
+	w=60 h=25 x=-53 y=0 call_box(25,60,rect_bg,"Sub")
+	clear
+	set source call_var = heathrow
+	set selfreplace call_var
+	set mimic call_Var = "sub_stn_32"
+	if anyb then
+	begin
+		request call_var
+	end
+
+	w=110 h=25 x=128 y=0 call_box(25,110,rect_bg,"32")
+	if anyb then
+	begin
+		request call_var
+	end
+
+	scale=120
+	x = -52	y = -38	ocb(5000,5160,253,482,heathrow,4,"top")
+	x = 0	y = 0	ocb(5000,5180,259,483,heathrow,10,"top", angle=90)
+	x = 50	y = 0	ocb_mont(5000,5330,261,486,heathrow,12,"sect", angle=90)
+	x = 102	y = -38	ocb(5000,5200,267,484,heathrow,18,"top")
+	x = 151	y = -38	ocb(5000,5260,1041,491,heathrow,21,"top")
+
+end
+
+
+
+
+
+!*** SUB 53 ***!
+object hv9_sub_53
+begin
+	clear
+	sub_symbol_53_new
+
+	lw=2
+	x = 0 y = 25 add y -= 50 add line (fg=magenta3) clear
+	x = 50 y = 25 add y -= 50 add line (fg=magenta3) clear
+	x = 100 y = 25 add y -= 50 add line (fg=magenta3) clear
+	x = 200 y = 25 add y -= 50 add line (fg=magenta3) clear
+	x = 250 y = 25 add y -= 50 add line (fg=magenta3) clear
+
+	scale = 120
+	x = 0   y = 0	ocb_mont(	32700,	34030,	3000,	8166,	heathro2,	1,	"top")
+	x = 50  y = 0	ocb_mont(	32700,	34040,	3001,	8167,	heathro2,	2,	"top")
+	x = 100 y = 0	ocb_mont(	32700,	34050,	3002,	8168,	heathro2,	3,	"top")
+	x = 200 y = 0	ocb_mont(	32700,	34100,	3007,	8173,	heathro2,	8,	"top")
+	x = 250 y = 0	ocb_mont(	32700,	34140,	3011,	8177,	heathro2,	12,	"top")
+
+end
+
+
+
+
+
+!*** SUB 96 ***!
+object hv9_sub_96
+begin
+	clear
+	sub_symbol_96
+
+	lw=2
+	x = -100 y = 25 add y -= 50 add line (fg=green4) clear
+	x = 0 y = 25 add y -= 50 add line (fg=green4) clear
+
+	scale = 120
+	x = -100 	y = 0	ocb_hand(	26021,	622,	2021,	heathrow,	heathro2,	1,	"top")
+	x = 0 	y = 0	ocb_hand(	26027,	626,	2027,	heathrow,	heathro2,	7,	"top")
+
+	clear
+end
+
+
+
+
+
+!************* SUB 97 ***************!
+object hv9_sub_97
+begin
+	clear
+	sub_symbol_97
+
+	lw=2
+	x = 0 y = 25 add y -= 50 add line (fg=magenta3) clear
+	x = 100 y = 25 add y -= 50 add line (fg=green4) clear
+
+	scale = 120
+	x = 0 	y = 0	ocb_mont(	16000,	16220,	1008,	2031,	heathrow,	1,	"top")
+	x = 100 	y = 0	ocb_mont(	16000,	16290,	1014,	2036,	heathrow,	8,	"top")
+
+	clear
+end
+
+
+
+
+
+!*** SUB 114 ***!
+object hv9_sub_114
+begin
+	clear
+	sub_symbol_114
+
+	lw=2
+	x = -70 y = 25 add y -= 50 add line (fg=magenta3) clear
+	x =  80  y = 25 add y -= 50 add line (fg=red) clear
+
+	scale = 120
+	x = -70	y = 0	hex_ocb(	33005,	33300,	33035,	513,	2522,	heathrow,	2,	"top",	"vcb_2")
+	x = 80	y = 0	hex_ocb(	33005,	33450,	33035,	518,	2527,	heathrow,	7,	"top",	"vcb_7")
+
+end
+
+
+
+
+
+!*** SUB 115 ***!
+object hv9_sub_115
+begin
+	clear
+	sub_symbol_115
+
+	lw=2
+	x =-75 y = 25 add y -= 50 add line (fg=magenta3) clear
+	x = -25 y = 25 add y -= 50 add line (fg=magenta3) clear
+	x = 125 y = 25 add y -= 50 add line (fg=red) clear
+	x = 175 y = 25 add y -= 50 add line (fg=red) clear
+
+	scale = 120
+	x = -75	y = 0	hex_ocb(	32005,	32270,	32035,	532,	2471,	heathrow,	1,	"top",	"vcb_1")
+	x = -25 	y = 0	hex_ocb(	32005,	32330,	32035,	534,	2473,	heathrow,	3,	"top",	"vcb_3")
+	x = 125 	y = 0	hex_ocb(	32005,	32540,	32035,	541,	2480,	heathrow,	10,	"top",	"vcb_10")
+	x = 175 	y = 0	hex_ocb(	32005,	32630,	32035,	544,	2483,	heathrow,	13,	"top",	"vcb_13")
+
+end
+
+
+
+
+
+!*** SUB 121 ***!
+object  hv9_sub_121
+var call_var = toplevel string
+begin
+	set source call_var = heathro3
+	set selfreplace call_var
+	set mimic call_Var = "Sub_Station_121"
+
+	Clear
+
+	x = -175 y = 36 add x += 400 add line(fg=magenta3, lw=4) clear
+
+
+	X=-225 Y=25 W=100 H=25 RECT(fg=decoroff)
+
+	if anyb then
+	begin
+		request call_var
+	end
+
+	x = -175 y = 38 text(tfg=white,ch=25,"",just=centrecentre) clear
+
+	x = -225 y = 50 add y -= 25 add x += 100 add line (fg=white) clear
+	x = -225 y = 50  add x += 100 add y -= 25 add line (fg=grey40) clear
+
+
+
+
+
+
+	X=-50 Y=25 W=150 H=25 RECT(fg=decoroff)
+
+	if anyb then
+	begin
+		request call_var
+	end
+
+	x = 25 y = 38 text(tfg=white,ch=25,"Sub 121",just=centrecentre) clear
+
+	x = -50 y = 50 add y -= 25 add x += 150 add line (fg=white) clear
+	x = -50 y = 50  add x += 150 add y -= 25 add line (fg=grey40) clear
+
+
+
+
+
+
+
+	X=175 Y=25 W=100 H=25 RECT(fg=decoroff)
+
+	if anyb then
+	begin
+		request call_var
+	end
+
+	x = 225 y = 38 text(tfg=white,ch=25,"",just=centrecentre) clear
+
+	x = 175 y = 50 add y -= 25 add x += 100 add line (fg=white) clear
+	x = 175 y = 50  add x += 100 add y -= 25 add line (fg=grey40) clear
+
+
+
+
+
+
+
+	lw=2
+	x = -200  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = -150 y = -25 add y = 25 add line (fg=magenta3) clear
+
+	x = 0  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = 50  y = -25 add y = 25 add line (fg=magenta3) clear
+
+	x = 200  y = -25 add y = 25 add line (fg=magenta3) clear
+	x = 250  y = -25 add y = 25 add line (fg=magenta3) clear
+
+	scale = 120
+	!*				breaker_type	plc_offsetb_offset	c_offset	e_offset	cont_offset	src		ident	position	cont_code*!
+	x =-200	y= 0	BREAKER(	"TYPE3",		6000,	6100,	300,	2100,	2180,		HEATHRO3,	1,	"TOP",	10)
+ 	x =-150 	y= 0 	BREAKER(	"TYPE3",		6000,	6140,	302,	2102,	2180,		HEATHRO3,	3,	"TOP",	30)
+
+
+ 	x =-85 	y= 36 	BREAKER(	"TYPE3",		6000,	6200,	305,	2105,	2180,		HEATHRO3,	6,	"SECT",	60)
+
+	x = 0 	y=0	BREAKER(	"TYPE3",		6000,	6240,	308,	2108,	2180,		HEATHRO3,	9,	"TOP",	80)
+	x =50 	y=0	BREAKER(	"TYPE3",		6000,	6260,	309,	2109,	2180,		HEATHRO3,	10,	"top",	90)
+
+
+ 	x =135 	y= 34 	BREAKER(	"TYPE3",		6000,	6300,	311,	2111,	2180,		HEATHRO3,	12,	"SECT",	110)
+
+	x = 200	y=0	BREAKER(	"TYPE3",		6000,	6360,	315,	2115,	2180,		HEATHRO3,	16,	"top",	140)
+	x = 250	y=0	BREAKER(	"TYPE3",		6000,	6440,	319,	2119,	2180,		HEATHRO3,	20,	"TOP",	180)
+
+end
+
+
+
+
+
+!*** SUB 128 ***!
+object hv9_sub_128
+begin
+	Clear
+
+	sub_symbol_128
+
+
+	x = -75 y = -13 add y -= 50 	add line(fg=magenta3) clear
+	x = 65 y = -13 add y -= 50	add line(fg=magenta3) clear
+	x = 115 y = -13 add y -= 50	add line(fg=magenta3) clear
+
+
+	lw=2
+	scale=310
+	x = -75	y = -38	hv_lib_breaker(	"eclipse",	37001,	37150,	1150,	5000,	5040,	HEATHROW,	1,	"TOP",	10)
+	x = 65	y = -38	hv_lib_breaker(	"eclipse",	37001,	37370,	1161,	5011,	5040,	HEATHROW,	10,	"TOP",	50)
+	x = 115	y = -38	hv_lib_breaker(	"eclipse",	37001,	37390,	1162,	5012,	5040,	HEATHROW,	11,	"TOP",	60)
+	scale=256
+
+
+end
+
+
+
+
+
+!*** SUB 136 ***!
+object hv9_sub_136
+begin
+	sub_symbol_136
+
+	lw=2
+	x = -45 y = 25 add y -= 50 add line(fg=magenta3) clear
+	x = 67 y = 25 add y -= 50 add line(fg=magenta3) clear
+
+	scale =320
+	x = -45	y = 0 	hv_lib_breaker(	"eclipse",	16000,	16340,	1310,	1920,	int,	HEATHROW,	1,	"TOP",	int)
+	x = 12	y =37 	hv_lib_breaker(	"eclipse",	16000,	16400,	1313,	1923,	int,	HEATHROW,	4,	"SECT",	int)
+	x = 67	y = 0	hv_lib_breaker(	"eclipse",	16000,	16460,	1316,	1926,	int,	HEATHROW,	7,	"TOP",	int)
+end
+
+
+
+
+
+!*** SUB 143 ***!
+object hv9_sub_143
+var mm = toplevel  string_50
+var return_0 = int
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var rect_bg = loopback colour
+var line_col=colour
+begin
+	line_col=magenta3
+
+	return_0 = fp_sub_ctrl_alarm(32501, 32600, heathro3)
+	return_1 = fp_sub_ctrl_alarm(32501, 32625, heathro3)
+	return_2 = fp_sub_ctrl_alarm(32501, 32650, heathro3)
+	return_3 = fp_sub_ctrl_alarm(32501, 32697, heathro3)
+	return_4 = fp_sub_ctrl_alarm(32501, 32722, heathro3)
+	return_5 = fp_sub_ctrl_alarm(32501, 32747, heathro3)
+
+	if return_0 == 1 or return_1 == 1 or return_2 == 1 or return_3 == 1 or return_5 == 1
+	then
+	begin
+		rect_bg = magenta
+	end
+	else if return_0 == 2 or return_1 == 2 or return_2 == 2 or return_3 == 2 or return_5 == 2
+	then
+	begin
+		rect_bg = flashred
+	end
+	else if return_0 == 3 or return_1 == 3 or return_2 == 3 or return_3 == 3 or return_5 == 3 
+	then
+	begin
+		rect_bg = red
+	end
+	else
+	begin
+		rect_bg = decoroff
+	end
+	clear 
+
+	x = -25 y = 12 add x += 350 add line(fg=line_col,lw=4) clear
+
+
+
+
+
+	x = -15  y = 14 add y = -50 add line (fg=magenta3) clear
+	x = 225  y = 14 add y = -50 add line (fg=magenta3) clear
+	x = 335  y = 14 add y = -50 add line (fg=magenta3) clear
+	x = 385  y = 14 add y = -50 add line (fg=magenta3) clear
+
+
+
+
+
+	x=-50 y=0 w=66 h=26 rect(fg=rect_bg)
+	
+
+	if anyb then
+	begin
+		set source mm= heathro2
+		set mimic mm= "sub_station_143"
+		request mm
+	end
+
+
+
+
+
+
+	x=70 y=0 w=66 h=26 rect(fg=rect_bg)
+
+	if anyb then
+	begin
+		set source mm= heathro2
+		set mimic mm= "sub_station_143"
+		request mm
+	end
+
+
+
+
+
+
+	x=190 y=0 w=66 h=26 rect(fg=rect_bg)
+
+	if anyb then
+	begin
+		set source mm= heathro2
+		set mimic mm= "sub_station_143"
+		request mm
+	end
+
+
+
+
+
+
+	x=310 y=0 w=100 h=26 rect(fg=rect_bg)
+
+	if anyb then
+	begin
+		set source mm= heathro2
+		set mimic mm= "sub_station_143"
+		request mm
+	end
+
+
+
+
+
+	x = -17 y = 13 text(tfg=white,ch=25,"",just=centrecentre) clear
+	x = -50 y = 26 add y -= 26 add x += 66 add line (fg=white) clear
+	x = -50 y = 26 add x += 66 add y -= 26 add line (fg=grey40) clear
+
+	x = 103 y = 13 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+	x = 70 y = 26 add y -= 26 add x += 66 add line (fg=white) clear
+	x = 70 y = 26 add x += 66 add y -= 26 add line (fg=grey40) clear
+
+	x =223 y = 13 text(tfg=white,ch=25,"143",just=centrecentre) clear
+	x = 190 y = 26 add y -= 26 add x += 66 add line (fg=white) clear
+	x = 190 y = 26 add x += 66 add y -= 26 add line (fg=grey40) clear
+
+	x =343 y = 13 text(tfg=white,ch=25,"",just=centrecentre) clear
+	x = 310 y = 26 add y -= 26 add x += 100 add line (fg=white) clear
+	x = 310 y = 26 add x += 100 add y -= 26 add line (fg=grey40) clear
+
+
+
+
+
+
+	scale=310
+
+	x = -15 y = -30 hv_lib_breaker(	"eclipse",16201,	16333,	2277,	2812,	2823,	HEATHRO2,	1,	"TOP",	10)
+
+	x = 42 y =14 hv_lib_breaker(		"eclipse",	16201,	16383,	2279,	2814,	2823,	HEATHRO2,	3,	"SECT",	20)
+	x = 162 y =14 hv_lib_breaker(	"eclipse",16201,	16455,	2281,	2816,	2823,	HEATHRO2,	5,	"SECT",	30)
+
+	x = 225	y = -30	hv_lib_breaker(	"eclipse",	16201,	16530,	2283,	2818,	2823,	HEATHRO2,	7,	"TOP",	40)
+
+	x = 282 y =14 hv_lib_breaker(	"eclipse",	16201,	16555,	2284,	2819,	2823,	HEATHRO2,	8,	"SECT",	50)
+
+	x = 335	y = -30	hv_lib_breaker(	"eclipse",	16201,	16602,	2285,	2820,	2823,	HEATHRO2,	9,	"TOP",	60)
+	x = 385	y = -30	hv_lib_breaker(	"eclipse",	16201,	16624,	2286,	2821,	2823,	HEATHRO2,	10,	"TOP",	70)
+end
+
+
+
+
+!*** SUB 147 ***!
+object hv9_sub_147
+begin
+	clear
+	X = -62
+	sub_symbol_147
+
+	lw=2
+	x = -105  y = 25 add y = -25 add line (fg=magenta3) clear
+	x = 5  y = 25 add y = -25 add line (fg=magenta3) clear
+
+	scale=310
+	x = -105	y = 0	hv_lib_breaker(	"eclipse",	32501,	32600,	2816,	7824,	int,	HEATHRO3,	1,	"TOP",	int)
+	x = 5 	y = 0	hv_lib_breaker(	"eclipse",	32501,	32747,	2821,	7829,	int,	HEATHRO3,	6,	"TOP",	int)
+	scale=256
+end
+
+
+
+
+!*** SUB 148 ***!
+object hv9_sub_148
+var mm = toplevel  string_50
+var return_0 = int
+var return_1 = int
+var return_2 = int
+var return_3 = int
+var return_4 = int
+var return_5 = int
+var rect_bg = loopback colour
+var line_col=colour
+begin
+	line_col=magenta3
+
+	return_0 = fp_sub_ctrl_alarm(32501, 32600, heathro3)
+	return_1 = fp_sub_ctrl_alarm(32501, 32625, heathro3)
+	return_2 = fp_sub_ctrl_alarm(32501, 32650, heathro3)
+	return_3 = fp_sub_ctrl_alarm(32501, 32697, heathro3)
+	return_4 = fp_sub_ctrl_alarm(32501, 32722, heathro3)
+	return_5 = fp_sub_ctrl_alarm(32501, 32747, heathro3)
+
+	if return_0 == 1 or return_1 == 1 or return_2 == 1 or return_3 == 1 or return_5 == 1
+	then
+	begin
+		rect_bg = magenta
+	end
+	else if return_0 == 2 or return_1 == 2 or return_2 == 2 or return_3 == 2 or return_5 == 2
+	then
+	begin
+		rect_bg = flashred
+	end
+	else if return_0 == 3 or return_1 == 3 or return_2 == 3 or return_3 == 3 or return_5 == 3 
+	then
+	begin
+		rect_bg = red
+	end
+	else
+	begin
+		rect_bg = decoroff
+	end
+
+	clear 
+
+	x = 50 y = 38 add x += 200 add line(fg=line_col,lw=4) clear
+
+	Clear
+
+	x = 25  y = 25 add y = -25 add line (fg=red) clear
+	x = 75  y = 25 add y = -25 add line (fg=green4) clear
+	x = 175  y = 25 add y = -25 add line (fg=red) clear
+	x = 225  y = 25 add y = -25 add line (fg=magenta3) clear
+
+	x=0 y=26 w=100 h=26 rect(fg=rect_bg)
+	
+
+	if anyb then
+	begin
+		set source mm= heathro2
+		set mimic mm= "sub_station_148"
+		request mm
+	end
+
+	x=150 y=26 w=100 h=26 rect(fg=rect_bg)
+
+	if anyb then
+	begin
+		set source mm= heathro2
+		set mimic mm= "sub_station_148"
+		request mm
+	end
+
+	x =50 y = 39 text(tfg=white,ch=25,"Sub",just=centrecentre) clear
+	x = 0 y = 52 add y -= 26 add x += 100 add line (fg=white) clear
+	x = 0 y = 52 add x += 100 add y -= 26 add line (fg=grey40) clear
+
+	x = 200 y = 39 text(tfg=white,ch=25,"148",just=centrecentre) clear
+	x = 150 y = 52 add y -= 26 add x += 100 add line (fg=white) clear
+	x = 150 y = 52 add x += 100 add y -= 26 add line (fg=grey40) clear
+
+	scale=310
+	x = 25	y = 0 	hv_lib_breaker(	"eclipse",16680,	16886,	2339,	2888,	INT,	HEATHRO2,	1,	"TOP",	int)
+	x = 75	y = 0	hv_lib_breaker(	"eclipse",	16680,	16911,	2340,	2889,	INT,	HEATHRO2,	2,	"TOP",	int)
+
+	 x = 124 y =39 hv_lib_breaker(	"eclipse",	16680,	17011,	2344,	2893,	INT,	HEATHRO2,	6,	"SECT",	int)
+
+	x = 175	y = 0	hv_lib_breaker(	"eclipse",	16680,	17086,	2347,	2896,	INT,	HEATHRO2,	9,	"TOP",	int)
+	x = 225	y = 0	hv_lib_breaker(	"eclipse",	16680,	17111,	2348,	2897,	INT,	HEATHRO2,	10,	"TOP",	int)
+end
+
+
+!*********** HV 10 1 SOUTH INTAKE 2 ***********!
+
+object hv_10_1_south_intake
+
+var call_var = toplevel string
+
+begin
+
+set source call_var = heathro2
+set selfreplace call_var
+set mimic call_var = "south_intake_2"
+
+W=180 H=25 X=-50 Y=25 RECT(fg=decoroff)
+
+if anyb then
+  begin
+    request call_var
+  end
+
+x = 40 y = 38 text(tfg=white,ch=25,"South Intake 2",just=centrecentre) clear
+
+x = 130 y = 25 add x -= 180 add y += 25 add line (fg=white) clear
+x = 130 y = 25 add y += 25 add x -= 180 add line (fg=grey40) clear
+
+
+x = 40 y = 25 add y -= 55 add line(lw=2,fg=green4) clear
+
+scale=120
+
+x =40 y = 0 NSE_OCB_4(21000,21350,717,1719,1700,HEATHRO2,17,"TOP",134)
+
+end
+
+
+!*******************************!
+!*** MAIN MIMIC CODE ***!
+!*******************************!
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+	Clear
+
+
+
+
+	
+	!*** Add Sub-Stations To mimic ***!
+
+	X=350	Y=-338	hv9_sub_32
+	X=-500	Y=142	hv9_sub_53
+	X=-230	Y=-373	hv9_sub_96
+	X=-520	Y=-373	hv9_sub_97
+	X=-390	Y=-46	hv9_sub_114
+	X=-430	Y=-192	hv9_sub_115
+	X=0	Y=295	hv9_sub_121
+	X=400	Y= 8	hv9_sub_128
+	X=100	Y=-46	hv9_sub_136
+	x=-150	y =-167	hv9_sub_143
+	x=490	y =142	hv9_sub_147
+	x=290	y =-194	hv9_sub_148
+	x = -500	y = 295	hv_10_1_south_intake
+
+
+
+
+	!*** Draw Connecting Cables ***!
+
+	lw = 2
+
+	!***  South Intake-P17 TO SS96-P7 ***!
+	x = -230 y = -390 add 
+	x = -230 y = -430 add
+	x = -280 y = -430 add
+	x = -580 y = -430 add
+	x = -580 y = 250 add
+	x = -460 y = 250 add
+	x = -460 y = 270 add
+	line(fg=green4) clear
+	x = -280 y = -430 cable_ident("green","maggot","4.1") clear
+
+
+
+
+
+	!*** SS32-P21 TO SS143-P10 ***!	!This originally went to SS23 P20 Updated by HS!
+	x = 500 y = -394 add 
+	x = 500 y = -430 add
+	x = 235 y = -430 add
+	x = 235 y = -217 add
+	line(fg=red) clear
+
+
+
+
+
+
+	!*** SS32-P4 TO SS148-P2 ***!
+	x = 299 y = -395 add
+	x = 299 y = -420 add
+	x = 250 y = -420 add
+	x = 250 y = -270 add
+	x = 366 y = -270 add
+	x = 366 y = -213 add
+	line(fg=green4) clear
+
+
+
+
+
+	!*** SS32-P18 TO SS148-P9 ***!	!This originally went to SS128-P10 this was changed by C. Cheetham (PDS) under permit 2260!
+	x = 451 y = -395 add
+	x = 451 y = -420 add
+	x = 550 y = -420 add
+	x = 550 y = -270 add
+	x = 466 y = -270 add
+	x = 466 y = -213 add
+	line(fg=red) clear
+
+
+
+
+	!*** SS53-P1 TO SS97-P1 ***!
+	x = -500 y = 120 add
+	x = -500 y = 110 add
+	x = -567 y = 110 add
+	x = -567 y = -410 add
+	x = -520 y = -410 add
+	x = -520 y = -390 add
+	line(fg=magenta3) clear
+	x = -543y = -410 cable_ident("purple","maggot","4.1") clear
+
+
+
+
+
+	!*** SS53-P2 TO SS121-P10 ***!
+	x = -450 y = 120 add
+	x = -450 y = 110 add
+	x = 50 y = 110 add
+	x = 50 y = 270 add
+	line(fg=magenta3) clear
+	x = -100 y = 110 cable_ident("purple","maggot","7.0") clear
+
+
+
+
+
+	!*** SS53-P3 TO SS115-P3 ***!
+	x = -400 y = 120 add
+	x = -400 y = 100 add
+	x = -545 y = 100 add
+	x = -545 y = -250 add
+	x = -454 y = -250 add
+	x = -454 y = -217 add
+	line(fg=magenta3) clear
+	x = -475 y = 100 cable_ident("purple","maggot","5.7") clear
+
+
+
+
+
+	!*** SS53-P8 TO SS148-P1 ***!	!This originally went to SS32-P8 this was cahnged by C. Cheetham (PDS) under permit 2260!
+	x = -300 y = 120 add
+	x = -300 y = 60 add
+	x = 280 y = 60 add
+	x = 280 y = -230 add
+	x = 315 y = -230 add
+	x = 315 y = -220 add
+	line(fg=red) clear
+	x = -270 y = 60 cable_ident("red","maggot","5.6") clear
+
+
+
+
+
+	!*** SS53-P12 TO SS121-P3 ***!
+	x = -250 y = 123 add
+	x = -250 y = 100 add
+	x = -150 y = 100 add
+	x = -150 y = 277 add
+	line(fg=magenta3) clear
+
+
+
+
+
+	!*** SS96-P1 TO SS97-P8 ***!
+	x = -329 y = -396 add
+	x = -329 y = -410 add
+	x = -420 y = -410 add
+	x = -420 y = -396 add
+	line(fg=green4) clear
+	x = -375 y = -410 cable_ident("green","maggot","4.1") clear
+
+
+
+
+
+	!*** SS114-P2 TO SS115-P1 ***!
+	x = -460 y = -65 add
+	x = -460 y = -90 add
+	x = -535 y = -90 add
+	x = -535 y = -240 add
+	x = -504 y = -240 add
+	x = -504 y = -217 add
+	line(fg=magenta3) clear
+
+
+
+
+
+	!*** SS114-P7 TO SS115-P13 ***!
+	x = -311 y = -65 add
+	x = -311 y = -90 add
+	x = -220 y = -90 add
+	x = -220 y = -240 add
+	x = -255 y = -240 add
+	x = -255 y = -217 add
+	line(fg=red) clear
+
+
+
+
+
+	!*** SS115-P10 TO SS146-P9 ***!
+	x = -305 y = -217 add
+	x = -305 y = -247 add
+	x = 185 y = -247 add
+	x = 185 y = -216 add
+	line(fg=red) clear
+
+
+
+
+
+	!*** SS121-P1 TO SS136-P1 ***!
+	x = -200 y = 277 add
+	x = -200 y =250 add
+	x = -10 y =250 add
+	x = -10 y = -100 add
+	x = 55 y = -100 add
+	x = 55 y = -65 add
+	line(fg=magenta3) clear
+
+
+
+
+
+	!*** SS121-P9 TO SS128-P1 ***!
+	x = 0 y = 277 add
+	x = 0 y = -110 add
+	x = 324 y = -110 add
+	x = 324 y = -50 add
+	line(fg=magenta3) clear
+
+
+
+
+
+
+	!*** SS121-P16 TO SS147-P1 ***!
+	x = 200 y = 277 add
+	x = 200 y = 110 add
+	x = 385 y = 110 add
+	x = 385 y = 120 add
+	line(fg=magenta3) clear
+
+
+
+
+
+
+	!*** SS121-P20 TO SS143-P1 ***!
+	x = 250 y = 277 add
+	x = 250 y = 100 add
+	x = -20 y = 100 add
+	x = -20 y = -100 add
+	x = -210 y = -100 add
+	x = -210 y = -240 add
+	x = -164 y = -240 add
+	x = -164 y = -217 add
+	line(fg=magenta3) clear
+
+
+
+
+
+	!*** SS128-P10 TO SS148-P10 ***!
+	x = 514 y = -50 add
+	x = 514 y = -80 add
+	x = 550 y = -80 add
+	x = 550 y = 110 add
+	x = 495 y = 110 add
+	x = 495 y = 117 add
+	line(fg=magenta3) clear
+
+
+
+
+
+	!*** SS128-P11 TO SS147-P6 ***!
+	x = 464 y = -50 add
+	x = 464 y = -90 add
+	x = 550 y = -90 add
+	x = 550 y = -230 add
+	x = 516 y = -230 add
+	x = 516 y = -220 add
+	line(fg=magenta3) clear
+
+
+
+
+
+	!*** SS139-P7 TO SS143-P7 ***!
+	x = 167 y = -68 add
+	x = 167 y = -100 add
+	x = 270 y = -100 add
+	x = 270 y = -230 add
+	x = 75 y = -230 add
+	x = 75 y = -215 add
+	line(fg=magenta3) clear
+
+
+
+
+
+
+
+
+
+
+	!*** SS115 TO SS146 ***!
+	x = -380 y = -154 add
+	x = -380 y = -215 add
+	line(fg=red) clear
+
+	scale = 256
+	x = -380 y = -230 text ("S/S 146 Busbar",tfg=black,ch=14,just=centrecentre)
+
+
+
+
+
+	!*** Add browser bar to bottom of mimic ***!
+	x = -570 y = 365 browser(1069,heathrow,1140)
+
+end
+mimic = main_object w=1180,h=900,just=centrecentre,fg=white,bg=aquamarine3,resizable

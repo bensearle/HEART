@@ -1,0 +1,234 @@
+type panel_item=table (str=string)
+
+
+object get_b_value(db_addr = db_address, src=source)=onoff
+var ip = input db_elements(db_addr, b_value)
+begin
+set source ip = src
+set filter ip.db_addr=lim_eq
+set limit ip.db_addr = db_addr
+set persist ip
+request ip
+get_b_value=ip.b_value
+end
+
+object get_c_value(db_addr = db_address, src=source)=string
+var ip = input db_elements(db_addr, c_value)
+begin
+set source ip = src
+set filter ip.db_addr=lim_eq
+set limit ip.db_addr = db_addr
+set persist ip
+request ip
+get_c_value=ip.c_value
+end
+
+
+object get_e_value(db_addr = db_address, src=source)=real
+var eip = input db_elements(db_addr, e_value)
+begin
+set source eip = src
+set filter eip.db_addr=lim_eq
+set limit eip.db_addr = db_addr
+set persist eip
+request eip
+get_e_value=eip.e_value
+end
+
+object set_e_value(db_addr=db_address, src=source, e_value=real)
+var dbOp=output db_elements(db_addr,e_value)
+begin
+set source dbOp=src
+set default dbOp
+set old_default dbOp
+set value dbOp.db_addr=db_addr
+set old_value dbOp.db_addr=db_addr
+set value dbOp.e_value=e_value
+set old_off dbOp.e_value
+request dbOp
+end
+
+object set_c_value(db_addr=db_address, src=source, c_value=string)
+var dbOp=output db_elements(db_addr,c_value)
+begin
+set source dbOp=src
+set default dbOp
+set old_default dbOp
+set value dbOp.db_addr=db_addr
+set old_value dbOp.db_addr=db_addr
+set value dbOp.c_value=c_value
+set old_off dbOp.c_value
+request dbOp
+end
+
+object valve (vlvcolour=colour,boxcolour=colour,circlecolour=colour,c1_value=db_address,e2_value=db_address,src=source,angle)
+
+var vlv_menu=menu string
+var tag_message_panel=panel panel_item
+begin
+
+
+    just=centrecentre
+	
+	if valid tag_message_panel then
+	begin
+	set_c_value(c1_value,src,tag_message_panel.str)
+	 set invalid tag_message_panel
+	end
+	if valid vlv_menu then
+	begin
+	case vlv_menu of
+	"Dress Valve Opened"
+	  begin
+	  set_e_value(e2_value,src,1)
+	  end
+	  "Dress Valve Closed"
+	  begin
+	  set_e_value(e2_value,src,2)
+	  end
+	   "Undress Valve"
+	  begin
+	  set_e_value(e2_value,src,3)
+	  end
+	  "Write message"
+	  begin
+	  set title tag_message_panel="Modify Tagged Message"
+	  set label tag_message_panel.str="Tag Message :"
+	  set unpinned tag_message_panel
+	  request tag_message_panel
+	  end
+	  "Reset message"
+	  begin
+	  set_c_value(c1_value,src,"")
+	  end
+	   default
+	          begin
+	          end
+	       set invalid vlv_menu
+	 end 
+	  
+	   set remove vlv_menu ="Dress Valve Opened"
+	   set remove vlv_menu = "Dress Valve Closed"
+	   set remove vlv_menu = "Undress Valve"
+	   set remove vlv_menu="Write message"
+	   set remove vlv_menu="Reset message"
+	   
+	   set add vlv_menu="Dress Valve Opened"
+	   set add vlv_menu="Dress Valve Closed"
+	   set add vlv_menu="Undress Valve"
+	  set add vlv_menu="Write message"
+	  set add vlv_menu="Reset message"
+	   
+	  x = 0 w =40 h = 50 
+	set rect vlv_menu
+	      
+	   
+	clear
+	x=0 y=0 w=90 h=100 fg=boxcolour  rotrect 
+	y=40 x=-22 add y=-40 add y=40 x=22 add y=-40 add y=40 x=-22
+	fill(fg=vlvcolour) 
+	polygon(fg=black,lw=2)
+	clear
+	x=0 y=0 w=20 h=20 sa=0 aa=360
+	pie(fg=circlecolour)
+	arc(fg=black,lw=2) 
+end
+
+object msg (tag_mess=string,bg,just)
+begin
+text(tag_mess)
+end
+
+mimic msg_box=msg bg=decoroff, just=centrecentre, w=300,h=50
+
+
+
+object generic_valve(src=source,b1_value=db_address,b2_value=db_address,b3_value=db_address,c1_value=db_address,e1_value=db_address,e2_value=db_address)
+var message_box=popup msg_box
+var Vlvopnd= onoff
+var Vlvclsd= onoff
+var VLvstatus=real
+var VLvstatus2=int
+var Vlvtest=string
+var Vlvalrm= input db_elements(db_addr,alarm_status)
+var vlvcolour=colour
+var vlvbox=colour
+var vlvcircle=colour
+var Vlvdress=output db_elements(db_addr,e_value)
+
+Begin
+
+Vlvopnd=get_b_value(b1_value,src)
+Vlvclsd=get_b_value(b2_value,src)
+VLvstatus=get_e_value(e1_value,src)
+Vlvtest=get_c_value(c1_value,src)
+VLvstatus2=int(get_e_value(e2_value,src))
+
+
+
+set source Vlvalrm=heathrow
+set filter Vlvalrm.db_addr=lim_eq
+set limit Vlvalrm.db_addr = b3_value
+request Vlvalrm
+
+
+	
+case Vlvstatus2 of
+1
+begin
+vlvcircle=blue
+vlvcolour=green
+end
+2
+begin
+vlvcircle=blue
+vlvcolour=white
+angle=90
+end
+3
+begin
+vlvcircle=grey
+if Vlvstatus<=0 then
+	angle=0
+else if Vlvstatus>0 and Vlvstatus<=100 then
+	angle =int(Vlvstatus * 0.9)
+else if Vlvstatus>=100 then
+	angle =90
+if Vlvalrm.alarm_status==w_note then
+     vlvcolour=flashred
+else if Vlvalrm.alarm_status==w_clr then
+    vlvcolour=red
+else if Vlvopnd==on and Vlvclsd==off then
+   vlvcolour=green
+else if Vlvopnd==off and Vlvclsd==on then
+	vlvcolour=white
+else
+     vlvcolour=grey
+
+end
+default
+begin
+end
+		
+
+h=50 w=50
+x=100 y=100
+
+	 
+if Vlvtest<>"" then
+	begin
+	vlvbox=yellow
+	if selb then
+		begin
+		set title message_box = "Valve Message Box"
+		request message_box(string(Vlvtest))
+		end
+	end
+	else
+	 vlvbox=grey80
+
+
+  valve(vlvcolour,vlvbox,vlvcircle,c1_value,e2_value,src)
+
+
+end

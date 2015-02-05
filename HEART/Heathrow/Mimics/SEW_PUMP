@@ -1,0 +1,445 @@
+! HEATHROW CMS - SEW PUMP
+
+loaded by: SEWAGE STATUS
+!
+
+load mimic_libutil
+
+type c_db_row_type =  db_elements(db_addr,c_value)
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+
+type alarm_row_type =  db_elements(old,alarm_status)
+
+type panel_item_row = table (str=string(20))
+
+type menu_options_type = enum(
+           tag_message = "Alter Tagged Message",
+         untag_message = "Clear Tagged Message")
+
+
+!
+******************************************************************
+* SET B VALUE                                                    *
+* This object writes the value of a boolean from a given server. *
+******************************************************************
+!
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output b_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.b_value = val
+   set old_off op.b_value
+   request op
+   end
+end
+
+
+!
+******************************************************************
+* SET C VALUE                                                    *
+* This object writes the vaLue of a char from a given server.    *
+******************************************************************
+!
+
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.c_value = val
+   set old_off op.c_value
+   request op
+   end
+end
+!
+***************************************
+* MESSAGE TEXT                        *
+* This object displays a tag message. *
+***************************************
+!
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+y=-10text ("*** Tag Message ***")
+y=10 text (tag_mess)
+end
+
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+set title mss= "Message"
+request mss(tag_mess)
+end
+
+
+! 
+**************************************************************
+* SEW PUMP OBJECT                                            *
+* this object is called by the Top Level variable (mimic)    *
+**************************************************************
+!
+
+object sew_pump(fg,bg,plc_offset=int,
+                b_offset=int,c_offset=int,
+                src=source,ident=string)
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+!INPUTS!
+var sew_pump_alarm = input  b_db_row_type
+var tag_message_ip = input  c_db_row_type
+
+
+!LOOPBACKS!
+var pump_fg = loopback  colour
+var pump_bg = loopback  colour
+
+
+! MENUS !
+var stand_control_menu = menu  menu_options_type
+
+! PANELS !
+var tag_message_panel = panel  panel_item_row
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source sew_pump_alarm then 
+   begin
+
+   set source sew_pump_alarm = src
+   set filter sew_pump_alarm.db_addr = lim_eq
+   set limit sew_pump_alarm.db_addr = db_address(int(b1) + b_offset - 1)
+   set persist sew_pump_alarm 
+   request sew_pump_alarm
+   
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+   
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   end
+
+
+! SELECT FG COLOUR !
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+   pump_fg = magenta
+
+else if sew_pump_alarm.b_value == 0 then
+
+   pump_fg = white
+
+else pump_fg = green4
+
+! SELECT PUMP BG COLOUR ! 
+
+if tag_message_ip.c_value <> "" then 
+  begin
+  pump_bg = yellow
+  end
+
+else
+  pump_bg = decoroff     
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset -1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! CONTROL MENU !
+
+if valid stand_control_menu then
+   begin
+   case stand_control_menu of
+      tag_message
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+          end
+
+      untag_message
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+   default
+      begin
+      end
+   set invalid stand_control_menu
+   end
+
+
+! CONTROL MENU !
+
+just=centrecentre
+w=60 h=60
+x=0 y=0
+set rect stand_control_menu 
+
+set title stand_control_menu = "Control Menu"
+! if select button pressed then display tag message !
+
+
+! DRAW SYMBOL !
+
+bg=pump_bg
+fg=pump_fg
+just = centrecentre
+rect (w=60,h=60,fg=bg)
+x = -30 y = 30 add
+y-=60 add
+x+=60 add
+line(lw=1,fg=decorlight) 
+clear
+add
+y+=60 add
+x-=60 add
+line(lw=1,fg=decorshadow)
+  
+x=0 y=0    
+lw = 4
+circle (h=45,w=45)
+
+Clear
+X=-10 Y=20  Add 
+Y= -17 Add 
+X=20 Y=0  Add 
+X=-10 Y=18  Add 
+lw=4
+LINE
+clear
+x = 0 y = 45 add text(tfg=white,ch=12,ident)
+clear
+
+! TAG MESSAGE BOX !
+
+w=60 h=60
+x=0 y=0
+if selb and tag_message_ip.c_value <> "" then
+   begin
+   message_text_box(tag_message_ip.c_value)
+
+   end
+
+
+end
+
+
+!**************************************************************
+* SEW PUMP2 OBJECT                                           
+* this object is called by the Top Level variable (mimic)
+**************************************************************!
+object sew_pump2(fg,bg,plc_offset=int,b_offset=int,c_offset=int,src=source,ident=string)
+
+!PLC INPUTS
+plc_inputs[1] = plca_comms_ip
+plc_inputs[2] = plcb_comms_ip
+!
+var plc_inputs = input b_db_row_type[2]
+
+!INPUTS!
+var sew_pump_alarm = input  b_db_row_type
+var tag_message_ip = input  c_db_row_type
+
+!LOOPBACKS!
+var pump_fg = loopback  colour
+var pump_bg = loopback  colour
+
+! MENUS !
+var stand_control_menu = menu  menu_options_type
+
+! PANELS !
+var tag_message_panel = panel  panel_item_row
+
+begin
+
+! REQUEST DATA FROM SERVER !
+
+if invalid get source sew_pump_alarm then 
+   begin
+
+   set source sew_pump_alarm = src
+   set filter sew_pump_alarm.db_addr = lim_eq
+   set limit sew_pump_alarm.db_addr = db_address(int(b1) + b_offset - 1)
+   set persist sew_pump_alarm 
+   request sew_pump_alarm
+   
+   set source tag_message_ip = src
+   set filter tag_message_ip.db_addr = lim_eq
+   set limit tag_message_ip.db_addr = db_address(int(c1) + c_offset -1)
+   set persist tag_message_ip
+   request tag_message_ip
+   
+   set source plc_inputs = src
+   set filter plc_inputs.db_addr = lim_ge
+   set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset - 1)
+   set priority plc_inputs.db_addr = 15
+   set persist plc_inputs
+   set mayexist plc_inputs
+   request plc_inputs
+
+   end
+
+
+! SELECT FG COLOUR !
+
+if plc_inputs[1].b_value and plc_inputs[2].b_value then
+   pump_fg = magenta
+
+else if sew_pump_alarm.b_value == 0 then
+
+   pump_fg = white
+
+else pump_fg = red
+
+! SELECT PUMP BG COLOUR ! 
+
+if tag_message_ip.c_value <> "" then 
+  begin
+  pump_bg = yellow
+  end
+
+else
+  pump_bg = decoroff     
+
+! TAG MESSAGE PANEL !
+
+if valid tag_message_panel then
+   begin
+   set_c_value(db_address(int(c1) + c_offset - 1),src,tag_message_panel.str)
+   set invalid tag_message_panel
+   end
+
+
+! CONTROL MENU !
+
+if valid stand_control_menu then
+   begin
+   case stand_control_menu of
+      tag_message
+         begin
+         set title tag_message_panel = "Modify Tag Message"
+         set label tag_message_panel.str = "Tag Message :"
+         set unpinned tag_message_panel
+         request tag_message_panel
+          end
+
+      untag_message
+         begin
+         set_c_value(db_address(int(c1) + c_offset - 1), src, "")
+         end
+
+   default
+      begin
+      end
+   set invalid stand_control_menu
+   end
+
+
+! CONTROL MENU !
+
+just=centrecentre
+w=60 h=60
+x=0 y=0
+set rect stand_control_menu 
+
+set title stand_control_menu = "Control Menu"
+! if select button pressed then display tag message !
+
+
+! DRAW SYMBOL !
+
+bg=pump_bg
+fg=pump_fg
+just = centrecentre
+rect (w=60,h=60,fg=bg)
+x = -30 y = 30 add
+y-=60 add
+x+=60 add
+line(lw=1,fg=decorlight) 
+clear
+add
+y+=60 add
+x-=60 add
+line(lw=1,fg=decorshadow)
+  
+x=0 y=0    
+lw = 4
+circle (h=45,w=45)
+
+Clear
+X=-10 Y=20  Add 
+Y= -17 Add 
+X=20 Y=0  Add 
+X=-10 Y=18  Add 
+lw=4
+LINE
+clear
+x = 0 y = 45 add text(tfg=white,ch=12,ident)
+clear
+
+! TAG MESSAGE BOX !
+w=60 h=60
+x=0 y=0
+if selb and tag_message_ip.c_value <> "" then
+begin
+	message_text_box(tag_message_ip.c_value)
+end
+
+
+end
+
+
+
+
+
+
+
+object main_object (bg,fg,w,h,tbg,tfg)
+
+begin
+
+scale=260
+ch = 12
+
+x = 0 y = 0 sew_pump2(7000,13928,2751,heathrow,"Pump 2")
+
+end
+
+mimic = main_object
+ 
+w=200,h=200,just=centrecentre,fg=white,bg=black,resizable

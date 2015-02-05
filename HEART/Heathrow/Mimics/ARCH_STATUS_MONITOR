@@ -1,0 +1,775 @@
+TYPE MACHINE = ENUM ( MACHINE_A = "A",MACHINE_B = "B" )
+	
+TYPE DIR_NUM = INT (1, 255)
+
+TYPE STREAM_NAME = STRING (30)
+
+TYPE STREAM = INT (1, 1023)
+
+TYPE SRC_STREAM = INT (0, 1023)
+
+TYPE S_TIME = TIME ("SECONDS")
+
+TYPE OPT_NAME_TYPE = STRING (30)
+
+TYPE PERIOD = DIFFTIME ("SECONDS")
+
+TYPE SUMMARY_ENUM_TYPE = ENUM (
+        SUMMARY_NONE = "Raw Data",      SUMMARY_MAX = "Max",
+        SUMMARY_MIN = "Min",    SUMMARY_MEAN = "Mean",
+        SUMMARY_TOTAL = "Sum",  SUMMARY_DIFFERENCE = "Diff",
+        SUMMARY_CHANGED = "Changed",    SUMMARY_COUNT = "Count",
+        SUMMARY_FIRST = "First",SUMMARY_LAST = "Last",
+        SUMMARY_ON_COUNT = "On Count",  SUMMARY_OFF_COUNT = "Off Count",
+        SUMMARY_STD_DEV = "STD Dev" )
+
+TYPE STATUS = TABLE ( NAME = NAME_TYPE,
+                      VALUE = INT, 
+                      S_VALUE = STRING_50 )
+
+TYPE OFFLINE_DIRS = TABLE ( WHERE = MACHINE,
+                            DIR_NUM = DIR_NUM,
+                            DIR_NAME = OPT_NAME_TYPE,
+                            FREE_SPACE = INT,
+                            TOTAL_SPACE = INT,
+                            IN_USE = YESNO,
+                            RESTORE_ONLY = YESNO )
+
+TYPE STREAMS = TABLE ( NUMBER = STREAM,
+	               NAME = STREAM_NAME,
+	               DATASOURCE = STREAM_NAME,
+	               TABLE_ID = BYTE,
+	               MAX_FUTURE_TIME = PERIOD,
+	               COPY_ENABLED = YESNO,
+	               NEXT_COPY_TIME = S_TIME,
+	               MAX_RW_AGE = PERIOD,
+	               COPY_PERIOD = PERIOD,
+	               PURGE_ENABLED = YESNO,
+	               NEXT_PURGE_TIME = S_TIME,
+	               ONLINE_PURGE_AGE = PERIOD,
+	               ONLINE_PURGE_PERIOD = PERIOD,
+	               SUMMARY_ENABLED = YESNO,
+	               SUMMARY_TYPE_1 = SUMMARY_ENUM_TYPE,
+	               SUMMARY_TYPE_2 = SUMMARY_ENUM_TYPE,
+	               SUMMARY_TYPE_3 = SUMMARY_ENUM_TYPE,
+	               SUMMARY_TYPE_4 = SUMMARY_ENUM_TYPE,
+	               SUMMARY_TYPE_5 = SUMMARY_ENUM_TYPE,
+	               NEXT_SUMMARY_TIME = S_TIME,
+	               MAX_SUMMARY_AGE = PERIOD,
+	               SUMMARY_PERIOD = PERIOD,
+	               SUMMARY_STREAM = SRC_STREAM,
+	               READ_ACCESS_LEVEL = ACCESS_LEVEL,
+	               WRITE_ACCESS_LEVEL = ACCESS_LEVEL,
+	               OVERWRITE_DUPLICATES = YESNO,
+	               OLDEST_WRITABLE_TIME = S_TIME,
+	               OLDEST_KNOWN_TIME = S_TIME,
+	               AVERAGE_INSERTS = INT,
+	               AVERAGE_B_SPACE = INT,
+	               AVERAGE_F_SPACE = INT )
+
+
+TYPE WS_TABLE_TYPE =  WORKSTATIONS ( CURRENT_MASTERED_AREAS,
+                                     USER_NUMBER,
+                                     LOGIN_PASSWORD)
+
+TYPE OP_E_VALUE_TYPE = DB_ELEMENTS( E_VALUE )
+
+TYPE OP_B_VALUE_TYPE = DB_ELEMENTS( B_VALUE )
+
+
+CONST period_1_day = 86400
+
+CONST mastership_area = a55
+
+CONST blocka_percent_full_db = e19990
+CONST files_a_percent_full_db  = e19991
+CONST files_b_percent_full_db  = e19992
+
+! ========================== SHOW DEBUG ========================== !
+
+object show_debug ( debug_msg = string )
+
+var debug = filewrite string
+
+begin
+   set reset debug
+   set console debug
+
+   set value debug = debug_msg
+   request debug
+   
+end
+
+
+
+! ======================= GET STATUS VALUE ======================= !
+
+object get_status_value (src = string, 
+                         status_val = string, 
+			 ret_val = loopback int ) = int
+
+var status_input = input status
+
+begin
+   if invalid status_input then
+      begin
+      set source status_input = src
+      set filter status_input.name = lim_eq
+      set limit status_input.name = status_val
+      
+      request status_input
+      end
+   
+   if valid status_input and not get busy status_input then
+      begin
+      get_status_value = 1
+      ret_val = status_input.value
+      end
+   else
+      begin
+      get_status_value = 0
+      end
+end
+
+
+
+! ==================== GET FILE PERCENT FULL ==================== !
+
+object get_file_percent_full(src = string, mchn = string,
+                             file_percent = loopback int) = int
+
+var ip = input offline_dirs[20]
+!var dual_mode_ip = input  status(s_value)!
+var row = int
+var percent_full = int
+var total_space = int
+var free_space = int
+var days_capacity = int
+var rem_capacity = int
+
+begin
+
+   ! Get the active archiver !
+!   if invalid get source dual_mode_ip then
+      begin
+      set source dual_mode_ip = src
+      set persist dual_mode_ip
+      set filter dual_mode_ip.name = lim_eq
+      set limit dual_mode_ip.name = "DUAL_MODE"
+      request dual_mode_ip
+      end
+!   
+   ! get the offline directories !
+!   if invalid get source ip and valid dual_mode_ip and not get busy dual_mode_ip then!
+   if invalid get source ip then
+      begin
+      set source ip = src
+      set filter ip.restore_only = lim_eq
+      set limit ip.restore_only = no 
+      set filter ip.dir_num = lim_ge_le2
+      set limit ip.dir_num = 1 
+      set limit2 ip.dir_num = 20
+      set persist ip
+      set filter ip.where = lim_eq
+      set limit ip.where = machine(mchn)
+      request ip
+      end
+
+   ! Calculate the free space !
+   total_space = 0
+   free_space = 0
+   for row from 1 to lastrow ip do
+      begin
+      total_space = total_space + ip[row].total_space / 1024
+      free_space = free_space + ip[row].free_space / 1024
+      end
+      
+   ! Calculage the percent full !
+   percent_full = int(100.0 - ((real(free_space) / real(total_space)) * 100))
+
+!   if valid ip and not get busy ip and valid dual_mode_ip and not get busy dual_mode_ip then!
+   if valid ip and not get busy ip then
+      begin
+      get_file_percent_full = 1
+      file_percent = percent_full
+      end
+   else
+      begin
+      get_file_percent_full = 0
+      end
+end
+
+
+! ======================= GET DAILY USAGE ======================= !
+
+object get_daily_usage (src = string,
+                        blocka_daily_usage = loopback int,
+			files_daily_usage = loopback int) = int
+
+var ip = input status(value)
+var streams_ip = input streams[1000]
+
+var row_num = int
+
+var total_online_space = loopback int
+var total_offline_space = loopback int
+
+begin
+
+   
+   if invalid get source ip then
+      begin
+      set source ip = src
+      set filter ip.name = lim_eq
+      set limit ip.name = "STATS_PERIOD"
+      request ip
+      end
+   
+   if invalid get source streams_ip then
+      begin
+      set source streams_ip = src
+      request streams_ip
+      end
+
+   if valid streams_ip and not get busy streams_ip and
+      valid ip and not get busy ip then
+      begin
+      total_online_space = 0
+      total_offline_space = 0
+      for row_num from 1 to lastrow streams_ip do
+	 begin
+	 total_online_space = total_online_space + int(streams_ip[row_num].average_b_space * (real(period_1_day) / real(ip.value)))
+	 total_offline_space = total_offline_space + int(streams_ip[row_num].average_f_space * (real(period_1_day) / real(ip.value)))
+	 end
+   
+      blocka_daily_usage = total_online_space / 1024
+      files_daily_usage = total_offline_space / 1024
+      get_daily_usage = 1
+      end
+   else
+      begin
+      get_daily_usage = 0
+      end
+
+end
+
+
+! ======================= GET DUAL STATUS ======================= !
+
+object get_dual_status (src = string,
+                        in_dual = loopback int,
+		        active_arh = loopback int) = int
+
+var mode_ip = input status(s_value)
+
+var i = int
+
+begin
+
+   if invalid get source mode_ip then
+      begin
+      set source mode_ip = src
+      set filter mode_ip.name = lim_eq
+      set limit mode_ip.name = "dual_mode"
+      set persist mode_ip
+      request mode_ip
+      end
+
+   if valid mode_ip and not get busy mode_ip then
+      begin
+      if (nchars(mode_ip.s_value) == 0) then
+         begin
+         active_arh = 0
+         in_dual = 0
+         end
+      else
+         begin
+	 i = nwords(mode_ip.s_value)
+	 if (getwords(1,i-1,mode_ip.s_value) == "A") then
+	    active_arh = 0
+	 else
+	    active_arh = 1
+   
+	 if (getword(i,mode_ip.s_value) == "SINGLE") then
+	    in_dual = 0
+	 else
+	    in_dual = 1
+	 end
+	 
+      get_dual_status = 1
+      end
+   else
+      begin
+      get_dual_status = 0
+      end
+
+end
+
+
+! ======================== LOGON TO XTEL ========================= !
+
+object logon_to_xtel (src = string,
+                      logon_user_number = int,
+                      logon_user_password = string) = int
+
+var logon_row = output ws_table_type
+
+begin
+
+   if invalid logon_row then
+      begin
+      set source logon_row = src
+      set old_default logon_row
+      set old_off logon_row.user_number
+      set old_off logon_row.login_password
+      set default logon_row
+      set filter logon_row.wrkstn_is_me = lim_eq
+      set limit logon_row.wrkstn_is_me = yes
+      set value logon_row.current_mastered_areas = set(mastership_area)
+      set value logon_row.user_number = logon_user_number
+      set value logon_row.login_password = logon_user_password
+      request logon_row
+      end
+   
+   if valid logon_row and not get busy logon_row then
+      begin
+      logon_to_xtel = 1
+      end
+   else
+      begin
+      logon_to_xtel = 0
+      end
+      
+   end
+
+
+! =================== WRITE E VALUE TO DATABASE ================= !
+
+object write_e_value_to_database (src = string, 
+                                  db_row = db_address, 
+				  new_value = int) = int
+
+var op = output op_e_value_type
+
+begin
+   
+   if invalid get source op then
+      begin
+      set source op = src
+      set old_default op
+      set old_off op.e_value
+      set default op
+      set filter op.db_addr = lim_eq
+      set limit op.db_addr = db_row
+      set value op.e_value = new_value
+      request op
+      end
+   
+   if valid op and not get busy op then
+      begin
+      write_e_value_to_database = 1
+      end
+   else
+      begin
+      write_e_value_to_database = 0
+      end
+      
+end
+
+
+! =================== WRITE B VALUE TO DATABASE ================= !
+
+object write_b_value_to_database (src = string, 
+                                  db_row = db_address, 
+				  new_value = int) = int
+
+var op = output op_b_value_type
+
+begin
+   
+   if invalid get source op then
+      begin
+      set source op = src
+      set old_default op
+      set old_off op.b_value
+      set default op
+      set filter op.db_addr = lim_eq
+      set limit op.db_addr = db_row
+      set value op.b_value = onoff(new_value)
+      request op
+      end
+   
+   if valid op and not get busy op then
+      begin
+      write_b_value_to_database = 1
+      end
+   else
+      begin
+      write_b_value_to_database = 0
+      end
+      
+end
+
+
+
+object main_object(repname=string,
+                   src=string, 
+		   arhsrc=string, 
+		   wknum=wrkstn_number, 
+		   usernum=int, 
+		   userpass=string, 
+		   debugon=yesno)
+
+var blocka_free_percent = loopback int
+
+var blocka_percent_full = loopback int
+var files_a_percent_full = loopback int
+var files_b_percent_full = loopback int
+var blocka_daily_usage = loopback int
+var files_daily_usage = loopback int
+var current_lps = loopback int
+var olsa_usage = loopback int
+var restq_usage = loopback int
+var i_cache_usage = loopback int
+var ids_usage = loopback int
+var in_dual = loopback int
+var active_arh = loopback int
+
+var requests_pending = int
+var outputs_pending = int
+var logged_in = int
+
+begin
+   ! Setup counters !
+   if invalid requests_pending then
+      begin
+      if debugon == yes then
+	 begin
+	 show_debug ("--------- Archiver Status Monitor ----------")
+	 show_debug ("XTel Server = " + src)
+	 show_debug ("Archiver Server = " + arhsrc)
+	 show_debug ("Wrkstn = " + wknum)
+	 show_debug ("Usernum = " + usernum)
+	 end
+      requests_pending = 3
+      logged_in = 0
+      end
+   
+   ! *********************** GET DATA FROM ARCHIVER *********************** !
+   
+   if invalid blocka_percent_full then
+      begin
+      if get_status_value(arhsrc, "free_percent", blocka_free_percent) then
+	 begin
+	 blocka_percent_full = 100 - blocka_free_percent
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    show_debug ("Blocka Percent Full = " + blocka_percent_full + "%")
+	    end
+	 end
+      end
+   
+   if invalid files_a_percent_full then
+      begin
+      if get_file_percent_full(arhsrc, "a", files_a_percent_full) then
+	 begin
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    show_debug ("Files A Percent Full = " + files_a_percent_full + "%")
+	    end
+	 end
+      end
+   
+   if invalid files_b_percent_full then
+      begin
+      if get_file_percent_full(arhsrc, "b", files_b_percent_full) then
+	 begin
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    show_debug ("Files B Percent Full = " + files_b_percent_full + "%")
+	    end
+	 end
+      end
+!
+   if invalid blocka_daily_usage then
+      begin
+      if get_daily_usage(arhsrc, blocka_daily_usage, files_daily_usage) then
+	 begin
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    show_debug ("Blocka Daily Usage = " + blocka_daily_usage + "Kb")
+	    show_debug ("Files Daily Usage = " + files_daily_usage + "Kb")
+	    end
+	 end
+      end
+      
+   if invalid current_lps then
+      begin
+      if get_status_value(arhsrc, "arh_lps", current_lps) then
+	 begin
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    show_debug ("Archiver LPS = " + current_lps + " LPS")
+	    end
+	 end
+      end
+   
+   if invalid olsa_usage then
+      begin
+      if get_status_value(arhsrc, "ols_usage", olsa_usage) then
+	 begin
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    show_debug ("OLSA usage = " + olsa_usage + "%")
+	    end
+	 end
+      end
+   
+   if invalid restq_usage then
+      begin
+      if get_status_value(arhsrc, "restq_usage", restq_usage) then
+	 begin
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    show_debug ("RESTQ usage = " + restq_usage + "%")
+	    end
+	 end
+      end
+   
+   if invalid i_cache_usage then
+      begin
+      if get_status_value(arhsrc, "cache_usage", i_cache_usage) then
+	 begin
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    show_debug ("I_CACHE usage = " + i_cache_usage + "%")
+	    end
+	 end
+      end
+   
+   if invalid ids_usage then
+      begin
+      if get_status_value(arhsrc, "ids_usage", ids_usage) then
+	 begin
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    show_debug ("IDS usage = " + ids_usage + "%")
+	    end
+	 end
+      end
+   
+   if invalid in_dual then
+      begin
+      if get_dual_status(arhsrc, in_dual, active_arh) then
+	 begin
+	 requests_pending --
+	 if debugon == yes then
+	    begin
+	    if in_dual then
+	       begin
+	       show_debug ("In Dual = YES")
+	       end
+	    else
+	       begin
+	       show_debug ("In Dual = NO")
+	       end
+	    if active_arh then
+	       begin
+	       show_debug ("Active Arh = B")
+	       end
+	    else
+	       begin
+	       show_debug ("Active Arh = A")
+	       end
+	    end
+	 end
+      end
+!
+   
+   ! ************************** LOGON TO XTEL ************************** !
+   if requests_pending == 0 and not logged_in then
+      begin
+      logged_in = logon_to_xtel (src, usernum, userpass)
+      if logged_in then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("Logged in to X-Tel")
+	    end
+	 end
+      end
+
+
+   ! ************************** WRITE RESULTS ************************** !
+   if logged_in then
+      begin
+      outputs_pending = 0
+
+      if write_e_value_to_database (src, blocka_percent_full_db, blocka_percent_full) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + blocka_percent_full + " to " + blocka_percent_full_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+   
+      if write_e_value_to_database (src, files_a_percent_full_db, files_a_percent_full) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + files_a_percent_full + " to " + files_a_percent_full_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+   
+      if write_e_value_to_database (src, files_b_percent_full_db, files_b_percent_full) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + files_b_percent_full + " to " + files_b_percent_full_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+!
+      if write_e_value_to_database (src, blocka_daily_usage_db, blocka_daily_usage) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + blocka_daily_usage + " to " + blocka_daily_usage_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+   
+      if write_e_value_to_database (src, files_daily_usage_db, files_daily_usage) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + files_daily_usage + " to " + files_daily_usage_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+   
+      if write_e_value_to_database (src, current_lps_db, current_lps) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + current_lps + " to " + current_lps_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+   
+      if write_e_value_to_database (src, olsa_usage_db, olsa_usage) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + olsa_usage + " to " + olsa_usage_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+   
+      if write_e_value_to_database (src, restq_usage_db, restq_usage) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + restq_usage + " to " + restq_usage_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+   
+      if write_e_value_to_database (src, i_cache_usage_db, i_cache_usage) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + i_cache_usage + " to " + i_cache_usage_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+   
+      if write_e_value_to_database (src, ids_usage_db, ids_usage) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + ids_usage + " to " + ids_usage_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+
+      if write_b_value_to_database (src, in_dual_db, in_dual) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + in_dual + " to " + in_dual_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+
+      if write_b_value_to_database (src, active_arh_db, active_arh) then
+         begin
+	 if debugon == yes then
+	    begin
+	    show_debug("written " + active_arh + " to " +  active_arh_db)
+	    end
+	 end
+      else
+         begin
+	 outputs_pending ++
+	 end
+
+!
+      end
+   
+   if logged_in and not outputs_pending then
+      begin
+      if debugon == yes then
+	 begin
+	 show_debug("DONE")
+	 end
+      exit
+      end
+   
+end
+
+mimic = main_object w=200,h=200,just=topleft,resizable

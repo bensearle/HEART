@@ -1,0 +1,277 @@
+!**	HEATHROW\SUB_STN_182		**!
+!** 	Modified by ULTRA - 04 Apr 2007	**!
+!** 	Updated panel designations		**!
+!**					**!
+
+load sub_stn_182_help
+load hv_lib
+load lv_breaker
+load generic_meter_library
+load browser
+
+const CREATED_BY_MIMICEDITOR_V2 = 1
+
+object lv_182_popup(bg)
+begin
+	clear lw=3
+	X=-125 Y=45 Add X+=250 Y=45 Add line(fg=white) clear
+	X=-100 Y=45 Add X=-100 Y=-140 Add line(fg=white) clear
+	X=100 Y=45 Add X=100 Y=-140 Add line(fg=white) clear
+	scale=200
+	x=-100 y=10	lv_breaker("",2000,2679,1540,4587,heathrow,"LHS","top",int,int,int)
+	y-=100 		hv_lib_transformer_select("TYPE2",int,INT,INT,1543,INT,heathrow,"TX1","Local",1,INT,white,green,scale=400)
+	x=100 y=10	lv_breaker("",2000,2689,1541,4588,heathrow,"RHS","top",int,int,int)
+	y-=100		hv_lib_transformer_select("TYPE2",int,INT,INT,1544,INT,heathrow,"TX2","Local",2,INT,white,green,scale=400)
+	X=0 Y=45	lv_breaker("",2000,2699,1540,4587,heathrow,"BUS","sect",int,int,int)
+	ch=14 just=centrecentre
+	X=-100 Y=-160	text(tfg=black,"Sub 182")
+	Y+=12		text(tfg=black,"P11")
+	X=100 Y=-160	text(tfg=black,"Sub 182")
+	Y+=12		text(tfg=black,"P7")
+	ch=14 just=centrecentre tfg=black
+	X=-160 Y=-120 	TEXT("Local Tx1")
+	X=160 		TEXT("Local Tx2")
+	ch=18 font = font_bold
+	X=0 Y=100 	TEXT("Low Voltage Panels")
+	Y+=15		text(tfg=black,"from Sub 182")
+end
+mimic lv_182_popup = lv_182_popup w=380,h=380,just=centrecentre, bg=lightblue3
+
+
+
+
+object lv_182_status(plc_offset=int,src=source,txt_id=string,res2=string,res1=int)
+var plc_inputs = input b_bool_type[2]
+var lv_pop = popup	lv_182_popup
+var alarm1_col = colour
+var alarm2_col = colour
+var alarm3_col = colour
+begin
+	alarm1_col = lv_alarm_test(2680,5,heathrow)
+	alarm2_col =lv_alarm_test(2690,5,heathrow)
+	alarm3_col =lv_alarm_test(2700,5,heathrow)
+
+	if alarm1_col == flashred or
+	alarm2_col == flashred or
+	alarm3_col == flashred
+	then
+		fg = flashred
+	else if alarm1_col ==red or
+	alarm2_col == red or
+	alarm3_col == red
+	then
+		fg = red
+	else
+		fg = grey80
+
+	   if invalid get source plc_inputs then 
+	   begin
+		! GET PLC INPUTS !
+	   	set source plc_inputs = src
+	   	set filter plc_inputs.db_addr = lim_ge
+	   	set limit plc_inputs.db_addr = db_address(int(b1) + plc_offset -1)
+	   	set priority plc_inputs.db_addr = 15
+	   	set persist plc_inputs
+	   	set mayexist plc_inputs
+	   	request plc_inputs
+	end
+
+	X=0 Y=0 W=50 H=50 ANGLE=0 JUST=centrecentre FS=FILLSOLID rotrect
+	if selb then
+		request lv_pop
+	
+	if plc_inputs[1].b_value == on and plc_inputs[2].b_value == on
+	then
+		tfg=magenta
+	else
+		tfg=white
+	lw=1
+	X=-25 Y=25 Add Y=-25 Add X=25 Y=-25 Add line(fg=white) clear
+	X=-25 Y=25 Add X=25 Add Y=-25 Add line(fg=black) clear
+
+	ch=18 font=font_bold just=centrecentre
+	X=0 Y=16  text(txt_id) clear
+
+	X=-20 Y=-20 W=20 H=20 just=topleft fg=green4 ls=solid lw=3 sa=0 circle
+	X=0 Y=-20 W=20 H=20 circle clear
+end
+
+
+
+Object main_object(w,h,fg,bg)
+var helpstr	= help string(30)
+var line_col	= colour
+Begin
+   	scale = 256
+   	just = centrecentre
+   	x = 20 y = 20 w =1140 h = 800
+   	set text helpstr = "sub_stn_182_help"
+
+	line_col=WHITE
+	just = centrecentre
+
+	! title !
+	X=483 Y=-126 CH=18 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=TOPLEFT TEXT("SUB 182")
+
+	!** Circuit Breaker Connecting Lines **!
+	Clear
+	FG=line_col LS=SOLID LW=6 CS=CAPROUND
+	X=-480 Y=-128 Add
+	X=-25 Y=-128 Add LINE clear
+	
+	lw=4
+	X=-450 Y=-128 Add Y+=70 Add LINE clear
+	X=-330 Y=-128 Add Y+=70 Add LINE clear
+	X=-270 Y=-128 Add Y+=70 Add LINE clear
+	X=-210 Y=-128 Add Y-=70 Add LINE clear
+	X=-150 Y=-128 Add Y+=170 Add LINE clear
+	X=-90 Y=-128 Add Y+=170 Add LINE clear
+
+	! * LHS to RHS Line * !
+	X=-30 Y=-128 Add Y+=365 Add x+=480 add Y-=365 add LINE clear
+
+	FG=line_col LS=SOLID LW=6 CS=CAPROUND
+	X= 480 Y=-128 Add
+	X= 25 Y=-128 Add LINE clear
+
+	lw=4
+	X=30 Y=-128 Add Y+=70 Add LINE clear
+	X=90 Y=-128 Add Y+=170 Add LINE clear
+	X=150 Y=-128 Add Y+=170 Add LINE clear
+	X=210 Y=-128 Add Y-=70 Add LINE clear
+	X=330 Y=-128 Add Y+=70 Add LINE clear
+	X=390 Y=-128 Add Y+=70 Add LINE clear
+	X=450 Y=-128 Add Y+=70 Add LINE clear
+
+	!** Breakers**!
+	scale=330
+
+	X=-450 Y=-100 hv_lib_breaker("type3",2000,2140,1433,4503,4600,HEATHROW,3,"BTM",30,angle=0)
+	X=-330 Y=-100 hv_lib_breaker("type3",2000,2160,1434,4504,4600,HEATHROW,4,"BTM",40,angle=0)
+	X=-270 Y=-100 hv_lib_breaker("type3",2000,2180,1435,4505,4600,HEATHROW,5,"BTM",50,angle=0)
+	
+	X=-210 Y=-155 hv_lib_breaker("type3",2000,2200,1436,4506,4600,HEATHROW,6,"TOP",60,angle=0)
+
+	X=-150 Y=-100 hv_lib_breaker("type3",2000,2220,1437,4507,4600,HEATHROW,7,"BTM",70,angle=0)
+	X=-90 Y=-100 hv_lib_breaker("type3",2000,2240,1438,4508,4600,HEATHROW,8,"BTM",80,angle=0)
+	X=-30 Y=-100 hv_lib_breaker("type3",2000,2260,1439,4509,4600,HEATHROW,9,"BTM",90,angle=0)
+	
+	X=30 Y=-100 hv_lib_breaker("type3",2000,2280,1440,4510,4600,HEATHROW,10,"BTM",100,angle=0)
+	X=90 Y=-100 hv_lib_breaker("type3",2000,2300,1441,4511,4600,HEATHROW,11,"BTM",110,angle=0)
+	X=150 Y=-100 hv_lib_breaker("type3",2000,2320,1442,4512,4600,HEATHROW,12,"BTM",120,angle=0)
+
+	X=210 Y=-155 hv_lib_breaker("type3",2000,2340,1443,4513,4600,HEATHROW,13,"TOP",130,angle=0)
+
+	X=330 Y=-100 hv_lib_breaker("type3",2000,2360,1444,4514,4600,HEATHROW,14,"BTM",140,angle=0)
+	X=390 Y=-100 hv_lib_breaker("type3",2000,2380,1445,4515,4600,HEATHROW,15,"BTM",150,angle=0)
+	X=450 Y=-100 hv_lib_breaker("type3",2000,2400,1446,4516,4600,HEATHROW,16,"BTM",160,angle=0)
+
+	! meters !
+	scale = 180
+		! METER		(plc_comms,c_offset,e_offset,b_over,b_under,src,units,metname,range_lo,range_hi,dec_places,bar_colour,range_dec_places,	res_int1,res_str1)!
+
+	X=-450 Y=-10	GENERIC_BAR_METER_LIB(2000,1464,4538,2858,2788,HEATHROW,"A","PANEL3",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+	X=-330 Y=-10 	GENERIC_BAR_METER_LIB(2000,1466,4540,2860,2790,HEATHROW,"A","PANEL4",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+	X=-390 Y=-10 	GENERIC_BAR_METER_LIB(2000,1467,4541,2861,2791,HEATHROW,"kV","PANEL4",0.000,11.000,2,BLUE,INT,INT,"STRING")
+	X=-270 Y=-10 	GENERIC_BAR_METER_LIB(2000,1468,4542,2862,2792,HEATHROW,"A","PANEL5",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+	
+	X=-270 Y=-230 	GENERIC_BAR_METER_LIB(2000,1471,4545,2865,2795,HEATHROW,"kV","PANEL6",0.000,11.000,2,BLUE,INT,INT,"STRING")
+	X=-210 Y=-230 	GENERIC_BAR_METER_LIB(2000,1470,4544,2864,2794,HEATHROW,"A","PANEL6",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+
+
+
+!
+	X=-150 Y=-230 GENERIC_BAR_METER_LIB(2000,INT,INT,INT,INT,HEATHROW,"kW","PANEL6",0.000,1200.000,0,GREEN,INT,INT,"STRING")
+!
+
+
+	X=-150 Y=-10 	GENERIC_BAR_METER_LIB(2000,1472,4546,2866,2796,HEATHROW,"A","PANEL7",0.000,150.000,0,YELLOW,INT,INT,"STRING")
+	X=-90 Y=-10 	GENERIC_BAR_METER_LIB(2000,1474,4548,2868,2798,HEATHROW,"A","PANEL8",0.000,150.000,0,YELLOW,INT,INT,"STRING")
+	X=-30 Y=-10 	GENERIC_BAR_METER_LIB(2000,1476,4550,2870,2800,HEATHROW,"A","PANEL9",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+
+	X=30 Y=-10 	GENERIC_BAR_METER_LIB(2000,1478,4552,2872,2802,HEATHROW,"A","PANEL10",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+	X=90 Y=-10 	GENERIC_BAR_METER_LIB(2000,1480,4554,2874,2804,HEATHROW,"A","PANEL11",0.000,150.000,0,YELLOW,INT,INT,"STRING")
+	X=150 Y=-10 	GENERIC_BAR_METER_LIB(2000,1482,4556,2876,2806,HEATHROW,"A","PANEL12",0.000,150.000,0,YELLOW,INT,INT,"STRING")
+
+	X=150 Y=-230 	GENERIC_BAR_METER_LIB(2000,1485,4559,2879,2809,HEATHROW,"kV","PANEL13",0.000,11.000,2,BLUE,INT,INT,"STRING")
+	X=210 Y=-230 	GENERIC_BAR_METER_LIB(2000,1484,4558,2878,2808,HEATHROW,"A","PANEL13",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+
+
+!
+	X=270 Y=-230 GENERIC_BAR_METER_LIB(2000,INT,INT,INT,INT,HEATHROW,"kW","PANEL13",0.000,400.000,0,GREEN,INT,INT,"STRING")
+!
+
+
+	X=330 Y=-10 	GENERIC_BAR_METER_LIB(2000,1486,4560,2880,2810,HEATHROW,"A","PANEL14",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+	X=270 Y=-10 	GENERIC_BAR_METER_LIB(2000,1487,4561,2881,2811,HEATHROW,"kV","PANEL14",0.000,11.000,2,BLUE,INT,INT,"STRING")
+
+	X=390 Y=-10 	GENERIC_BAR_METER_LIB(2000,1488,4562,2882,2812,HEATHROW,"A","PANEL15",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+	X=450 Y=-10 	GENERIC_BAR_METER_LIB(2000,1490,4564,2884,2814,HEATHROW,"A","PANEL16",0.000,400.000,0,YELLOW,INT,INT,"STRING")
+
+
+!
+	X=-30 Y=-185 GENERIC_BAR_METER_LIB(2000,INT,INT,INT,INT,HEATHROW,"kV","PANEL9",0.000,1200.000,0,YELLOW,INT,INT,"STRING")
+	X=390 Y=-185 GENERIC_BAR_METER_LIB(2000,INT,INT,INT,INT,HEATHROW,"kV","PANEL16",0.000,1200.000,0,YELLOW,INT,INT,"STRING")
+!
+	! transformers !
+	scale = 256
+	X=-150 Y=65 lv_182_status(2000,heathrow,"LT2",string,int,scale=220)
+	X=-90 Y=65 transformer_lib("TX 2","")
+
+	X=90 Y=65 lv_182_status(2000,heathrow,"LT1",string,int,scale=220)
+
+	X=150 Y=65 transformer_lib("TX 1","")
+
+	!** Browser **!
+	scale = 256
+	x = -570 y = 310 browser(1430,heathrow,1140)
+
+
+	!** Labels **!
+
+	X=-241 Y=-315 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("Incomer 1")
+	Y+=12 TEXT("SUB 152 P5")
+	X=176 Y=-315 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("Incomer 2")
+	Y+=12 TEXT("SUB 152 P29")
+
+	X=-450 Y=48 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("BA GFS")
+	Y+=12 TEXT("SUB 218")
+
+	X=-360 Y=48 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("ART Feeder 1")
+	Y+=12 TEXT("SUB 153")
+	!Y+=12 TEXT("")!
+
+	X=-270 Y=48 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("Rail Vent")
+	Y+=12 TEXT("SUB 183")
+
+	X=-150 Y=98 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("T5B")
+	Y+=12 TEXT("LTX2")
+
+	X=-90 Y=98 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("T5B FEGP")
+	Y+=12 TEXT("TX2")
+
+	X=-30 Y=-150 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("LH BUS")
+	Y+=12 TEXT("")
+
+	X=30 Y=48 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("T5D")
+	Y+=12 TEXT("FMU")
+
+	X=90 Y=98 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("T5B")
+	Y+=12 TEXT("LTX1")
+
+	X=150 Y=98 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("T5B FEGP")
+	Y+=12 TEXT("TX1")
+
+	X=300 Y=48 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("ART Feeder 2")
+	Y+=12 TEXT("SUB 153")
+	!Y+=12 TEXT("")!
+
+	X=390 Y=48 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("Rail Vent")
+	Y+=12 TEXT("SUB 184")
+
+	X=450 Y=-150 CH=12 FONT=FONT_NORMAL FONTNAME="Arial" TFG=BLACK JUST=CENTRECENTRE TEXT("RH BUS")
+	Y+=12 TEXT("")
+
+
+End
+mimic = MAIN_OBJECT W=1140, H=800, JUST=CENTRECENTRE, FG=WHITE, BG=AQUAMARINE3, RESIZABLE

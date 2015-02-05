@@ -1,0 +1,121 @@
+!******************************************************************************************
+ *                                                                     			*
+ *             Copyright (c) Ferranti Air Systems Limited 2001         		*
+ *                         All rights reserved                         			*
+ *                                                                     			*
+ ******************************************************************************************
+ *                                                                     			*
+ * Filename:           	FP_GENERIC_SERVER_REQUEST		*
+ * Module Name:    	called by fp designed objects        		*
+ * Subsystem Name:    	n/a				      	*
+ * Originating Author: 	FASL   21 NOVEMBER 2001  		*
+ * Design Reference:            n/a					*
+ *                                                                     			*
+ ******************************************************************************************
+ * Description:        						*
+ *	This file will be called by objects which request data from or sending*
+ *	data to a given servers database. 				*
+ *								*
+ *	Created to avoid repetitive usage of same mdl code		*
+ *								*
+ *	This file allows Boolean, Engineering and Char(TAG) database data *
+ *	to be utilised. 						* 
+ *                                                                     			*
+ ******************************************************************************************
+ * Instructions:         load this file into your mimic object file if accessing 	*
+ *		  database points from a given server			*
+ ******************************************************************************************
+ ******************************************************************************************
+ * Modification History                                                			*
+ *                                                                     			*
+ * Rel 	Date/Time 	Proj/Id   	CA Ref/Details of Change               	*
+ * ------	-------------- 	---------	--------------------------------------		*
+ ******************************************************************************************!
+
+! **** type definitions **** !
+
+type b_db_row_type =  db_elements(db_addr,b_value)
+type e_db_row_type = db_elements(db_addr,e_value)
+type c_db_row_type = db_elements(db_addr,c_value)
+type b_bool_type =  db_elements(b_value)
+type alarm_row_type =  db_elements(old,alarm_status)
+type panel_item_row = table (str=string(30))
+
+
+! **** set b value -writes the value of a boolean dbase address to a given server **** !
+
+object set_b_value(db_addr=db_address,src=source,val=onoff)
+var op = output  b_db_row_type
+begin
+   if not get busy op then
+      begin
+    	set source op = src
+    	set default op
+    	set old_default op
+    	set value op.db_addr = db_addr
+    	set old_value op.db_addr = db_addr
+    	set value op.b_value = val
+    	set old_off op.b_value
+    	request op
+      end
+end
+
+! **** set e value -writes the value of an engineering dbase address to a given server **** !
+
+object set_e_value(db_addr=db_address,src=source,val=real) 
+var op = output  e_db_row_type
+begin
+if not get busy op then
+   begin
+   set source op = src
+   set default op
+   set old_default op
+   set value op.db_addr = db_addr
+   set old_value op.db_addr = db_addr
+   set value op.e_value = val
+   set old_off op.e_value
+   request op
+   end
+end
+
+! **** set c value -writes the character string of a char dbase address to a given server **** !        
+                  
+object set_c_value(db_addr=db_address,src=source,val=string)
+var op = output c_db_row_type
+begin
+   if not get busy op then
+      begin
+   	set source op = src
+   	set default op
+   	set old_default op
+   	set value op.db_addr = db_addr
+   	set old_value op.db_addr = db_addr
+   	set value op.c_value = val
+   	set old_off op.c_value
+   	request op
+      end
+end
+
+! **** message text -displays a tag message. **** !
+
+object mss_o(fg,bg,just,tag_mess=string)
+begin
+   y=-10text ("*** Tag Message ***")
+   y=10 text (tag_mess)
+end
+mimic mss_m = mss_o just=centrecentre,w=300,h=50,bg=decoroff
+
+object message_text_box(fg,bg,lw,just,tag_mess=string)
+var mss = popup  mss_m
+begin
+   set title mss= "Message"
+   set top mss
+   request mss(tag_mess)
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=500,h=400,just=centrecentre,fg=red,bg=grey40,resizable
+

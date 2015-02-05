@@ -1,0 +1,78 @@
+load mimic_libutil
+load ocb_alarm_test
+
+object hv_4_alarm_status = int
+begin
+if sub_barcis_alarm(22424,heathrow) > 0 
+or sub_barcis_alarm(22404,heathrow) > 0 
+or sub_barcis_alarm(22444,heathrow) > 0
+or sub_barcis_alarm(23066,heathrow) > 0 
+or sub_barcis_alarm(23026,heathrow) > 0 
+or sub_barcis_alarm(23046,heathrow) > 0 
+or sub_barcis_alarm(8320,heathrow) > 0
+or sub_barcis_alarm(24054,heathrow) > 0 
+or sub_barcis_alarm(24074,heathrow) > 0 
+or sub_barcis_alarm(24094,heathrow) > 0
+or sub_barcis_alarm(23096,heathrow) > 0 
+or sub_barcis_alarm(23136,heathrow) > 0 
+or sub_barcis_alarm(23116,heathrow) > 0
+or sub_barcis_alarm(23624,heathrow) > 0 
+or sub_barcis_alarm(23604,heathrow) > 0 
+or sub_barcis_alarm(23664,heathrow) > 0 
+or sub_barcis_alarm(23644,heathrow) > 0 
+or sub_barcis_alarm(23360,heathrow) > 0 
+or sub_barcis_alarm(23380,heathrow) > 0 
+or sub_barcis_alarm(23400,heathrow) > 0
+or sub_alarm(15000,15740,heathrow) > 0 
+or sub_alarm(15000,15635,heathrow) > 0 
+or sub_alarm(15000,15645,heathrow) > 0 
+or sub_alarm(15000,15655,heathrow) > 0 
+or sub_alarm(15000,15665,heathrow) > 0 
+or sub_alarm(15000,15675,heathrow) > 0 
+or sub_alarm(15000,15685,heathrow) > 0 
+or sub_alarm(15000,15695,heathrow) > 0 
+or sub_alarm(15000,15705,heathrow) > 0
+or sub_barcis_alarm(20662,heathrow) > 0 
+or sub_barcis_alarm(20642,heathrow) > 0 
+or sub_barcis_alarm(20682,heathrow) > 0 
+or sub_barcis_alarm(20952,heathrow) > 0 
+or sub_barcis_alarm(20932,heathrow) > 0 
+or sub_barcis_alarm(20972,heathrow) > 0 
+or sub_barcis_alarm(20912,heathrow) > 0
+or sub_barcis_alarm(20462,heathrow) > 0 
+or sub_barcis_alarm(20442,heathrow) > 0 
+or sub_barcis_alarm(20402,heathrow) > 0 
+or sub_barcis_alarm(20442,heathrow) > 0
+or sub_barcis_alarm(20462,heathrow) > 0 
+or sub_barcis_alarm(20442,heathrow) > 0 
+or sub_barcis_alarm(20402,heathrow) > 0 
+or sub_barcis_alarm(20442,heathrow) > 0
+or sub_barcis_alarm(21384,heathrow) > 0 
+or sub_barcis_alarm(21404,heathrow) > 0 
+or sub_barcis_alarm(21424,heathrow) > 0 
+or sub_barcis_alarm(21444,heathrow) > 0
+or sub_barcis_alarm(21114,heathrow) > 0 
+or sub_barcis_alarm(21094,heathrow) > 0 
+or sub_barcis_alarm(21134,heathrow) > 0
+or sub_barcis_alarm(21988,heathrow) > 0 
+or sub_barcis_alarm(21968,heathrow) > 0 
+or sub_barcis_alarm(22008,heathrow) > 0 
+or sub_barcis_alarm(8420,heathrow) > 0
+or sub_barcis_alarm(22096,heathrow) > 0 
+or sub_barcis_alarm(22136,heathrow) > 0 
+or sub_barcis_alarm(22076,heathrow) > 0 
+or sub_barcis_alarm(22116,heathrow) > 0 
+or sub_barcis_alarm(22156,heathrow) > 0
+or sub_barcis_alarm(25102,heathrow) > 0 
+then
+  hv_4_alarm_Status = 1
+else
+  hv_4_alarm_status = 0
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+end
+
+mimic = main_object w=800,h=540,just=centrecentre,fg=white,bg=black,resizable

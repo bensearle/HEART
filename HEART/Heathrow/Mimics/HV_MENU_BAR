@@ -1,0 +1,386 @@
+load mimic_libutil
+
+type sub_number=string(20)
+
+
+object test_panel
+
+var sub_search = panel  sub_number
+var done = loopback  int 
+
+var get_mimic = toplevel  string
+var get_mimic_2 = toplevel string
+
+begin
+
+set source get_mimic = heathrow
+set source get_mimic_2 = heathro2
+
+x=0 y=0 w=200 h=20 rect(fg=decoroff)
+
+set title sub_search = "Search for Substation"
+set label sub_search = "Number : "
+set x sub_search = 0
+set y sub_search = 0
+
+X=0 Y=0  COMMAND_BUTTON ("Substation Search","",200,"",ch=20)
+
+if selb(w=200,h=28) then
+begin
+  request sub_search
+  done = 1
+end
+
+x = 0 y = 30 w = 198 h = 20 rect(fg=decoroff)  
+
+!x = 10 y = 32!
+if done == 1 and valid sub_search then
+begin
+  if sub_search == "56" or 
+     sub_search == "57" or 
+     sub_search == "87" or 
+     sub_search == "36" or 
+     sub_search == "37" or 
+     sub_search == "1" or 
+     sub_search == "30" or
+     sub_search == "108" or 
+     sub_search == "31" or 
+     sub_search == "92" or
+     sub_search == "47" or
+     sub_search == "122" or
+     sub_search == "HV 6" or
+     sub_search == "HV6" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_6"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic     
+  end
+  else if sub_search == "58" or 
+     sub_search == "34" or 
+     sub_search == "33" or 
+     sub_search == "89" or  
+     sub_search == "95" or 
+     sub_search == "27" or 
+     sub_search == "46" or
+     sub_search == "HV7" or
+     sub_search == "HV 7" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_7"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "85" or 
+     sub_search == "60" or 
+     sub_search == "61" or 
+     sub_search == "93" or
+     sub_search == "104" or
+     sub_search == "105" or
+     sub_search == "116" or
+     sub_search ==  "HV5" or
+     sub_search == "HV 5" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_5"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "51" or 
+     sub_search == "29" or
+     sub_search == "38" or
+     sub_search == "39" or
+     sub_search == "52" or
+     sub_search == "84" or 
+     sub_search == "118" or
+     sub_search == "53" or 
+     sub_search == "97" or
+     sub_search == "96" or
+     sub_search == "114" or
+     sub_search == "115" or
+     sub_search == "120" or
+     sub_search == "HV9" or 
+     sub_search == "HV 9" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_9"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "M1/8" or  
+     sub_search == "M1/12" or 
+     sub_search == "76" or 
+     sub_search == "100" or 
+     sub_search == "63" or
+     sub_search == "HV2" or 
+     sub_search == "HV 2" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_2"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "9" or 
+     sub_search == "10" or 
+     sub_search == "20" or 
+     sub_search == "11" or 
+     sub_search == "26" or 
+     sub_search == "14" or 
+     sub_search == "M1/14" or 
+     sub_search == "65" or 
+     sub_search == "4" or 
+     sub_search == "5" or 
+     sub_search == "3" or 
+     sub_search == "M1/10" or 
+     sub_search == "7" or 
+     sub_search == "6" or 
+     sub_search == "8" or 
+     sub_search == "45" or
+     sub_search == "HV4" or
+     sub_search == "HV 4" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_4"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "77" or 
+     sub_search == "55" or 
+     sub_search == "88" or 
+     sub_search == "81" or 
+     sub_search == "80" or 
+     sub_search == "79" or 
+     sub_search == "78" or 
+     sub_search == "59" or
+     sub_search == "117" or 
+     sub_search == "99" or 
+     sub_search == "64" or
+     sub_search == "124" or		 
+     sub_search == "75" or
+     sub_search == "SEB" or 
+     sub_search == "HV 14" or 
+     sub_search == "110" or
+     sub_search == "HV14" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_14"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "98" or 
+     sub_search == "54" or 
+     sub_search == "103" or
+     sub_search == "82" or 
+     sub_search == "HV1" or 
+     sub_search == "HV 1" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_1"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "42" or 
+     sub_search == "41" or  
+     sub_search == "43" or 
+     sub_search == "HV13" or 
+     sub_search == "HV 13" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_13"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "74" or 
+     sub_search == "83" or 
+     sub_search == "72" or 
+     sub_search == "44" or 
+     sub_search == "49" or 
+     sub_search == "50" or 
+     sub_search == "HV12" or 
+     sub_search == "HV 12" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_12"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "M1/2" or 
+     sub_search == "M1/3" or 
+     sub_search == "M1/6" or 
+     sub_search == "HV8" or 
+     sub_search == "HV 8" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_8"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "M1/15" or 
+     sub_search == "119" or
+     sub_search == "M1/9" or 
+     sub_search == "HV11" or 
+     sub_search == "HV 11" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_11"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "NSE" or
+     sub_search == "NORTHSIDE ELECTRICAL" or
+     sub_search == "NORTH INTAKE 2" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic_2 = "north_intake_2"
+     set selfreplace get_mimic_2
+     if invalid get_mimic_2 then
+       request get_mimic_2
+  end
+  else if sub_search == "23" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "sub_stn_23"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "32" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "sub_stn_32"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "62" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "sub_stn_62"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "40" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "west_intake"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+  else if sub_search == "73" or
+          sub_search == "HV3" or
+          sub_search == "HV 3" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic = "hv_3"
+     set selfreplace get_mimic
+     if invalid get_mimic then
+       request get_mimic  
+  end
+ else if sub_search == "112" or
+          sub_search == "113" then
+  begin
+     text ("Displaying Substation "+sub_search,tfg=blue)
+     set done = 0
+     set mimic get_mimic_2 = "bawccms_hv"
+     set selfreplace get_mimic_2
+     if invalid get_mimic_2 then
+       request get_mimic_2  
+  end
+
+
+
+else
+begin
+  text ("Failed to find Substation",tfg=red)
+end
+end
+
+end
+
+object menu_bar
+begin
+
+x = -570 y = 5 w = 1140 h = 70 rect(fg=decoroff) clear
+x = -570 y = 5 add
+x += 1140 add
+line(lw=2,fg=decorlight)clear
+x = 568 y = 5 add
+y += 70 add x -=1140 add line(lw=2,fg=decorshadow)
+
+CH=15 font=font_bold just=centrecentre
+
+x = -550 y = 14 mimic_replace_button("",heathrow,"north_intake",218,"")
+x = -440 y = 23 text("North Intake",tfg=black)
+
+x = -330 y = 14 mimic_replace_button("",heathro2,"east_intake",218,"")
+x = -220 y = 23 text("East Intake",tfg=black)
+
+x = -110 y = 14 mimic_replace_button("",heathro2,"south_intake_2",218,"")
+x = 0 y = 23 text("South Intake",tfg=black)
+
+x =  110 y = 14 mimic_replace_button("",heathrow,"west_intake",218,"")
+x = 220 y = 23 text("West Intake",tfg=black)
+
+font = font_normal
+
+x = -550 y = 42 mimic_replace_button("",heathro2,"hv_overview",218,"")
+x = -440 y = 51 text("Hv Overview",font=font_bold,tfg=red2)
+
+x = -330 y = 42 mimic_replace_button("",heathrow,"sub_stn_23",163,"")
+x = -250 y = 51 text("Sub-Station 23",tfg=black)
+
+x = -165 y = 42 mimic_replace_button("",heathrow,"sub_stn_32",163,"")
+x = -85 y = 51 text("Sub-Station 32",tfg=black)
+
+x = 0 y = 42 mimic_replace_button("",heathrow,"sub_stn_62",163,"")
+x = 80 y = 51 text("Sub-Station 62",tfg=black)
+
+x =  165 y = 42 mimic_replace_button("",heathro2,"north_intake_2",163,"")
+x = 245 y = 51 text("33kV BSP (North)",font=font_bold,tfg=orange3)
+
+
+x = 350 y = 14 test_panel
+
+end
+
+object main_object (bg,fg,w,h,tbg,tfg)
+begin
+
+
+x=0 y=23 menu_bar
+
+end
+
+mimic = main_object h=200,w=1140,just=centrecentre,fg=white,bg=black,resizable
