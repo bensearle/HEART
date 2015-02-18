@@ -436,6 +436,21 @@ public class tagStructure {
                     addObjectUses(tag, object);
                     objectName = object; // objectName used for SQL objectDetails
                 }
+            } else if (s.equalsIgnoreCase("mimic")) {
+                if (sc.hasNext()) {
+                    String line = sc.toString();
+                    String[] parts = line.split(" ");
+                    String main_obj = parts[3];
+                    System.out.println("***N*** "+main_obj);
+                    
+                    /*String objectWParam = sc.next();
+                    String[] split = objectWParam.split("\\("); // split tag into object and parameters
+                    String object = split[0]; // object is the first part
+                    //addTagStructure(tag + "." + object);
+                    addObjectUses(tag, object);
+                    objectName = object; // objectName used for SQL objectDetails*/                        
+                }                    
+                
             } else if (s.equalsIgnoreCase("begin")) {
                 numberBegin++;
             } else if (s.equalsIgnoreCase("end")) {
