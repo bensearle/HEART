@@ -411,7 +411,7 @@ public class tagStructure {
 
     public void scanMimicStructure(String filename, String fileline, String server, String tag) throws SQLException {
         // replace all symbols with a space, other than comment symbol !
-        String wSpace = fileline.replaceAll("[^a-zA-z0-9]", " ");
+        String wSpace = fileline.replaceAll("[^a-zA-z0-9=]", " ");
 
         Scanner sc = new Scanner(wSpace);
         String s;
@@ -437,20 +437,24 @@ public class tagStructure {
                     objectName = object; // objectName used for SQL objectDetails
                 }
             } else if (s.equalsIgnoreCase("mimic")) {
-                if (sc.hasNext()) {
-                    String line = sc.toString();
-                    String[] parts = line.split(" ");
-                    String main_obj = parts[3];
-                    System.out.println("***N*** "+main_obj);
-                    
-                    /*String objectWParam = sc.next();
-                    String[] split = objectWParam.split("\\("); // split tag into object and parameters
-                    String object = split[0]; // object is the first part
-                    //addTagStructure(tag + "." + object);
-                    addObjectUses(tag, object);
-                    objectName = object; // objectName used for SQL objectDetails*/                        
-                }                    
-                
+                if (numberBegin == numberEnd) {
+                    // end of object                
+                    if (fileline.contains("mimic =") || fileline.contains("mimic=")) {
+                        String[] parts = fileline.split(" ");
+                        if (parts[0].equalsIgnoreCase("mimic") && parts.length>2){                          
+                            if (parts[1].equalsIgnoreCase("=")){
+                                objectName = parts[2];
+                                addObjectDetails(tag);                           
+                            } else if (parts[2].equalsIgnoreCase("=")){
+                               objectName = parts[3];
+                               addObjectDetails(tag);
+                            }
+                            //System.out.println("***N*** "+main_obj+" ::: "+wSpace+" ::: "+fileline+" + "+" + ");
+                        } 
+                    }  
+                } else {
+                // mimic is a popup?
+                }
             } else if (s.equalsIgnoreCase("begin")) {
                 numberBegin++;
             } else if (s.equalsIgnoreCase("end")) {
@@ -525,6 +529,20 @@ public class tagStructure {
                     //addTagStructure(tag + "." + object);
                     objectName = object; // objectName used for SQL objectDetails
                 }
+            } else if (s.equalsIgnoreCase("mimic")) {
+                if (fileline.contains("mimic =") || fileline.contains("mimic=")) {
+                    String[] parts = fileline.split(" ");
+                    if (parts[0].equalsIgnoreCase("mimic") && parts.length>2){   
+                        if (parts[1].equalsIgnoreCase("=")){
+                            objectName = parts[2];
+                            addObjectConnections(server, filename, "mimic", filename, objectName);                     
+                        } else if (parts[2].equalsIgnoreCase("=")){
+                           objectName = parts[3];
+                           addObjectConnections(server, filename, "mimic", filename, objectName);
+                        }
+                        //System.out.println("***N*** "+main_obj+" ::: "+wSpace+" ::: "+fileline+" + "+" + ");
+                    } 
+                }  
             } else if (loadedObjects_Mimics.containsKey(s)) {
                 // s is the key - object
                 // mimic is the value
