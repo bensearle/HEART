@@ -437,9 +437,15 @@ public class tagStructure {
                     objectName = object; // objectName used for SQL objectDetails
                 }
             } else if (s.equalsIgnoreCase("mimic")) {
+                if (fileline.contains("MIMIC = main_object w=400"))
+                {
+                 String sss ="";
+                }
                 if (numberBegin == numberEnd) {
                     // end of object                
-                    if (fileline.contains("mimic =") || fileline.contains("mimic=")) {
+                    if (fileline.contains("mimic =") || fileline.contains("mimic=")||
+                            fileline.contains("Mimic =") || fileline.contains("Mimic=") ||
+                            fileline.contains("MIMIC =") || fileline.contains("MIMIC=")) {
                         String[] parts = fileline.split(" ");
                         if (parts[0].equalsIgnoreCase("mimic") && parts.length>2){                          
                             if (parts[1].equalsIgnoreCase("=")){
@@ -532,7 +538,9 @@ public class tagStructure {
                     objectName = object; // objectName used for SQL objectDetails
                 }
             } else if (s.equalsIgnoreCase("mimic")) {
-                if (fileline.contains("mimic =") || fileline.contains("mimic=")) {
+                if (fileline.contains("mimic =") || fileline.contains("mimic=")||
+                        fileline.contains("Mimic =") || fileline.contains("Mimic=") ||
+                        fileline.contains("MIMIC =") || fileline.contains("MIMIC=")) {
                     String[] parts = fileline.split(" ");
                     if (parts[0].equalsIgnoreCase("mimic") && parts.length>2){   
                         if (parts[1].equalsIgnoreCase("=")){
