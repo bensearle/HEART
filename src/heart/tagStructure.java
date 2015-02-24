@@ -444,10 +444,12 @@ public class tagStructure {
                         if (parts[0].equalsIgnoreCase("mimic") && parts.length>2){                          
                             if (parts[1].equalsIgnoreCase("=")){
                                 objectName = parts[2];
-                                addObjectDetails(tag);                           
+                                addObjectDetails(tag);   
+                                addObjectConnections(server, filename, "mimic", filename, objectName);
                             } else if (parts[2].equalsIgnoreCase("=")){
                                objectName = parts[3];
                                addObjectDetails(tag);
+                               addObjectConnections(server, filename, "mimic", filename, objectName);
                             }
                             //System.out.println("***N*** "+main_obj+" ::: "+wSpace+" ::: "+fileline+" + "+" + ");
                         } 
