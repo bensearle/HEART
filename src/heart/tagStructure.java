@@ -152,6 +152,7 @@ public class tagStructure {
             selectServerMimics(server); // populate serverMimics with the mimics from that server
             System.out.println(server);
             for (String mimic : serverMimics) {
+                selectLoadedObjects(mimic, server); // add current mimic objects to loadedObjects
                 System.out.println(server + " - " + mimic);
                 getMimicObjectUse(mimic, server);
                 //loadedObjects.clear();
