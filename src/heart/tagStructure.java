@@ -249,9 +249,9 @@ public class tagStructure {
         String tag = server + "." + pMimic + "." + pObject + "." + sMimic + "." + sObject;
         String pTag = server + "." + pMimic + "." + pObject;
         String sTag = server + "." + sMimic + "." + sObject;
-        String batchSQL = "IF NOT EXISTS (SELECT tag FROM objectConnections WHERE tag = '" + tag.toLowerCase() + "') "
-                + "BEGIN INSERT INTO objectConnections (tag, server, pMimic, pObject, sMimic, sObject, pTag, sTag) VALUES "
-                + "('" + tag.toLowerCase() + "', '" + server.toLowerCase() + "', '" + pMimic.toLowerCase() + "', '" + pObject.toLowerCase() + "', '" + sMimic.toLowerCase() + "', '" + sObject.toLowerCase() + "', '" + pTag.toLowerCase() + "', '" + sTag.toLowerCase() + "') END;";
+        String batchSQL = // "IF NOT EXISTS (SELECT tag FROM objectConnections WHERE tag = '" + tag.toLowerCase() + "') " + // commented out to add all references from object to object
+                "BEGIN INSERT INTO objectConnections (tag, server, pMimic, pObject, sMimic, sObject, pTag, sTag) VALUES " +
+                "('" + tag.toLowerCase() + "', '" + server.toLowerCase() + "', '" + pMimic.toLowerCase() + "', '" + pObject.toLowerCase() + "', '" + sMimic.toLowerCase() + "', '" + sObject.toLowerCase() + "', '" + pTag.toLowerCase() + "', '" + sTag.toLowerCase() + "') END;";
         statement.addBatch(batchSQL);
     }
 
